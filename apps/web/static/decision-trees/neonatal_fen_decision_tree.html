@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neonatal Fluid, Electrolyte & Nutrition Decision Tree</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1121;--bg2:#0f172a;--surface:#1e293b;--border:#334155;--text:#e2e8f0;--text2:#94a3b8;--accent:#38bdf8;--red:#f87171;--rbg:#2a1215;--orange:#fb923c;--obg:#2a1a0a;--yellow:#fbbf24;--ybg:#2a2006;--green:#4ade80;--gbg:#0a2a1a;--blue:#60a5fa;--bbg:#0f1d3a;--purple:#c084fc;--pbg:#1a0f2e;}
+*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh;width:100vw;}
+#hdr{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(180deg,var(--bg) 65%,transparent);padding:14px 24px 30px;display:flex;align-items:center;gap:16px;}#hdr h1{font-family:'DM Serif Display',serif;font-size:24px;color:var(--accent);}#hdr .sub{font-size:12px;color:var(--text2);font-weight:300;margin-top:2px;}
+.ctrls{margin-left:auto;display:flex;gap:8px;}.ctrls button{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 16px;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;}.ctrls button:hover{background:var(--border);border-color:var(--accent);color:var(--accent);}
+#tc{width:100vw;height:100vh;cursor:grab;}#tc:active{cursor:grabbing;}.ng{cursor:pointer;}.nr{rx:10;ry:10;stroke-width:1.8;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));transition:all .25s;}.ng:hover .nr{filter:brightness(1.25) drop-shadow(0 0 12px rgba(56,189,248,.25));}
+.nl{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:11px;fill:var(--text);text-anchor:middle;pointer-events:none;}.ns{font-family:'IBM Plex Sans',sans-serif;font-weight:400;font-size:8.5px;fill:var(--text2);text-anchor:middle;pointer-events:none;}.ni{font-size:15px;text-anchor:middle;pointer-events:none;}.lk{fill:none;stroke:var(--border);stroke-width:1.6;stroke-opacity:.5;}.ll{font-family:'IBM Plex Mono',monospace;font-size:8.5px;fill:var(--yellow);font-weight:500;}.ib{cursor:pointer;transition:all .2s;}.ib:hover{transform:scale(1.15);}
+#po{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:200;justify-content:center;align-items:center;}#po.active{display:flex;}#pp{background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:680px;width:94vw;max-height:88vh;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,0,.7);animation:popIn .28s cubic-bezier(.16,1,.3,1);}#pp::-webkit-scrollbar{width:5px;}#pp::-webkit-scrollbar-track{background:transparent;}#pp::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}@keyframes popIn{from{transform:scale(.9) translateY(24px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+#ph{padding:20px 24px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px;position:sticky;top:0;background:var(--bg2);z-index:1;border-radius:16px 16px 0 0;}#picon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}#ptitle{font-family:'DM Serif Display',serif;font-size:22px;color:var(--text);line-height:1.2;}#ptype{font-size:11px;font-weight:600;padding:3px 10px;border-radius:5px;display:inline-block;margin-top:5px;}#pclose{margin-left:auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:18px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;}#pclose:hover{color:var(--text);border-color:var(--accent);}
+#pbody{padding:16px 24px 32px;}.tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid var(--border);overflow-x:auto;}.tabs::-webkit-scrollbar{height:0;}.tb{background:none;border:none;color:var(--text2);font-size:11px;font-weight:600;padding:9px 12px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;}.tb.active{color:var(--accent);border-bottom-color:var(--accent);}.tb:hover:not(.active){color:var(--text);}
+.tc{display:none;}.tc.active{display:block;}.tc p,.tc li{font-size:13px;line-height:1.7;color:var(--text2);margin-bottom:8px;}.tc ul{list-style:none;padding-left:0;margin-bottom:10px;}.tc li{padding:3px 0 3px 18px;position:relative;}.tc li::before{content:'›';position:absolute;left:2px;color:var(--accent);font-weight:700;font-size:14px;}.tc strong{color:var(--text);}
+.rt{width:100%;border-collapse:collapse;margin:8px 0 12px;font-size:12px;}.rt th{text-align:left;font-size:9.5px;font-weight:700;color:var(--accent);padding:8px 10px;border-bottom:1.5px solid var(--border);text-transform:uppercase;letter-spacing:.6px;background:rgba(56,189,248,.04);}.rt td{padding:7px 10px;border-bottom:1px solid rgba(51,65,85,.3);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:11px;}.rt td:first-child{font-family:'IBM Plex Sans',sans-serif;font-weight:500;color:var(--text2);}
+.dt{width:100%;border-collapse:collapse;margin:6px 0 10px;}.dt th{text-align:left;font-size:9px;font-weight:700;color:var(--text2);padding:6px 8px;border-bottom:1px solid var(--border);text-transform:uppercase;}.dt td{font-size:11px;padding:6px 8px;border-bottom:1px solid rgba(51,65,85,.2);color:var(--text);vertical-align:top;line-height:1.5;}
+.bx{border-radius:10px;padding:12px 16px;font-size:12px;line-height:1.6;margin:10px 0;}.bx strong{color:inherit;}.br{background:var(--rbg);border:1px solid rgba(248,113,113,.25);color:var(--red);}.bg{background:var(--gbg);border:1px solid rgba(74,222,128,.25);color:var(--green);}.bb{background:var(--bbg);border:1px solid rgba(96,165,250,.25);color:var(--blue);}.bo{background:var(--obg);border:1px solid rgba(251,146,60,.25);color:var(--orange);}.bp{background:var(--pbg);border:1px solid rgba(192,132,252,.25);color:var(--purple);}
+.sl{counter-reset:stp;list-style:none!important;padding:0;margin:8px 0;}.sl li{counter-increment:stp;padding:5px 0 5px 32px!important;position:relative;font-size:12px;color:var(--text2);line-height:1.55;}.sl li::before{content:counter(stp)!important;position:absolute;left:0;top:4px;width:22px;height:22px;border-radius:50%;background:var(--surface);border:1px solid var(--border);text-align:center;line-height:22px;font-size:10px;font-weight:700;color:var(--accent);}
+#lg{position:fixed;bottom:14px;left:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:11px;z-index:50;display:flex;gap:14px;flex-wrap:wrap;}.li{display:flex;align-items:center;gap:6px;}.ld{width:10px;height:10px;border-radius:3px;}#bc{position:fixed;bottom:14px;right:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 16px;font-size:11px;color:var(--text2);z-index:50;}
+</style>
+</head>
+<body>
+<div id="hdr"><div><h1>Neonatal Fluid, Electrolyte & Nutrition Decision Tree</h1><div class="sub">Enhanced Clinical Edition — IV fluids, GIR calculations, electrolyte management, enteral feeding, TPN protocols</div></div>
+<div class="ctrls"><button onclick="resetZ()">⟲ Reset</button><button onclick="expAll()">⊞ Expand</button><button onclick="colAll()">⊟ Collapse</button></div></div>
+<svg id="tc"></svg>
+<div id="po" onclick="closeP(event)"><div id="pp" onclick="event.stopPropagation()"><div id="ph"><div id="picon"></div><div><div id="ptitle"></div><div id="ptype"></div></div><button id="pclose" onclick="closeP()">&times;</button></div><div id="pbody"></div></div></div>
+<div id="lg"><div class="li"><div class="ld" style="background:var(--red)"></div>Emergency</div><div class="li"><div class="ld" style="background:var(--orange)"></div>Urgent</div><div class="li"><div class="ld" style="background:var(--yellow)"></div>Decision</div><div class="li"><div class="ld" style="background:var(--green)"></div>Action</div><div class="li"><div class="ld" style="background:var(--blue)"></div>Assessment</div><div class="li"><div class="ld" style="background:var(--purple)"></div>Diagnosis</div></div>
+<div id="bc">Scroll to zoom · Drag to pan · Click ⓘ for education</div>
+<script>
+const T={
+name:"Neonatal FEN\nManagement",icon:"💧",type:"assessment",sub:"IV fluids, electrolytes, enteral nutrition, TPN",edge:"",
+info:{tabs:["Fluid Physiology","Daily Fluid Rates","Electrolyte Timing"],
+t0:`<p>Neonatal fluid and electrolyte management requires understanding of the unique transitional physiology. At birth, total body water is 75–80% in term and up to 90% in extremely preterm infants. The first 3–5 days involve a physiologic contraction diuresis — loss of extracellular fluid that results in expected weight loss (5–10% term, up to 10–15% preterm). This is NORMAL and should not be aggressively replaced.</p>
+<div class="bx bb">ℹ️ <strong>Physiologic weight loss in first 5–7 days is expected and beneficial.</strong> 2024 data shows that allowing 5–12% weight loss in preterm infants is associated with decreased BPD. Aggressive fluid replacement to prevent weight loss may be harmful.</div>`,
+t1:`<table class="rt"><thead><tr><th>Birth Weight</th><th>Day 1</th><th>Day 2</th><th>Day 3</th><th>Day 4+</th></tr></thead><tbody>
+<tr><td>&lt; 750g</td><td>100–120 mL/kg</td><td>120–140</td><td>140–160</td><td>140–180</td></tr>
+<tr><td>750–1000g</td><td>80–100</td><td>100–120</td><td>120–140</td><td>140–160</td></tr>
+<tr><td>1000–1500g</td><td>60–80</td><td>80–100</td><td>100–120</td><td>120–150</td></tr>
+<tr><td>1500–2500g</td><td>60–80</td><td>80–100</td><td>100–120</td><td>120–150</td></tr>
+<tr><td>>2500g (term)</td><td>60–70</td><td>70–80</td><td>80–100</td><td>100–120</td></tr>
+</tbody></table>
+<p><em>Adjust based on: UOP (target 1–3 mL/kg/hr), serum Na (target 135–145), weight change, humidity level (high humidity in ELBW decreases IWL).</em></p>`,
+t2:`<p><strong>When to add electrolytes to IV fluids:</strong></p>
+<table class="rt"><thead><tr><th>Electrolyte</th><th>When to Start</th><th>Dose</th><th>Rationale</th></tr></thead><tbody>
+<tr><td>Sodium</td><td>Day 2–3 (after onset of diuresis)</td><td>2–4 mEq/kg/day</td><td>Do NOT add Na on day 1 — allows physiologic contraction. Early Na → fluid retention → ↑ BPD risk.</td></tr>
+<tr><td>Potassium</td><td>Day 2–3 (once voiding confirmed)</td><td>1–2 mEq/kg/day</td><td>NEVER add K until UOP is confirmed. Check serum K first — preterm infants prone to non-oliguric hyperkalemia.</td></tr>
+<tr><td>Calcium</td><td>Day 1 (in TPN or D10W)</td><td>200–400 mg/kg/day Ca gluconate</td><td>Early hypocalcemia common, especially in preterm, IDM, asphyxia</td></tr>
+</tbody></table>
+<div class="bx br">🚨 <strong>NO sodium on day 1.</strong> NO potassium until voiding is confirmed. These are the two most important electrolyte principles in neonatal fluid management.</div>`
+},children:[
+{name:"Glucose\nManagement",icon:"🩸",type:"urgent",sub:"GIR formula · D10W standard · Hypo/hyperglycemia",edge:"Glucose\nabnormality",
+info:{tabs:["GIR Calculation","Hypoglycemia Protocol","Hyperglycemia"],
+t0:`<p><strong>Glucose Infusion Rate (GIR) — The Central Calculation:</strong></p>
+<p><strong>GIR (mg/kg/min) = [IV rate (mL/hr) × dextrose concentration (g/dL)] / [weight (kg) × 6]</strong></p>
+<p><strong>Example:</strong> 1.5 kg infant on D10W at 6 mL/hr: GIR = (6 × 10) / (1.5 × 6) = 60/9 = <strong>6.7 mg/kg/min</strong></p>
+<table class="rt"><thead><tr><th>Clinical Scenario</th><th>Target GIR</th></tr></thead><tbody>
+<tr><td>Normal term neonate</td><td>4–6 mg/kg/min</td></tr>
+<tr><td>Preterm infant (VLBW)</td><td>5–8 mg/kg/min</td></tr>
+<tr><td>Hypoglycemic infant</td><td>8–12+ mg/kg/min (may need central line for D12.5%+)</td></tr>
+<tr><td>Hyperinsulinism</td><td>10–20+ mg/kg/min</td></tr>
+</tbody></table>`,
+t1:`<ol class="sl">
+<li>Symptomatic: D10W 2 mL/kg IV bolus (200 mg/kg) over 5–10 min</li>
+<li>Start continuous infusion: D10W at GIR 5–8 mg/kg/min</li>
+<li>Recheck glucose 30 min after bolus and hourly until stable</li>
+<li>If glucose remains &lt;50: increase GIR by 1–2 mg/kg/min every 30–60 min</li>
+<li>If GIR >10–12 needed: consider central line for D12.5%–D20%. Evaluate for hyperinsulinism.</li>
+<li>Wean GIR gradually (1–2 mg/kg/min per 6–12h) once stable on full feeds</li>
+</ol>`,
+t2:`<p><strong>Neonatal hyperglycemia:</strong> Glucose >150–180 mg/dL. Common in ELBW and sick infants (stress, steroids, sepsis, excessive glucose delivery).</p>
+<ul><li><strong>First:</strong> Decrease GIR (lower dextrose concentration or rate). Target GIR 4–6.</li>
+<li><strong>Second:</strong> If hyperglycemia persists despite GIR &lt;4 and infant needs nutrition → consider insulin infusion (0.01–0.1 units/kg/hr) with very close glucose monitoring q30–60min.</li>
+<li><strong>Risks of persistent hyperglycemia:</strong> Osmotic diuresis, dehydration, IVH (hyperosmolarity), impaired wound healing</li>
+<li><strong>Avoid:</strong> Aggressive insulin dosing (rebound hypoglycemia is dangerous and common)</li></ul>`
+}},
+{name:"Sodium\nDisorders",icon:"🧂",type:"decision",sub:"Hypo/hypernatremia · Context-dependent interpretation",edge:"Abnormal\nserum Na",
+info:{tabs:["Hyponatremia","Hypernatremia","Interpretation Framework"],
+t0:`<p><strong>Neonatal hyponatremia (Na &lt;130 mEq/L):</strong></p>
+<table class="dt"><thead><tr><th>Timing</th><th>Most Common Cause</th><th>Mechanism</th><th>Treatment</th></tr></thead><tbody>
+<tr><td><strong>First week</strong></td><td>Excess free water (iatrogenic or physiologic)</td><td>Fluid overload preventing normal contraction diuresis</td><td>RESTRICT fluids (not Na supplementation). Allow contraction diuresis.</td></tr>
+<tr><td><strong>After first week</strong></td><td>Sodium depletion (renal losses in preterm)</td><td>Immature tubules cannot conserve Na; ongoing losses exceed intake</td><td>Increase Na supplementation (up to 4–6 mEq/kg/day in ELBW)</td></tr>
+<tr><td><strong>Any time</strong></td><td>SIADH, adrenal insufficiency (CAH)</td><td>ADH excess (SIADH) or aldosterone deficiency (CAH)</td><td>Fluid restriction (SIADH). Hydrocortisone + fludrocortisone (CAH).</td></tr>
+</tbody></table>
+<div class="bx bo">⚠️ <strong>Hyponatremia in the first week = usually WATER excess, NOT sodium deficit.</strong> Do NOT give extra Na — RESTRICT fluids. After the first week, hyponatremia is usually from Na losses requiring supplementation.</div>`,
+t1:`<p><strong>Neonatal hypernatremia (Na >150 mEq/L):</strong></p>
+<ul><li><strong>Most common cause:</strong> Insufficient free water intake (especially in breastfed infants with inadequate milk production in first 3–5 days)</li>
+<li><strong>ELBW infants:</strong> Massive insensible water loss (TEWL) from immature skin → hypernatremic dehydration. Most common in first 72h before humidity is optimized.</li>
+<li><strong>Correct slowly:</strong> Na should decrease no faster than 0.5 mEq/L/hour or 10–12 mEq/L/24 hours. Rapid correction → cerebral edema → seizures.</li></ul>`,
+t2:`<p><strong>Key principle:</strong> In the first week of life, sodium abnormalities are almost always WATER problems, not sodium problems.</p>
+<ul><li>Hyponatremia (first week) = too much water → restrict fluids</li>
+<li>Hypernatremia (first week) = too little water → increase free water</li>
+<li>Hyponatremia (after first week) = too little sodium → supplement sodium</li></ul>`
+}},
+{name:"Enteral Nutrition\n& Fortification",icon:"🍼",type:"action",sub:"Breast milk priority · Fortification · ESPGHAN",edge:"Establishing\nfeeds",
+info:{tabs:["Feeding Advancement","Human Milk Fortification","Protein Targets"],
+t0:`<p><strong>Standardized feeding advancement protocol (reduces NEC):</strong></p>
+<table class="rt"><thead><tr><th>Birth Weight</th><th>Start</th><th>Advance</th><th>Goal</th></tr></thead><tbody>
+<tr><td>&lt;1000g</td><td>10–20 mL/kg/day (trophic)</td><td>10–20 mL/kg/day increases</td><td>150–160 mL/kg/day</td></tr>
+<tr><td>1000–1500g</td><td>20–30 mL/kg/day</td><td>20–30 mL/kg/day</td><td>150–160 mL/kg/day</td></tr>
+<tr><td>1500–2500g</td><td>30–60 mL/kg/day</td><td>20–30 mL/kg/day</td><td>150–160 mL/kg/day</td></tr>
+<tr><td>>2500g (term)</td><td>Ad lib (breastfeed on demand or 60 mL/kg/day formula)</td><td>Per infant cues</td><td>~150–180 mL/kg/day</td></tr>
+</tbody></table>
+<div class="bx bg">✓ <strong>Maternal breast milk is first priority for ALL neonates.</strong> If unavailable for VLBW: pasteurized donor human milk. Formula only when human milk is unavailable or insufficient and donor milk is not an option.</div>`,
+t1:`<p><strong>Human milk fortification (for preterm &lt;1500g):</strong></p>
+<ul><li>Unfortified human milk provides ~67 kcal/dL and ~1.0–1.2 g/dL protein — insufficient for preterm growth</li>
+<li><strong>Fortify when feeds reach 80–100 mL/kg/day</strong></li>
+<li>Standard bovine-based fortifier (Enfamil HMF, Similac HMF): adds protein, calcium, phosphorus, vitamins, minerals. Brings to ~24 kcal/oz.</li>
+<li>Exclusive human milk-based fortifier (Prolacta): for ELBW — may reduce NEC compared to bovine-based (limited evidence)</li>
+<li>Target: 24 kcal/oz minimum; may need 26–28 kcal/oz for growth-restricted infants</li></ul>`,
+t2:`<p><strong>ESPGHAN 2022 Protein Targets for Preterm Infants:</strong></p>
+<table class="rt"><thead><tr><th>Weight</th><th>Protein Target</th><th>Caloric Target</th></tr></thead><tbody>
+<tr><td>&lt;1000g</td><td>3.5–4.5 g/kg/day</td><td>110–135 kcal/kg/day</td></tr>
+<tr><td>1000–1500g</td><td>3.5–4.0 g/kg/day</td><td>110–130 kcal/kg/day</td></tr>
+<tr><td>1500–2500g</td><td>3.0–3.5 g/kg/day</td><td>110–130 kcal/kg/day</td></tr>
+</tbody></table>
+<p><strong>Growth monitoring:</strong> Target weight gain 15–20 g/kg/day after regaining birth weight. Head circumference 0.9–1.0 cm/week. Length 1.0–1.1 cm/week. Plot on Fenton or INTERGROWTH-21st charts.</p>`
+}},
+{name:"Parenteral\nNutrition (TPN)",icon:"💉",type:"action",sub:"Amino acids day 1 · Lipids day 1–2 · Monitoring",edge:"Unable to\nachieve full\nenteral feeds",
+info:{tabs:["TPN Components","Starting Protocol","IFALD Prevention"],
+t0:`<table class="rt"><thead><tr><th>Component</th><th>Start</th><th>Goal</th><th>Notes</th></tr></thead><tbody>
+<tr><td>Amino acids</td><td>1.5–2 g/kg/day on DAY 1</td><td>3.5–4.0 g/kg/day</td><td>Early aggressive protein prevents catabolism. Advance 0.5–1 g/kg/day.</td></tr>
+<tr><td>Dextrose</td><td>GIR 5–7 mg/kg/min</td><td>GIR 10–14 mg/kg/min</td><td>Advance based on glucose tolerance</td></tr>
+<tr><td>Lipids (IL 20%)</td><td>1–2 g/kg/day on day 1–2</td><td>3.0–3.5 g/kg/day</td><td>Essential fatty acids + caloric density. SMOF lipid may reduce IFALD.</td></tr>
+<tr><td>Calcium</td><td>Day 1</td><td>60–80 mg/kg/day</td><td>Prevent early hypocalcemia</td></tr>
+<tr><td>Phosphorus</td><td>Day 1</td><td>40–60 mg/kg/day</td><td>Ca:P ratio ~1.3–1.7:1</td></tr>
+<tr><td>Vitamins/TEs</td><td>Day 1</td><td>Standard neonatal MVI + trace elements</td><td>Zinc, copper, manganese, chromium, selenium</td></tr>
+</tbody></table>`,
+t1:`<ol class="sl">
+<li><strong>Day 1:</strong> D10W with amino acids 2 g/kg/day + calcium. Start lipids 1 g/kg/day. Dextrose at GIR 5–7.</li>
+<li><strong>Day 2:</strong> Advance amino acids to 3 g/kg/day. Lipids to 2 g/kg/day. Add phosphorus.</li>
+<li><strong>Day 3–4:</strong> Amino acids to goal (3.5–4 g/kg/day). Lipids to 3 g/kg/day. Optimize dextrose for caloric density.</li>
+<li><strong>Monitor:</strong> Daily electrolytes until stable; twice weekly triglycerides (hold lipids if TG >200); weekly LFTs, Ca/Phos, alkaline phosphatase</li>
+<li><strong>Wean TPN as enteral feeds advance</strong> (typically 1:1 ratio — for each mL/kg/day of feeds gained, decrease TPN by same)</li>
+</ol>`,
+t2:`<p><strong>IFALD (Intestinal Failure-Associated Liver Disease) Prevention:</strong></p>
+<ul><li>Occurs in 40–60% of infants on TPN >14 days</li>
+<li><strong>Prevention strategies:</strong></li>
+<li>Advance enteral feeds as rapidly as safely possible (even trophic feeds help)</li>
+<li>Cycle TPN (off for 2–4 hours/day once tolerating some enteral feeds) — allows bile acid recycling</li>
+<li>SMOFlipid (soy, MCT, olive, fish oil blend) — fish oil component (omega-3) reduces IFALD risk vs pure soy lipids. Use as first-line lipid emulsion where available.</li>
+<li>Omegaven (pure fish oil) — for established IFALD; FDA-approved rescue therapy. Dramatically reverses cholestasis in many cases.</li>
+<li>Minimize copper and manganese in TPN (hepatotoxic when cholestatic — excreted in bile)</li>
+<li>Ursodiol (UDCA) 10–20 mg/kg/day — for established cholestasis (improves bile flow)</li></ul>
+<div class="bx bg">✓ <strong>SMOFlipid as first-line TPN lipid emulsion</strong> reduces the incidence of IFALD compared to traditional soy-based Intralipid (multiple studies). Increasingly the standard of care in NICUs.</div>`
+}},
+{name:"Hyperkalemia\nEmergency",icon:"⚡",type:"emergency",sub:"K >6.5 or ECG changes · Cardiac protection first",edge:"K >6.5 mEq/L\nor ECG changes",
+info:{tabs:["Diagnosis","Emergency Protocol","Non-oliguric Hyperkalemia"],
+t0:`<p><strong>Confirm true hyperkalemia:</strong> Hemolyzed samples are the #1 cause of false elevation. If K >6.0 on capillary sample → confirm with a non-hemolyzed venous or arterial sample AND obtain an ECG simultaneously.</p>
+<p><strong>ECG changes of hyperkalemia (progressive):</strong></p>
+<ul><li>Peaked T waves (earliest sign) → 6.0–6.5</li>
+<li>Prolonged PR interval → 6.5–7.0</li>
+<li>Widened QRS → 7.0–8.0</li>
+<li>Sine wave pattern → >8.0 (pre-arrest)</li>
+<li>VF/asystole</li></ul>`,
+t1:`<ol class="sl">
+<li><strong>Cardiac protection (FIRST):</strong> Calcium gluconate 10% — 1–2 mL/kg IV over 5–10 min with cardiac monitoring. Stabilizes myocardial membranes. Does NOT lower K.</li>
+<li><strong>Shift K intracellularly:</strong> Regular insulin 0.1 U/kg IV + D10W 2–5 mL/kg (give dextrose simultaneously to prevent hypoglycemia). Onset 15–30 min. Check glucose q15–30min.</li>
+<li><strong>Albuterol nebulization:</strong> 0.15 mg/kg (max 2.5 mg) — β₂-agonist shifts K into cells. Onset 15–30 min.</li>
+<li><strong>Sodium bicarbonate:</strong> 1–2 mEq/kg IV over 30 min if metabolic acidosis present. Shifts K into cells.</li>
+<li><strong>Sodium polystyrene (Kayexalate):</strong> 1 g/kg PO or PR — exchanges Na for K in GI tract. Onset hours. Avoid in preterm (NEC risk).</li>
+<li><strong>Dialysis:</strong> If refractory to medical management. Peritoneal dialysis most common in neonates.</li>
+</ol>
+<div class="bx br">🚨 <strong>CALCIUM FIRST.</strong> Calcium gluconate does not lower potassium — it protects the heart while you implement K-lowering therapies. Give it BEFORE insulin/glucose/albuterol.</div>`,
+t2:`<p><strong>Non-oliguric hyperkalemia of prematurity:</strong></p>
+<ul><li>Common in ELBW infants in first 48–72h of life (up to 50% of &lt;28 wk)</li>
+<li>Mechanism: immature Na-K-ATPase → K shifts from intracellular to extracellular space. NOT from renal failure (UOP is normal).</li>
+<li>Usually resolves by 72h as renal function and Na-K-ATPase mature</li>
+<li>Management: same as other hyperkalemia if severe (K >7 or ECG changes). Avoid exogenous K in first 48–72h. Monitor K every 4–6 hours in ELBW.</li></ul>`
+}}
+]};
+const CM={assessment:{f:"#0f1d3a",s:"#60a5fa",t:"#60a5fa",b:"Assessment"},decision:{f:"#2a2006",s:"#fbbf24",t:"#fbbf24",b:"Decision Point"},emergency:{f:"#2a1215",s:"#f87171",t:"#f87171",b:"Emergency"},urgent:{f:"#2a1a0a",s:"#fb923c",t:"#fb923c",b:"Urgent"},action:{f:"#0a2a1a",s:"#4ade80",t:"#4ade80",b:"Action"},diagnosis:{f:"#1a0f2e",s:"#c084fc",t:"#c084fc",b:"Diagnosis"}};
+const svg=d3.select("#tc"),W=innerWidth,H=innerHeight;svg.attr("width",W).attr("height",H);const g=svg.append("g");const zm=d3.zoom().scaleExtent([0.2,3]).on("zoom",e=>g.attr("transform",e.transform));svg.call(zm);
+const nW=148,nH=62;const root=d3.hierarchy(T,d=>d.children);root.x0=H/2;root.y0=0;
+root.descendants().forEach(d=>{if(d.depth>1&&d.children){d._children=d.children;d.children=null;}});const tl=d3.tree().nodeSize([nH+32,nW+85]);
+function upd(src){const dur=420;tl(root);const nds=root.descendants(),lks=root.links();nds.forEach(d=>{d.y=d.depth*230;});const lk=g.selectAll(".lk").data(lks,d=>d.target.data.name);const le=lk.enter().append("path").attr("class","lk").attr("d",()=>{const o={x:src.x0,y:src.y0};return dg(o,o);});lk.merge(le).transition().duration(dur).attr("d",d=>dg(d.source,d.target));lk.exit().transition().duration(dur).attr("d",()=>{const o={x:src.x,y:src.y};return dg(o,o);}).remove();g.selectAll(".ll").remove();lks.forEach(d=>{if(d.target.data.edge){const ls=d.target.data.edge.split("\n"),mx=(d.source.x+d.target.x)/2,my=(d.source.y+d.target.y)/2;ls.forEach((l,i)=>{g.append("text").attr("class","ll").attr("x",my+12).attr("y",mx-4+i*11).text(l);});}});const nd=g.selectAll(".ng").data(nds,d=>d.data.name);const ne=nd.enter().append("g").attr("class","ng").attr("transform",`translate(${src.y0},${src.x0})`).on("click",(e,d)=>{if(d.children){d._children=d.children;d.children=null;}else if(d._children){d.children=d._children;d._children=null;}upd(d);});ne.append("rect").attr("class","nr").attr("x",-nW/2).attr("y",-nH/2).attr("width",nW).attr("height",nH).attr("fill",d=>CM[d.data.type]?.f||"#1e293b").attr("stroke",d=>CM[d.data.type]?.s||"#475569");ne.append("text").attr("class","ni").attr("y",-12).text(d=>d.data.icon);ne.each(function(d){const ls=d.data.name.split("\n"),el=d3.select(this);ls.forEach((l,i)=>{el.append("text").attr("class","nl").attr("y",4+i*13).text(l);});if(d.data.sub){el.append("text").attr("class","ns").attr("y",4+ls.length*13+5).text(d.data.sub.substring(0,32));}});ne.append("circle").attr("class","ib").attr("cx",nW/2-12).attr("cy",-nH/2+12).attr("r",10).attr("fill",d=>CM[d.data.type]?.s||"#60a5fa").attr("fill-opacity",.2).attr("stroke",d=>CM[d.data.type]?.s||"#60a5fa").attr("stroke-width",1.5).on("click",(e,d)=>{e.stopPropagation();showP(d.data);});ne.append("text").attr("x",nW/2-12).attr("y",-nH/2+16).attr("text-anchor","middle").attr("font-size","12px").attr("fill","#e2e8f0").attr("pointer-events","none").attr("font-weight","700").text("i");ne.append("text").attr("class","ei").attr("x",0).attr("y",nH/2+15).attr("text-anchor","middle").attr("font-size","10px").attr("fill","#475569");const nu=nd.merge(ne);nu.transition().duration(dur).attr("transform",d=>`translate(${d.y},${d.x})`);nu.select(".ei").text(d=>d._children?`▸ ${d._children.length} more`:"");nd.exit().transition().duration(dur).attr("transform",`translate(${src.y},${src.x})`).remove();nds.forEach(d=>{d.x0=d.x;d.y0=d.y;});}
+function dg(s,d){return`M${s.y} ${s.x}C${(s.y+d.y)/2} ${s.x},${(s.y+d.y)/2} ${d.x},${d.y} ${d.x}`;}upd(root);const iT=d3.zoomIdentity.translate(90,H/2-20).scale(0.82);svg.call(zm.transform,iT);
+function showP(data){const ov=document.getElementById("po"),c=CM[data.type]||CM.assessment;document.getElementById("picon").textContent=data.icon;document.getElementById("picon").style.background=c.f;document.getElementById("picon").style.border=`1.5px solid ${c.s}`;document.getElementById("ptitle").textContent=data.name.replace(/\n/g," ");const te=document.getElementById("ptype");te.textContent=c.b;te.style.background=c.f;te.style.color=c.t;te.style.border=`1px solid ${c.s}`;let h="";if(data.info.tabs){h+=`<div class="tabs">`;data.info.tabs.forEach((t,i)=>{h+=`<button class="tb${i===0?' active':''}" onclick="swT(${i})">${t}</button>`;});h+=`</div>`;data.info.tabs.forEach((t,i)=>{h+=`<div class="tc${i===0?' active':''}" data-t="${i}">${data.info['t'+i]||''}</div>`;});}if(data.sub){h+=`<div class="bx bb" style="margin-top:16px">ℹ️ <strong>Summary:</strong> ${data.sub}</div>`;}document.getElementById("pbody").innerHTML=h;ov.classList.add("active");document.getElementById("pp").scrollTop=0;}
+function swT(i){document.querySelectorAll('.tb').forEach((b,j)=>b.classList.toggle('active',j===i));document.querySelectorAll('.tc').forEach((c,j)=>c.classList.toggle('active',j===i));}function closeP(e){if(!e||e.target===document.getElementById("po"))document.getElementById("po").classList.remove("active");}document.addEventListener("keydown",e=>{if(e.key==="Escape")closeP();});
+function resetZ(){svg.transition().duration(500).call(zm.transform,iT);}function expAll(){root.descendants().forEach(d=>{if(d._children){d.children=d._children;d._children=null;}});upd(root);}function colAll(){root.descendants().forEach(d=>{if(d.depth>0&&d.children){d._children=d.children;d.children=null;}});upd(root);}addEventListener("resize",()=>{svg.attr("width",innerWidth).attr("height",innerHeight);});
+</script></body></html>

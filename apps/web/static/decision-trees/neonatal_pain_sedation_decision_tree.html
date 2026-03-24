@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neonatal Pain & Sedation Decision Tree</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1121;--bg2:#0f172a;--surface:#1e293b;--border:#334155;--text:#e2e8f0;--text2:#94a3b8;--accent:#38bdf8;--red:#f87171;--rbg:#2a1215;--orange:#fb923c;--obg:#2a1a0a;--yellow:#fbbf24;--ybg:#2a2006;--green:#4ade80;--gbg:#0a2a1a;--blue:#60a5fa;--bbg:#0f1d3a;--purple:#c084fc;--pbg:#1a0f2e;}
+*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh;width:100vw;}
+#hdr{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(180deg,var(--bg) 65%,transparent);padding:14px 24px 30px;display:flex;align-items:center;gap:16px;}#hdr h1{font-family:'DM Serif Display',serif;font-size:24px;color:var(--accent);}#hdr .sub{font-size:12px;color:var(--text2);font-weight:300;margin-top:2px;}
+.ctrls{margin-left:auto;display:flex;gap:8px;}.ctrls button{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 16px;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;}.ctrls button:hover{background:var(--border);border-color:var(--accent);color:var(--accent);}
+#tc{width:100vw;height:100vh;cursor:grab;}#tc:active{cursor:grabbing;}.ng{cursor:pointer;}.nr{rx:10;ry:10;stroke-width:1.8;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));transition:all .25s;}.ng:hover .nr{filter:brightness(1.25) drop-shadow(0 0 12px rgba(56,189,248,.25));}
+.nl{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:11px;fill:var(--text);text-anchor:middle;pointer-events:none;}.ns{font-family:'IBM Plex Sans',sans-serif;font-weight:400;font-size:8.5px;fill:var(--text2);text-anchor:middle;pointer-events:none;}.ni{font-size:15px;text-anchor:middle;pointer-events:none;}.lk{fill:none;stroke:var(--border);stroke-width:1.6;stroke-opacity:.5;}.ll{font-family:'IBM Plex Mono',monospace;font-size:8.5px;fill:var(--yellow);font-weight:500;}.ib{cursor:pointer;transition:all .2s;}.ib:hover{transform:scale(1.15);}
+#po{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:200;justify-content:center;align-items:center;}#po.active{display:flex;}#pp{background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:680px;width:94vw;max-height:88vh;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,0,.7);animation:popIn .28s cubic-bezier(.16,1,.3,1);}#pp::-webkit-scrollbar{width:5px;}#pp::-webkit-scrollbar-track{background:transparent;}#pp::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}@keyframes popIn{from{transform:scale(.9) translateY(24px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+#ph{padding:20px 24px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px;position:sticky;top:0;background:var(--bg2);z-index:1;border-radius:16px 16px 0 0;}#picon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}#ptitle{font-family:'DM Serif Display',serif;font-size:22px;color:var(--text);line-height:1.2;}#ptype{font-size:11px;font-weight:600;padding:3px 10px;border-radius:5px;display:inline-block;margin-top:5px;}#pclose{margin-left:auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:18px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;}#pclose:hover{color:var(--text);border-color:var(--accent);}
+#pbody{padding:16px 24px 32px;}.tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid var(--border);overflow-x:auto;}.tabs::-webkit-scrollbar{height:0;}.tb{background:none;border:none;color:var(--text2);font-size:11px;font-weight:600;padding:9px 12px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;}.tb.active{color:var(--accent);border-bottom-color:var(--accent);}.tb:hover:not(.active){color:var(--text);}
+.tc{display:none;}.tc.active{display:block;}.tc p,.tc li{font-size:13px;line-height:1.7;color:var(--text2);margin-bottom:8px;}.tc ul{list-style:none;padding-left:0;margin-bottom:10px;}.tc li{padding:3px 0 3px 18px;position:relative;}.tc li::before{content:'›';position:absolute;left:2px;color:var(--accent);font-weight:700;font-size:14px;}.tc strong{color:var(--text);}
+.rt{width:100%;border-collapse:collapse;margin:8px 0 12px;font-size:12px;}.rt th{text-align:left;font-size:9.5px;font-weight:700;color:var(--accent);padding:8px 10px;border-bottom:1.5px solid var(--border);text-transform:uppercase;letter-spacing:.6px;background:rgba(56,189,248,.04);}.rt td{padding:7px 10px;border-bottom:1px solid rgba(51,65,85,.3);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:11px;}.rt td:first-child{font-family:'IBM Plex Sans',sans-serif;font-weight:500;color:var(--text2);}
+.dt{width:100%;border-collapse:collapse;margin:6px 0 10px;}.dt th{text-align:left;font-size:9px;font-weight:700;color:var(--text2);padding:6px 8px;border-bottom:1px solid var(--border);text-transform:uppercase;}.dt td{font-size:11px;padding:6px 8px;border-bottom:1px solid rgba(51,65,85,.2);color:var(--text);vertical-align:top;line-height:1.5;}
+.bx{border-radius:10px;padding:12px 16px;font-size:12px;line-height:1.6;margin:10px 0;}.bx strong{color:inherit;}.br{background:var(--rbg);border:1px solid rgba(248,113,113,.25);color:var(--red);}.bg{background:var(--gbg);border:1px solid rgba(74,222,128,.25);color:var(--green);}.bb{background:var(--bbg);border:1px solid rgba(96,165,250,.25);color:var(--blue);}.bo{background:var(--obg);border:1px solid rgba(251,146,60,.25);color:var(--orange);}.bp{background:var(--pbg);border:1px solid rgba(192,132,252,.25);color:var(--purple);}
+.sl{counter-reset:stp;list-style:none!important;padding:0;margin:8px 0;}.sl li{counter-increment:stp;padding:5px 0 5px 32px!important;position:relative;font-size:12px;color:var(--text2);line-height:1.55;}.sl li::before{content:counter(stp)!important;position:absolute;left:0;top:4px;width:22px;height:22px;border-radius:50%;background:var(--surface);border:1px solid var(--border);text-align:center;line-height:22px;font-size:10px;font-weight:700;color:var(--accent);}
+#lg{position:fixed;bottom:14px;left:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:11px;z-index:50;display:flex;gap:14px;flex-wrap:wrap;}.li{display:flex;align-items:center;gap:6px;}.ld{width:10px;height:10px;border-radius:3px;}#bc{position:fixed;bottom:14px;right:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 16px;font-size:11px;color:var(--text2);z-index:50;}
+</style>
+</head>
+<body>
+<div id="hdr"><div><h1>Neonatal Pain & Sedation Decision Tree</h1><div class="sub">Enhanced Clinical Edition — NPASS scoring, sucrose protocols, opioid dosing, procedural analgesia, palliative comfort</div></div>
+<div class="ctrls"><button onclick="resetZ()">⟲ Reset</button><button onclick="expAll()">⊞ Expand</button><button onclick="colAll()">⊟ Collapse</button></div></div>
+<svg id="tc"></svg>
+<div id="po" onclick="closeP(event)"><div id="pp" onclick="event.stopPropagation()"><div id="ph"><div id="picon"></div><div><div id="ptitle"></div><div id="ptype"></div></div><button id="pclose" onclick="closeP()">&times;</button></div><div id="pbody"></div></div></div>
+<div id="lg"><div class="li"><div class="ld" style="background:var(--red)"></div>Emergency</div><div class="li"><div class="ld" style="background:var(--orange)"></div>Urgent</div><div class="li"><div class="ld" style="background:var(--yellow)"></div>Decision</div><div class="li"><div class="ld" style="background:var(--green)"></div>Action</div><div class="li"><div class="ld" style="background:var(--blue)"></div>Assessment</div><div class="li"><div class="ld" style="background:var(--purple)"></div>Diagnosis</div></div>
+<div id="bc">Scroll to zoom · Drag to pan · Click ⓘ for education</div>
+<script>
+const T={
+name:"Neonatal Pain\n& Sedation",icon:"💊",type:"assessment",sub:"NPASS scoring, non-pharm first, opioid/sedation protocols",edge:"",
+info:{tabs:["Pain Assessment","Non-Pharmacologic","Pharmacologic Overview"],
+t0:`<p>Neonates DO experience pain — their neurologic pathways for pain transmission are functional by 20 weeks gestation. Untreated pain causes physiologic stress (↑ HR, ↑ BP, ↑ cortisol, ↑ catecholamines), altered brain development, and increased mortality in critically ill neonates.</p>
+<p><strong>Pain assessment tools:</strong></p>
+<table class="dt"><thead><tr><th>Tool</th><th>Population</th><th>Measures</th></tr></thead><tbody>
+<tr><td><strong>NPASS</strong> (Neonatal Pain, Agitation & Sedation Scale)</td><td>All neonates including preterm</td><td>Crying/irritability, behavior/state, facial expression, extremity tone, vital signs. Score 0–10 for pain, 0 to -10 for sedation.</td></tr>
+<tr><td><strong>PIPP-R</strong> (Premature Infant Pain Profile-Revised)</td><td>Preterm and term</td><td>GA correction, behavioral state, HR, SpO₂, brow bulge, eye squeeze, nasolabial furrow</td></tr>
+<tr><td><strong>NIPS</strong> (Neonatal Infant Pain Scale)</td><td>Preterm and term</td><td>Facial expression, cry, breathing pattern, arms, legs, state of arousal</td></tr>
+<tr><td><strong>CRIES</strong></td><td>Postoperative neonates</td><td>Crying, Requires O₂, Increased vitals, Expression, Sleeplessness</td></tr>
+</tbody></table>`,
+t1:`<p><strong>Non-pharmacologic interventions (ALWAYS first-line):</strong></p>
+<ul><li><strong>Sucrose/glucose 24%:</strong> 0.1–0.5 mL on anterior tongue 2 min before painful procedure. Most studied non-pharm intervention. Reduces pain scores for heel sticks, venipuncture, IV insertion. Less effective for prolonged pain.</li>
+<li><strong>Non-nutritive sucking:</strong> Pacifier during/after procedure. Synergistic with sucrose.</li>
+<li><strong>Skin-to-skin (kangaroo care):</strong> Reduces pain response to heel sticks. Begin 15 min before procedure.</li>
+<li><strong>Swaddling / facilitated tucking:</strong> Containment reduces physiologic stress response.</li>
+<li><strong>Breastfeeding:</strong> During minor procedures — combines sucrose, sucking, skin-to-skin, and maternal comfort.</li></ul>
+<div class="bx bg">✓ <strong>Sucrose 24% + non-nutritive sucking + swaddling</strong> is the evidence-based standard for minor procedural pain in all NICUs. Use for EVERY heel stick, venipuncture, and line placement.</div>`,
+t2:`<table class="rt"><thead><tr><th>Agent</th><th>Indication</th><th>Dose</th><th>Key Considerations</th></tr></thead><tbody>
+<tr><td><strong>Morphine</strong></td><td>Moderate-severe pain, post-op, ventilated</td><td>0.05–0.1 mg/kg IV q4h PRN or 10–20 µg/kg/hr infusion</td><td>Respiratory depression, hypotension, ileus, urinary retention. Slow onset (5–10 min).</td></tr>
+<tr><td><strong>Fentanyl</strong></td><td>Severe pain, intubation, rapid onset needed</td><td>1–2 µg/kg IV q2–4h PRN or 1–3 µg/kg/hr infusion</td><td>Chest wall rigidity at high doses/rapid push. Faster onset than morphine. Less hypotension.</td></tr>
+<tr><td><strong>Acetaminophen</strong></td><td>Mild-moderate pain, post-op adjunct</td><td>10–15 mg/kg PO/PR q6–8h (max 60 mg/kg/day term)</td><td>No respiratory depression. Good adjunct to reduce opioid need. IV available (Ofirmev).</td></tr>
+<tr><td><strong>Midazolam</strong></td><td>Sedation, NOT analgesia (no pain relief)</td><td>0.05–0.1 mg/kg IV; 0.02–0.06 mg/kg/hr infusion</td><td>Anxiolysis/amnesia only. Hypotension. DOES NOT treat pain. Controversial in preterm (IVH concern from NOPAIN trial).</td></tr>
+<tr><td><strong>Dexmedetomidine</strong></td><td>Sedation + mild analgesia</td><td>0.2–0.5 µg/kg/hr infusion</td><td>α₂-agonist. Less respiratory depression. Bradycardia is main side effect. Increasingly used in NICU.</td></tr>
+</tbody></table>`
+},children:[
+{name:"Procedural Pain\nManagement",icon:"💉",type:"action",sub:"Sucrose + swaddling + NNS for minor procedures",edge:"Heel stick,\nIV, LP, etc.",
+info:{tabs:["Minor Procedures","Major Procedures","Intubation"],
+t0:`<p><strong>Minor procedures (heel stick, venipuncture, IV start, NG/OG placement):</strong></p>
+<ol class="sl">
+<li>Sucrose 24% 0.1–0.5 mL on tongue 2 min before procedure</li>
+<li>Non-nutritive sucking (pacifier)</li>
+<li>Swaddling or facilitated tucking</li>
+<li>Skin-to-skin if possible and practical</li>
+<li>Breastfeeding during procedure (if available and appropriate)</li>
+</ol>`,
+t1:`<p><strong>Major procedures (chest tube, central line, circumcision, lumbar puncture):</strong></p>
+<ul><li>All non-pharm interventions PLUS:</li>
+<li><strong>Chest tube:</strong> Fentanyl 1–2 µg/kg IV + local lidocaine 1% (0.5 mL max) infiltration</li>
+<li><strong>Central line (PICC/UVC):</strong> Sucrose + swaddling minimum; consider fentanyl for PICC in awake infants</li>
+<li><strong>Circumcision:</strong> Dorsal penile nerve block (DPNB) with lidocaine 1% without epi (0.8 mL per side) OR ring block + sucrose + pacifier. DPNB is the most effective intervention.</li>
+<li><strong>LP:</strong> Sucrose + local EMLA cream (applied 60 min before) or lidocaine infiltration + facilitated tucking</li></ul>`,
+t2:`<p><strong>Premedication for non-emergent intubation:</strong></p>
+<ul><li><strong>AAP recommends premedication for ALL non-emergent intubations.</strong> Awake intubation without premedication causes pain, physiologic instability, IVH risk, and vocal cord injury.</li>
+<li><strong>Recommended regimen:</strong> Atropine 0.02 mg/kg IV (prevents vagal bradycardia) + Fentanyl 2 µg/kg IV (analgesia) ± Succinylcholine 2 mg/kg IV or Rocuronium 1 mg/kg IV (paralysis)</li>
+<li>Alternative: morphine 0.1 mg/kg IV (slower onset; give 5 min before attempt)</li>
+<li><strong>Exception:</strong> Emergency intubation in the delivery room or acute deterioration — premedication not feasible, proceed immediately</li></ul>
+<div class="bx bo">⚠️ <strong>Chest wall rigidity</strong> can occur with rapid fentanyl push — give slowly over 2–3 minutes. If rigidity occurs: naloxone 0.1 mg/kg IV or muscle relaxant (rocuronium).</div>`
+}},
+{name:"Postoperative\nPain Protocol",icon:"🏥",type:"action",sub:"Multimodal · Opioid + acetaminophen · Wean plan",edge:"After\nsurgery",
+info:{tabs:["Multimodal Approach","Opioid Weaning"],
+t0:`<p><strong>Multimodal postoperative pain management:</strong></p>
+<ul><li><strong>Scheduled acetaminophen</strong> (10–15 mg/kg PO/PR q6h) — reduces opioid requirements by 20–30%</li>
+<li><strong>Morphine or fentanyl</strong> for moderate-severe pain — titrate to NPASS score &lt;3</li>
+<li><strong>Continuous infusion</strong> for first 24–48h for major surgery, then transition to PRN</li>
+<li><strong>Non-pharm:</strong> Swaddling, positioning, skin-to-skin when safe, sucrose for procedures</li>
+<li><strong>Regional anesthesia:</strong> Caudal block or wound infiltration when appropriate (reduces systemic opioid need)</li></ul>`,
+t1:`<p><strong>Opioid weaning (after >5 days continuous use):</strong></p>
+<ul><li>Wean 10–20% of total daily dose every 24–48 hours</li>
+<li>Monitor for withdrawal signs (NPASS sedation/agitation scores, WAT-1 if available)</li>
+<li>If withdrawal signs appear → increase back to last tolerated dose and slow the wean</li>
+<li>Consider methadone conversion for prolonged opioid use (>7 days) — longer half-life allows smoother wean</li>
+<li>Adjuncts for iatrogenic withdrawal: clonidine 0.5–1 µg/kg q4–6h, dexmedetomidine taper</li></ul>`
+}},
+{name:"Palliative Care\n& Comfort",icon:"🕊️",type:"action",sub:"Comfort measures · Family support · Symptom management",edge:"Goals of care\ndiscussion",
+info:{tabs:["When to Involve","Symptom Management"],
+t0:`<p><strong>Indications for neonatal palliative care consultation:</strong></p>
+<ul><li>Lethal congenital anomalies (bilateral renal agenesis, anencephaly, trisomy 13/18 per family wishes)</li>
+<li>Extreme prematurity at the border of viability (22–23 weeks) when family chooses comfort</li>
+<li>Severe HIE with poor prognosis (Sarnat 3, devastating MRI findings)</li>
+<li>Any infant where curative treatment is not achieving goals or causing suffering disproportionate to benefit</li>
+<li>Palliative care is NOT "giving up" — it focuses on quality of life and can be concurrent with curative treatment</li></ul>`,
+t1:`<p><strong>Comfort care symptom management:</strong></p>
+<ul><li><strong>Pain/distress:</strong> Morphine 0.05–0.1 mg/kg IV/SQ q2–4h PRN. Goal = comfort, not sedation. No ceiling dose for comfort care.</li>
+<li><strong>Dyspnea/air hunger:</strong> Morphine (reduces air hunger perception). Gentle O₂ by nasal cannula for comfort. Fan to face. Positioning.</li>
+<li><strong>Secretions:</strong> Glycopyrrolate 5–10 µg/kg IV/SQ q4–6h. Gentle suctioning PRN.</li>
+<li><strong>Seizures:</strong> Phenobarbital 20 mg/kg loading. Midazolam for refractory.</li>
+<li><strong>Family support:</strong> Unlimited family presence, skin-to-skin, memory-making (photos, hand/footprints, naming ceremony, chaplain/spiritual care), bereavement support</li></ul>`
+}}
+]};;
+const CM={assessment:{f:"#0f1d3a",s:"#60a5fa",t:"#60a5fa",b:"Assessment"},decision:{f:"#2a2006",s:"#fbbf24",t:"#fbbf24",b:"Decision Point"},emergency:{f:"#2a1215",s:"#f87171",t:"#f87171",b:"Emergency"},urgent:{f:"#2a1a0a",s:"#fb923c",t:"#fb923c",b:"Urgent"},action:{f:"#0a2a1a",s:"#4ade80",t:"#4ade80",b:"Action"},diagnosis:{f:"#1a0f2e",s:"#c084fc",t:"#c084fc",b:"Diagnosis"}};
+const svg=d3.select("#tc"),W=innerWidth,H=innerHeight;svg.attr("width",W).attr("height",H);const g=svg.append("g");const zm=d3.zoom().scaleExtent([0.2,3]).on("zoom",e=>g.attr("transform",e.transform));svg.call(zm);
+const nW=148,nH=62;const root=d3.hierarchy(T,d=>d.children);root.x0=H/2;root.y0=0;
+root.descendants().forEach(d=>{if(d.depth>1&&d.children){d._children=d.children;d.children=null;}});const tl=d3.tree().nodeSize([nH+32,nW+85]);
+function upd(src){const dur=420;tl(root);const nds=root.descendants(),lks=root.links();nds.forEach(d=>{d.y=d.depth*230;});const lk=g.selectAll(".lk").data(lks,d=>d.target.data.name);const le=lk.enter().append("path").attr("class","lk").attr("d",()=>{const o={x:src.x0,y:src.y0};return dg(o,o);});lk.merge(le).transition().duration(dur).attr("d",d=>dg(d.source,d.target));lk.exit().transition().duration(dur).attr("d",()=>{const o={x:src.x,y:src.y};return dg(o,o);}).remove();g.selectAll(".ll").remove();lks.forEach(d=>{if(d.target.data.edge){const ls=d.target.data.edge.split("\n"),mx=(d.source.x+d.target.x)/2,my=(d.source.y+d.target.y)/2;ls.forEach((l,i)=>{g.append("text").attr("class","ll").attr("x",my+12).attr("y",mx-4+i*11).text(l);});}});const nd=g.selectAll(".ng").data(nds,d=>d.data.name);const ne=nd.enter().append("g").attr("class","ng").attr("transform",`translate(${src.y0},${src.x0})`).on("click",(e,d)=>{if(d.children){d._children=d.children;d.children=null;}else if(d._children){d.children=d._children;d._children=null;}upd(d);});ne.append("rect").attr("class","nr").attr("x",-nW/2).attr("y",-nH/2).attr("width",nW).attr("height",nH).attr("fill",d=>CM[d.data.type]?.f||"#1e293b").attr("stroke",d=>CM[d.data.type]?.s||"#475569");ne.append("text").attr("class","ni").attr("y",-12).text(d=>d.data.icon);ne.each(function(d){const ls=d.data.name.split("\n"),el=d3.select(this);ls.forEach((l,i)=>{el.append("text").attr("class","nl").attr("y",4+i*13).text(l);});if(d.data.sub){el.append("text").attr("class","ns").attr("y",4+ls.length*13+5).text(d.data.sub.substring(0,32));}});ne.append("circle").attr("class","ib").attr("cx",nW/2-12).attr("cy",-nH/2+12).attr("r",10).attr("fill",d=>CM[d.data.type]?.s||"#60a5fa").attr("fill-opacity",.2).attr("stroke",d=>CM[d.data.type]?.s||"#60a5fa").attr("stroke-width",1.5).on("click",(e,d)=>{e.stopPropagation();showP(d.data);});ne.append("text").attr("x",nW/2-12).attr("y",-nH/2+16).attr("text-anchor","middle").attr("font-size","12px").attr("fill","#e2e8f0").attr("pointer-events","none").attr("font-weight","700").text("i");ne.append("text").attr("class","ei").attr("x",0).attr("y",nH/2+15).attr("text-anchor","middle").attr("font-size","10px").attr("fill","#475569");const nu=nd.merge(ne);nu.transition().duration(dur).attr("transform",d=>`translate(${d.y},${d.x})`);nu.select(".ei").text(d=>d._children?`▸ ${d._children.length} more`:"");nd.exit().transition().duration(dur).attr("transform",`translate(${src.y},${src.x})`).remove();nds.forEach(d=>{d.x0=d.x;d.y0=d.y;});}
+function dg(s,d){return`M${s.y} ${s.x}C${(s.y+d.y)/2} ${s.x},${(s.y+d.y)/2} ${d.x},${d.y} ${d.x}`;}upd(root);const iT=d3.zoomIdentity.translate(90,H/2-20).scale(0.82);svg.call(zm.transform,iT);
+function showP(data){const ov=document.getElementById("po"),c=CM[data.type]||CM.assessment;document.getElementById("picon").textContent=data.icon;document.getElementById("picon").style.background=c.f;document.getElementById("picon").style.border=`1.5px solid ${c.s}`;document.getElementById("ptitle").textContent=data.name.replace(/\n/g," ");const te=document.getElementById("ptype");te.textContent=c.b;te.style.background=c.f;te.style.color=c.t;te.style.border=`1px solid ${c.s}`;let h="";if(data.info.tabs){h+=`<div class="tabs">`;data.info.tabs.forEach((t,i)=>{h+=`<button class="tb${i===0?' active':''}" onclick="swT(${i})">${t}</button>`;});h+=`</div>`;data.info.tabs.forEach((t,i)=>{h+=`<div class="tc${i===0?' active':''}" data-t="${i}">${data.info['t'+i]||''}</div>`;});}if(data.sub){h+=`<div class="bx bb" style="margin-top:16px">ℹ️ <strong>Summary:</strong> ${data.sub}</div>`;}document.getElementById("pbody").innerHTML=h;ov.classList.add("active");document.getElementById("pp").scrollTop=0;}
+function swT(i){document.querySelectorAll('.tb').forEach((b,j)=>b.classList.toggle('active',j===i));document.querySelectorAll('.tc').forEach((c,j)=>c.classList.toggle('active',j===i));}function closeP(e){if(!e||e.target===document.getElementById("po"))document.getElementById("po").classList.remove("active");}document.addEventListener("keydown",e=>{if(e.key==="Escape")closeP();});
+function resetZ(){svg.transition().duration(500).call(zm.transform,iT);}function expAll(){root.descendants().forEach(d=>{if(d._children){d.children=d._children;d._children=null;}});upd(root);}function colAll(){root.descendants().forEach(d=>{if(d.depth>0&&d.children){d._children=d.children;d.children=null;}});upd(root);}addEventListener("resize",()=>{svg.attr("width",innerWidth).attr("height",innerHeight);});
+</script></body></html>

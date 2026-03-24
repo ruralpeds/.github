@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pediatric Emergency CDS — Clinical Decision Tree Library</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080e1a;
+  --bg2: #0c1425;
+  --surface: #141e33;
+  --surface2: #1a2744;
+  --border: #253352;
+  --text: #e8edf5;
+  --text2: #8b9cc0;
+  --accent: #38bdf8;
+  --accent2: #818cf8;
+  --red: #f87171;
+  --orange: #fb923c;
+  --yellow: #fbbf24;
+  --green: #4ade80;
+  --blue: #60a5fa;
+  --purple: #c084fc;
+  --pink: #f472b6;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+/* Animated background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 20% 10%, rgba(56,189,248,0.06) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 50% at 80% 80%, rgba(129,140,248,0.05) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Header */
+header {
+  position: relative; z-index: 1;
+  padding: 48px 40px 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(28px, 4vw, 44px);
+  color: var(--text);
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+header h1 span { color: var(--accent); }
+header .subtitle {
+  font-size: 15px;
+  color: var(--text2);
+  font-weight: 300;
+  max-width: 700px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.stats-bar {
+  display: flex; gap: 28px; flex-wrap: wrap;
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.stat {
+  display: flex; flex-direction: column;
+}
+.stat-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 28px;
+  color: var(--accent);
+  line-height: 1;
+}
+.stat-label {
+  font-size: 11px;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* Category sections */
+main {
+  position: relative; z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 40px 80px;
+}
+.category {
+  margin-bottom: 40px;
+}
+.cat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.cat-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.cat-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: var(--text);
+}
+.cat-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 2px 10px;
+  border-radius: 20px;
+  margin-left: auto;
+}
+
+/* Card grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 14px 14px 0 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3), 0 0 20px rgba(56,189,248,0.08);
+}
+.card:hover::before { opacity: 1; }
+.card-top {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
+}
+.card-emoji { font-size: 22px; }
+.card-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.3;
+}
+.card-desc {
+  font-size: 11.5px;
+  color: var(--text2);
+  line-height: 1.55;
+}
+.card-meta {
+  display: flex; gap: 8px; margin-top: 10px;
+  flex-wrap: wrap;
+}
+.tag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.3px;
+}
+
+/* Category color themes */
+.neo .cat-icon { background: rgba(56,189,248,0.15); }
+.neo .card::before { background: var(--accent); }
+.neo .tag { background: rgba(56,189,248,0.12); color: var(--accent); }
+
+.gap .cat-icon { background: rgba(129,140,248,0.15); }
+.gap .card::before { background: var(--accent2); }
+.gap .tag { background: rgba(129,140,248,0.12); color: var(--accent2); }
+
+.dr .cat-icon { background: rgba(244,114,182,0.15); }
+.dr .card::before { background: var(--pink); }
+.dr .tag { background: rgba(244,114,182,0.12); color: var(--pink); }
+
+.ped .cat-icon { background: rgba(74,222,128,0.15); }
+.ped .card::before { background: var(--green); }
+.ped .tag { background: rgba(74,222,128,0.12); color: var(--green); }
+
+/* Footer */
+footer {
+  position: relative; z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 40px 40px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text2);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+footer a { color: var(--accent); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* Responsive */
+@media (max-width: 640px) {
+  header, main, footer { padding-left: 20px; padding-right: 20px; }
+  header { padding-top: 32px; }
+  .grid { grid-template-columns: 1fr; }
+  .stats-bar { gap: 20px; }
+}
+
+/* Animation */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.card { animation: fadeUp 0.5s ease-out backwards; }
+.category:nth-child(1) .card { animation-delay: calc(var(--i, 0) * 0.04s); }
+.category:nth-child(2) .card { animation-delay: calc(0.3s + var(--i, 0) * 0.04s); }
+.category:nth-child(3) .card { animation-delay: calc(0.5s + var(--i, 0) * 0.04s); }
+.category:nth-child(4) .card { animation-delay: calc(0.7s + var(--i, 0) * 0.04s); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Pediatric Emergency <span>CDS</span> Library</h1>
+  <p class="subtitle">Interactive D3.js clinical decision trees for neonatal, obstetric, and pediatric emergency medicine — built for rural Level I/II nurseries and emergency departments. Click any card to launch the decision tree.</p>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num">26</div><div class="stat-label">Decision Trees</div></div>
+    <div class="stat"><div class="stat-num">250+</div><div class="stat-label">Clinical Nodes</div></div>
+    <div class="stat"><div class="stat-num">770K</div><div class="stat-label">Clinical Content</div></div>
+    <div class="stat"><div class="stat-num">100+</div><div class="stat-label">Tabbed Education Panels</div></div>
+  </div>
+</header>
+
+<main>
+  <!-- NEONATAL CORE -->
+  <section class="category neo">
+    <div class="cat-header">
+      <div class="cat-icon">👶</div>
+      <div class="cat-title">Neonatal Core</div>
+      <div class="cat-count">11 trees</div>
+    </div>
+    <div class="grid">
+      <a class="card" href="neonatal_hematology_decision_tree.html" style="--i:0">
+        <div class="card-top"><span class="card-emoji">🩸</span><span class="card-title">Hematology</span></div>
+        <div class="card-desc">Anemia (hemorrhagic/hemolytic/hypoproliferative), polycythemia, thrombocytopenia (PlaNet-2), coagulopathy, neutrophil disorders</div>
+        <div class="card-meta"><span class="tag">76K</span><span class="tag">16 nodes</span></div>
+      </a>
+      <a class="card" href="neonatal_infectious_diseases_decision_tree.html" style="--i:1">
+        <div class="card-top"><span class="card-emoji">🦠</span><span class="card-title">Infectious Diseases</span></div>
+        <div class="card-desc">EOS (GBS/E. coli), LOS (CoNS/MRSA/Candida), neonatal HSV, TORCH/congenital infections, meningitis</div>
+        <div class="card-meta"><span class="tag">63K</span><span class="tag">16 nodes</span></div>
+      </a>
+      <a class="card" href="neonatal_neurology_decision_tree.html" style="--i:2">
+        <div class="card-top"><span class="card-emoji">🧠</span><span class="card-title">Neurology</span></div>
+        <div class="card-desc">HIE/therapeutic hypothermia (Sarnat staging), seizures (NEOLEV2), IVH, stroke, hypotonia (SMA), NOWS</div>
+        <div class="card-meta"><span class="tag">50K</span><span class="tag">14 nodes</span></div>
+      </a>
+      <a class="card" href="neonatal_pulmonary_decision_tree.html" style="--i:3">
+        <div class="card-top"><span class="card-emoji">🫁</span><span class="card-title">Pulmonary Disorders</span></div>
+        <div class="card-desc">RDS/surfactant (LISA), TTN, MAS, PPHN/iNO/ECMO, pneumothorax, apnea of prematurity, CDH</div>
+        <div class="card-meta"><span class="tag">40K</span><span class="tag">13 nodes</span></div>
+      </a>
+      <a class="card" href="neonatal_gi_liver_decision_tree.html" style="--i:4">
+        <div class="card-top"><span class="card-emoji">🫄</span><span class="card-title">GI & Liver</span></div>
+        <div class="card-desc">NEC (Bell staging), malrotation/volvulus, cholestasis/biliary atresia (Kasai timing), hyperbilirubinemia (AAP 2022), Hirschsprung</div>
+        <div class="card-meta"><span class="tag">42K</span><span class="tag">14 nodes</span></div>
+      </a>
+      <a class="card" href="neonatal_endocrine_decision_tree.html" style="--i:5">
+        <div class="card-top"><span class="card-emoji">🧬</span><span class="card-title">Endocrine</span></div>
+        <div class="card-desc">Hypoglycemia (GIR/dextrose gel), congenital hypothyroidism, CAH (salt-wasting crisis), hypocalcemia, IDM</div>
+        <div class="card-meta"><span class="tag">35K</span><span class="tag">12 nodes</span></div>
+      </a>
+      <a class="card" href="neonatal_surgical_emergencies_decision_tree.html" style="--i:6">
+        <div class="card-top"><span class="card-emoji">🔪</span><span class="card-title">Surgical Emergencies</span></div>
+        <div class="card-desc">STAB-Transport, gastroschisis/omphalocele, EA/TEF (VACTERL), intestinal atresias, pyloric stenosis, testicular torsion, hernia</div>
+        <div class="card-meta"><span class="tag">33K</span><span class="tag">12 nodes</span></div>
+      </a>
+      <a class="card" href="neonatal_skin_decision_tree.html" style="--i:7">
+        <div class="card-top"><span class="card-emoji">🧴</span><span class="card-title">Skin Disorders</span></div>
+        <div class="card-desc">Benign transient (ETN/TNPM/milia), birthmarks/hemangiomas (propranolol), infectious skin (HSV/staph), preterm skin care</div>
+        <div class="card-meta"><span class="tag">35K</span><span class="tag">10 nodes</span></div>
+      </a>
+      <a class="card" href="neonatal_fen_decision_tree.html" style="--i:8">
+        <div class="card-top"><span class="card-emoji">💧</span><span class="card-title">Fluids, Electrolytes & Nutrition</span></div>
+        <div class="card-desc">IV fluid rates by weight/day, GIR calculation, sodium disorders, enteral feeding/fortification (ESPGHAN), TPN/IFALD, hyperkalemia</div>
+        <div class="card-meta"><span class="tag">29K</span><span class="tag">10 nodes</span></div>
+      </a>
+      <a class="card" href="neonatal_urological_decision_tree.html" style="--i:9">
+        <div class="card-top"><span class="card-emoji">🫘</span><span class="card-title">Urological Disorders</span></div>
+        <div class="card-desc">Hydronephrosis (UTD classification), PUV (emergency catheterization), VUR, hypospadias/cryptorchidism, neonatal UTI</div>
+        <div class="card-meta"><span class="tag">25K</span><span class="tag">10 nodes</span></div>
+      </a>
+      <a class="card" href="neonatal_renal_decision_tree.html" style="--i:10">
+        <div class="card-top"><span class="card-emoji">🫘</span><span class="card-title">Renal Disorders</span></div>
+        <div class="card-desc">Neonatal AKI (AWAKEN/modified KDIGO), renal vein thrombosis, congenital anomalies (MCDK, agenesis, ARPKD), Baby NINJA</div>
+        <div class="card-meta"><span class="tag">22K</span><span class="tag">8 nodes</span></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- NEONATAL GAP-FILLERS -->
+  <section class="category gap">
+    <div class="cat-header">
+      <div class="cat-icon">🏥</div>
+      <div class="cat-title">Neonatal Specialized</div>
+      <div class="cat-count">4 trees</div>
+    </div>
+    <div class="grid">
+      <a class="card" href="neonatal_cardiac_pda_decision_tree.html" style="--i:0">
+        <div class="card-top"><span class="card-emoji">❤️</span><span class="card-title">Cardiac / PDA</span></div>
+        <div class="card-desc">CCHD pulse ox screening, PDA management (ibuprofen/acetaminophen/conservative), ductal-dependent lesions, PGE1, arrhythmias/SVT</div>
+        <div class="card-meta"><span class="tag">27K</span><span class="tag">8 nodes</span></div>
+      </a>
+      <a class="card" href="neonatal_pain_sedation_decision_tree.html" style="--i:1">
+        <div class="card-top"><span class="card-emoji">💊</span><span class="card-title">Pain & Sedation</span></div>
+        <div class="card-desc">NPASS scoring, sucrose/non-pharm protocols, opioid dosing, intubation premedication, postoperative multimodal, palliative care</div>
+        <div class="card-meta"><span class="tag">23K</span><span class="tag">8 nodes</span></div>
+      </a>
+      <a class="card" href="neonatal_transport_decision_tree.html" style="--i:2">
+        <div class="card-top"><span class="card-emoji">🚑</span><span class="card-title">Transport Stabilization</span></div>
+        <div class="card-desc">STABLE mnemonic, condition-specific pre-transport checklists, equipment/medication kits, SBAR communication</div>
+        <div class="card-meta"><span class="tag">22K</span><span class="tag">6 nodes</span></div>
+      </a>
+      <a class="card" href="newborn_discharge_readiness_decision_tree.html" style="--i:3">
+        <div class="card-top"><span class="card-emoji">🏠</span><span class="card-title">Discharge Readiness</span></div>
+        <div class="card-desc">AAP criteria, Bhutani bilirubin zones, car seat testing, CCHD/hearing/NBS review, safe sleep ABCs, parent education</div>
+        <div class="card-meta"><span class="tag">22K</span><span class="tag">8 nodes</span></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- DELIVERY ROOM -->
+  <section class="category dr">
+    <div class="cat-header">
+      <div class="cat-icon">👶</div>
+      <div class="cat-title">Delivery Room & L&D</div>
+      <div class="cat-count">3 trees</div>
+    </div>
+    <div class="grid">
+      <a class="card" href="nrp_resuscitation_decision_tree.html" style="--i:0">
+        <div class="card-top"><span class="card-emoji">🫁</span><span class="card-title">NRP Resuscitation</span></div>
+        <div class="card-desc">NRP 8th Edition algorithm, golden minute, MR SOPA corrective steps, 3:1 CPR, epinephrine/UVC, preterm/meconium, periviability</div>
+        <div class="card-meta"><span class="tag">26K</span><span class="tag">8 nodes</span></div>
+      </a>
+      <a class="card" href="shoulder_dystocia_decision_tree.html" style="--i:1">
+        <div class="card-top"><span class="card-emoji">🤰</span><span class="card-title">Shoulder Dystocia</span></div>
+        <div class="card-desc">HELPERR mnemonic, McRoberts/suprapubic, rotational maneuvers (Rubin II/Wood's screw), posterior arm, brachial plexus assessment</div>
+        <div class="card-meta"><span class="tag">24K</span><span class="tag">6 nodes</span></div>
+      </a>
+      <a class="card" href="obstetric_emergencies_decision_tree.html" style="--i:2">
+        <div class="card-top"><span class="card-emoji">🩸</span><span class="card-title">Obstetric Emergencies</span></div>
+        <div class="card-desc">PPH (4 T's, uterotonics, MTP), eclampsia/MgSO₄, cord prolapse, placental abruption, uterine rupture</div>
+        <div class="card-meta"><span class="tag">26K</span><span class="tag">8 nodes</span></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- PEDIATRIC ED -->
+  <section class="category ped">
+    <div class="cat-header">
+      <div class="cat-icon">🚑</div>
+      <div class="cat-title">Pediatric Emergency Department</div>
+      <div class="cat-count">8 trees</div>
+    </div>
+    <div class="grid">
+      <a class="card" href="pediatric_respiratory_emergencies_decision_tree.html" style="--i:0">
+        <div class="card-top"><span class="card-emoji">🫁</span><span class="card-title">Respiratory Emergencies</span></div>
+        <div class="card-desc">Croup (Westley/dexamethasone), bronchiolitis (RSV/supportive/nirsevimab), asthma (status protocol), foreign body, epiglottitis</div>
+        <div class="card-meta"><span class="tag">30K</span><span class="tag">10 nodes</span></div>
+      </a>
+      <a class="card" href="pediatric_seizures_decision_tree.html" style="--i:1">
+        <div class="card-top"><span class="card-emoji">⚡</span><span class="card-title">Seizures & Status Epilepticus</span></div>
+        <div class="card-desc">Febrile seizures (AAP), first-time seizure workup, time-based status protocol (RAMPART), benzodiazepines, 2nd/3rd-line ASMs</div>
+        <div class="card-meta"><span class="tag">21K</span><span class="tag">6 nodes</span></div>
+      </a>
+      <a class="card" href="pediatric_dka_decision_tree.html" style="--i:2">
+        <div class="card-top"><span class="card-emoji">💧</span><span class="card-title">DKA Management</span></div>
+        <div class="card-desc">Two-bag method, insulin drip (no bolus), Parkland-style fluids, cerebral edema protocol (mannitol/3% NaCl), potassium management</div>
+        <div class="card-meta"><span class="tag">22K</span><span class="tag">8 nodes</span></div>
+      </a>
+      <a class="card" href="pediatric_sepsis_shock_decision_tree.html" style="--i:3">
+        <div class="card-top"><span class="card-emoji">🩸</span><span class="card-title">Sepsis & Shock</span></div>
+        <div class="card-desc">Surviving Sepsis 2020, Phoenix 2024 criteria, warm vs cold shock, vasopressor selection, age-based empiric antibiotics</div>
+        <div class="card-meta"><span class="tag">23K</span><span class="tag">8 nodes</span></div>
+      </a>
+      <a class="card" href="pediatric_anaphylaxis_decision_tree.html" style="--i:4">
+        <div class="card-top"><span class="card-emoji">⚠️</span><span class="card-title">Anaphylaxis</span></div>
+        <div class="card-desc">Epinephrine IM first-line (0.01 mg/kg), biphasic reaction monitoring, refractory protocol (epi drip), autoinjector prescribing</div>
+        <div class="card-meta"><span class="tag">19K</span><span class="tag">4 nodes</span></div>
+      </a>
+      <a class="card" href="pediatric_trauma_decision_tree.html" style="--i:5">
+        <div class="card-top"><span class="card-emoji">🚑</span><span class="card-title">Trauma</span></div>
+        <div class="card-desc">ATLS primary survey, PECARN head CT rule, C-spine/SCIWORA, abdominal trauma (FAST/NOM), non-accidental trauma (TEN-4/skeletal survey)</div>
+        <div class="card-meta"><span class="tag">24K</span><span class="tag">8 nodes</span></div>
+      </a>
+      <a class="card" href="pediatric_toxicology_decision_tree.html" style="--i:6">
+        <div class="card-top"><span class="card-emoji">☠️</span><span class="card-title">Toxicology</span></div>
+        <div class="card-desc">Ingestion algorithm, 5 toxidromes, Rumack-Matthew nomogram, NAC protocol, antidote reference table, Poison Control</div>
+        <div class="card-meta"><span class="tag">21K</span><span class="tag">6 nodes</span></div>
+      </a>
+      <a class="card" href="pediatric_burns_decision_tree.html" style="--i:7">
+        <div class="card-top"><span class="card-emoji">🔥</span><span class="card-title">Burns</span></div>
+        <div class="card-desc">Parkland formula (pediatric modification), Lund-Browder chart, burn depth, ABA transfer criteria, abuse screening (immersion patterns)</div>
+        <div class="card-meta"><span class="tag">22K</span><span class="tag">8 nodes</span></div>
+      </a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div>Hartzog Pediatric Emergency Medicine CDS Project · Hartzog Clinical Decision Tree Standard · Built with D3.js 7.8.5</div>
+  <div>DM Serif Display · IBM Plex Sans · IBM Plex Mono · Dark theme (#0b1121)</div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neonatal Surgical Emergencies Decision Tree</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1121;--bg2:#0f172a;--surface:#1e293b;--border:#334155;--text:#e2e8f0;--text2:#94a3b8;--accent:#38bdf8;--red:#f87171;--rbg:#2a1215;--orange:#fb923c;--obg:#2a1a0a;--yellow:#fbbf24;--ybg:#2a2006;--green:#4ade80;--gbg:#0a2a1a;--blue:#60a5fa;--bbg:#0f1d3a;--purple:#c084fc;--pbg:#1a0f2e;}
+*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh;width:100vw;}
+#hdr{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(180deg,var(--bg) 65%,transparent);padding:14px 24px 30px;display:flex;align-items:center;gap:16px;}#hdr h1{font-family:'DM Serif Display',serif;font-size:24px;color:var(--accent);}#hdr .sub{font-size:12px;color:var(--text2);font-weight:300;margin-top:2px;}
+.ctrls{margin-left:auto;display:flex;gap:8px;}.ctrls button{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 16px;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;}.ctrls button:hover{background:var(--border);border-color:var(--accent);color:var(--accent);}
+#tc{width:100vw;height:100vh;cursor:grab;}#tc:active{cursor:grabbing;}.ng{cursor:pointer;}.nr{rx:10;ry:10;stroke-width:1.8;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));transition:all .25s;}.ng:hover .nr{filter:brightness(1.25) drop-shadow(0 0 12px rgba(56,189,248,.25));}
+.nl{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:11px;fill:var(--text);text-anchor:middle;pointer-events:none;}.ns{font-family:'IBM Plex Sans',sans-serif;font-weight:400;font-size:8.5px;fill:var(--text2);text-anchor:middle;pointer-events:none;}.ni{font-size:15px;text-anchor:middle;pointer-events:none;}.lk{fill:none;stroke:var(--border);stroke-width:1.6;stroke-opacity:.5;}.ll{font-family:'IBM Plex Mono',monospace;font-size:8.5px;fill:var(--yellow);font-weight:500;}.ib{cursor:pointer;transition:all .2s;}.ib:hover{transform:scale(1.15);}
+#po{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:200;justify-content:center;align-items:center;}#po.active{display:flex;}#pp{background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:680px;width:94vw;max-height:88vh;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,0,.7);animation:popIn .28s cubic-bezier(.16,1,.3,1);}#pp::-webkit-scrollbar{width:5px;}#pp::-webkit-scrollbar-track{background:transparent;}#pp::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}@keyframes popIn{from{transform:scale(.9) translateY(24px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+#ph{padding:20px 24px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px;position:sticky;top:0;background:var(--bg2);z-index:1;border-radius:16px 16px 0 0;}#picon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}#ptitle{font-family:'DM Serif Display',serif;font-size:22px;color:var(--text);line-height:1.2;}#ptype{font-size:11px;font-weight:600;padding:3px 10px;border-radius:5px;display:inline-block;margin-top:5px;}#pclose{margin-left:auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:18px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;transition:all .2s;}#pclose:hover{color:var(--text);border-color:var(--accent);}
+#pbody{padding:16px 24px 32px;}.tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid var(--border);overflow-x:auto;}.tabs::-webkit-scrollbar{height:0;}.tb{background:none;border:none;color:var(--text2);font-size:11px;font-weight:600;padding:9px 12px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;}.tb.active{color:var(--accent);border-bottom-color:var(--accent);}.tb:hover:not(.active){color:var(--text);}
+.tc{display:none;}.tc.active{display:block;}.tc p,.tc li{font-size:13px;line-height:1.7;color:var(--text2);margin-bottom:8px;}.tc ul{list-style:none;padding-left:0;margin-bottom:10px;}.tc li{padding:3px 0 3px 18px;position:relative;}.tc li::before{content:'›';position:absolute;left:2px;color:var(--accent);font-weight:700;font-size:14px;}.tc strong{color:var(--text);}
+.rt{width:100%;border-collapse:collapse;margin:8px 0 12px;font-size:12px;}.rt th{text-align:left;font-size:9.5px;font-weight:700;color:var(--accent);padding:8px 10px;border-bottom:1.5px solid var(--border);text-transform:uppercase;letter-spacing:.6px;background:rgba(56,189,248,.04);}.rt td{padding:7px 10px;border-bottom:1px solid rgba(51,65,85,.3);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:11px;}.rt td:first-child{font-family:'IBM Plex Sans',sans-serif;font-weight:500;color:var(--text2);}
+.dt{width:100%;border-collapse:collapse;margin:6px 0 10px;}.dt th{text-align:left;font-size:9px;font-weight:700;color:var(--text2);padding:6px 8px;border-bottom:1px solid var(--border);text-transform:uppercase;}.dt td{font-size:11px;padding:6px 8px;border-bottom:1px solid rgba(51,65,85,.2);color:var(--text);vertical-align:top;line-height:1.5;}
+.bx{border-radius:10px;padding:12px 16px;font-size:12px;line-height:1.6;margin:10px 0;}.bx strong{color:inherit;}.br{background:var(--rbg);border:1px solid rgba(248,113,113,.25);color:var(--red);}.bg{background:var(--gbg);border:1px solid rgba(74,222,128,.25);color:var(--green);}.bb{background:var(--bbg);border:1px solid rgba(96,165,250,.25);color:var(--blue);}.bo{background:var(--obg);border:1px solid rgba(251,146,60,.25);color:var(--orange);}.bp{background:var(--pbg);border:1px solid rgba(192,132,252,.25);color:var(--purple);}
+.sl{counter-reset:stp;list-style:none!important;padding:0;margin:8px 0;}.sl li{counter-increment:stp;padding:5px 0 5px 32px!important;position:relative;font-size:12px;color:var(--text2);line-height:1.55;}.sl li::before{content:counter(stp)!important;position:absolute;left:0;top:4px;width:22px;height:22px;border-radius:50%;background:var(--surface);border:1px solid var(--border);text-align:center;line-height:22px;font-size:10px;font-weight:700;color:var(--accent);}
+#lg{position:fixed;bottom:14px;left:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:11px;z-index:50;display:flex;gap:14px;flex-wrap:wrap;}.li{display:flex;align-items:center;gap:6px;}.ld{width:10px;height:10px;border-radius:3px;}#bc{position:fixed;bottom:14px;right:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 16px;font-size:11px;color:var(--text2);z-index:50;}
+</style>
+</head>
+<body>
+<div id="hdr"><div><h1>Neonatal Surgical Emergencies Decision Tree</h1><div class="sub">Enhanced Clinical Edition — STAB-Transport mnemonic · Pre-op stabilization · Condition-specific protocols</div></div>
+<div class="ctrls"><button onclick="resetZ()">⟲ Reset View</button><button onclick="expAll()">⊞ Expand All</button><button onclick="colAll()">⊟ Collapse</button></div></div>
+<svg id="tc"></svg>
+<div id="po" onclick="closeP(event)"><div id="pp" onclick="event.stopPropagation()"><div id="ph"><div id="picon"></div><div><div id="ptitle"></div><div id="ptype"></div></div><button id="pclose" onclick="closeP()">&times;</button></div><div id="pbody"></div></div></div>
+<div id="lg"><div class="li"><div class="ld" style="background:var(--red)"></div>Emergency</div><div class="li"><div class="ld" style="background:var(--orange)"></div>Urgent</div><div class="li"><div class="ld" style="background:var(--yellow)"></div>Decision</div><div class="li"><div class="ld" style="background:var(--green)"></div>Action</div><div class="li"><div class="ld" style="background:var(--blue)"></div>Assessment</div><div class="li"><div class="ld" style="background:var(--purple)"></div>Diagnosis</div></div>
+<div id="bc">Scroll to zoom · Drag to pan · Click ⓘ for education popups</div>
+<script>
+const T={
+name:"Neonatal Surgical\nEmergency",icon:"🔪",type:"assessment",sub:"Acute surgical conditions in the newborn",edge:"",
+info:{tabs:["STAB-Transport","Urgency Classification","Pre-Op Stabilization"],
+t0:`<p><strong>STAB-Transport mnemonic</strong> for pre-transport stabilization of neonatal surgical emergencies:</p>
+<ul><li><strong>S</strong> — Suction: OG/NG to continuous or intermittent suction (decompress stomach/bowel)</li>
+<li><strong>T</strong> — Temperature: Maintain normothermia (plastic wrap for gastroschisis/omphalocele, warmer, hat)</li>
+<li><strong>A</strong> — Access & Antibiotics: IV access (PIV ×2 or UVC), empiric broad-spectrum antibiotics, fluid resuscitation</li>
+<li><strong>B</strong> — Breathing: Secure airway if needed (intubate for CDH — NO bag-mask), SpO₂ monitoring</li>
+<li><strong>Transport</strong>: Arrange EMERGENT transfer to pediatric surgical center (Level III/IV NICU)</li></ul>`,
+t1:`<table class="dt"><thead><tr><th>Urgency</th><th>Conditions</th><th>Timing</th></tr></thead><tbody>
+<tr><td><strong>🔴 Immediate (&lt;2h)</strong></td><td>Volvulus, gastroschisis (exposed bowel), tension pneumothorax, ruptured omphalocele, tracheoesophageal fistula (aspiration), NEC perforation</td><td>Surgery or definitive procedure within hours</td></tr>
+<tr><td><strong>🟠 Urgent (2–24h)</strong></td><td>CDH (after stabilization), bowel atresias (after decompression), incarcerated hernia, testicular torsion, imperforate anus (high)</td><td>Surgery within 24h after stabilization</td></tr>
+<tr><td><strong>🟡 Semi-urgent (24–72h)</strong></td><td>Omphalocele (intact), pyloric stenosis (after correction of alkalosis), meconium ileus (medical management first)</td><td>Can be optimized before surgery</td></tr>
+</tbody></table>`,
+t2:`<p><strong>Universal pre-op stabilization for ALL neonatal surgical conditions:</strong></p>
+<ol class="sl">
+<li><strong>OG/NG tube to suction</strong> (Replogle tube for EA/TEF — double-lumen for continuous suction)</li>
+<li><strong>IV access</strong> — PIV ×2 preferred; UVC if needed for emergent access</li>
+<li><strong>Fluid resuscitation:</strong> NS or LR 10–20 mL/kg bolus PRN for perfusion. Maintenance D10W-based fluids.</li>
+<li><strong>NPO</strong> — start IV fluids and TPN planning</li>
+<li><strong>Broad-spectrum antibiotics:</strong> Ampicillin + gentamicin (for most); add metronidazole for bowel perforation/NEC</li>
+<li><strong>Temperature control:</strong> Radiant warmer, hat, plastic wrap for exposed viscera</li>
+<li><strong>Labs:</strong> CBC, BMP, blood gas, coags, T&S (anticipate transfusion)</li>
+<li><strong>Imaging:</strong> AXR (±lateral decubitus), additional as needed (UGI, US, echo for associated anomalies)</li>
+<li><strong>Parental communication:</strong> Explain condition, urgency, need for transfer</li>
+</ol>`
+},children:[
+// ═══ ABDOMINAL WALL DEFECTS ═══
+{name:"Gastroschisis /\nOmphalocele",icon:"🫁",type:"emergency",sub:"Exposed viscera · Bowel bag · 2–3× fluids",edge:"Abdominal wall\ndefect",
+info:{tabs:["Gastroschisis vs Omphalocele","DR Management","Fluid Management","Associated Anomalies"],
+t0:`<table class="dt"><thead><tr><th>Feature</th><th>Gastroschisis</th><th>Omphalocele</th></tr></thead><tbody>
+<tr><td>Defect location</td><td>Right of umbilicus (paraumbilical)</td><td>Through umbilicus (midline)</td></tr>
+<tr><td>Covering membrane</td><td><strong>NO</strong> (bowel exposed to amniotic fluid)</td><td><strong>YES</strong> (peritoneal sac — unless ruptured)</td></tr>
+<tr><td>Contents</td><td>Small bowel (occasionally stomach, colon)</td><td>Bowel, liver, other organs possible</td></tr>
+<tr><td>Associated anomalies</td><td>~10% (mostly intestinal atresia)</td><td>~50–70% (cardiac, Beckwith-Wiedemann, trisomy 13/18, pentalogy of Cantrell)</td></tr>
+<tr><td>Bowel condition</td><td>Matted, edematous, shortened (chemical peritonitis from amniotic fluid)</td><td>Generally normal (protected by sac)</td></tr>
+<tr><td>Incidence</td><td>~1/2,000–4,000 (increasing)</td><td>~1/5,000–10,000</td></tr>
+</tbody></table>`,
+t1:`<p><strong>Delivery Room Management:</strong></p>
+<ol class="sl">
+<li><strong>Bowel bag:</strong> Place exposed bowel into a sterile, pre-warmed bowel bag (or sterile saline-moistened gauze covered with plastic wrap). The bag extends from the chest to below the defect, keeping bowel moist and warm.</li>
+<li><strong>Position:</strong> Right lateral decubitus (reduces mesenteric kinking). Support bowel to prevent vascular compromise.</li>
+<li><strong>OG tube to suction</strong> — decompress stomach to reduce bowel distension</li>
+<li><strong>Temperature control:</strong> Massive evaporative and radiant heat loss from exposed bowel. Plastic wrap, warm environment, hat.</li>
+<li><strong>DO NOT attempt to reduce bowel into the abdomen</strong> — risk of vascular compromise, perforation, and abdominal compartment syndrome.</li>
+</ol>`,
+t2:`<div class="bx br">🚨 <strong>Gastroschisis requires 2–3× maintenance IV fluids</strong> due to massive third-space losses from exposed bowel. These infants are at HIGH risk for dehydration and hypovolemia. Fluid resuscitation is often the most critical aspect of initial management.</div>
+<ul><li>Start at 150–200 mL/kg/day of D10W-based crystalloid</li>
+<li>NS boluses 10–20 mL/kg PRN for signs of hypovolemia</li>
+<li>Monitor UOP closely (target ≥1 mL/kg/hr)</li>
+<li>Replace ongoing losses (weigh dressings if possible)</li>
+<li>Omphalocele with intact sac: fluid losses much less; standard fluids adequate</li></ul>`,
+t3:`<p><strong>Associated anomaly screening:</strong></p>
+<table class="dt"><thead><tr><th>Defect</th><th>Screening</th></tr></thead><tbody>
+<tr><td>Gastroschisis</td><td>Intestinal atresia (10% — found at surgery). Rarely associated with other anomalies. Routine echo/renal US not required unless indicated.</td></tr>
+<tr><td>Omphalocele</td><td>Echocardiogram (cardiac defects in 20–50%). Karyotype (trisomy 13, 18). Renal US (urogenital anomalies). Glucose monitoring (Beckwith-Wiedemann hypoglycemia). Full physical exam for Pentalogy of Cantrell if midline upper omphalocele.</td></tr>
+</tbody></table>`
+}},
+// ═══ EA/TEF ═══
+{name:"Esophageal Atresia\n/ TEF",icon:"🔴",type:"emergency",sub:"Replogle tube · Head-up · VACTERL screen",edge:"Unable to\npass OG tube\nor drooling",
+info:{tabs:["Types","Diagnosis","Stabilization","VACTERL"],
+t0:`<p><strong>EA/TEF classification (Gross):</strong></p>
+<table class="rt"><thead><tr><th>Type</th><th>Description</th><th>% of Cases</th></tr></thead><tbody>
+<tr><td>A</td><td>Pure EA, no fistula</td><td>8%</td></tr>
+<tr><td>B</td><td>EA with proximal TEF</td><td>1%</td></tr>
+<tr><td><strong>C</strong></td><td><strong>EA with distal TEF</strong></td><td><strong>85%</strong></td></tr>
+<tr><td>D</td><td>EA with proximal AND distal TEF</td><td>2%</td></tr>
+<tr><td>E (H-type)</td><td>TEF without EA</td><td>4%</td></tr>
+</tbody></table>`,
+t1:`<ul><li><strong>Prenatal:</strong> Polyhydramnios (absent swallowing), absent stomach bubble on US</li>
+<li><strong>Postnatal:</strong> Excessive drooling/secretions, choking/cyanosis with first feed, inability to pass OG/NG tube (coils in proximal pouch on X-ray)</li>
+<li><strong>X-ray:</strong> OG tube coiled in upper pouch. Gas in stomach/bowel = distal TEF present (type C). Gasless abdomen = pure EA without distal fistula (type A).</li></ul>`,
+t2:`<ol class="sl">
+<li><strong>Replogle tube</strong> (10 Fr double-lumen sump) in proximal esophageal pouch to CONTINUOUS suction — prevents aspiration of pooled secretions</li>
+<li><strong>Head-up position</strong> (30–45°) — reduces reflux of gastric acid through distal TEF into lungs</li>
+<li><strong>NPO</strong> — nothing by mouth</li>
+<li><strong>IV fluids</strong> — maintenance D10W</li>
+<li><strong>Avoid positive-pressure ventilation if possible</strong> — air preferentially enters stomach through TEF → gastric distension → aspiration risk → respiratory compromise. If intubation needed, place ETT distal to fistula (may need bronchoscopy).</li>
+<li><strong>Antibiotics</strong> if aspiration suspected</li>
+</ol>
+<div class="bx br">🚨 <strong>If the Replogle is not on continuous suction, secretions will pool and be aspirated.</strong> The Replogle tube is the single most important stabilization tool for EA/TEF. Ensure it is functioning at all times during transport and pre-op.</div>`,
+t3:`<p><strong>VACTERL Association — screen for ALL components:</strong></p>
+<table class="rt"><thead><tr><th>Letter</th><th>Anomaly</th><th>Screening</th><th>Incidence with EA</th></tr></thead><tbody>
+<tr><td><strong>V</strong></td><td>Vertebral</td><td>Spine X-ray or US</td><td>~10%</td></tr>
+<tr><td><strong>A</strong></td><td>Anorectal (imperforate anus)</td><td>Physical exam</td><td>~10%</td></tr>
+<tr><td><strong>C</strong></td><td>Cardiac</td><td>Echocardiogram</td><td>~15–25%</td></tr>
+<tr><td><strong>T</strong></td><td>Tracheoesophageal</td><td>This IS the presenting anomaly</td><td>100%</td></tr>
+<tr><td><strong>E</strong></td><td>Esophageal atresia</td><td>This IS the presenting anomaly</td><td>100%</td></tr>
+<tr><td><strong>R</strong></td><td>Renal</td><td>Renal US</td><td>~15%</td></tr>
+<tr><td><strong>L</strong></td><td>Limb (radial ray)</td><td>Physical exam, hand/forearm X-ray</td><td>~10%</td></tr>
+</tbody></table>
+<div class="bx bb">ℹ️ <strong>≥3 VACTERL components = VACTERL association.</strong> Echo and renal US are mandatory before EA repair. Determine aortic arch side (right arch in 2.5% — affects surgical approach).</div>`
+}},
+// ═══ INTESTINAL ATRESIAS ═══
+{name:"Intestinal\nAtresias",icon:"🔗",type:"urgent",sub:"Duodenal · Jejunoileal · Colonic · Double-bubble",edge:"Obstruction\npattern on\nAXR",
+info:{tabs:["Types","Duodenal Atresia","Jejunoileal Atresia","Stabilization"],
+t0:`<table class="dt"><thead><tr><th>Type</th><th>Location</th><th>X-ray</th><th>Associations</th></tr></thead><tbody>
+<tr><td><strong>Duodenal atresia</strong></td><td>2nd part of duodenum (at ampulla of Vater)</td><td>Double bubble (dilated stomach + dilated proximal duodenum), NO distal gas</td><td>Trisomy 21 (30%), annular pancreas, cardiac anomalies, malrotation</td></tr>
+<tr><td><strong>Jejunoileal atresia</strong></td><td>Jejunum or ileum</td><td>Multiple dilated loops with air-fluid levels; "triple bubble" if proximal jejunal</td><td>Often vascular accident in utero; associated with gastroschisis, CF</td></tr>
+<tr><td><strong>Colonic atresia</strong></td><td>Rare; any segment</td><td>Massive proximal dilation</td><td>Associated with Hirschsprung, gastroschisis</td></tr>
+</tbody></table>`,
+t1:`<p><strong>Duodenal Atresia:</strong></p>
+<ul><li><strong>Double bubble sign:</strong> Pathognomonic on AXR. Two gas-filled structures (stomach and dilated proximal duodenum) with NO gas distally.</li>
+<li><strong>Prenatal:</strong> Polyhydramnios (50%), double bubble on prenatal US</li>
+<li><strong>Bilious vomiting</strong> in first 24–48h (obstruction is distal to ampulla in 85%)</li>
+<li><strong>Trisomy 21:</strong> Present in 30% — send karyotype/microarray. Also screen echo for cardiac anomalies.</li>
+<li><strong>Surgery:</strong> Diamond-shaped duodenoduodenostomy (bypass; NOT resection — ampulla is at the obstruction site). Urgent but not emergent — stabilize first.</li></ul>`,
+t2:`<p><strong>Jejunoileal Atresia:</strong></p>
+<ul><li>Caused by in utero mesenteric vascular accident (not a failure of recanalization like duodenal atresia)</li>
+<li>Types: I (membrane), II (fibrous cord), IIIa (mesenteric gap), IIIb (apple-peel/Christmas tree — high morbidity), IV (multiple atresias)</li>
+<li>AXR: multiple dilated loops, air-fluid levels, absence of distal gas</li>
+<li>Contrast enema: microcolon (unused colon) confirms distal obstruction</li>
+<li>Surgery: resection of atretic segment with primary anastomosis. Apple-peel (IIIb) = high risk of short bowel syndrome.</li></ul>`,
+t3:`<ol class="sl">
+<li><strong>NPO + OG/NG to suction</strong> — decompress proximal bowel</li>
+<li><strong>IV fluids:</strong> D10W maintenance + NS boluses PRN for dehydration</li>
+<li><strong>Correct electrolyte losses</strong> (proximal obstruction → loss of HCl from vomiting → hypochloremic metabolic alkalosis)</li>
+<li><strong>Antibiotics if concerned for perforation or sepsis</strong></li>
+<li><strong>Associated anomaly screening:</strong> Karyotype (duodenal atresia + T21), echo, sweat chloride/CF screening (jejunoileal)</li>
+</ol>`
+}},
+// ═══ PYLORIC STENOSIS ═══
+{name:"Pyloric\nStenosis",icon:"🍼",type:"urgent",sub:"2–6 weeks · Projectile emesis · Correct alkalosis FIRST",edge:"Non-bilious\nprojectile\nemesis 2–6 wk",
+info:{tabs:["Diagnosis","Metabolic Correction","Pyloromyotomy"],
+t0:`<p><strong>Infantile Hypertrophic Pyloric Stenosis:</strong> Progressive hypertrophy of the pyloric muscle causing gastric outlet obstruction. Incidence: 1–3/1,000. Male:female 4:1. Firstborn males at highest risk.</p>
+<ul><li><strong>Age of onset:</strong> 2–6 weeks (rarely presents in the first week)</li>
+<li><strong>Classic presentation:</strong> Progressive, projectile, NON-BILIOUS emesis. Hungry after vomiting ("hungry vomiter"). Visible gastric peristaltic waves on exam. Palpable "olive" in RUQ/epigastrium (pathognomonic but found in only ~30%).</li>
+<li><strong>Ultrasound diagnostic criteria:</strong> Pyloric muscle thickness ≥3 mm, pyloric channel length ≥15 mm</li>
+<li><strong>UGI:</strong> "String sign" (elongated pyloric channel), "shoulder sign" (hypertrophied muscle indenting antrum)</li></ul>`,
+t1:`<div class="bx br">🚨 <strong>Pyloric stenosis is a MEDICAL emergency before it is a surgical one.</strong> The hypochloremic, hypokalemic metabolic alkalosis MUST be corrected before anesthesia. Operating on an alkalotic infant risks life-threatening apnea during induction.</div>
+<p><strong>Metabolic derangement:</strong> Loss of HCl from persistent vomiting → hypochloremic metabolic alkalosis with paradoxical aciduria (kidneys excrete H+ to retain K+ when both are low).</p>
+<p><strong>Correction protocol:</strong></p>
+<ol class="sl">
+<li>IV NS + 20–40 mEq/L KCl (once voiding) at 1.5–2× maintenance</li>
+<li>Check BMP every 4–6h until corrected</li>
+<li><strong>Targets for surgery:</strong> CO₂ (bicarb) ≤30 mEq/L, Cl ≥100 mEq/L, K ≥3.5 mEq/L, pH ≤7.45</li>
+<li>Correction typically takes 12–48 hours</li>
+</ol>`,
+t2:`<p><strong>Ramstedt Pyloromyotomy:</strong></p>
+<ul><li>Definitive treatment. Longitudinal incision through the hypertrophied pyloric muscle down to (but NOT through) the submucosa.</li>
+<li>Can be performed open (RUQ transverse incision) or laparoscopically</li>
+<li><strong>Complication:</strong> Duodenal perforation (mucosal breach) — test with air insufflation intraoperatively. If recognized and repaired intraoperatively, outcomes are good.</li>
+<li><strong>Post-op feeds:</strong> Ad lib feeding starting 4–6 hours post-op. Emesis in the first 24h is common and self-limited (edema at pyloromyotomy site). Do NOT delay feeds.</li>
+<li>Discharge typically within 24 hours</li></ul>`
+}},
+// ═══ TESTICULAR TORSION ═══
+{name:"Neonatal\nTesticular Torsion",icon:"⚠️",type:"emergency",sub:"Extravaginal · Often prenatal · 6-hour window",edge:"Firm, dark,\nnon-transillum\nscrotum",
+info:{tabs:["Neonatal vs Older","Diagnosis","Management"],
+t0:`<p><strong>Neonatal testicular torsion</strong> is almost always <strong>extravaginal</strong> (torsion of the entire spermatic cord and tunica vaginalis) — different from intravaginal torsion in older boys.</p>
+<ul><li>Often occurs prenatally (70–80% present at birth with necrotic testis)</li>
+<li>Bilateral in ~10–20% (catastrophic — risk of anorchia)</li>
+<li>Prenatal torsion: firm, non-tender, dark/discolored, non-transilluminating scrotum at birth — usually unsalvageable</li>
+<li>Postnatal torsion (20–30%): acute scrotal swelling, erythema, tenderness — potentially salvageable if &lt;6 hours</li></ul>`,
+t1:`<ul><li>Clinical diagnosis (US may help but should NOT delay surgical exploration)</li>
+<li>Doppler US: absent blood flow to affected testis. However, a normal-appearing US does NOT exclude early torsion.</li>
+<li>Transillumination: negative (solid mass) vs hydrocele (positive)</li>
+<li><strong>If postnatal onset with acute symptoms: surgical exploration is EMERGENT</strong> — do not delay for imaging</li></ul>`,
+t2:`<p><strong>Surgical approach:</strong></p>
+<ul><li><strong>Prenatal torsion (present at birth, necrotic):</strong> Debate exists. Many centers perform urgent exploration to: (1) confirm diagnosis, (2) perform orchiopexy of the contralateral testis to prevent bilateral loss. Timing controversial — some advocate immediate, others semi-urgent.</li>
+<li><strong>Postnatal torsion (acute onset):</strong> EMERGENT scrotal exploration. Detorsion if viable → orchiopexy (fix testis to prevent recurrence). If necrotic → orchiectomy. ALWAYS fix the contralateral testis (pexy) at the same operation.</li></ul>
+<div class="bx br">🚨 <strong>Bilateral neonatal testicular torsion</strong> (synchronous or asynchronous) is the most devastating scenario — results in anorchia. Contralateral orchiopexy at the time of exploration for unilateral torsion is essential to prevent bilateral loss.</div>`
+}},
+// ═══ INGUINAL HERNIA ═══
+{name:"Inguinal\nHernia",icon:"🔵",type:"urgent",sub:"Incarceration risk · Repair before discharge",edge:"Groin\nswelling",
+info:{tabs:["Neonatal Hernia","Incarceration","Timing of Repair"],
+t0:`<p><strong>Indirect inguinal hernia in neonates:</strong> Patent processus vaginalis allowing bowel/omentum/ovary/fallopian tube to enter the inguinal canal. Incidence: 1–5% of term; up to 30% of VLBW. Male >> female. Right > left > bilateral.</p>
+<ul><li>Presents as an intermittent or persistent bulge in the groin/scrotum (males) or labia (females)</li>
+<li>Increases with crying, straining, Valsalva</li>
+<li>Usually reducible with gentle pressure</li></ul>`,
+t1:`<div class="bx br">🚨 <strong>Incarcerated hernia = SURGICAL EMERGENCY.</strong> Bowel trapped in the hernia sac → venous congestion → arterial compromise → strangulation → necrosis. Also risk of testicular ischemia from compression of spermatic cord vessels.</div>
+<p><strong>Signs of incarceration:</strong> Irreducible bulge, tenderness, erythema of overlying skin, irritability, vomiting, abdominal distension.</p>
+<p><strong>Management of incarceration:</strong></p>
+<ol class="sl">
+<li>Attempt gentle manual reduction (Trendelenburg position, gentle sustained pressure, ± sedation with small dose of morphine or midazolam)</li>
+<li>If reduction successful: schedule repair within 24–48 hours (high recurrence risk)</li>
+<li>If reduction fails: EMERGENT surgical exploration</li>
+<li>Check for testicular viability (Doppler US if concern for ischemia)</li>
+</ol>`,
+t2:`<p><strong>Timing of repair:</strong></p>
+<ul><li>Full-term with reducible hernia: repair within 2 weeks of diagnosis (or before NICU discharge)</li>
+<li>Preterm in NICU: repair before discharge — many centers wait until infant approaches term GA to reduce anesthesia risk, but prolonged delay increases incarceration risk</li>
+<li>History of incarceration: repair within 24–48h after successful reduction</li>
+<li>Technique: open inguinal herniotomy (high ligation of processus vaginalis). Laparoscopic approach increasingly used.</li>
+<li>Contralateral exploration: controversial. Some centers explore contralaterally in all infants &lt;1 year; others use laparoscopy to inspect the contralateral internal ring.</li></ul>`
+}}
+]};
+
+// ═══ D3 ENGINE ═══
+const CM={assessment:{f:"#0f1d3a",s:"#60a5fa",t:"#60a5fa",b:"Assessment"},decision:{f:"#2a2006",s:"#fbbf24",t:"#fbbf24",b:"Decision Point"},emergency:{f:"#2a1215",s:"#f87171",t:"#f87171",b:"Emergency"},urgent:{f:"#2a1a0a",s:"#fb923c",t:"#fb923c",b:"Urgent"},action:{f:"#0a2a1a",s:"#4ade80",t:"#4ade80",b:"Action"},diagnosis:{f:"#1a0f2e",s:"#c084fc",t:"#c084fc",b:"Diagnosis"}};
+const svg=d3.select("#tc"),W=innerWidth,H=innerHeight;svg.attr("width",W).attr("height",H);const g=svg.append("g");const zm=d3.zoom().scaleExtent([0.2,3]).on("zoom",e=>g.attr("transform",e.transform));svg.call(zm);
+const nW=148,nH=62;const root=d3.hierarchy(T,d=>d.children);root.x0=H/2;root.y0=0;
+root.descendants().forEach(d=>{if(d.depth>1&&d.children){d._children=d.children;d.children=null;}});const tl=d3.tree().nodeSize([nH+32,nW+85]);
+function upd(src){const dur=420;tl(root);const nds=root.descendants(),lks=root.links();nds.forEach(d=>{d.y=d.depth*230;});
+const lk=g.selectAll(".lk").data(lks,d=>d.target.data.name);const le=lk.enter().append("path").attr("class","lk").attr("d",()=>{const o={x:src.x0,y:src.y0};return dg(o,o);});lk.merge(le).transition().duration(dur).attr("d",d=>dg(d.source,d.target));lk.exit().transition().duration(dur).attr("d",()=>{const o={x:src.x,y:src.y};return dg(o,o);}).remove();
+g.selectAll(".ll").remove();lks.forEach(d=>{if(d.target.data.edge){const ls=d.target.data.edge.split("\n"),mx=(d.source.x+d.target.x)/2,my=(d.source.y+d.target.y)/2;ls.forEach((l,i)=>{g.append("text").attr("class","ll").attr("x",my+12).attr("y",mx-4+i*11).text(l);});}});
+const nd=g.selectAll(".ng").data(nds,d=>d.data.name);const ne=nd.enter().append("g").attr("class","ng").attr("transform",`translate(${src.y0},${src.x0})`).on("click",(e,d)=>{if(d.children){d._children=d.children;d.children=null;}else if(d._children){d.children=d._children;d._children=null;}upd(d);});
+ne.append("rect").attr("class","nr").attr("x",-nW/2).attr("y",-nH/2).attr("width",nW).attr("height",nH).attr("fill",d=>CM[d.data.type]?.f||"#1e293b").attr("stroke",d=>CM[d.data.type]?.s||"#475569");ne.append("text").attr("class","ni").attr("y",-12).text(d=>d.data.icon);
+ne.each(function(d){const ls=d.data.name.split("\n"),el=d3.select(this);ls.forEach((l,i)=>{el.append("text").attr("class","nl").attr("y",4+i*13).text(l);});if(d.data.sub){el.append("text").attr("class","ns").attr("y",4+ls.length*13+5).text(d.data.sub.substring(0,32));}});
+ne.append("circle").attr("class","ib").attr("cx",nW/2-12).attr("cy",-nH/2+12).attr("r",10).attr("fill",d=>CM[d.data.type]?.s||"#60a5fa").attr("fill-opacity",.2).attr("stroke",d=>CM[d.data.type]?.s||"#60a5fa").attr("stroke-width",1.5).on("click",(e,d)=>{e.stopPropagation();showP(d.data);});
+ne.append("text").attr("x",nW/2-12).attr("y",-nH/2+16).attr("text-anchor","middle").attr("font-size","12px").attr("fill","#e2e8f0").attr("pointer-events","none").attr("font-weight","700").text("i");
+ne.append("text").attr("class","ei").attr("x",0).attr("y",nH/2+15).attr("text-anchor","middle").attr("font-size","10px").attr("fill","#475569");
+const nu=nd.merge(ne);nu.transition().duration(dur).attr("transform",d=>`translate(${d.y},${d.x})`);nu.select(".ei").text(d=>d._children?`▸ ${d._children.length} more`:"");
+nd.exit().transition().duration(dur).attr("transform",`translate(${src.y},${src.x})`).remove();nds.forEach(d=>{d.x0=d.x;d.y0=d.y;});}
+function dg(s,d){return`M${s.y} ${s.x}C${(s.y+d.y)/2} ${s.x},${(s.y+d.y)/2} ${d.x},${d.y} ${d.x}`;}
+upd(root);const iT=d3.zoomIdentity.translate(90,H/2-20).scale(0.82);svg.call(zm.transform,iT);
+function showP(data){const ov=document.getElementById("po"),c=CM[data.type]||CM.assessment;document.getElementById("picon").textContent=data.icon;document.getElementById("picon").style.background=c.f;document.getElementById("picon").style.border=`1.5px solid ${c.s}`;document.getElementById("ptitle").textContent=data.name.replace(/\n/g," ");const te=document.getElementById("ptype");te.textContent=c.b;te.style.background=c.f;te.style.color=c.t;te.style.border=`1px solid ${c.s}`;
+let h="";if(data.info.tabs){h+=`<div class="tabs">`;data.info.tabs.forEach((t,i)=>{h+=`<button class="tb${i===0?' active':''}" onclick="swT(${i})">${t}</button>`;});h+=`</div>`;data.info.tabs.forEach((t,i)=>{h+=`<div class="tc${i===0?' active':''}" data-t="${i}">${data.info['t'+i]||''}</div>`;});}
+if(data.sub){h+=`<div class="bx bb" style="margin-top:16px">ℹ️ <strong>Summary:</strong> ${data.sub}</div>`;}document.getElementById("pbody").innerHTML=h;ov.classList.add("active");document.getElementById("pp").scrollTop=0;}
+function swT(i){document.querySelectorAll('.tb').forEach((b,j)=>b.classList.toggle('active',j===i));document.querySelectorAll('.tc').forEach((c,j)=>c.classList.toggle('active',j===i));}
+function closeP(e){if(!e||e.target===document.getElementById("po"))document.getElementById("po").classList.remove("active");}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeP();});
+function resetZ(){svg.transition().duration(500).call(zm.transform,iT);}function expAll(){root.descendants().forEach(d=>{if(d._children){d.children=d._children;d._children=null;}});upd(root);}function colAll(){root.descendants().forEach(d=>{if(d.depth>0&&d.children){d._children=d.children;d.children=null;}});upd(root);}
+addEventListener("resize",()=>{svg.attr("width",innerWidth).attr("height",innerHeight);});
+</script></body></html>

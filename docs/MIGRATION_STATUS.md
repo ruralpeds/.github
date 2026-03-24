@@ -86,6 +86,23 @@ NEW: Peds (SvelteKit + WASM)       (UI, decision trees, textbook, clinical conte
 | DKA Protocol | Pediatric | /resuscitation/dka |
 | Anaphylaxis | Both | /resuscitation/anaphylaxis |
 
+### ✅ Standalone D3 Decision Trees (from Claude-artifacts repo)
+33 complete interactive decision trees served as static HTML at `/decision-trees/`:
+
+**Neonatal (20 trees):**
+- NRP Resuscitation, Cardiac/PDA, Pulmonary, Infectious Diseases
+- FEN (Fluids/Electrolytes/Nutrition), Neurology, Hematology, Endocrine
+- GI/Liver, Renal, Surgical Emergencies, Ophthalmology (ROP)
+- Skin/Dermatology, Urological, Pain & Sedation, Transport
+- Newborn Discharge Readiness, Newborn Screening Follow-up
+- Obstetric Emergencies, Shoulder Dystocia
+
+**Pediatric (13 trees):**
+- PALS Algorithm, Sepsis & Shock, Respiratory Emergencies
+- Cardiac Emergencies, Trauma, Seizures/Status Epilepticus
+- DKA, Anaphylaxis, Burns, Toxicology
+- Abdominal Pain, Orthopedic Emergencies, Psychiatric Emergencies
+
 ### ⬜ Decision Trees Still Needed (from old protocol modules)
 | Protocol | Old Source | Priority |
 |---|---|---|

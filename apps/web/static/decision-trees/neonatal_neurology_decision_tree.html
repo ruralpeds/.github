@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neonatal Neurology Decision Tree</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1121;--bg2:#0f172a;--surface:#1e293b;--border:#334155;--text:#e2e8f0;--text2:#94a3b8;--accent:#38bdf8;--red:#f87171;--rbg:#2a1215;--orange:#fb923c;--obg:#2a1a0a;--yellow:#fbbf24;--ybg:#2a2006;--green:#4ade80;--gbg:#0a2a1a;--blue:#60a5fa;--bbg:#0f1d3a;--purple:#c084fc;--pbg:#1a0f2e;}
+*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh;width:100vw;}
+#hdr{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(180deg,var(--bg) 65%,transparent);padding:14px 24px 30px;display:flex;align-items:center;gap:16px;}#hdr h1{font-family:'DM Serif Display',serif;font-size:24px;color:var(--accent);}#hdr .sub{font-size:12px;color:var(--text2);font-weight:300;margin-top:2px;}
+.ctrls{margin-left:auto;display:flex;gap:8px;}.ctrls button{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 16px;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;}.ctrls button:hover{background:var(--border);border-color:var(--accent);color:var(--accent);}
+#tc{width:100vw;height:100vh;cursor:grab;}#tc:active{cursor:grabbing;}.ng{cursor:pointer;}.nr{rx:10;ry:10;stroke-width:1.8;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));transition:all .25s;}.ng:hover .nr{filter:brightness(1.25) drop-shadow(0 0 12px rgba(56,189,248,.25));}
+.nl{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:11px;fill:var(--text);text-anchor:middle;pointer-events:none;}.ns{font-family:'IBM Plex Sans',sans-serif;font-weight:400;font-size:8.5px;fill:var(--text2);text-anchor:middle;pointer-events:none;}.ni{font-size:15px;text-anchor:middle;pointer-events:none;}.lk{fill:none;stroke:var(--border);stroke-width:1.6;stroke-opacity:.5;}.ll{font-family:'IBM Plex Mono',monospace;font-size:8.5px;fill:var(--yellow);font-weight:500;}.ib{cursor:pointer;transition:all .2s;}.ib:hover{transform:scale(1.15);}
+#po{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:200;justify-content:center;align-items:center;}#po.active{display:flex;}
+#pp{background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:680px;width:94vw;max-height:88vh;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,0,.7);animation:popIn .28s cubic-bezier(.16,1,.3,1);}#pp::-webkit-scrollbar{width:5px;}#pp::-webkit-scrollbar-track{background:transparent;}#pp::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+@keyframes popIn{from{transform:scale(.9) translateY(24px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+#ph{padding:20px 24px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px;position:sticky;top:0;background:var(--bg2);z-index:1;border-radius:16px 16px 0 0;}
+#picon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}#ptitle{font-family:'DM Serif Display',serif;font-size:22px;color:var(--text);line-height:1.2;}#ptype{font-size:11px;font-weight:600;padding:3px 10px;border-radius:5px;display:inline-block;margin-top:5px;letter-spacing:.5px;}
+#pclose{margin-left:auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:18px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;transition:all .2s;}#pclose:hover{color:var(--text);border-color:var(--accent);}
+#pbody{padding:16px 24px 32px;}.tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid var(--border);overflow-x:auto;}.tabs::-webkit-scrollbar{height:0;}
+.tb{background:none;border:none;color:var(--text2);font-size:11px;font-weight:600;padding:9px 12px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;}.tb.active{color:var(--accent);border-bottom-color:var(--accent);}.tb:hover:not(.active){color:var(--text);}
+.tc{display:none;}.tc.active{display:block;}.tc p,.tc li{font-size:13px;line-height:1.7;color:var(--text2);margin-bottom:8px;}.tc ul{list-style:none;padding-left:0;margin-bottom:10px;}.tc li{padding:3px 0 3px 18px;position:relative;}.tc li::before{content:'›';position:absolute;left:2px;color:var(--accent);font-weight:700;font-size:14px;}.tc strong{color:var(--text);}
+.rt{width:100%;border-collapse:collapse;margin:8px 0 12px;font-size:12px;}.rt th{text-align:left;font-size:9.5px;font-weight:700;color:var(--accent);padding:8px 10px;border-bottom:1.5px solid var(--border);text-transform:uppercase;letter-spacing:.6px;background:rgba(56,189,248,.04);}.rt td{padding:7px 10px;border-bottom:1px solid rgba(51,65,85,.3);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:11px;}.rt td:first-child{font-family:'IBM Plex Sans',sans-serif;font-weight:500;color:var(--text2);}.rt tr:hover td{background:rgba(56,189,248,.025);}
+.dt{width:100%;border-collapse:collapse;margin:6px 0 10px;}.dt th{text-align:left;font-size:9px;font-weight:700;color:var(--text2);padding:6px 8px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.3px;}.dt td{font-size:11px;padding:6px 8px;border-bottom:1px solid rgba(51,65,85,.2);color:var(--text);vertical-align:top;line-height:1.5;}
+.bx{border-radius:10px;padding:12px 16px;font-size:12px;line-height:1.6;margin:10px 0;}.bx strong{color:inherit;}.br{background:var(--rbg);border:1px solid rgba(248,113,113,.25);color:var(--red);}.bg{background:var(--gbg);border:1px solid rgba(74,222,128,.25);color:var(--green);}.bb{background:var(--bbg);border:1px solid rgba(96,165,250,.25);color:var(--blue);}.bo{background:var(--obg);border:1px solid rgba(251,146,60,.25);color:var(--orange);}.bp{background:var(--pbg);border:1px solid rgba(192,132,252,.25);color:var(--purple);}
+.sl{counter-reset:stp;list-style:none!important;padding:0;margin:8px 0;}.sl li{counter-increment:stp;padding:5px 0 5px 32px!important;position:relative;font-size:12px;color:var(--text2);line-height:1.55;}.sl li::before{content:counter(stp)!important;position:absolute;left:0;top:4px;width:22px;height:22px;border-radius:50%;background:var(--surface);border:1px solid var(--border);text-align:center;line-height:22px;font-size:10px;font-weight:700;color:var(--accent);}
+#lg{position:fixed;bottom:14px;left:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:11px;z-index:50;display:flex;gap:14px;flex-wrap:wrap;}.li{display:flex;align-items:center;gap:6px;}.ld{width:10px;height:10px;border-radius:3px;}
+#bc{position:fixed;bottom:14px;right:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 16px;font-size:11px;color:var(--text2);z-index:50;}
+</style>
+</head>
+<body>
+<div id="hdr"><div><h1>Neonatal Neurology Decision Tree</h1><div class="sub">Enhanced Clinical Edition — Click ⓘ for tabbed education with Sarnat staging, seizure protocols & imaging guidelines</div></div>
+<div class="ctrls"><button onclick="resetZ()">⟲ Reset View</button><button onclick="expAll()">⊞ Expand All</button><button onclick="colAll()">⊟ Collapse</button></div></div>
+<svg id="tc"></svg>
+<div id="po" onclick="closeP(event)"><div id="pp" onclick="event.stopPropagation()"><div id="ph"><div id="picon"></div><div><div id="ptitle"></div><div id="ptype"></div></div><button id="pclose" onclick="closeP()">&times;</button></div><div id="pbody"></div></div></div>
+<div id="lg"><div class="li"><div class="ld" style="background:var(--red)"></div>Emergency</div><div class="li"><div class="ld" style="background:var(--orange)"></div>Urgent</div><div class="li"><div class="ld" style="background:var(--yellow)"></div>Decision</div><div class="li"><div class="ld" style="background:var(--green)"></div>Action</div><div class="li"><div class="ld" style="background:var(--blue)"></div>Assessment</div><div class="li"><div class="ld" style="background:var(--purple)"></div>Diagnosis</div></div>
+<div id="bc">Scroll to zoom · Drag to pan · Click ⓘ for education popups</div>
+<script>
+const T={
+name:"Neonatal\nNeuro Assessment",icon:"🧠",type:"assessment",sub:"Neurologic evaluation of the newborn",edge:"",
+info:{tabs:["Neuro Exam","Red Flags","Imaging Indications","Key References"],
+t0:`<p>The neonatal neurologic exam differs fundamentally from older children. Key components include: level of consciousness, tone (active and passive), primitive reflexes (Moro, suck, grasp, rooting), cranial nerves, fontanelle assessment, and movement patterns.</p>
+<p><strong>Structured neonatal neuro exam:</strong></p>
+<ul><li><strong>Alertness:</strong> Alert and responsive vs lethargic vs obtunded vs comatose</li>
+<li><strong>Tone:</strong> Active (spontaneous posture, antigravity movements) and passive (pull-to-sit, ventral suspension, scarf sign, popliteal angle)</li>
+<li><strong>Primitive reflexes:</strong> Moro (symmetric?), suck/swallow coordination, palmar/plantar grasp, stepping, rooting</li>
+<li><strong>Cranial nerves:</strong> Pupils (III), facial movement (VII), suck/swallow (V, VII, IX, X, XII), gag (IX, X)</li>
+<li><strong>Fontanelle:</strong> Soft and flat (normal) vs bulging (↑ ICP) vs sunken (dehydration)</li>
+<li><strong>Movements:</strong> Symmetry, tremor vs seizure (tremor = stimulus-sensitive, suppressible; seizure = NOT stimulus-sensitive, NOT suppressible)</li></ul>`,
+t1:`<p><strong>Neurologic red flags requiring urgent evaluation:</strong></p>
+<ul><li>Seizures (any age)</li>
+<li>Encephalopathy (depressed consciousness, poor feeding, abnormal tone)</li>
+<li>Bulging fontanelle or rapidly increasing head circumference</li>
+<li>Asymmetric tone or movements (hemiparesis suggests stroke)</li>
+<li>Absent primitive reflexes (especially absent Moro — suggests severe CNS depression or upper cervical injury)</li>
+<li>Apnea/bradycardia out of proportion to prematurity</li>
+<li>Sunset eyes (upgaze palsy — suggests hydrocephalus)</li>
+<li>High-pitched or weak cry</li>
+<li>Persistent hypotonia (floppy infant — central vs peripheral causes)</li></ul>`,
+t2:`<p><strong>Neuroimaging indications in neonates:</strong></p>
+<table class="dt"><thead><tr><th>Modality</th><th>Indications</th><th>Strengths</th></tr></thead><tbody>
+<tr><td><strong>Cranial US</strong></td><td>Screening all &lt;32 wk at 7–14d and 36–40 wk PMA; suspected IVH; hydrocephalus; ↑ HC</td><td>Bedside, no sedation, no radiation, repeatable. Good for IVH, hydrocephalus.</td></tr>
+<tr><td><strong>MRI brain</strong></td><td>HIE (basal ganglia/thalami and watershed injury); stroke; seizures of unknown cause; congenital malformations; meningitis complications</td><td>Gold standard for parenchymal detail. Best at 3–7 days for HIE.</td></tr>
+<tr><td><strong>Head CT</strong></td><td>Acute hemorrhage (especially when MRI not available); calcifications (TORCH); skull fractures; emergent herniation</td><td>Fast. Good for blood and bone. Radiation exposure limits use.</td></tr>
+<tr><td><strong>aEEG / cEEG</strong></td><td>Seizure detection, HIE monitoring, TH monitoring, encephalopathy assessment</td><td>Continuous monitoring. aEEG = bedside trend; cEEG = gold standard for seizure detection.</td></tr>
+</tbody></table>`,
+t3:`<p><strong>Key evidence informing neonatal neurology practice:</strong></p>
+<ul><li>CoolCap, NICHD, TOBY, ICE, HELIX trials → therapeutic hypothermia for HIE</li>
+<li>NEOLEV2 trial (Lancet Child Adolesc Health 2023) → phenobarbital superior to levetiracetam for neonatal seizures</li>
+<li>ILAE 2023 Neonatal Seizure Classification → replaces older classification</li>
+<li>AAP 2024 Clinical Report on Perinatal HIE → updated definitions and management</li></ul>`
+},children:[
+// ═══ HIE ═══
+{name:"Hypoxic-Ischemic\nEncephalopathy",icon:"🔥",type:"emergency",sub:"TH within 6 hours · Sarnat staging",edge:"Perinatal\nasphyxia",
+info:{tabs:["Definition & Criteria","Sarnat Staging","Therapeutic Hypothermia","Passive Cooling"],
+t0:`<p><strong>Hypoxic-Ischemic Encephalopathy (HIE):</strong> Brain injury from perinatal oxygen deprivation. Incidence: 1–3/1,000 live births in developed countries.</p>
+<p><strong>Criteria suggesting perinatal asphyxia (AAP/ACOG):</strong></p>
+<ul><li>Umbilical cord or early postnatal arterial pH &lt;7.00 or base deficit ≥12 mmol/L</li>
+<li>5-minute Apgar score 0–3 (with ongoing need for resuscitation)</li>
+<li>Sentinel hypoxic event (cord prolapse, uterine rupture, placental abruption, shoulder dystocia)</li>
+<li>Evidence of encephalopathy in the first 24 hours (altered consciousness, tone, reflexes, feeding, seizures)</li>
+<li>Multisystem organ involvement (renal failure, liver dysfunction, cardiac dysfunction, DIC)</li></ul>
+<div class="bx br">🚨 <strong>Therapeutic hypothermia must be initiated within 6 hours of birth.</strong> Every hour of delay worsens outcomes. Begin passive cooling (turn off warmer) immediately if TH is being considered, while arranging transfer if needed.</div>`,
+t1:`<p><strong>Modified Sarnat Staging for HIE:</strong></p>
+<table class="rt"><thead><tr><th>Parameter</th><th>Stage 1 (Mild)</th><th>Stage 2 (Moderate)</th><th>Stage 3 (Severe)</th></tr></thead><tbody>
+<tr><td>Consciousness</td><td>Hyperalert, irritable</td><td>Lethargic</td><td>Comatose</td></tr>
+<tr><td>Tone</td><td>Normal or mildly ↑</td><td>Hypotonia (marked)</td><td>Flaccid</td></tr>
+<tr><td>Posture</td><td>Mild distal flexion</td><td>Strong distal flexion</td><td>Decerebrate</td></tr>
+<tr><td>Suck/Moro</td><td>Active/exaggerated</td><td>Weak/incomplete</td><td>Absent</td></tr>
+<tr><td>Pupils</td><td>Dilated</td><td>Constricted</td><td>Unequal, fixed, or dilated</td></tr>
+<tr><td>Seizures</td><td>None</td><td>Common (within 24h)</td><td>Frequent/status epilepticus</td></tr>
+<tr><td>EEG</td><td>Normal</td><td>Low voltage, seizures</td><td>Burst-suppression or flat</td></tr>
+<tr><td>Duration</td><td>&lt;24 hours</td><td>2–14 days</td><td>Weeks to permanent</td></tr>
+<tr><td>Outcome</td><td>Good (100% normal)</td><td>~60–70% normal with TH</td><td>~50–75% death or severe disability</td></tr>
+</tbody></table>
+<div class="bx bb">ℹ️ <strong>TH eligibility:</strong> Sarnat stage 2 or 3 (moderate or severe HIE). Sarnat 1 does NOT meet criteria for TH. Staging should be performed as early as possible, ideally within the first 6 hours.</div>`,
+t2:`<p><strong>Therapeutic Hypothermia Protocol (based on NICHD/TOBY/CoolCap):</strong></p>
+<table class="rt"><thead><tr><th>Parameter</th><th>Protocol</th></tr></thead><tbody>
+<tr><td>Eligibility</td><td>≥36 wk GA; &lt;6 hours old; moderate-severe HIE (Sarnat 2–3); pH &lt;7.00 or BD ≥16, OR pH 7.01–7.15 or BD 10–15.9 + encephalopathy or sentinel event</td></tr>
+<tr><td>Target temperature</td><td>33.5°C ± 0.5°C (whole-body cooling) for 72 hours</td></tr>
+<tr><td>Initiation</td><td>Within 6 hours of birth (earlier is better)</td></tr>
+<tr><td>Method</td><td>Servo-controlled whole-body cooling blanket/mattress</td></tr>
+<tr><td>Rewarming</td><td>Slow rewarming: 0.5°C per hour over 6–12 hours (target 36.5°C)</td></tr>
+<tr><td>Duration</td><td>72 hours of cooling + 6–12 hours of rewarming = ~78–84 hours total</td></tr>
+</tbody></table>
+<p><strong>Monitoring during TH:</strong></p>
+<ul><li>Continuous aEEG/cEEG (seizure detection — clinical seizures may be suppressed by hypothermia)</li>
+<li>Continuous core temperature (esophageal or rectal probe)</li>
+<li>Cardiorespiratory monitoring (sinus bradycardia to 80–100 bpm is expected and benign)</li>
+<li>Serial blood gases, electrolytes, glucose, coagulation studies</li>
+<li>Renal function (UOP, Cr, BUN — AKI common in HIE)</li>
+<li>LFTs (hepatic injury common)</li>
+<li>Echocardiogram if hemodynamically unstable</li></ul>
+<div class="bx bg">✓ <strong>Evidence base:</strong> Meta-analysis of 7 RCTs (n=1,214): TH reduces death or major NDI by ~25% (NNT 7–8). Greatest benefit in moderate HIE (Sarnat 2). Modest benefit in severe HIE (Sarnat 3).</div>`,
+t3:`<p><strong>Passive Cooling for Level II/Rural Hospitals:</strong></p>
+<ol class="sl">
+<li><strong>Turn off radiant warmer</strong> immediately once TH decision made</li>
+<li>Remove hat, leave infant in diaper only</li>
+<li>Target rectal temperature 33–34°C using continuous temperature monitoring</li>
+<li>If overcooling (&lt;32°C): apply blankets incrementally, do NOT use active warming devices (risk of overshoot)</li>
+<li>Monitor for bradycardia (expected), coagulopathy, metabolic changes</li>
+<li>Arrange EMERGENT transport to TH center (Level III/IV NICU)</li>
+<li>Communicate timing: call receiving center early so they can prepare servo-controlled cooling</li>
+</ol>
+<div class="bx bo">⚠️ <strong>Passive cooling is a BRIDGE, not definitive therapy.</strong> The goal is to achieve and maintain target temperature during transport. Avoid overcooling (&lt;32°C) which increases complications without additional benefit.</div>`
+},children:[
+{name:"TH Initiation\n& Monitoring",icon:"❄️",type:"action",sub:"33.5°C × 72h · Slow rewarming",edge:"Sarnat 2–3\n< 6 hours",
+info:{tabs:["Cooling Protocol","Complications","MRI Timing"],
+t0:`<ol class="sl">
+<li>Confirm eligibility: ≥36 wk, &lt;6h old, Sarnat 2 or 3</li>
+<li>Place esophageal or rectal temperature probe</li>
+<li>Initiate servo-controlled cooling to 33.5°C ± 0.5°C</li>
+<li>Start continuous aEEG/cEEG monitoring</li>
+<li>Obtain baseline: CBC, CMP, coags, LFTs, troponin, lactate, blood gas</li>
+<li>Place IV access, Foley catheter (monitor UOP closely — AKI in ~30–50%)</li>
+<li>Maintain for 72 hours with continuous monitoring</li>
+<li>Rewarming: 0.5°C per hour to 36.5°C over 6–12 hours</li>
+<li>Watch for rebound seizures during rewarming (common — continue EEG monitoring)</li>
+</ol>`,
+t1:`<p><strong>Expected physiologic effects vs complications:</strong></p>
+<table class="dt"><thead><tr><th>Expected (benign)</th><th>Complication (intervene)</th></tr></thead><tbody>
+<tr><td>Sinus bradycardia (80–100 bpm)</td><td>Arrhythmia (not sinus), QTc prolongation</td></tr>
+<tr><td>Mild thrombocytopenia</td><td>Severe thrombocytopenia (&lt;50K), DIC, active bleeding</td></tr>
+<tr><td>↓ Metabolism (↓ drug clearance)</td><td>Persistent metabolic acidosis, severe hypoglycemia</td></tr>
+<tr><td>Mild sclerema (skin hardening)</td><td>Severe subcutaneous fat necrosis (hypercalcemia risk weeks later)</td></tr>
+<tr><td>Shivering</td><td>Persistent overcooling (&lt;32°C)</td></tr>
+</tbody></table>
+<div class="bx bo">⚠️ <strong>Subcutaneous fat necrosis:</strong> Firm, erythematous nodules appearing during or after TH. Monitor calcium for weeks — can cause life-threatening hypercalcemia (from granulomatous 1,25-dihydroxyvitamin D production).</div>`,
+t2:`<p><strong>MRI Timing:</strong></p>
+<ul><li><strong>Best timing: day 3–7 of life</strong> (after rewarming). Earlier MRI may underestimate injury; later MRI may show pseudonormalization.</li>
+<li><strong>DWI (diffusion-weighted imaging):</strong> Most sensitive for acute ischemic injury. Peaks at day 3–5.</li>
+<li><strong>Patterns of injury on MRI:</strong><br>
+— <strong>Basal ganglia/thalami + PLIC:</strong> Acute profound asphyxia (sentinel event). Associated with dyskinetic CP, feeding/swallowing difficulties.<br>
+— <strong>Watershed (border zone):</strong> Partial prolonged asphyxia. Associated with cognitive impairment, quadriparetic CP.<br>
+— <strong>Total/near-total:</strong> Severe prolonged asphyxia. Worst prognosis.</li>
+<li><strong>MRS (spectroscopy):</strong> Elevated lactate/NAA ratio in basal ganglia is one of the most accurate early predictors of adverse outcome.</li></ul>`
+}},
+{name:"Neuroprognost-\nication",icon:"📊",type:"diagnosis",sub:"MRI + EEG + exam → prognosis",edge:"After\nrewarming",
+info:{tabs:["Prognostic Tools","Counseling"],
+t0:`<p><strong>Best predictors of outcome after HIE + TH:</strong></p>
+<table class="dt"><thead><tr><th>Tool</th><th>Timing</th><th>Prognostic Value</th></tr></thead><tbody>
+<tr><td><strong>MRI (DWI + conventional)</strong></td><td>Day 3–7</td><td>Strongest single predictor. BG/thalami + PLIC signal loss → high risk CP/death.</td></tr>
+<tr><td><strong>MR Spectroscopy</strong></td><td>Day 3–7</td><td>Lac/NAA ratio >0.3 in BG = high specificity for adverse outcome.</td></tr>
+<tr><td><strong>EEG background</strong></td><td>24–48h post-rewarming</td><td>Persistent burst-suppression or flat EEG = poor prognosis. Recovery of normal EEG = favorable.</td></tr>
+<tr><td><strong>Neurologic exam at discharge</strong></td><td>Pre-discharge</td><td>Persistent encephalopathy, absent suck, persistent hypotonia = high risk NDI.</td></tr>
+<tr><td><strong>Sarnat stage</strong></td><td>Evolving</td><td>Stage 3 persisting beyond 72h = high mortality/severe disability.</td></tr>
+</tbody></table>`,
+t1:`<p><strong>Family counseling framework:</strong></p>
+<ul><li>Wait for MRI and post-rewarming exam before definitive prognostication</li>
+<li>Avoid early pessimistic predictions in the first 24–48h (the brain is still evolving)</li>
+<li>Use multiple modalities (MRI + EEG + clinical exam) — no single test is 100% predictive</li>
+<li>Moderate HIE with TH: ~60–70% will have normal or mildly impaired outcomes</li>
+<li>Severe HIE: early goals-of-care discussion appropriate if multiple indicators predict poor outcome</li>
+<li>All HIE survivors need long-term neurodevelopmental follow-up (minimum 2 years, preferably to school age)</li></ul>`
+}}
+]},
+// ═══ NEONATAL SEIZURES ═══
+{name:"Neonatal\nSeizures",icon:"⚡",type:"emergency",sub:"Phenobarbital first-line · NEOLEV2 trial",edge:"Seizure\nactivity",
+info:{tabs:["Recognition","ILAE 2023 Classification","Workup","Treatment Algorithm"],
+t0:`<p><strong>Neonatal seizures</strong> are the most common neurologic emergency in newborns. Incidence: 1–5/1,000 live births (higher in preterm). Most are SUBCLINICAL — only detected on EEG. Clinical seizures in neonates look different from older children.</p>
+<p><strong>Clinical seizure types (neonatal):</strong></p>
+<ul><li><strong>Subtle:</strong> Most common. Eye deviation, lip smacking, cycling movements, apnea. Often missed without EEG.</li>
+<li><strong>Clonic:</strong> Rhythmic jerking, focal or multifocal. Most likely to have EEG correlate.</li>
+<li><strong>Tonic:</strong> Sustained posturing (extension or flexion). Often brainstem origin. Less likely to have EEG correlate.</li>
+<li><strong>Myoclonic:</strong> Brief, shock-like jerks. Focal or generalized.</li></ul>
+<div class="bx bo">⚠️ <strong>Tremor vs seizure:</strong> Tremor = equal amplitude oscillations, stimulus-sensitive, suppressible by holding the limb. Seizure = NOT stimulus-sensitive, NOT suppressible, often with autonomic changes. Use EEG if in doubt.</div>`,
+t1:`<p><strong>ILAE 2023 Neonatal Seizure Classification:</strong></p>
+<ul><li>Classifies by: (1) electrographic vs clinical, (2) motor manifestation type, (3) autonomic features</li>
+<li>Emphasizes that ONLY electrographic seizures (EEG-confirmed) should be treated with ASMs</li>
+<li>Clinical events without EEG correlate may represent brainstem release phenomena, NOT true epileptic seizures</li>
+<li>Neonatal seizures are almost always FOCAL (even if they appear generalized clinically)</li>
+<li>Status epilepticus = continuous seizure or recurrent seizures for >50% of a 1-hour recording</li></ul>`,
+t2:`<p><strong>Seizure Etiology Workup:</strong></p>
+<ol class="sl">
+<li><strong>Blood glucose</strong> (STAT — hypoglycemia is most treatable cause)</li>
+<li><strong>Electrolytes:</strong> Na, Ca, Mg, phosphorus (hyponatremia, hypocalcemia, hypomagnesemia)</li>
+<li><strong>Blood gas</strong> (acidosis, hyperammonemia)</li>
+<li><strong>Sepsis workup:</strong> CBC, CRP, blood culture, LP (meningitis causes seizures)</li>
+<li><strong>CSF:</strong> Cell count, protein, glucose, culture, HSV PCR, amino acids, neurotransmitters</li>
+<li><strong>Cranial US</strong> (bedside, rapid — hemorrhage, hydrocephalus)</li>
+<li><strong>MRI brain</strong> (when stable — stroke, HIE pattern, malformations)</li>
+<li><strong>EEG / aEEG</strong> (continuous monitoring — most neonatal seizures are subclinical)</li>
+<li><strong>Metabolic:</strong> Ammonia, lactate, pyruvate, amino acids, urine organic acids (if recurrent seizures without etiology)</li>
+<li><strong>Pyridoxine trial</strong> (100 mg IV with EEG monitoring — pyridoxine-dependent epilepsy if seizures stop immediately)</li>
+</ol>
+<table class="dt"><thead><tr><th>Etiology</th><th>% of Cases</th><th>Key Lab/Imaging</th></tr></thead><tbody>
+<tr><td>HIE</td><td>~40–50%</td><td>History, exam, MRI (BG/thalami pattern)</td></tr>
+<tr><td>Intracranial hemorrhage</td><td>~15%</td><td>Cranial US, CT/MRI (IVH, SDH, SAH)</td></tr>
+<tr><td>Ischemic stroke</td><td>~10%</td><td>MRI DWI (MCA territory most common)</td></tr>
+<tr><td>Infection (meningitis/encephalitis)</td><td>~10%</td><td>CSF pleocytosis, culture, HSV PCR</td></tr>
+<tr><td>Metabolic</td><td>~5–10%</td><td>Glucose, Ca, Mg, Na, ammonia, IEM workup</td></tr>
+<tr><td>Congenital malformation</td><td>~5%</td><td>MRI (cortical dysplasia, lissencephaly)</td></tr>
+<tr><td>Genetic epilepsy</td><td>~5%</td><td>Epilepsy gene panel; consider SCN2A, KCNQ2</td></tr>
+</tbody></table>`,
+t3:`<p><strong>Seizure Treatment Algorithm:</strong></p>
+<ol class="sl">
+<li><strong>Correct reversible causes FIRST:</strong> D10W 2 mL/kg for hypoglycemia, calcium gluconate 10% for hypocalcemia, magnesium sulfate for hypomagnesemia</li>
+<li><strong>FIRST-LINE: Phenobarbital 20 mg/kg IV</strong> (infuse over 15–20 min). Seizure cessation: ~60–80% (NEOLEV2 trial confirmed superiority over levetiracetam).</li>
+<li><strong>If seizures continue:</strong> Additional phenobarbital 10 mg/kg × 1–2 doses (max total 40 mg/kg)</li>
+<li><strong>SECOND-LINE (if phenobarbital fails):</strong> Levetiracetam 40–60 mg/kg IV, OR phenytoin/fosphenytoin 20 mg PE/kg IV</li>
+<li><strong>THIRD-LINE (refractory):</strong> Midazolam continuous infusion (0.05–0.15 mg/kg/hr) or lidocaine infusion (2 mg/kg/hr, NOT with phenytoin — cardiac risk)</li>
+<li><strong>Consider pyridoxine trial:</strong> 100 mg IV while on EEG if no etiology found and seizures persist</li>
+</ol>
+<div class="bx bg">✓ <strong>NEOLEV2 Trial (Lancet Child Adolesc Health 2023):</strong> Phenobarbital was superior to levetiracetam for neonatal seizure cessation (80% vs 28%, p<0.001). Phenobarbital remains first-line. Levetiracetam should be second-line or used in specific situations (hepatic dysfunction, concern for sedation).</div>`
+},children:[
+{name:"Phenobarbital\nProtocol",icon:"💊",type:"action",sub:"20 mg/kg IV · 80% efficacy · NEOLEV2",edge:"First-line\nASM",
+info:{tabs:["Dosing","Monitoring","Discontinuation"],
+t0:`<table class="rt"><thead><tr><th>Parameter</th><th>Protocol</th></tr></thead><tbody>
+<tr><td>Loading dose</td><td>20 mg/kg IV over 15–20 min</td></tr>
+<tr><td>Additional loading</td><td>10 mg/kg IV × 1–2 if seizures persist (max 40 mg/kg total)</td></tr>
+<tr><td>Maintenance</td><td>3–5 mg/kg/day divided q12–24h (start 12–24h after load)</td></tr>
+<tr><td>Therapeutic level</td><td>20–40 µg/mL</td></tr>
+<tr><td>Route</td><td>IV preferred for loading; PO for maintenance once tolerating feeds</td></tr>
+</tbody></table>`,
+t1:`<ul><li>Continuous EEG/aEEG to assess seizure burden and treatment response</li>
+<li>Monitor respiratory status (phenobarbital causes respiratory depression — have PPV/intubation equipment ready)</li>
+<li>Monitor blood pressure (hypotension possible)</li>
+<li>Trough levels at 48–72h, then weekly</li>
+<li>LFTs if prolonged therapy</li></ul>`,
+t2:`<p><strong>When to discontinue ASMs:</strong></p>
+<ul><li>If seizures were due to acute provoked cause (HIE, metabolic) and resolved: discontinue before discharge in most cases</li>
+<li>AAP/WHO guidance supports early discontinuation of phenobarbital if seizures have resolved and EEG is normalized</li>
+<li>Wean gradually (10–20% every 3–5 days) while monitoring EEG</li>
+<li>Prolonged therapy only if: ongoing seizures, epilepsy syndrome identified, structural malformation with high recurrence risk</li></ul>
+<div class="bx bg">✓ <strong>Trend is toward EARLIER discontinuation.</strong> Most neonatal seizures from acute causes do not recur. Prolonged phenobarbital exposure may have adverse effects on the developing brain.</div>`
+}},
+{name:"Refractory\nSeizure Protocol",icon:"🔴",type:"emergency",sub:"Midazolam gtt or lidocaine · Pyridoxine trial",edge:"Phenobarb\nfailed",
+info:{tabs:["Second/Third Line","Pyridoxine Trial"],
+t0:`<p><strong>If phenobarbital fails (total 40 mg/kg):</strong></p>
+<table class="rt"><thead><tr><th>Agent</th><th>Dose</th><th>Notes</th></tr></thead><tbody>
+<tr><td>Levetiracetam</td><td>40–60 mg/kg IV</td><td>NEOLEV2: only 28% efficacy as first-line; may be better as second-line after phenobarbital</td></tr>
+<tr><td>Fosphenytoin</td><td>20 mg PE/kg IV</td><td>Good for focal seizures. Cardiac monitoring required. Do NOT use with lidocaine.</td></tr>
+<tr><td>Midazolam</td><td>Load 0.05–0.15 mg/kg, then 0.05–0.4 mg/kg/hr</td><td>Continuous infusion for refractory status. Risk: respiratory depression, hypotension.</td></tr>
+<tr><td>Lidocaine</td><td>2 mg/kg/hr IV × 4h then taper</td><td>DO NOT use with fosphenytoin (cardiac toxicity). Contraindicated with congenital heart disease.</td></tr>
+</tbody></table>`,
+t1:`<p><strong>Pyridoxine (Vitamin B6) Trial:</strong></p>
+<ul><li>Give pyridoxine 100 mg IV while monitoring EEG</li>
+<li>In pyridoxine-dependent epilepsy (ALDH7A1 mutation), seizures stop within minutes</li>
+<li>If positive response: continue pyridoxine 30 mg/kg/day divided BID</li>
+<li>If no response to pyridoxine: try pyridoxal-5-phosphate (PLP) 30 mg/kg/day (PNPO deficiency)</li>
+<li>Consider folinic acid trial (cerebral folate deficiency)</li>
+<li>These treatable metabolic epilepsies are rare but MUST be considered when seizures have no identified cause and are refractory to standard ASMs</li></ul>
+<div class="bx bp">🔬 <strong>Always consider inborn errors of metabolism in unexplained refractory neonatal seizures.</strong> Send: plasma amino acids, urine organic acids, CSF amino acids/neurotransmitters, ALDH7A1 gene testing.</div>`
+}}
+]},
+// ═══ IVH ═══
+{name:"Intraventricular\nHemorrhage",icon:"🔴",type:"urgent",sub:"Preterm · Cranial US screening · Papile grading",edge:"Preterm\n< 32 wk",
+info:{tabs:["Epidemiology","Papile Classification","Screening Protocol","Management"],
+t0:`<p><strong>IVH</strong> originates from the germinal matrix (highly vascular, fragile structure in the subependymal region) in preterm infants. Incidence: ~25–30% of VLBW (&lt;1500g); up to 40–50% of ELBW (&lt;1000g). Most occurs within the first 72 hours of life.</p>
+<p><strong>Risk factors:</strong> Prematurity (strongest), absence of antenatal steroids, vaginal delivery, low Apgar scores, fluctuating cerebral blood flow, pneumothorax, coagulopathy, rapid volume expansion, hypercarbia.</p>`,
+t1:`<table class="rt"><thead><tr><th>Grade</th><th>Description</th><th>Incidence</th><th>Prognosis</th></tr></thead><tbody>
+<tr><td>I</td><td>Germinal matrix hemorrhage only (subependymal)</td><td>Most common</td><td>Excellent; resolves spontaneously</td></tr>
+<tr><td>II</td><td>IVH without ventricular dilation (&lt;50% ventricle filled)</td><td>Common</td><td>Generally favorable</td></tr>
+<tr><td>III</td><td>IVH WITH acute ventricular dilation (>50% filled)</td><td>Less common</td><td>Significant risk of hydrocephalus (50–80%) and NDI</td></tr>
+<tr><td>IV (PVHI)</td><td>Periventricular hemorrhagic infarction</td><td>Least common</td><td>High risk of CP and NDI (40–80%)</td></tr>
+</tbody></table>
+<div class="bx bb">ℹ️ <strong>"Grade IV" is now more accurately termed PVHI</strong> (periventricular hemorrhagic infarction) — it represents venous infarction from obstruction of medullary veins by the IVH, NOT simply extension of the hemorrhage into parenchyma.</div>`,
+t2:`<p><strong>Cranial US Screening Schedule (AAP/AIUM):</strong></p>
+<ol class="sl">
+<li><strong>All infants &lt;32 weeks GA:</strong> First cranial US at 7–14 days of life</li>
+<li><strong>Repeat at 36–40 weeks PMA</strong> (evaluate for PVL/periventricular white matter injury)</li>
+<li><strong>Earlier US if:</strong> Acute neurologic deterioration, unexplained anemia/dropping Hct, seizures, bulging fontanelle</li>
+<li>Consider serial US weekly in ELBW during first 4–6 weeks if IVH detected</li>
+<li>Follow-up US if progressive ventriculomegaly suspected (measure ventricular index)</li>
+</ol>`,
+t3:`<p><strong>Management by grade:</strong></p>
+<table class="dt"><thead><tr><th>Grade</th><th>Management</th><th>Follow-up</th></tr></thead><tbody>
+<tr><td>I–II</td><td>Supportive. Avoid BP fluctuations, correct coagulopathy, gentle handling.</td><td>Repeat US at 36–40 wk PMA. Usually resolves.</td></tr>
+<tr><td>III</td><td>Serial US weekly for ventricular size. Monitor HC. Watch for post-hemorrhagic hydrocephalus (PHH).</td><td>Neurosurgery consult if progressive ventriculomegaly. May need reservoir/VP shunt.</td></tr>
+<tr><td>PVHI</td><td>Same as Grade III + evaluate for porencephalic cyst development. Higher risk of surgical intervention.</td><td>MRI before discharge. Long-term neuro/developmental follow-up. High risk of contralateral hemiplegia.</td></tr>
+</tbody></table>
+<p><strong>Post-Hemorrhagic Hydrocephalus (PHH):</strong></p>
+<ul><li>Occurs in ~30% of Grade III and ~50–80% of PVHI</li>
+<li>Serial cranial US measuring ventricular index (VI) and anterior horn width (AHW)</li>
+<li>Intervention thresholds: VI > p97 + 4mm OR AHW > 10mm OR clinical signs (↑ HC, splayed sutures, bulging fontanelle, apnea)</li>
+<li>Options: temporary measures (ventricular reservoir, subgaleal shunt, DRIFT) → definitive VP shunt when infant is bigger/stable</li></ul>`
+}},
+// ═══ STROKE ═══
+{name:"Neonatal\nStroke",icon:"🫀",type:"urgent",sub:"MCA territory · Seizures · MRI DWI",edge:"Focal seizures\nor asymmetric\ntone",
+info:{tabs:["Types","Presentation","Diagnosis","Management"],
+t0:`<p><strong>Neonatal stroke:</strong> focal disruption of cerebral blood flow. Incidence: ~1/2,300–4,000 live births. Most common vascular event in term neonates.</p>
+<table class="dt"><thead><tr><th>Type</th><th>Description</th><th>Frequency</th></tr></thead><tbody>
+<tr><td><strong>NAIS (Neonatal Arterial Ischemic Stroke)</strong></td><td>Thromboembolism in cerebral artery (MCA territory ~80%)</td><td>Most common</td></tr>
+<tr><td><strong>CSVT (Cerebral Sinovenous Thrombosis)</strong></td><td>Thrombosis of dural sinuses or cerebral veins</td><td>Less common</td></tr>
+<tr><td><strong>Hemorrhagic stroke</strong></td><td>Intracerebral hemorrhage in term infant</td><td>Least common</td></tr>
+</tbody></table>`,
+t1:`<p><strong>Clinical presentation:</strong></p>
+<ul><li><strong>Focal seizures:</strong> Most common presenting sign (~80%). Often clonic seizures of one limb or hemibody.</li>
+<li><strong>Asymmetric tone:</strong> Hemiparesis — decreased spontaneous movement of one side</li>
+<li><strong>Encephalopathy:</strong> Lethargy, poor feeding (less common than seizures)</li>
+<li><strong>Many neonatal strokes are clinically silent</strong> — discovered incidentally on neuroimaging or when child develops handedness preference/hemiplegia at 4–6 months</li></ul>
+<p><strong>Risk factors:</strong> cardiac disease (PFO, CHD), prothrombotic disorders, infection, perinatal asphyxia, dehydration, maternal preeclampsia, cocaine exposure. BUT in ~50%, no risk factor identified.</p>`,
+t2:`<ol class="sl">
+<li><strong>MRI with DWI</strong> — gold standard. DWI shows acute ischemia within hours. MCA territory involvement in ~80%.</li>
+<li><strong>MRA/MRV</strong> — evaluate vessel occlusion (arterial or venous)</li>
+<li><strong>Echocardiogram</strong> — rule out cardiac source of embolism (PFO, vegetation, structural CHD)</li>
+<li><strong>Prothrombotic workup</strong> (timing controversial — some defer to 3–6 months):<br>
+Factor V Leiden, prothrombin G20210A, protein C/S, antithrombin III, homocysteine, lipoprotein(a), antiphospholipid antibodies</li>
+<li><strong>Infection workup</strong> — blood culture, CRP (infection is a risk factor for thrombosis)</li>
+</ol>`,
+t3:`<p><strong>Management:</strong></p>
+<ul><li><strong>Seizure treatment:</strong> Phenobarbital per standard neonatal seizure protocol</li>
+<li><strong>Anticoagulation:</strong> NOT routinely recommended for NAIS (AHA/ASA 2019). Consider for CSVT if propagating clot or no hemorrhagic transformation (LMWH enoxaparin 1.5 mg/kg SC q12h with anti-Xa monitoring).</li>
+<li><strong>Aspirin:</strong> Some centers use low-dose aspirin (1–5 mg/kg/day) for recurrent stroke or cardiac source; evidence limited in neonates.</li>
+<li><strong>Supportive:</strong> Maintain normal glucose, temperature, hydration, blood pressure</li>
+<li><strong>Follow-up:</strong> Repeat MRI at 4–6 weeks. Neurodevelopmental monitoring. ~30–50% develop hemiparetic CP; ~30% develop epilepsy.</li></ul>`
+}},
+// ═══ HYPOTONIA ═══
+{name:"Neonatal\nHypotonia",icon:"🧸",type:"decision",sub:"Floppy infant — central vs peripheral",edge:"Decreased\ntone",
+info:{tabs:["Central vs Peripheral","Differential","Workup Algorithm","Key Diagnoses"],
+t0:`<p><strong>The floppy infant:</strong> Hypotonia is a clinical sign, not a diagnosis. The critical first step is determining whether the cause is <strong>central (brain/spinal cord)</strong> or <strong>peripheral (anterior horn cell, nerve, NMJ, muscle)</strong>.</p>
+<table class="dt"><thead><tr><th>Feature</th><th>Central Hypotonia</th><th>Peripheral Hypotonia</th></tr></thead><tbody>
+<tr><td>Consciousness</td><td>Often altered (lethargic/encephalopathic)</td><td>Alert ("bright-eyed floppy baby")</td></tr>
+<tr><td>Deep tendon reflexes</td><td>Normal or increased</td><td>Decreased or absent</td></tr>
+<tr><td>Weakness</td><td>Less prominent; antigravity movements may be preserved</td><td>Prominent weakness; poor antigravity movement</td></tr>
+<tr><td>Seizures</td><td>May be present</td><td>Absent</td></tr>
+<tr><td>Fasciculations</td><td>Absent</td><td>Present (tongue fasciculations → SMA)</td></tr>
+<tr><td>Fisting</td><td>Cortical thumb/persistent fisting</td><td>Open, relaxed hands</td></tr>
+</tbody></table>`,
+t1:`<table class="dt"><thead><tr><th>Category</th><th>Examples</th></tr></thead><tbody>
+<tr><td><strong>Central — brain</strong></td><td>HIE, chromosomal (T21, Prader-Willi), brain malformation, metabolic (Zellweger, Pompe), infection</td></tr>
+<tr><td><strong>Central — spinal</strong></td><td>Spinal cord injury (birth trauma), spinal muscular atrophy (SMA) with upper motor neuron features</td></tr>
+<tr><td><strong>Peripheral — anterior horn</strong></td><td>SMA Type 1 (Werdnig-Hoffmann) — #1 genetic cause of infant death</td></tr>
+<tr><td><strong>Peripheral — nerve</strong></td><td>Congenital neuropathies (Charcot-Marie-Tooth, congenital hypomyelinating)</td></tr>
+<tr><td><strong>Peripheral — NMJ</strong></td><td>Congenital myasthenic syndromes, transient neonatal myasthenia (maternal MG)</td></tr>
+<tr><td><strong>Peripheral — muscle</strong></td><td>Congenital myotonic dystrophy, congenital myopathies (nemaline, centronuclear), congenital muscular dystrophies</td></tr>
+</tbody></table>`,
+t2:`<ol class="sl">
+<li><strong>Determine central vs peripheral</strong> (see table above)</li>
+<li><strong>If central:</strong> MRI brain, chromosomal microarray, metabolic workup (ammonia, lactate, amino acids, organic acids, very long chain fatty acids for Zellweger), methylation studies (Prader-Willi)</li>
+<li><strong>If peripheral:</strong> CK level (elevated in muscular dystrophy/myopathy), SMN1 gene testing (SMA — MOST IMPORTANT; now on newborn screening), EMG/NCV (rarely done in neonates; consider if diagnosis unclear), genetic testing panels</li>
+<li><strong>Newborn screening results:</strong> SMA is on the RUSP — check results early</li>
+<li><strong>If congenital myotonic dystrophy suspected:</strong> Examine the MOTHER (myotonia, grip difficulty, facial weakness — disease is maternally transmitted; CTG repeat expansion)</li>
+</ol>`,
+t3:`<p><strong>SMA Type 1 (Werdnig-Hoffmann):</strong></p>
+<ul><li>Most common genetic cause of infant death (before gene therapy era)</li>
+<li>SMN1 gene homozygous deletion (AR inheritance)</li>
+<li>Presents: severe hypotonia, absent DTRs, tongue fasciculations, bell-shaped chest, paradoxical breathing, alert face ("bright-eyed")</li>
+<li><strong>URGENCY: Gene therapy (onasemnogene — Zolgensma) is most effective when given EARLY (before symptom onset).</strong> FDA approved for &lt;2 years. Newborn screening allows pre-symptomatic treatment.</li></ul>
+<div class="bx br">🚨 <strong>SMA is a NEUROLOGY EMERGENCY when identified on newborn screening.</strong> Pre-symptomatic treatment with gene therapy (Zolgensma) or nusinersen dramatically improves outcomes. Refer to pediatric neurology IMMEDIATELY when SMA NBS is positive.</div>
+<p><strong>Congenital Myotonic Dystrophy (DM1):</strong></p>
+<ul><li>Maternal transmission (CTG repeat expansion in DMPK gene; anticipation — gets worse each generation)</li>
+<li>Presents: polyhydramnios → severe hypotonia, respiratory failure, feeding difficulties, facial diplegia ("tented upper lip"), club feet</li>
+<li>Diagnosis: examine the MOTHER + genetic testing (CTG repeat >1000 in congenital form)</li>
+<li>Mortality: ~25% in severe neonatal form; survivors improve but develop adult DM1 features</li></ul>`
+}},
+// ═══ NEONATAL ABSTINENCE ═══
+{name:"Neonatal Opioid\nWithdrawal (NOWS)",icon:"💊",type:"decision",sub:"Eat-Sleep-Console · Non-pharm first",edge:"Maternal opioid\nexposure",
+info:{tabs:["Definition","Eat-Sleep-Console","Pharmacotherapy"],
+t0:`<p><strong>Neonatal Opioid Withdrawal Syndrome (NOWS)</strong> — previously called Neonatal Abstinence Syndrome (NAS). Affects ~60–80% of opioid-exposed neonates. Onset: 24–72 hours after birth (longer with methadone/buprenorphine — up to 5–7 days).</p>
+<p><strong>Signs:</strong></p>
+<ul><li><strong>CNS irritability:</strong> High-pitched cry, tremors, jitteriness, increased wakefulness, seizures (rare, &lt;5%)</li>
+<li><strong>GI dysfunction:</strong> Poor feeding, uncoordinated suck, vomiting, diarrhea, weight loss</li>
+<li><strong>Autonomic:</strong> Sneezing, yawning, sweating, temperature instability, mottling</li></ul>`,
+t1:`<p><strong>Eat-Sleep-Console (ESC) Approach — replacing Finnegan scoring:</strong></p>
+<p>ESC focuses on functional assessment rather than symptom scoring. Three simple questions:</p>
+<table class="rt"><thead><tr><th>Question</th><th>Adequate</th><th>Inadequate</th></tr></thead><tbody>
+<tr><td><strong>EAT:</strong> Is the infant eating well?</td><td>Coordinated suck, taking ≥1 oz per feed, gaining weight</td><td>Uncoordinated suck, poor intake, weight loss</td></tr>
+<tr><td><strong>SLEEP:</strong> Can the infant sleep ≥1 hour undisturbed?</strong></td><td>Sleeps ≥1 hour after feeding</td><td>Cannot sleep ≥1 hour despite swaddling/soothing</td></tr>
+<tr><td><strong>CONSOLE:</strong> Can the infant be consoled within 10 min?</td><td>Settles with swaddling, rocking, skin-to-skin</td><td>Inconsolable for >10 min despite all non-pharm interventions</td></tr>
+</tbody></table>
+<p><strong>If ALL three are adequate → continue non-pharmacologic care.</strong><br>
+<strong>If ANY ONE is inadequate despite optimized non-pharmacologic care → consider pharmacotherapy.</strong></p>
+<div class="bx bg">✓ <strong>ESC has reduced pharmacotherapy use by 50–70% and length of stay by 50%</strong> compared to Finnegan scoring in multiple quality improvement studies. AAP endorses this approach.</div>`,
+t2:`<p><strong>If pharmacotherapy is needed:</strong></p>
+<ul><li><strong>First-line: Morphine</strong> — 0.05–0.1 mg/kg PO q3–4h PRN (titrate to ESC goals). Wean 10–20% every 24–48h as tolerated.</li>
+<li><strong>Alternative: Methadone</strong> — longer half-life; less frequent dosing (q8–12h). May allow faster weaning.</li>
+<li><strong>Adjunct: Clonidine</strong> — 0.5–1 µg/kg PO q4–6h (for autonomic symptoms). May reduce morphine duration.</li>
+<li><strong>Adjunct: Phenobarbital</strong> — for polysubstance exposure (non-opioid components) or refractory cases. NOT first-line for opioid-only withdrawal.</li></ul>
+<p><strong>Non-pharmacologic interventions (ALWAYS first-line):</strong></p>
+<ul><li>Rooming-in with mother (strongest intervention — reduces pharmacotherapy by 50%)</li>
+<li>Breastfeeding (safe if mother is on MAT and HIV-negative; except if using illicit drugs)</li>
+<li>Swaddling, low-light, low-noise environment</li>
+<li>Skin-to-skin (kangaroo care)</li>
+<li>Small frequent feeds, high-calorie formula (24 kcal/oz) if needed for weight gain</li></ul>`
+}}
+]};
+
+// ═══ D3 ENGINE ═══
+const CM={assessment:{f:"#0f1d3a",s:"#60a5fa",t:"#60a5fa",b:"Assessment"},decision:{f:"#2a2006",s:"#fbbf24",t:"#fbbf24",b:"Decision Point"},emergency:{f:"#2a1215",s:"#f87171",t:"#f87171",b:"Emergency"},urgent:{f:"#2a1a0a",s:"#fb923c",t:"#fb923c",b:"Urgent"},action:{f:"#0a2a1a",s:"#4ade80",t:"#4ade80",b:"Action"},diagnosis:{f:"#1a0f2e",s:"#c084fc",t:"#c084fc",b:"Diagnosis"}};
+const svg=d3.select("#tc"),W=innerWidth,H=innerHeight;svg.attr("width",W).attr("height",H);const g=svg.append("g");const zm=d3.zoom().scaleExtent([0.2,3]).on("zoom",e=>g.attr("transform",e.transform));svg.call(zm);
+const nW=148,nH=62;const root=d3.hierarchy(T,d=>d.children);root.x0=H/2;root.y0=0;
+root.descendants().forEach(d=>{if(d.depth>1&&d.children){d._children=d.children;d.children=null;}});const tl=d3.tree().nodeSize([nH+32,nW+85]);
+function upd(src){const dur=420;tl(root);const nds=root.descendants(),lks=root.links();nds.forEach(d=>{d.y=d.depth*230;});
+const lk=g.selectAll(".lk").data(lks,d=>d.target.data.name);const le=lk.enter().append("path").attr("class","lk").attr("d",()=>{const o={x:src.x0,y:src.y0};return dg(o,o);});lk.merge(le).transition().duration(dur).attr("d",d=>dg(d.source,d.target));lk.exit().transition().duration(dur).attr("d",()=>{const o={x:src.x,y:src.y};return dg(o,o);}).remove();
+g.selectAll(".ll").remove();lks.forEach(d=>{if(d.target.data.edge){const ls=d.target.data.edge.split("\n"),mx=(d.source.x+d.target.x)/2,my=(d.source.y+d.target.y)/2;ls.forEach((l,i)=>{g.append("text").attr("class","ll").attr("x",my+12).attr("y",mx-4+i*11).text(l);});}});
+const nd=g.selectAll(".ng").data(nds,d=>d.data.name);const ne=nd.enter().append("g").attr("class","ng").attr("transform",`translate(${src.y0},${src.x0})`).on("click",(e,d)=>{if(d.children){d._children=d.children;d.children=null;}else if(d._children){d.children=d._children;d._children=null;}upd(d);});
+ne.append("rect").attr("class","nr").attr("x",-nW/2).attr("y",-nH/2).attr("width",nW).attr("height",nH).attr("fill",d=>CM[d.data.type]?.f||"#1e293b").attr("stroke",d=>CM[d.data.type]?.s||"#475569");ne.append("text").attr("class","ni").attr("y",-12).text(d=>d.data.icon);
+ne.each(function(d){const ls=d.data.name.split("\n"),el=d3.select(this);ls.forEach((l,i)=>{el.append("text").attr("class","nl").attr("y",4+i*13).text(l);});if(d.data.sub){el.append("text").attr("class","ns").attr("y",4+ls.length*13+5).text(d.data.sub.substring(0,32));}});
+ne.append("circle").attr("class","ib").attr("cx",nW/2-12).attr("cy",-nH/2+12).attr("r",10).attr("fill",d=>CM[d.data.type]?.s||"#60a5fa").attr("fill-opacity",.2).attr("stroke",d=>CM[d.data.type]?.s||"#60a5fa").attr("stroke-width",1.5).on("click",(e,d)=>{e.stopPropagation();showP(d.data);});
+ne.append("text").attr("x",nW/2-12).attr("y",-nH/2+16).attr("text-anchor","middle").attr("font-size","12px").attr("fill","#e2e8f0").attr("pointer-events","none").attr("font-weight","700").text("i");
+ne.append("text").attr("class","ei").attr("x",0).attr("y",nH/2+15).attr("text-anchor","middle").attr("font-size","10px").attr("fill","#475569");
+const nu=nd.merge(ne);nu.transition().duration(dur).attr("transform",d=>`translate(${d.y},${d.x})`);nu.select(".ei").text(d=>d._children?`▸ ${d._children.length} more`:"");
+nd.exit().transition().duration(dur).attr("transform",`translate(${src.y},${src.x})`).remove();nds.forEach(d=>{d.x0=d.x;d.y0=d.y;});}
+function dg(s,d){return`M${s.y} ${s.x}C${(s.y+d.y)/2} ${s.x},${(s.y+d.y)/2} ${d.x},${d.y} ${d.x}`;}
+upd(root);const iT=d3.zoomIdentity.translate(90,H/2-20).scale(0.82);svg.call(zm.transform,iT);
+function showP(data){const ov=document.getElementById("po"),c=CM[data.type]||CM.assessment;document.getElementById("picon").textContent=data.icon;document.getElementById("picon").style.background=c.f;document.getElementById("picon").style.border=`1.5px solid ${c.s}`;document.getElementById("ptitle").textContent=data.name.replace(/\n/g," ");const te=document.getElementById("ptype");te.textContent=c.b;te.style.background=c.f;te.style.color=c.t;te.style.border=`1px solid ${c.s}`;
+let h="";if(data.info.tabs){h+=`<div class="tabs">`;data.info.tabs.forEach((t,i)=>{h+=`<button class="tb${i===0?' active':''}" onclick="swT(${i})">${t}</button>`;});h+=`</div>`;data.info.tabs.forEach((t,i)=>{h+=`<div class="tc${i===0?' active':''}" data-t="${i}">${data.info['t'+i]||''}</div>`;});}
+if(data.sub){h+=`<div class="bx bb" style="margin-top:16px">ℹ️ <strong>Summary:</strong> ${data.sub}</div>`;}document.getElementById("pbody").innerHTML=h;ov.classList.add("active");document.getElementById("pp").scrollTop=0;}
+function swT(i){document.querySelectorAll('.tb').forEach((b,j)=>b.classList.toggle('active',j===i));document.querySelectorAll('.tc').forEach((c,j)=>c.classList.toggle('active',j===i));}
+function closeP(e){if(!e||e.target===document.getElementById("po"))document.getElementById("po").classList.remove("active");}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeP();});
+function resetZ(){svg.transition().duration(500).call(zm.transform,iT);}function expAll(){root.descendants().forEach(d=>{if(d._children){d.children=d._children;d._children=null;}});upd(root);}function colAll(){root.descendants().forEach(d=>{if(d.depth>0&&d.children){d._children=d.children;d.children=null;}});upd(root);}
+addEventListener("resize",()=>{svg.attr("width",innerWidth).attr("height",innerHeight);});
+</script></body></html>

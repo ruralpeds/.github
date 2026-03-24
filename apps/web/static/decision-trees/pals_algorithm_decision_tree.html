@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PALS Algorithm Decision Tree</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1121;--bg2:#0f172a;--surface:#1e293b;--border:#334155;--text:#e2e8f0;--text2:#94a3b8;--accent:#38bdf8;--red:#f87171;--rbg:#2a1215;--orange:#fb923c;--obg:#2a1a0a;--yellow:#fbbf24;--ybg:#2a2006;--green:#4ade80;--gbg:#0a2a1a;--blue:#60a5fa;--bbg:#0f1d3a;--purple:#c084fc;--pbg:#1a0f2e;}
+*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh;width:100vw;}
+#hdr{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(180deg,var(--bg) 65%,transparent);padding:14px 24px 30px;display:flex;align-items:center;gap:16px;}#hdr h1{font-family:'DM Serif Display',serif;font-size:24px;color:var(--accent);}#hdr .sub{font-size:12px;color:var(--text2);font-weight:300;margin-top:2px;}
+.ctrls{margin-left:auto;display:flex;gap:8px;}.ctrls button{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 16px;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;}.ctrls button:hover{background:var(--border);border-color:var(--accent);color:var(--accent);}
+#tc{width:100vw;height:100vh;cursor:grab;}#tc:active{cursor:grabbing;}.ng{cursor:pointer;}.nr{rx:10;ry:10;stroke-width:1.8;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));transition:all .25s;}.ng:hover .nr{filter:brightness(1.25) drop-shadow(0 0 12px rgba(56,189,248,.25));}
+.nl{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:11px;fill:var(--text);text-anchor:middle;pointer-events:none;}.ns{font-family:'IBM Plex Sans',sans-serif;font-weight:400;font-size:8.5px;fill:var(--text2);text-anchor:middle;pointer-events:none;}.ni{font-size:15px;text-anchor:middle;pointer-events:none;}.lk{fill:none;stroke:var(--border);stroke-width:1.6;stroke-opacity:.5;}.ll{font-family:'IBM Plex Mono',monospace;font-size:8.5px;fill:var(--yellow);font-weight:500;}.ib{cursor:pointer;transition:all .2s;}.ib:hover{transform:scale(1.15);}
+#po{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:200;justify-content:center;align-items:center;}#po.active{display:flex;}#pp{background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:680px;width:94vw;max-height:88vh;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,0,.7);animation:popIn .28s cubic-bezier(.16,1,.3,1);}#pp::-webkit-scrollbar{width:5px;}#pp::-webkit-scrollbar-track{background:transparent;}#pp::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}@keyframes popIn{from{transform:scale(.9) translateY(24px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+#ph{padding:20px 24px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px;position:sticky;top:0;background:var(--bg2);z-index:1;border-radius:16px 16px 0 0;}#picon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}#ptitle{font-family:'DM Serif Display',serif;font-size:22px;color:var(--text);line-height:1.2;}#ptype{font-size:11px;font-weight:600;padding:3px 10px;border-radius:5px;display:inline-block;margin-top:5px;}#pclose{margin-left:auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:18px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;}#pclose:hover{color:var(--text);border-color:var(--accent);}
+#pbody{padding:16px 24px 32px;}.tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid var(--border);overflow-x:auto;}.tabs::-webkit-scrollbar{height:0;}.tb{background:none;border:none;color:var(--text2);font-size:11px;font-weight:600;padding:9px 12px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;}.tb.active{color:var(--accent);border-bottom-color:var(--accent);}.tb:hover:not(.active){color:var(--text);}
+.tc{display:none;}.tc.active{display:block;}.tc p,.tc li{font-size:13px;line-height:1.7;color:var(--text2);margin-bottom:8px;}.tc ul{list-style:none;padding-left:0;margin-bottom:10px;}.tc li{padding:3px 0 3px 18px;position:relative;}.tc li::before{content:'›';position:absolute;left:2px;color:var(--accent);font-weight:700;font-size:14px;}.tc strong{color:var(--text);}
+.rt{width:100%;border-collapse:collapse;margin:8px 0 12px;font-size:12px;}.rt th{text-align:left;font-size:9.5px;font-weight:700;color:var(--accent);padding:8px 10px;border-bottom:1.5px solid var(--border);text-transform:uppercase;letter-spacing:.6px;background:rgba(56,189,248,.04);}.rt td{padding:7px 10px;border-bottom:1px solid rgba(51,65,85,.3);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:11px;}.rt td:first-child{font-family:'IBM Plex Sans',sans-serif;font-weight:500;color:var(--text2);}
+.dt{width:100%;border-collapse:collapse;margin:6px 0 10px;}.dt th{text-align:left;font-size:9px;font-weight:700;color:var(--text2);padding:6px 8px;border-bottom:1px solid var(--border);text-transform:uppercase;}.dt td{font-size:11px;padding:6px 8px;border-bottom:1px solid rgba(51,65,85,.2);color:var(--text);vertical-align:top;line-height:1.5;}
+.bx{border-radius:10px;padding:12px 16px;font-size:12px;line-height:1.6;margin:10px 0;}.bx strong{color:inherit;}.br{background:var(--rbg);border:1px solid rgba(248,113,113,.25);color:var(--red);}.bg{background:var(--gbg);border:1px solid rgba(74,222,128,.25);color:var(--green);}.bb{background:var(--bbg);border:1px solid rgba(96,165,250,.25);color:var(--blue);}.bo{background:var(--obg);border:1px solid rgba(251,146,60,.25);color:var(--orange);}.bp{background:var(--pbg);border:1px solid rgba(192,132,252,.25);color:var(--purple);}
+.sl{counter-reset:stp;list-style:none!important;padding:0;margin:8px 0;}.sl li{counter-increment:stp;padding:5px 0 5px 32px!important;position:relative;font-size:12px;color:var(--text2);line-height:1.55;}.sl li::before{content:counter(stp)!important;position:absolute;left:0;top:4px;width:22px;height:22px;border-radius:50%;background:var(--surface);border:1px solid var(--border);text-align:center;line-height:22px;font-size:10px;font-weight:700;color:var(--accent);}
+#lg{position:fixed;bottom:14px;left:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:11px;z-index:50;display:flex;gap:14px;flex-wrap:wrap;}.li{display:flex;align-items:center;gap:6px;}.ld{width:10px;height:10px;border-radius:3px;}#bc{position:fixed;bottom:14px;right:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 16px;font-size:11px;color:var(--text2);z-index:50;}
+</style>
+</head>
+<body>
+<div id="hdr"><div><h1>PALS Algorithm Decision Tree</h1><div class="sub">Enhanced Clinical Edition — BLS/CPR, shockable vs non-shockable, defibrillation, epinephrine/amiodarone, H's and T's, post-arrest TTM</div></div>
+<div class="ctrls"><button onclick="resetZ()">⟲ Reset</button><button onclick="expAll()">⊞ Expand</button><button onclick="colAll()">⊟ Collapse</button></div></div>
+<svg id="tc"></svg>
+<div id="po" onclick="closeP(event)"><div id="pp" onclick="event.stopPropagation()"><div id="ph"><div id="picon"></div><div><div id="ptitle"></div><div id="ptype"></div></div><button id="pclose" onclick="closeP()">&times;</button></div><div id="pbody"></div></div></div>
+<div id="lg"><div class="li"><div class="ld" style="background:var(--red)"></div>Emergency</div><div class="li"><div class="ld" style="background:var(--orange)"></div>Urgent</div><div class="li"><div class="ld" style="background:var(--yellow)"></div>Decision</div><div class="li"><div class="ld" style="background:var(--green)"></div>Action</div><div class="li"><div class="ld" style="background:var(--blue)"></div>Assessment</div><div class="li"><div class="ld" style="background:var(--purple)"></div>Diagnosis</div></div>
+<div id="bc">Scroll to zoom · Drag to pan · Click ⓘ for education</div>
+<script>
+const T={
+name:"PALS\nAlgorithm",icon:"💓",type:"assessment",sub:"Pediatric Advanced Life Support · Cardiac arrest · Post-arrest",edge:"",
+info:{tabs:["BLS Assessment","Shockable vs Non-Shockable","Key Medications"],
+t0:`<p><strong>Pediatric BLS Assessment (C-A-B):</strong></p>
+<ol class="sl">
+<li><strong>Check responsiveness:</strong> Tap and shout. If unresponsive → activate emergency response.</li>
+<li><strong>Check breathing and pulse simultaneously</strong> (max 10 seconds). Carotid (child) or brachial/femoral (infant).</li>
+<li><strong>No pulse (or unsure) → start CPR immediately:</strong> Push hard (≥⅓ AP depth), push fast (100–120/min), allow full recoil, minimize interruptions.</li>
+<li><strong>Compression-to-ventilation ratio:</strong> 30:2 (single rescuer) or 15:2 (two rescuers for pediatrics). 2 breaths over 1 second each.</li>
+<li><strong>AED/defibrillator:</strong> Apply as soon as available. Analyze rhythm. Shock if indicated.</li>
+</ol>
+<p><strong>High-quality CPR targets:</strong></p>
+<table class="rt"><thead><tr><th>Parameter</th><th>Target</th></tr></thead><tbody>
+<tr><td>Compression rate</td><td>100–120/min</td></tr>
+<tr><td>Compression depth</td><td>≥⅓ AP diameter (~1.5 inches infant, ~2 inches child)</td></tr>
+<tr><td>Chest recoil</td><td>Allow FULL recoil between compressions</td></tr>
+<tr><td>Interruptions</td><td>&lt;10 seconds for rhythm check/shock</td></tr>
+<tr><td>Ventilation rate (with advanced airway)</td><td>1 breath every 2–3 seconds (20–30/min) — do NOT hyperventilate</td></tr>
+</tbody></table>`,
+t1:`<table class="dt"><thead><tr><th>Rhythm</th><th>Treatment</th></tr></thead><tbody>
+<tr><td><strong>Shockable: VF / pulseless VT</strong></td><td>CPR → Shock 2 J/kg → CPR 2 min → Shock 4 J/kg → Epi + CPR 2 min → Shock 4–10 J/kg → Amiodarone/Lidocaine + CPR → repeat</td></tr>
+<tr><td><strong>Non-shockable: Asystole / PEA</strong></td><td>CPR → Epi q3–5 min → CPR 2 min → check rhythm → repeat. Identify and treat reversible causes (H's and T's).</td></tr>
+</tbody></table>
+<p><strong>H's and T's (reversible causes):</strong></p>
+<ul><li><strong>H's:</strong> Hypovolemia, Hypoxia, Hydrogen ion (acidosis), Hypo/hyperkalemia, Hypothermia, Hypoglycemia</li>
+<li><strong>T's:</strong> Tension pneumothorax, Tamponade (cardiac), Toxins, Thrombosis (pulmonary/coronary)</li></ul>
+<div class="bx bg">✓ <strong>In pediatric cardiac arrest, asystole/PEA is far more common than VF/VT</strong> (~85% non-shockable). Most pediatric arrests are RESPIRATORY in origin → airway/breathing management is critical.</div>`,
+t2:`<table class="rt"><thead><tr><th>Drug</th><th>Dose</th><th>Route</th><th>Indication</th></tr></thead><tbody>
+<tr><td><strong>Epinephrine</strong></td><td>0.01 mg/kg (0.1 mL/kg of 1:10,000)</td><td>IV/IO q3–5 min</td><td>All cardiac arrest rhythms</td></tr>
+<tr><td><strong>Amiodarone</strong></td><td>5 mg/kg IV/IO (max 300 mg)</td><td>Bolus (can repeat ×2)</td><td>Shock-refractory VF/pVT</td></tr>
+<tr><td><strong>Lidocaine</strong></td><td>1 mg/kg IV/IO</td><td>Bolus, then 20–50 µg/kg/min</td><td>Alternative to amiodarone for VF/pVT</td></tr>
+<tr><td><strong>Adenosine</strong></td><td>0.1 mg/kg (max 6 mg), then 0.2 mg/kg (max 12 mg)</td><td>Rapid IV push</td><td>SVT (with pulse)</td></tr>
+<tr><td><strong>Atropine</strong></td><td>0.02 mg/kg (min 0.1 mg, max 0.5 mg)</td><td>IV/IO</td><td>Symptomatic bradycardia</td></tr>
+<tr><td><strong>Calcium chloride 10%</strong></td><td>20 mg/kg (0.2 mL/kg)</td><td>Slow IV/IO</td><td>Hyperkalemia, hypocalcemia, Ca-channel blocker OD</td></tr>
+<tr><td><strong>Sodium bicarbonate</strong></td><td>1 mEq/kg</td><td>Slow IV/IO</td><td>Severe acidosis, hyperkalemia, TCA OD</td></tr>
+<tr><td><strong>Dextrose</strong></td><td>0.5–1 g/kg (D10W 5–10 mL/kg)</td><td>IV/IO</td><td>Hypoglycemia</td></tr>
+</tbody></table>`
+},children:[
+{name:"Cardiac Arrest\n(Non-Shockable)",icon:"⚫",type:"emergency",sub:"Asystole / PEA · CPR + Epi q3–5min · H's and T's",edge:"Asystole\nor PEA",
+info:{tabs:["Algorithm","H's and T's Detail"],
+t0:`<ol class="sl">
+<li><strong>High-quality CPR</strong> — immediately, 15:2 (two rescuers)</li>
+<li><strong>IV/IO access</strong> — IO if IV not obtained within 60–90 seconds</li>
+<li><strong>Epinephrine 0.01 mg/kg IV/IO</strong> — give ASAP for non-shockable rhythms (earlier epi = better outcomes). Repeat every 3–5 minutes.</li>
+<li><strong>Advanced airway</strong> (ETT or supraglottic) when feasible without prolonged CPR interruption. Once placed: continuous compressions + 1 breath every 2–3 seconds.</li>
+<li><strong>Check rhythm every 2 minutes</strong> (pulse check &lt;10 seconds)</li>
+<li><strong>Search for and treat reversible causes</strong> (H's and T's)</li>
+<li>If rhythm changes to shockable → switch to shockable algorithm</li>
+</ol>`,
+t1:`<table class="dt"><thead><tr><th>Cause</th><th>Clue</th><th>Treatment</th></tr></thead><tbody>
+<tr><td><strong>Hypovolemia</strong></td><td>#1 cause in peds. Trauma, GI loss, sepsis.</td><td>NS/LR 20 mL/kg bolus. Blood if hemorrhagic.</td></tr>
+<tr><td><strong>Hypoxia</strong></td><td>#1 cause of peds arrest overall. Respiratory failure → arrest.</td><td>Effective ventilation with 100% O₂. Confirm ETT placement.</td></tr>
+<tr><td><strong>Hypothermia</strong></td><td>Submersion, exposure.</td><td>Active warming. Continue CPR until rewarmed to 32°C. "Not dead until warm and dead."</td></tr>
+<tr><td><strong>Hyperkalemia</strong></td><td>Renal failure, DKA, rhabdomyolysis. Peaked T waves on ECG.</td><td>CaCl 20 mg/kg, NaHCO₃ 1 mEq/kg, insulin/glucose, albuterol.</td></tr>
+<tr><td><strong>Tension pneumothorax</strong></td><td>Unilateral absent breath sounds, tracheal deviation, distended neck veins.</td><td>Needle decompression (2nd ICS MCL or 4th ICS AAL) → chest tube.</td></tr>
+<tr><td><strong>Tamponade</strong></td><td>Muffled heart sounds, distended neck veins, hypotension (Beck's triad).</td><td>Pericardiocentesis (subxiphoid approach).</td></tr>
+<tr><td><strong>Toxins</strong></td><td>History/scene/bottles. Toxidrome pattern.</td><td>Specific antidote. NaHCO₃ for TCA (wide QRS). Lipid emulsion for local anesthetic toxicity.</td></tr>
+</tbody></table>`
+}},
+{name:"Cardiac Arrest\n(Shockable)",icon:"⚡",type:"emergency",sub:"VF / pulseless VT · Defibrillation + Epi + Amiodarone",edge:"VF or\npulseless VT",
+info:{tabs:["Algorithm","Defibrillation"],
+t0:`<ol class="sl">
+<li><strong>CPR while applying defibrillator pads</strong></li>
+<li><strong>Shock #1:</strong> 2 J/kg (biphasic)</li>
+<li><strong>Resume CPR immediately × 2 minutes</strong> (do NOT check rhythm/pulse between shock and CPR)</li>
+<li><strong>Check rhythm. If still VF/pVT → Shock #2:</strong> 4 J/kg</li>
+<li><strong>Resume CPR × 2 min. Epinephrine 0.01 mg/kg IV/IO</strong> (give during CPR after 2nd shock)</li>
+<li><strong>Check rhythm. If still VF/pVT → Shock #3:</strong> 4–10 J/kg (max 10 J/kg or adult dose)</li>
+<li><strong>Resume CPR × 2 min. Amiodarone 5 mg/kg IV/IO bolus</strong> (or Lidocaine 1 mg/kg)</li>
+<li><strong>Continue cycle:</strong> CPR → rhythm check → shock if VF/pVT → epi q3–5 min → amiodarone (can repeat ×2, max total 15 mg/kg)</li>
+</ol>`,
+t1:`<p><strong>Defibrillation principles:</strong></p>
+<ul><li>Pad placement: anterior-posterior (preferred in infants) or anterior-lateral</li>
+<li>Use pediatric pads/attenuator for children &lt;8 years or &lt;25 kg if available. If not available, use adult pads — DO NOT withhold defibrillation because pediatric pads aren't available.</li>
+<li>Escalate energy: 2 J/kg → 4 J/kg → 4–10 J/kg. Maximum: 10 J/kg or adult maximum dose (200–360 J biphasic).</li>
+<li>Minimize time between last compression and shock delivery (&lt;10 seconds)</li>
+<li>Resume CPR IMMEDIATELY after shock — do not pause to check rhythm (the shock stuns the heart; it needs perfusion from CPR to restart).</li></ul>
+<div class="bx bb">ℹ️ <strong>Pediatric VF/pVT is uncommon (~15% of arrests) but has BETTER outcomes than asystole/PEA when defibrillated promptly.</strong> Survival to discharge with shockable rhythm: 25–35% vs 5–10% for non-shockable.</div>`
+}},
+{name:"Post-Cardiac\nArrest Care",icon:"🏥",type:"action",sub:"TTM · Avoid hyperthermia · Hemodynamic support",edge:"ROSC\nachieved",
+info:{tabs:["Post-ROSC Checklist","TTM","Neuroprognostication"],
+t0:`<ol class="sl">
+<li><strong>Airway/ventilation:</strong> Confirm ETT. Target SpO₂ 94–99% (avoid hyperoxia). Target normocapnia (PaCO₂ 35–45).</li>
+<li><strong>Hemodynamics:</strong> Maintain age-appropriate BP. Fluid boluses for hypotension. Vasopressors/inotropes PRN (epinephrine or dopamine). Target MAP ≥5th percentile for age.</li>
+<li><strong>Temperature:</strong> Targeted Temperature Management (TTM). Avoid hyperthermia (>37.5°C) — associated with worse neurologic outcomes. Active cooling to 32–34°C for 24–48h is reasonable for comatose patients (extrapolated from adult data; THAPCA trial).</li>
+<li><strong>Glucose:</strong> Avoid hypo- and hyperglycemia. Target 80–180 mg/dL.</li>
+<li><strong>Seizure monitoring:</strong> Continuous EEG if comatose. Treat clinical/electrographic seizures aggressively.</li>
+<li><strong>Labs:</strong> Blood gas, lactate (trending), electrolytes, glucose, CBC, troponin, renal/hepatic function.</li>
+<li><strong>12-lead ECG:</strong> Assess for ST changes, QTc, arrhythmias</li>
+<li><strong>Echo:</strong> LV function, pericardial effusion, structural anomalies</li>
+</ol>`,
+t1:`<p><strong>THAPCA Trial (Moler et al., NEJM 2015 & 2017):</strong></p>
+<ul><li>Out-of-hospital arrest: therapeutic hypothermia (33°C × 48h) vs normothermia (36.8°C) → no significant difference in survival with favorable neurologic outcome (20% vs 12%, p=0.14). Trend toward benefit but underpowered.</li>
+<li>In-hospital arrest: therapeutic hypothermia vs normothermia → no difference.</li>
+<li><strong>Current recommendation:</strong> Either TTM at 32–34°C for 48h OR active maintenance of normothermia (36–37.5°C) are acceptable. PREVENT HYPERTHERMIA (>37.5°C) — this IS associated with worse outcomes.</li></ul>`,
+t2:`<p><strong>Neuroprognostication after pediatric cardiac arrest:</strong></p>
+<ul><li>No single test reliably predicts outcome in the first 24–72h</li>
+<li>Use MULTIMODAL approach: clinical exam (brainstem reflexes, GCS trajectory), EEG (reactive vs burst-suppression vs flat), neuroimaging (MRI diffusion at 3–7 days), somatosensory evoked potentials (absent N20 = poor prognosis), biomarkers (neuron-specific enolase)</li>
+<li>Wait ≥72 hours after ROSC (longer if TTM used) before making definitive prognostic statements</li>
+<li>Pediatric patients have BETTER neuroplasticity and recovery potential than adults — be cautious about early withdrawal of care</li></ul>`
+}}
+]};;
+const CM={assessment:{f:"#0f1d3a",s:"#60a5fa",t:"#60a5fa",b:"Assessment"},decision:{f:"#2a2006",s:"#fbbf24",t:"#fbbf24",b:"Decision Point"},emergency:{f:"#2a1215",s:"#f87171",t:"#f87171",b:"Emergency"},urgent:{f:"#2a1a0a",s:"#fb923c",t:"#fb923c",b:"Urgent"},action:{f:"#0a2a1a",s:"#4ade80",t:"#4ade80",b:"Action"},diagnosis:{f:"#1a0f2e",s:"#c084fc",t:"#c084fc",b:"Diagnosis"}};
+const svg=d3.select("#tc"),W=innerWidth,H=innerHeight;svg.attr("width",W).attr("height",H);const g=svg.append("g");const zm=d3.zoom().scaleExtent([0.2,3]).on("zoom",e=>g.attr("transform",e.transform));svg.call(zm);
+const nW=148,nH=62;const root=d3.hierarchy(T,d=>d.children);root.x0=H/2;root.y0=0;
+root.descendants().forEach(d=>{if(d.depth>1&&d.children){d._children=d.children;d.children=null;}});const tl=d3.tree().nodeSize([nH+32,nW+85]);
+function upd(src){const dur=420;tl(root);const nds=root.descendants(),lks=root.links();nds.forEach(d=>{d.y=d.depth*230;});const lk=g.selectAll(".lk").data(lks,d=>d.target.data.name);const le=lk.enter().append("path").attr("class","lk").attr("d",()=>{const o={x:src.x0,y:src.y0};return dg(o,o);});lk.merge(le).transition().duration(dur).attr("d",d=>dg(d.source,d.target));lk.exit().transition().duration(dur).attr("d",()=>{const o={x:src.x,y:src.y};return dg(o,o);}).remove();g.selectAll(".ll").remove();lks.forEach(d=>{if(d.target.data.edge){const ls=d.target.data.edge.split("\n"),mx=(d.source.x+d.target.x)/2,my=(d.source.y+d.target.y)/2;ls.forEach((l,i)=>{g.append("text").attr("class","ll").attr("x",my+12).attr("y",mx-4+i*11).text(l);});}});const nd=g.selectAll(".ng").data(nds,d=>d.data.name);const ne=nd.enter().append("g").attr("class","ng").attr("transform",`translate(${src.y0},${src.x0})`).on("click",(e,d)=>{if(d.children){d._children=d.children;d.children=null;}else if(d._children){d.children=d._children;d._children=null;}upd(d);});ne.append("rect").attr("class","nr").attr("x",-nW/2).attr("y",-nH/2).attr("width",nW).attr("height",nH).attr("fill",d=>CM[d.data.type]?.f||"#1e293b").attr("stroke",d=>CM[d.data.type]?.s||"#475569");ne.append("text").attr("class","ni").attr("y",-12).text(d=>d.data.icon);ne.each(function(d){const ls=d.data.name.split("\n"),el=d3.select(this);ls.forEach((l,i)=>{el.append("text").attr("class","nl").attr("y",4+i*13).text(l);});if(d.data.sub){el.append("text").attr("class","ns").attr("y",4+ls.length*13+5).text(d.data.sub.substring(0,32));}});ne.append("circle").attr("class","ib").attr("cx",nW/2-12).attr("cy",-nH/2+12).attr("r",10).attr("fill",d=>CM[d.data.type]?.s||"#60a5fa").attr("fill-opacity",.2).attr("stroke",d=>CM[d.data.type]?.s||"#60a5fa").attr("stroke-width",1.5).on("click",(e,d)=>{e.stopPropagation();showP(d.data);});ne.append("text").attr("x",nW/2-12).attr("y",-nH/2+16).attr("text-anchor","middle").attr("font-size","12px").attr("fill","#e2e8f0").attr("pointer-events","none").attr("font-weight","700").text("i");ne.append("text").attr("class","ei").attr("x",0).attr("y",nH/2+15).attr("text-anchor","middle").attr("font-size","10px").attr("fill","#475569");const nu=nd.merge(ne);nu.transition().duration(dur).attr("transform",d=>`translate(${d.y},${d.x})`);nu.select(".ei").text(d=>d._children?`▸ ${d._children.length} more`:"");nd.exit().transition().duration(dur).attr("transform",`translate(${src.y},${src.x})`).remove();nds.forEach(d=>{d.x0=d.x;d.y0=d.y;});}
+function dg(s,d){return`M${s.y} ${s.x}C${(s.y+d.y)/2} ${s.x},${(s.y+d.y)/2} ${d.x},${d.y} ${d.x}`;}upd(root);const iT=d3.zoomIdentity.translate(90,H/2-20).scale(0.82);svg.call(zm.transform,iT);
+function showP(data){const ov=document.getElementById("po"),c=CM[data.type]||CM.assessment;document.getElementById("picon").textContent=data.icon;document.getElementById("picon").style.background=c.f;document.getElementById("picon").style.border=`1.5px solid ${c.s}`;document.getElementById("ptitle").textContent=data.name.replace(/\n/g," ");const te=document.getElementById("ptype");te.textContent=c.b;te.style.background=c.f;te.style.color=c.t;te.style.border=`1px solid ${c.s}`;let h="";if(data.info.tabs){h+=`<div class="tabs">`;data.info.tabs.forEach((t,i)=>{h+=`<button class="tb${i===0?' active':''}" onclick="swT(${i})">${t}</button>`;});h+=`</div>`;data.info.tabs.forEach((t,i)=>{h+=`<div class="tc${i===0?' active':''}" data-t="${i}">${data.info['t'+i]||''}</div>`;});}if(data.sub){h+=`<div class="bx bb" style="margin-top:16px">ℹ️ <strong>Summary:</strong> ${data.sub}</div>`;}document.getElementById("pbody").innerHTML=h;ov.classList.add("active");document.getElementById("pp").scrollTop=0;}
+function swT(i){document.querySelectorAll('.tb').forEach((b,j)=>b.classList.toggle('active',j===i));document.querySelectorAll('.tc').forEach((c,j)=>c.classList.toggle('active',j===i));}function closeP(e){if(!e||e.target===document.getElementById("po"))document.getElementById("po").classList.remove("active");}document.addEventListener("keydown",e=>{if(e.key==="Escape")closeP();});
+function resetZ(){svg.transition().duration(500).call(zm.transform,iT);}function expAll(){root.descendants().forEach(d=>{if(d._children){d.children=d._children;d._children=null;}});upd(root);}function colAll(){root.descendants().forEach(d=>{if(d.depth>0&&d.children){d._children=d.children;d.children=null;}});upd(root);}addEventListener("resize",()=>{svg.attr("width",innerWidth).attr("height",innerHeight);});
+</script></body></html>

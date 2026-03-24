@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neonatal Skin Disorders Decision Tree</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1121;--bg2:#0f172a;--surface:#1e293b;--border:#334155;--text:#e2e8f0;--text2:#94a3b8;--accent:#38bdf8;--red:#f87171;--rbg:#2a1215;--orange:#fb923c;--obg:#2a1a0a;--yellow:#fbbf24;--ybg:#2a2006;--green:#4ade80;--gbg:#0a2a1a;--blue:#60a5fa;--bbg:#0f1d3a;--purple:#c084fc;--pbg:#1a0f2e;}
+*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;height:100vh;width:100vw;}
+#hdr{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(180deg,var(--bg) 65%,transparent);padding:14px 24px 30px;display:flex;align-items:center;gap:16px;}#hdr h1{font-family:'DM Serif Display',serif;font-size:24px;color:var(--accent);}#hdr .sub{font-size:12px;color:var(--text2);font-weight:300;margin-top:2px;}
+.ctrls{margin-left:auto;display:flex;gap:8px;}.ctrls button{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 16px;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;}.ctrls button:hover{background:var(--border);border-color:var(--accent);color:var(--accent);}
+#tc{width:100vw;height:100vh;cursor:grab;}#tc:active{cursor:grabbing;}.ng{cursor:pointer;}.nr{rx:10;ry:10;stroke-width:1.8;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));transition:all .25s;}.ng:hover .nr{filter:brightness(1.25) drop-shadow(0 0 12px rgba(56,189,248,.25));}
+.nl{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:11px;fill:var(--text);text-anchor:middle;pointer-events:none;}.ns{font-family:'IBM Plex Sans',sans-serif;font-weight:400;font-size:8.5px;fill:var(--text2);text-anchor:middle;pointer-events:none;}.ni{font-size:15px;text-anchor:middle;pointer-events:none;}.lk{fill:none;stroke:var(--border);stroke-width:1.6;stroke-opacity:.5;}.ll{font-family:'IBM Plex Mono',monospace;font-size:8.5px;fill:var(--yellow);font-weight:500;}.ib{cursor:pointer;transition:all .2s;}.ib:hover{transform:scale(1.15);}
+#po{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:200;justify-content:center;align-items:center;}#po.active{display:flex;}#pp{background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:680px;width:94vw;max-height:88vh;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,0,.7);animation:popIn .28s cubic-bezier(.16,1,.3,1);}#pp::-webkit-scrollbar{width:5px;}#pp::-webkit-scrollbar-track{background:transparent;}#pp::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}@keyframes popIn{from{transform:scale(.9) translateY(24px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+#ph{padding:20px 24px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px;position:sticky;top:0;background:var(--bg2);z-index:1;border-radius:16px 16px 0 0;}#picon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}#ptitle{font-family:'DM Serif Display',serif;font-size:22px;color:var(--text);line-height:1.2;}#ptype{font-size:11px;font-weight:600;padding:3px 10px;border-radius:5px;display:inline-block;margin-top:5px;}#pclose{margin-left:auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:18px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;}#pclose:hover{color:var(--text);border-color:var(--accent);}
+#pbody{padding:16px 24px 32px;}.tabs{display:flex;gap:0;margin-bottom:14px;border-bottom:1px solid var(--border);overflow-x:auto;}.tabs::-webkit-scrollbar{height:0;}.tb{background:none;border:none;color:var(--text2);font-size:11px;font-weight:600;padding:9px 12px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'IBM Plex Sans',sans-serif;white-space:nowrap;}.tb.active{color:var(--accent);border-bottom-color:var(--accent);}.tb:hover:not(.active){color:var(--text);}
+.tc{display:none;}.tc.active{display:block;}.tc p,.tc li{font-size:13px;line-height:1.7;color:var(--text2);margin-bottom:8px;}.tc ul{list-style:none;padding-left:0;margin-bottom:10px;}.tc li{padding:3px 0 3px 18px;position:relative;}.tc li::before{content:'›';position:absolute;left:2px;color:var(--accent);font-weight:700;font-size:14px;}.tc strong{color:var(--text);}
+.rt{width:100%;border-collapse:collapse;margin:8px 0 12px;font-size:12px;}.rt th{text-align:left;font-size:9.5px;font-weight:700;color:var(--accent);padding:8px 10px;border-bottom:1.5px solid var(--border);text-transform:uppercase;letter-spacing:.6px;background:rgba(56,189,248,.04);}.rt td{padding:7px 10px;border-bottom:1px solid rgba(51,65,85,.3);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:11px;}.rt td:first-child{font-family:'IBM Plex Sans',sans-serif;font-weight:500;color:var(--text2);}
+.dt{width:100%;border-collapse:collapse;margin:6px 0 10px;}.dt th{text-align:left;font-size:9px;font-weight:700;color:var(--text2);padding:6px 8px;border-bottom:1px solid var(--border);text-transform:uppercase;}.dt td{font-size:11px;padding:6px 8px;border-bottom:1px solid rgba(51,65,85,.2);color:var(--text);vertical-align:top;line-height:1.5;}
+.bx{border-radius:10px;padding:12px 16px;font-size:12px;line-height:1.6;margin:10px 0;}.bx strong{color:inherit;}.br{background:var(--rbg);border:1px solid rgba(248,113,113,.25);color:var(--red);}.bg{background:var(--gbg);border:1px solid rgba(74,222,128,.25);color:var(--green);}.bb{background:var(--bbg);border:1px solid rgba(96,165,250,.25);color:var(--blue);}.bo{background:var(--obg);border:1px solid rgba(251,146,60,.25);color:var(--orange);}.bp{background:var(--pbg);border:1px solid rgba(192,132,252,.25);color:var(--purple);}
+.sl{counter-reset:stp;list-style:none!important;padding:0;margin:8px 0;}.sl li{counter-increment:stp;padding:5px 0 5px 32px!important;position:relative;font-size:12px;color:var(--text2);line-height:1.55;}.sl li::before{content:counter(stp)!important;position:absolute;left:0;top:4px;width:22px;height:22px;border-radius:50%;background:var(--surface);border:1px solid var(--border);text-align:center;line-height:22px;font-size:10px;font-weight:700;color:var(--accent);}
+#lg{position:fixed;bottom:14px;left:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:11px;z-index:50;display:flex;gap:14px;flex-wrap:wrap;}.li{display:flex;align-items:center;gap:6px;}.ld{width:10px;height:10px;border-radius:3px;}#bc{position:fixed;bottom:14px;right:14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 16px;font-size:11px;color:var(--text2);z-index:50;}
+</style>
+</head>
+<body>
+<div id="hdr"><div><h1>Neonatal Skin Disorders Decision Tree</h1><div class="sub">Enhanced Clinical Edition — Benign vs pathologic rashes, birthmarks, infectious skin, preterm skin care</div></div>
+<div class="ctrls"><button onclick="resetZ()">⟲ Reset</button><button onclick="expAll()">⊞ Expand</button><button onclick="colAll()">⊟ Collapse</button></div></div>
+<svg id="tc"></svg>
+<div id="po" onclick="closeP(event)"><div id="pp" onclick="event.stopPropagation()"><div id="ph"><div id="picon"></div><div><div id="ptitle"></div><div id="ptype"></div></div><button id="pclose" onclick="closeP()">&times;</button></div><div id="pbody"></div></div></div>
+<div id="lg"><div class="li"><div class="ld" style="background:var(--red)"></div>Emergency</div><div class="li"><div class="ld" style="background:var(--orange)"></div>Urgent</div><div class="li"><div class="ld" style="background:var(--yellow)"></div>Decision</div><div class="li"><div class="ld" style="background:var(--green)"></div>Action</div><div class="li"><div class="ld" style="background:var(--blue)"></div>Assessment</div><div class="li"><div class="ld" style="background:var(--purple)"></div>Diagnosis</div></div>
+<div id="bc">Scroll to zoom · Drag to pan · Click ⓘ for education</div>
+<script>
+const T={
+name:"Neonatal Skin\nAssessment",icon:"🧴",type:"assessment",sub:"Rashes, lesions, birthmarks in the newborn",edge:"",
+info:{tabs:["Approach","Benign vs Concerning","Key Questions"],
+t0:`<p>Neonatal skin findings are extremely common — the vast majority are benign and transient. The challenge is distinguishing normal variants from pathologic conditions requiring evaluation. A systematic approach prevents both unnecessary workups and missed diagnoses.</p>
+<p><strong>Skin assessment framework:</strong></p>
+<ul><li>Timing of onset (present at birth vs acquired)</li>
+<li>Morphology (vesicles, pustules, papules, macules, patches, nodules)</li>
+<li>Distribution (localized vs generalized, dermatomal)</li>
+<li>Associated symptoms (fever, feeding difficulty, lethargy = systemic illness)</li>
+<li>Maternal history (herpes, varicella, infections)</li></ul>`,
+t1:`<table class="dt"><thead><tr><th>Feature</th><th>Likely Benign</th><th>Likely Pathologic</th></tr></thead><tbody>
+<tr><td>Timing</td><td>Present at birth or first 48h, self-limited</td><td>Progressive, worsening, late-onset</td></tr>
+<tr><td>Infant status</td><td>Well-appearing, feeding well, afebrile</td><td>Ill-appearing, febrile, poor feeding</td></tr>
+<tr><td>Morphology</td><td>Papules, pustules with eosinophils (ETN)</td><td>Vesicles on erythematous base (HSV), hemorrhagic, bullous</td></tr>
+<tr><td>Distribution</td><td>Scattered, trunk predominant</td><td>Grouped vesicles (HSV), generalized bullae (SSSS, EB)</td></tr>
+<tr><td>Maternal hx</td><td>Unremarkable</td><td>Herpes, varicella, TORCH, STIs</td></tr>
+</tbody></table>`,
+t2:`<p><strong>Three critical questions for any neonatal skin finding:</strong></p>
+<ol class="sl">
+<li><strong>Could this be neonatal HSV?</strong> Any vesicle or cluster of vesicles in a neonate — especially on the scalp (monitor site), perioral, or grouped — must be evaluated for HSV until proven otherwise. START acyclovir empirically.</li>
+<li><strong>Could this be a sign of systemic infection?</strong> Petechiae, purpura, diffuse pustules, or skin findings + fever/lethargy → sepsis workup.</li>
+<li><strong>Does this birthmark need further evaluation?</strong> Large hemangiomas (PHACES), port-wine stain on V1 (Sturge-Weber), ≥6 café-au-lait macules (NF1), midline back lesions (spinal dysraphism).</li>
+</ol>`
+},children:[
+// ═══ BENIGN TRANSIENT ═══
+{name:"Benign Transient\nConditions",icon:"✅",type:"action",sub:"ETN · TNPM · Milia · Self-resolving",edge:"Well infant\n+ benign\nmorphology",
+info:{tabs:["Common Benign Rashes","Quick Reference Table","Parent Counseling"],
+t0:`<p><strong>The 'Big 5' benign transient neonatal skin conditions:</strong></p>
+<ul><li><strong>Erythema toxicum neonatorum (ETN):</strong> Most common. Appears day 1–3. Erythematous macules/papules/pustules (1–3 mm) with surrounding flare, predominantly on trunk. Wright stain of pustule contents → eosinophils. Resolves spontaneously in 1–2 weeks. No treatment.</li>
+<li><strong>Transient neonatal pustular melanosis (TNPM):</strong> More common in dark-skinned infants. Present AT BIRTH (distinguishes from ETN). Superficial pustules on non-erythematous base that rupture easily leaving hyperpigmented macules with collarette of scale. Wright stain → neutrophils. Resolves; hyperpigmentation fades over months.</li>
+<li><strong>Milia:</strong> Tiny (1–2 mm) white/yellow papules on nose, cheeks, chin, forehead. Keratin-filled epidermal cysts. ~40–50% of newborns. Resolve spontaneously in weeks to months. Do NOT squeeze or extract.</li>
+<li><strong>Miliaria:</strong> "Heat rash" or "prickly heat." Caused by sweat duct obstruction. Miliaria crystallina (clear vesicles) = superficial; miliaria rubra (red papules) = deeper. Avoid overheating/overdressing. Resolves with cooling.</li>
+<li><strong>Neonatal acne (neonatal cephalic pustulosis):</strong> Small papules/pustules on face, usually weeks 2–4. Likely related to Malassezia colonization. Self-limited. Ketoconazole cream if severe. Resolves by 3–4 months.</li></ul>`,
+t1:`<table class="rt"><thead><tr><th>Condition</th><th>Onset</th><th>Morphology</th><th>Wright Stain</th><th>Treatment</th></tr></thead><tbody>
+<tr><td>ETN</td><td>Day 1–3</td><td>Papules/pustules + erythematous flare, trunk</td><td>Eosinophils</td><td>None; resolves 1–2 wk</td></tr>
+<tr><td>TNPM</td><td>At birth</td><td>Pustules on non-erythematous base → hyperpigmented macules</td><td>Neutrophils</td><td>None; pigmentation fades months</td></tr>
+<tr><td>Milia</td><td>At birth</td><td>1–2 mm white papules, face</td><td>N/A</td><td>None; resolves weeks</td></tr>
+<tr><td>Miliaria</td><td>Variable</td><td>Clear vesicles (crystallina) or red papules (rubra)</td><td>N/A</td><td>Cooling; avoid overheating</td></tr>
+<tr><td>Neonatal acne</td><td>Weeks 2–4</td><td>Papules/pustules on face</td><td>N/A</td><td>Self-limited; ketoconazole if severe</td></tr>
+<tr><td>Sebaceous hyperplasia</td><td>At birth</td><td>Tiny yellow papules on nose/upper lip</td><td>N/A</td><td>None; resolves weeks</td></tr>
+<tr><td>Harlequin color change</td><td>First days</td><td>Sharply demarcated half-body redness (dependent side)</td><td>N/A</td><td>None; transient, benign vasomotor</td></tr>
+</tbody></table>`,
+t2:`<p><strong>Parent counseling points:</strong></p>
+<ul><li>"This is extremely common and will go away on its own."</li>
+<li>"It is NOT an allergy, NOT contagious, and does NOT mean your baby is sick."</li>
+<li>"No creams, ointments, or lotions are needed. Keep the skin clean and dry."</li>
+<li>"Do not squeeze or pick at these spots."</li>
+<li>"If your baby develops fever, poor feeding, or the rash looks different (blisters, spreading), bring them back immediately."</li></ul>`
+}},
+// ═══ BIRTHMARKS ═══
+{name:"Birthmarks &\nVascular Lesions",icon:"🔴",type:"decision",sub:"Hemangiomas · Port-wine · Dermal melanocytosis",edge:"Pigmented or\nvascular lesion\nat birth",
+info:{tabs:["Vascular Lesions","Pigmented Lesions","When to Refer","Hemangioma Treatment"],
+t0:`<table class="dt"><thead><tr><th>Lesion</th><th>Type</th><th>Features</th><th>Evaluation Needed?</th></tr></thead><tbody>
+<tr><td><strong>Salmon patch (nevus simplex)</strong></td><td>Capillary malformation</td><td>Pink-red, flat, on nape ("stork bite"), eyelids, glabella ("angel kiss"). Blanches with pressure.</td><td>❌ No — benign. Facial lesions fade; nape may persist.</td></tr>
+<tr><td><strong>Infantile hemangioma</strong></td><td>Vascular tumor</td><td>Appears 1–4 weeks. Rapid proliferation (3–9 months), then slow involution (years). Superficial (red, "strawberry"), deep (blue, subcutaneous), or mixed.</td><td>🟡 Refer if: periorbital (vision risk), airway (beard distribution), large facial (PHACES), hepatic, or ulcerating.</td></tr>
+<tr><td><strong>Port-wine stain (PWS)</strong></td><td>Capillary malformation</td><td>Present at birth. Dark red-purple, flat, does NOT fade. Grows proportionally with child. Darkens and thickens with age.</td><td>🔴 V1 distribution → evaluate for Sturge-Weber (brain MRI, ophthalmology for glaucoma).</td></tr>
+<tr><td><strong>Kaposiform hemangioendothelioma</strong></td><td>Vascular tumor</td><td>Firm, purplish, rapidly growing. Associated with Kasabach-Merritt phenomenon (consumptive coagulopathy).</td><td>🔴 URGENT hematology/oncology referral.</td></tr>
+</tbody></table>`,
+t1:`<table class="dt"><thead><tr><th>Lesion</th><th>Features</th><th>Significance</th></tr></thead><tbody>
+<tr><td><strong>Dermal melanocytosis (Mongolian spots)</strong></td><td>Blue-gray macules/patches on sacrum, buttocks, back. More common in dark-skinned infants.</td><td>BENIGN. Fade over years. DOCUMENT in chart to prevent confusion with bruising/abuse.</td></tr>
+<tr><td><strong>Café-au-lait macules</strong></td><td>Light brown, flat, well-demarcated. 10–20% of normal newborns have 1–2.</td><td>≥6 café-au-lait macules >0.5 cm in children → evaluate for neurofibromatosis type 1 (NF1).</td></tr>
+<tr><td><strong>Congenital melanocytic nevi</strong></td><td>Dark brown-black, raised, may have hair. Size varies.</td><td>Giant CMN (>20 cm) → risk of melanoma (2–5% lifetime) and neurocutaneous melanosis. Derm referral.</td></tr>
+<tr><td><strong>Aplasia cutis congenita</strong></td><td>Well-demarcated, absent skin (usually scalp vertex). May be ulcerated or scarred at birth.</td><td>Usually isolated and benign. Large defects → evaluate for underlying skull defect. Associated with trisomy 13, Adams-Oliver syndrome.</td></tr>
+</tbody></table>`,
+t2:`<p><strong>Dermatology/specialist referral indications:</strong></p>
+<ul><li><strong>Infantile hemangioma:</strong> Periorbital (amblyopia risk), nasal tip ("Cyrano"), lip (feeding difficulty), beard distribution (airway hemangioma risk), large segmental facial (PHACES syndrome), hepatic, ulcerated, ≥5 cutaneous (hepatic screening US)</li>
+<li><strong>Port-wine stain V1 distribution:</strong> Ophthalmology (glaucoma) + brain MRI (Sturge-Weber leptomeningeal angiomatosis)</li>
+<li><strong>Giant CMN (>20 cm):</strong> Dermatology, brain MRI (neurocutaneous melanosis), long-term melanoma surveillance</li>
+<li><strong>Rapidly growing vascular tumor with coagulopathy:</strong> Kasabach-Merritt → hematology/oncology URGENT</li>
+<li><strong>≥6 café-au-lait macules:</strong> Genetics evaluation for NF1</li>
+<li><strong>Midline lumbosacral lesions</strong> (dimple, tuft of hair, lipoma, hemangioma): spinal US (if &lt;3 months) to rule out spinal dysraphism/tethered cord</li></ul>`,
+t3:`<p><strong>Propranolol for Infantile Hemangiomas (AAP 2019 CPG):</strong></p>
+<ul><li><strong>Indication:</strong> Potentially disfiguring or functionally significant hemangiomas during proliferative phase (before 5 months old ideally)</li>
+<li><strong>Dose:</strong> Propranolol 1–3 mg/kg/day PO divided BID-TID</li>
+<li><strong>Initiation:</strong> Start low (1 mg/kg/day) and titrate over 1–2 weeks. Monitor HR and BP for 2 hours after first dose and dose increases.</li>
+<li><strong>Monitoring:</strong> HR, BP, blood glucose (risk of hypoglycemia — give with or after feeds). Watch for bronchospasm in infants with reactive airway.</li>
+<li><strong>Duration:</strong> Typically 6–12 months (through proliferative phase). Taper over 2 weeks when discontinuing.</li>
+<li><strong>Pre-treatment:</strong> Cardiac exam (murmur? → echo). ECG not routinely needed unless cardiac concern.</li></ul>
+<div class="bx bg">✓ <strong>Propranolol has revolutionized hemangioma management.</strong> Prior to 2008, treatment options were limited to steroids and surgery. Propranolol (Hemangeol) is now FDA-approved for infantile hemangiomas requiring systemic therapy.</div>`
+}},
+// ═══ INFECTIOUS SKIN ═══
+{name:"Infectious Skin\nConditions",icon:"🦠",type:"emergency",sub:"HSV vesicles · Staph · Omphalitis · Candida",edge:"Vesicles, bullae,\npustules + fever\nor ill-appearing",
+info:{tabs:["Neonatal HSV Skin","Staphylococcal Infections","Omphalitis","Congenital Syphilis Rash"],
+t0:`<div class="bx br">🚨 <strong>ANY vesicle in a neonate must be evaluated for HSV until proven otherwise.</strong> Start acyclovir 20 mg/kg IV q8h EMPIRICALLY while awaiting PCR results. The cost of missing HSV is devastating.</div>
+<p><strong>HSV skin findings:</strong></p>
+<ul><li>Grouped vesicles on an erythematous base — classic but not always present</li>
+<li>Scalp (fetal monitor electrode site), perioral, conjunctival, anywhere</li>
+<li>May appear as erosions/crusted lesions if vesicles have ruptured</li>
+<li>Tzanck smear (multinucleated giant cells) is rapid but low sensitivity — PCR preferred</li>
+<li>Send surface viral PCR swabs (mouth, nasopharynx, conjunctivae, rectum, vesicle base)</li></ul>`,
+t1:`<p><strong>Staphylococcal skin infections:</strong></p>
+<table class="dt"><thead><tr><th>Condition</th><th>Features</th><th>Treatment</th></tr></thead><tbody>
+<tr><td><strong>Bullous impetigo</strong></td><td>Flaccid bullae with clear/cloudy fluid, often trunk/diaper area. S. aureus exfoliative toxin.</td><td>Oral or IV antibiotics (nafcillin/oxacillin if MSSA; vancomycin if MRSA). Wound care.</td></tr>
+<tr><td><strong>SSSS (Staphylococcal Scalded Skin Syndrome)</strong></td><td>Generalized erythema → superficial desquamation. Positive Nikolsky sign (skin separates with gentle pressure). Exfoliative toxin-mediated (NOT infection of skin itself).</td><td>IV anti-staphylococcal antibiotics. Gentle skin care. Fluid/electrolyte management. Cleavage plane is superficial (within epidermis) — better prognosis than TEN.</td></tr>
+<tr><td><strong>Skin abscess</strong></td><td>Fluctuant, erythematous, tender nodule</td><td>Incision and drainage. Culture. Antibiotics if surrounding cellulitis or systemic signs.</td></tr>
+</tbody></table>`,
+t2:`<p><strong>Omphalitis (umbilical infection):</strong></p>
+<ul><li>Erythema, induration, and/or purulent discharge from the umbilical stump</li>
+<li>Can progress RAPIDLY to necrotizing fasciitis, peritonitis, portal vein thrombosis, sepsis</li>
+<li>Organisms: S. aureus, Group A strep, E. coli, polymicrobial (including anaerobes)</li>
+<li><strong>Treatment:</strong> IV broad-spectrum antibiotics (vancomycin + gentamicin ± metronidazole). Surgical debridement if necrotizing fasciitis.</li>
+<li><strong>When to worry:</strong> Periumbilical cellulitis extending >2 cm, dusky/necrotic skin, systemic signs (fever, poor feeding, tachycardia), crepitus</li></ul>
+<div class="bx br">🚨 <strong>Omphalitis can be rapidly fatal.</strong> Any periumbilical erythema with discharge or systemic signs = start IV antibiotics immediately and consider surgical consultation for possible necrotizing fasciitis.</div>`,
+t3:`<p><strong>Congenital syphilis skin findings:</strong></p>
+<ul><li>Maculopapular rash (copper-colored), especially palms and soles</li>
+<li>Condylomata lata (moist, flat, gray-white lesions at mucocutaneous junctions)</li>
+<li>Desquamation/peeling of palms and soles</li>
+<li>Rhinitis ("snuffles") — bloody/purulent nasal discharge</li>
+<li>Highly infectious — contact precautions until treated</li>
+<li>Treatment: IV penicillin G × 10 days (see infectious disease tree)</li></ul>
+<p><strong>Congenital candidiasis:</strong></p>
+<ul><li>Generalized erythematous papulopustular rash at birth or within first 24 hours</li>
+<li>Unlike diaper candidiasis (which is localized); congenital involves trunk, extremities, face</li>
+<li>Risk: preterm + chorioamnionitis + foreign body (cerclage)</li>
+<li>In preterm: can progress to invasive candidiasis — treat aggressively with systemic antifungals</li></ul>`
+}},
+// ═══ PRETERM SKIN CARE ═══
+{name:"Preterm\nSkin Care",icon:"👶",type:"action",sub:"Barrier function · TEWL · Evidence-based practices",edge:"Preterm\n< 32 wk",
+info:{tabs:["Skin Physiology","Evidence-Based Practices","Adhesive Management"],
+t0:`<p><strong>Preterm skin physiology:</strong></p>
+<ul><li>The stratum corneum (outermost skin barrier) is thin and immature in preterm infants, especially &lt;30 weeks</li>
+<li>At 24 weeks: stratum corneum is essentially absent → massive transepidermal water loss (TEWL), high risk of infection, percutaneous drug/toxin absorption</li>
+<li>Skin maturation occurs over 2–4 weeks postnatally regardless of GA (epidermal barrier function approaches term by 2–3 weeks in most preterm infants)</li>
+<li>Until maturation: TEWL can be 10–15× that of term infants → significant fluid and caloric losses</li></ul>`,
+t1:`<p><strong>Six evidence-based skin care practices for preterm infants:</strong></p>
+<ol class="sl">
+<li><strong>Humidity:</strong> 80–90% relative humidity in incubator for first 7–14 days for infants &lt;28 weeks. Wean gradually. Reduces TEWL by 50%.</li>
+<li><strong>Minimize bathing:</strong> No full immersion bath until umbilical cord separates and infant is stable. Spot-clean with warm water only. Avoid soap in first 2 weeks. When bathing, use pH-neutral (5.5) liquid cleanser.</li>
+<li><strong>Emollient use:</strong> Sunflower seed oil or medical-grade emollient may improve barrier function. Apply sparingly. Avoid petroleum-based products in ELBW (infection concern — mixed evidence). Coconut oil has antimicrobial properties (promising but limited neonatal data).</li>
+<li><strong>Adhesive management:</strong> Use silicone-based adhesives (Mepitac, silicone tape). Remove adhesives with silicone-based remover. NEVER use alcohol-based adhesive removers on preterm skin. Minimize tape use — use hydrocolloid barriers under adhesives.</li>
+<li><strong>Chlorhexidine caution:</strong> For skin antisepsis in infants ≥26 weeks. In infants &lt;26 weeks: risk of chemical burns — use with extreme caution, brief contact time, pat dry immediately. Some units avoid chlorhexidine entirely in &lt;26 wk and use sterile saline or povidone-iodine instead.</li>
+<li><strong>Minimize skin breakdown:</strong> Position changes q2–4h with gel mattress or sheepskin. Transparent film dressings over bony prominences. Keep diaper area clean and dry with barrier cream (zinc oxide). Monitor for pressure injuries — even NICU patients develop them.</li>
+</ol>`,
+t2:`<p><strong>Adhesive-related skin injury prevention:</strong></p>
+<ul><li>Medical adhesive-related skin injury (MARSI) occurs in up to 17% of NICU patients</li>
+<li>Use pectin-based or hydrocolloid barriers under ALL adhesives (tape, ECG electrodes, pulse ox probes)</li>
+<li>Use silicone-based tapes preferentially (less adhesion to epidermis)</li>
+<li>Allow adhesives to "cure" before applying to skin (reduces adhesion force)</li>
+<li>Remove adhesives by pulling parallel to skin surface (NOT perpendicular) while supporting underlying skin</li>
+<li>Use silicone-based adhesive remover (e.g., Cavilon No Sting Barrier Film, Niltac) for stubborn adhesives</li>
+<li>NEVER forcibly remove adhesives from preterm skin — this can remove the entire epidermis</li></ul>`
+}},
+// ═══ NEONATAL SKIN AS MARKER ═══
+{name:"Skin Signs of\nSystemic Disease",icon:"🔍",type:"diagnosis",sub:"Petechiae · Blueberry muffin · Collodion",edge:"Unusual or\nconcerning\nskin findings",
+info:{tabs:["Petechiae/Purpura","Blueberry Muffin","Collodion Baby","Ichthyosis"],
+t0:`<p><strong>Petechiae/purpura in a neonate — differential:</strong></p>
+<table class="dt"><thead><tr><th>Cause</th><th>Associated Features</th><th>Workup</th></tr></thead><tbody>
+<tr><td><strong>Thrombocytopenia</strong></td><td>NAIT, TORCH, sepsis, DIC</td><td>CBC, plt count, maternal plts, TORCH screen</td></tr>
+<tr><td><strong>Coagulopathy</strong></td><td>DIC (sepsis, asphyxia), VKDB</td><td>PT, aPTT, fibrinogen, D-dimer, vitamin K hx</td></tr>
+<tr><td><strong>Infection</strong></td><td>Sepsis (bacterial, viral), TORCH</td><td>Blood cx, CRP, TORCH workup</td></tr>
+<tr><td><strong>Birth trauma</strong></td><td>Facial petechiae from cord around neck or vertex presentation</td><td>Clinical diagnosis — benign, resolves in days</td></tr>
+<tr><td><strong>Child abuse</strong></td><td>Pattern does not match birth trauma; suspicious history</td><td>Full evaluation per child protection protocol</td></tr>
+</tbody></table>
+<div class="bx bo">⚠️ <strong>Petechiae limited to the face and upper trunk after vertex delivery or tight nuchal cord = common and benign.</strong> Petechiae below the nipple line or generalized = concerning and requires full workup.</div>`,
+t1:`<p><strong>"Blueberry muffin" rash:</strong> Blue-red papulonodules from dermal extramedullary hematopoiesis. Indicates the bone marrow is failing and red cell production is happening in the skin.</p>
+<ul><li><strong>TORCH infections:</strong> CMV (#1), rubella, toxoplasmosis, syphilis</li>
+<li><strong>Hematologic:</strong> Rh hemolytic disease (severe), congenital leukemia, TAM (trisomy 21), neuroblastoma (metastatic)</li>
+<li><strong>Workup:</strong> CBC with diff and smear (blasts?), TORCH screen, abdominal US (hepatosplenomegaly, adrenal mass), bone marrow aspirate if hematologic malignancy suspected</li></ul>`,
+t2:`<p><strong>Collodion baby:</strong></p>
+<ul><li>Born encased in a tight, shiny, translucent membrane (collodion membrane)</li>
+<li>Membrane cracks and peels within first 2 weeks</li>
+<li>Most commonly: lamellar ichthyosis or congenital ichthyosiform erythroderma</li>
+<li>~10% are "self-healing" collodion babies (membrane peels and skin underneath is normal)</li>
+<li><strong>Acute management:</strong> Humidified incubator (high humidity essential — massive TEWL), emollients, monitor for fluid/electrolyte losses, temperature instability, infection risk (broken barrier). May need NICU admission.</li>
+<li>Ectropion (outturned eyelids) and eclabium (outturned lips) — ophthalmology consult, eye lubrication</li></ul>`,
+t3:`<p><strong>Harlequin ichthyosis:</strong></p>
+<ul><li>Most severe form of ichthyosis. AR (ABCA12 gene mutation).</li>
+<li>Thick, plate-like armor of skin with deep fissures at birth. Severe ectropion, eclabium.</li>
+<li>Previously uniformly fatal; now improved survival (~50%) with intensive NICU care and retinoids</li>
+<li>Management: humidified incubator, emollients, systemic retinoids (acitretin), ophthalmology, plastic surgery consult, infection prevention, nutrition support</li></ul>`
+}}
+]};
+// ═══ D3 ENGINE ═══
+const CM={assessment:{f:"#0f1d3a",s:"#60a5fa",t:"#60a5fa",b:"Assessment"},decision:{f:"#2a2006",s:"#fbbf24",t:"#fbbf24",b:"Decision Point"},emergency:{f:"#2a1215",s:"#f87171",t:"#f87171",b:"Emergency"},urgent:{f:"#2a1a0a",s:"#fb923c",t:"#fb923c",b:"Urgent"},action:{f:"#0a2a1a",s:"#4ade80",t:"#4ade80",b:"Action"},diagnosis:{f:"#1a0f2e",s:"#c084fc",t:"#c084fc",b:"Diagnosis"}};
+const svg=d3.select("#tc"),W=innerWidth,H=innerHeight;svg.attr("width",W).attr("height",H);const g=svg.append("g");const zm=d3.zoom().scaleExtent([0.2,3]).on("zoom",e=>g.attr("transform",e.transform));svg.call(zm);
+const nW=148,nH=62;const root=d3.hierarchy(T,d=>d.children);root.x0=H/2;root.y0=0;
+root.descendants().forEach(d=>{if(d.depth>1&&d.children){d._children=d.children;d.children=null;}});const tl=d3.tree().nodeSize([nH+32,nW+85]);
+function upd(src){const dur=420;tl(root);const nds=root.descendants(),lks=root.links();nds.forEach(d=>{d.y=d.depth*230;});const lk=g.selectAll(".lk").data(lks,d=>d.target.data.name);const le=lk.enter().append("path").attr("class","lk").attr("d",()=>{const o={x:src.x0,y:src.y0};return dg(o,o);});lk.merge(le).transition().duration(dur).attr("d",d=>dg(d.source,d.target));lk.exit().transition().duration(dur).attr("d",()=>{const o={x:src.x,y:src.y};return dg(o,o);}).remove();g.selectAll(".ll").remove();lks.forEach(d=>{if(d.target.data.edge){const ls=d.target.data.edge.split("\n"),mx=(d.source.x+d.target.x)/2,my=(d.source.y+d.target.y)/2;ls.forEach((l,i)=>{g.append("text").attr("class","ll").attr("x",my+12).attr("y",mx-4+i*11).text(l);});}});const nd=g.selectAll(".ng").data(nds,d=>d.data.name);const ne=nd.enter().append("g").attr("class","ng").attr("transform",`translate(${src.y0},${src.x0})`).on("click",(e,d)=>{if(d.children){d._children=d.children;d.children=null;}else if(d._children){d.children=d._children;d._children=null;}upd(d);});ne.append("rect").attr("class","nr").attr("x",-nW/2).attr("y",-nH/2).attr("width",nW).attr("height",nH).attr("fill",d=>CM[d.data.type]?.f||"#1e293b").attr("stroke",d=>CM[d.data.type]?.s||"#475569");ne.append("text").attr("class","ni").attr("y",-12).text(d=>d.data.icon);ne.each(function(d){const ls=d.data.name.split("\n"),el=d3.select(this);ls.forEach((l,i)=>{el.append("text").attr("class","nl").attr("y",4+i*13).text(l);});if(d.data.sub){el.append("text").attr("class","ns").attr("y",4+ls.length*13+5).text(d.data.sub.substring(0,32));}});ne.append("circle").attr("class","ib").attr("cx",nW/2-12).attr("cy",-nH/2+12).attr("r",10).attr("fill",d=>CM[d.data.type]?.s||"#60a5fa").attr("fill-opacity",.2).attr("stroke",d=>CM[d.data.type]?.s||"#60a5fa").attr("stroke-width",1.5).on("click",(e,d)=>{e.stopPropagation();showP(d.data);});ne.append("text").attr("x",nW/2-12).attr("y",-nH/2+16).attr("text-anchor","middle").attr("font-size","12px").attr("fill","#e2e8f0").attr("pointer-events","none").attr("font-weight","700").text("i");ne.append("text").attr("class","ei").attr("x",0).attr("y",nH/2+15).attr("text-anchor","middle").attr("font-size","10px").attr("fill","#475569");const nu=nd.merge(ne);nu.transition().duration(dur).attr("transform",d=>`translate(${d.y},${d.x})`);nu.select(".ei").text(d=>d._children?`▸ ${d._children.length} more`:"");nd.exit().transition().duration(dur).attr("transform",`translate(${src.y},${src.x})`).remove();nds.forEach(d=>{d.x0=d.x;d.y0=d.y;});}
+function dg(s,d){return`M${s.y} ${s.x}C${(s.y+d.y)/2} ${s.x},${(s.y+d.y)/2} ${d.x},${d.y} ${d.x}`;}upd(root);const iT=d3.zoomIdentity.translate(90,H/2-20).scale(0.82);svg.call(zm.transform,iT);
+function showP(data){const ov=document.getElementById("po"),c=CM[data.type]||CM.assessment;document.getElementById("picon").textContent=data.icon;document.getElementById("picon").style.background=c.f;document.getElementById("picon").style.border=`1.5px solid ${c.s}`;document.getElementById("ptitle").textContent=data.name.replace(/\n/g," ");const te=document.getElementById("ptype");te.textContent=c.b;te.style.background=c.f;te.style.color=c.t;te.style.border=`1px solid ${c.s}`;let h="";if(data.info.tabs){h+=`<div class="tabs">`;data.info.tabs.forEach((t,i)=>{h+=`<button class="tb${i===0?' active':''}" onclick="swT(${i})">${t}</button>`;});h+=`</div>`;data.info.tabs.forEach((t,i)=>{h+=`<div class="tc${i===0?' active':''}" data-t="${i}">${data.info['t'+i]||''}</div>`;});}if(data.sub){h+=`<div class="bx bb" style="margin-top:16px">ℹ️ <strong>Summary:</strong> ${data.sub}</div>`;}document.getElementById("pbody").innerHTML=h;ov.classList.add("active");document.getElementById("pp").scrollTop=0;}
+function swT(i){document.querySelectorAll('.tb').forEach((b,j)=>b.classList.toggle('active',j===i));document.querySelectorAll('.tc').forEach((c,j)=>c.classList.toggle('active',j===i));}function closeP(e){if(!e||e.target===document.getElementById("po"))document.getElementById("po").classList.remove("active");}document.addEventListener("keydown",e=>{if(e.key==="Escape")closeP();});
+function resetZ(){svg.transition().duration(500).call(zm.transform,iT);}function expAll(){root.descendants().forEach(d=>{if(d._children){d.children=d._children;d._children=null;}});upd(root);}function colAll(){root.descendants().forEach(d=>{if(d.depth>0&&d.children){d._children=d.children;d.children=null;}});upd(root);}addEventListener("resize",()=>{svg.attr("width",innerWidth).attr("height",innerHeight);});
+</script></body></html>
