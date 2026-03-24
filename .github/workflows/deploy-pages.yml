@@ -1,0 +1,138 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # ------------------------------------------------------------------
+      # Phase 1: Serve static content directly
+      # Decision trees, calculators, education downloads all work without
+      # a SvelteKit build. The SvelteKit app build is added in Phase 2
+      # once wasm-pack CI is configured.
+      # ------------------------------------------------------------------
+      
+      - name: Build static site
+        run: |
+          mkdir -p _site
+          
+          # Copy static assets (decision trees, calculators, education, theme bridge)
+          cp -r apps/web/static/* _site/
+          
+          # Create a landing page that redirects to decision trees
+          cat > _site/index.html << 'INDEXEOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Pediatric Emergency CDS</title>
+          <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+          <style>
+            :root { --bg: #FAFAF9; --text: #1C1917; --text2: #44403C; --text3: #78716C; --surface: #FFFFFF; --border: #D6D3D1; --accent: #1D4ED8; --shadow: rgba(28,25,23,0.08); }
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: 'IBM Plex Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 3rem 1.5rem; }
+            .logo { display: flex; align-items: baseline; gap: 0.35rem; margin-bottom: 0.5rem; }
+            .logo-mark { font-family: 'DM Serif Display', serif; font-size: 3rem; color: var(--accent); }
+            .logo-text { font-family: 'IBM Plex Mono', monospace; font-size: 1.25rem; color: var(--text3); }
+            h2 { font-size: 1.1rem; color: var(--text2); font-weight: 400; margin-bottom: 2.5rem; text-align: center; }
+            .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; max-width: 900px; width: 100%; }
+            .card { display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); transition: all 0.15s; box-shadow: 0 1px 3px var(--shadow); }
+            .card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 12px var(--shadow); }
+            .card-icon { font-size: 2rem; }
+            .card-title { font-weight: 600; font-size: 1rem; }
+            .card-desc { font-size: 0.8125rem; color: var(--text3); margin-top: 0.15rem; }
+            .card-count { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--accent); margin-top: 0.25rem; }
+            footer { margin-top: 3rem; font-size: 0.75rem; color: var(--text3); text-align: center; }
+          </style>
+          </head>
+          <body>
+            <div class="logo">
+              <span class="logo-mark">PED</span>
+              <span class="logo-text">CDS</span>
+            </div>
+            <h2>Pediatric Emergency Medicine — Clinical Decision Support</h2>
+            <div class="grid">
+              <a href="/decision-trees/" class="card">
+                <span class="card-icon">🌳</span>
+                <div>
+                  <div class="card-title">Decision Trees</div>
+                  <div class="card-desc">Interactive clinical algorithms with tabbed references</div>
+                  <div class="card-count">34 trees — Neonatal + Pediatric</div>
+                </div>
+              </a>
+              <a href="/calculators/pediatric_ivf_calculator.html" class="card">
+                <span class="card-icon">🧮</span>
+                <div>
+                  <div class="card-title">IVF Calculator</div>
+                  <div class="card-desc">Holliday-Segar, dehydration, burns, fluid composition</div>
+                  <div class="card-count">AAP 2018 guideline-based</div>
+                </div>
+              </a>
+              <a href="/calculators/pediatric_electrolyte_calculator.html" class="card">
+                <span class="card-icon">⚗️</span>
+                <div>
+                  <div class="card-title">Electrolyte Calculator</div>
+                  <div class="card-desc">Na/K/Ca/Mg/PO4 correction, DKA, burns, special populations</div>
+                  <div class="card-count">Interactive with charts</div>
+                </div>
+              </a>
+              <a href="/education/cheat-sheets/" class="card">
+                <span class="card-icon">📋</span>
+                <div>
+                  <div class="card-title">Education Guides</div>
+                  <div class="card-desc">Cheat sheets, textbooks, and audio textbooks</div>
+                  <div class="card-count">14 topics × 3 formats</div>
+                </div>
+              </a>
+            </div>
+            <footer>
+              PED CDS — Pediatric Emergency Decision Support for Rural Emergency Departments<br>
+              <a href="https://github.com/timothyhartzog/Peds" style="color: var(--accent);">GitHub</a>
+            </footer>
+            <script src="/theme-bridge.js"></script>
+          </body>
+          </html>
+          INDEXEOF
+          
+          echo "Site built: $(find _site -type f | wc -l) files"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

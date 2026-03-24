@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculators — PED CDS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #FAFAF9; --text: #1C1917; --text2: #44403C; --text3: #78716C; --surface: #FFFFFF; --border: #D6D3D1; --accent: #1D4ED8; --shadow: rgba(28,25,23,0.08); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'IBM Plex Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem 1.5rem; max-width: 640px; margin: 0 auto; }
+  h1 { font-family: 'DM Serif Display', serif; font-size: 1.75rem; margin-bottom: 0.5rem; }
+  .sub { font-size: 0.9375rem; color: var(--text3); margin-bottom: 2rem; }
+  .list { display: flex; flex-direction: column; gap: 0.75rem; }
+  a.card { display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text); transition: all 0.15s; box-shadow: 0 1px 3px var(--shadow); }
+  a.card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 12px var(--shadow); }
+  .icon { font-size: 2rem; }
+  .title { font-weight: 600; font-size: 1rem; }
+  .desc { font-size: 0.8125rem; color: var(--text3); margin-top: 0.15rem; line-height: 1.4; }
+  .back { display: inline-block; margin-bottom: 1rem; font-size: 0.8125rem; color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+<a href="/" class="back">← Back to PED CDS</a>
+<h1>Interactive Calculators</h1>
+<p class="sub">Weight-based clinical calculators with real-time computation and guideline references.</p>
+<div class="list">
+  <a href="pediatric_ivf_calculator.html" class="card">
+    <span class="icon">💧</span>
+    <div>
+      <div class="title">Pediatric IVF Management</div>
+      <div class="desc">Holliday-Segar, dehydration assessment, burns/Parkland, fluid restriction, IV fluid composition comparison</div>
+    </div>
+  </a>
+  <a href="pediatric_ivf_educational.html" class="card">
+    <span class="icon">📖</span>
+    <div>
+      <div class="title">IVF Educational Reference</div>
+      <div class="desc">Teaching mode with clinical reasoning context and AAP guideline annotations</div>
+    </div>
+  </a>
+  <a href="pediatric_electrolyte_calculator.html" class="card">
+    <span class="icon">⚗️</span>
+    <div>
+      <div class="title">Electrolyte & Special Populations</div>
+      <div class="desc">Na/K/Ca/Mg/PO4 correction, DKA fluid management, burn resuscitation, renal dosing adjustments</div>
+    </div>
+  </a>
+</div>
+<script src="/theme-bridge.js"></script>
+</body>
+</html>

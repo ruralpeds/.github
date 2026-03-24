@@ -10,8 +10,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js" crossorigin></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #0b1121; color: #d4dce8; font-family: 'IBM Plex Sans', system-ui, sans-serif; min-height: 100vh; }
+  body { background: var(--bg, #0b1121); color: #d4dce8; font-family: 'IBM Plex Sans', system-ui, sans-serif; min-height: 100vh; }
   #root { min-height: 100vh; }
+  /* Theme bridge overrides */
+  body { background: var(--bg, #0b1121) !important; color: var(--text, #d4dce8) !important; }
+  select, input { background: var(--inputbg, #111827) !important; color: var(--text, #e2e8f0) !important; border-color: var(--inputborder, #334155) !important; }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
@@ -478,5 +481,6 @@ function Card({title,color,rows,note}) {
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<ElectrolyteCalc />);
 </script>
+<script src="/theme-bridge.js"></script>
 </body>
 </html>
