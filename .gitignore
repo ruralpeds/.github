@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+target/
+wasm-pkg/
+
+# Build output
+apps/web/build/
+apps/web/.svelte-kit/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Rust
+Cargo.lock
+*.rlib
+
+# Environment
+.env
+.env.local

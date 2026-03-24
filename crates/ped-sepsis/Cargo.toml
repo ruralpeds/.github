@@ -1,0 +1,11 @@
+[package]
+name = "ped-sepsis"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+ped-core = { path = "../ped-core" }
+sci-clinical.workspace = true
+sci-units.workspace = true
