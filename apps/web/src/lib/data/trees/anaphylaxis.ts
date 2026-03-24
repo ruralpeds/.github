@@ -1,0 +1,77 @@
+import type { DecisionTree } from '$lib/d3/tree-schema';
+
+export const anaphylaxis: DecisionTree = {
+	id: 'anaphylaxis-2025',
+	title: 'Anaphylaxis Management',
+	version: '1.0',
+	mode: 'both',
+	source: 'AHA PALS 2025 / WAO 2024',
+	lastUpdated: '2025-03',
+	root: {
+		id: 'recognition',
+		label: 'Anaphylaxis Recognition',
+		type: 'assessment',
+		description: 'Acute onset involving skin/mucosal + respiratory/cardiovascular',
+		panels: [
+			{ label: 'Diagnostic Criteria', type: 'list', content: { title: 'Anaphylaxis is LIKELY when ANY ONE of:', items: ['Acute onset (minutes to hours) of skin/mucosal involvement (urticaria, angioedema, flushing) PLUS respiratory compromise OR hypotension', 'Two or more of: skin/mucosal, respiratory, cardiovascular, persistent GI symptoms — after exposure to likely allergen', 'Hypotension after exposure to KNOWN allergen for that patient'] } },
+		],
+		children: [
+			{
+				label: 'Anaphylaxis confirmed',
+				node: {
+					id: 'epi-im',
+					label: 'EPINEPHRINE IM — IMMEDIATELY',
+					type: 'emergency',
+					description: '1:1,000 (1 mg/mL) IM mid-outer thigh: 0.01 mg/kg (max 0.5 mg)',
+					panels: [
+						{ label: 'Epinephrine Dosing', type: 'table', content: { headers: ['Weight', 'Dose', 'EpiPen'], rows: [['<10 kg', '0.01 mg/kg (use 1 mg/mL, draw up exact)', '—'], ['10-25 kg', '0.15 mg', 'EpiPen Jr'], ['>25 kg', '0.3 mg', 'EpiPen'], ['Adolescent/Adult', '0.3-0.5 mg', 'EpiPen']], caption: 'IM mid-outer thigh. May repeat q5-15 min.' } },
+						{ label: 'Critical Points', type: 'alert', content: { severity: 'emergency', title: 'Do NOT delay epinephrine', body: 'Epinephrine is the ONLY first-line treatment. Antihistamines and steroids are adjuncts, not substitutes. IM route is preferred over IV for initial dosing (faster onset, less risk of arrhythmia). IV epinephrine reserved for refractory anaphylaxis.' } },
+					],
+					children: [
+						{
+							label: 'Simultaneous',
+							node: {
+								id: 'supportive',
+								label: 'Supportive Measures',
+								type: 'action',
+								description: 'Position, O₂, IV fluids, monitoring',
+								panels: [
+									{ label: 'Actions', type: 'list', content: { items: ['Position: supine with legs elevated (unless respiratory distress → sit up)', 'High-flow oxygen (100% NRB)', 'IV/IO access — large bore', 'NS 20 mL/kg bolus for hypotension (repeat as needed)', 'Albuterol nebulizer for bronchospasm (2.5-5 mg)', 'Cardiac monitor + continuous SpO₂', 'Prepare for intubation if airway compromise'] } },
+									{ label: 'Adjuncts', type: 'table', content: { headers: ['Agent', 'Dose', 'Role'], rows: [['Diphenhydramine', '1 mg/kg IV (max 50 mg)', 'H1 blocker — adjunct only'], ['Ranitidine/Famotidine', '1 mg/kg IV (max 50 mg)', 'H2 blocker — adjunct'], ['Methylprednisolone', '1-2 mg/kg IV (max 125 mg)', 'Prevents biphasic reaction (delayed)'], ['Glucagon', '20-30 mcg/kg IV (max 1 mg)', 'For beta-blocker refractory anaphylaxis']] } },
+								],
+								children: [
+									{ label: 'Responds to IM epi', node: { id: 'observe', label: 'Observe 4-6 Hours', type: 'stable', description: 'Monitor for biphasic reaction. Prescribe EpiPen. Allergy referral.' } },
+									{
+										label: 'Refractory (no response to 2-3 IM doses)',
+										node: {
+											id: 'refractory',
+											label: 'IV Epinephrine Infusion',
+											type: 'emergency',
+											description: '0.1-1 mcg/kg/min. Titrate to BP and perfusion.',
+											panels: [
+												{ label: 'IV Epi Protocol', type: 'list', content: { items: ['Epi drip: 0.1-1 mcg/kg/min — titrate to effect', 'MUST be on cardiac monitor', 'Aggressive IV fluid resuscitation (may need 40-60+ mL/kg)', 'If persistent hypotension: consider vasopressin 0.04 units/min', 'Intubation for airway angioedema — use ketamine for induction', 'Surgical airway kit at bedside'] } },
+											],
+										},
+									},
+								],
+							},
+						},
+					],
+				},
+			},
+		],
+	},
+	textbook: {
+		title: 'Anaphylaxis in the Pediatric Emergency Department',
+		blocks: [
+			{ type: 'heading', level: 1, text: 'Overview' },
+			{ type: 'paragraph', text: 'Anaphylaxis is a severe, potentially life-threatening systemic allergic reaction that occurs rapidly after exposure to a trigger. In children, the most common triggers are foods (peanuts, tree nuts, milk, eggs), insect stings, and medications. The hallmark is involvement of multiple organ systems simultaneously.' },
+			{ type: 'keypoint', text: '<strong>Epinephrine is the ONLY first-line treatment.</strong> There are NO absolute contraindications to epinephrine in anaphylaxis. The risk of not giving epinephrine always outweighs the risk of giving it. Antihistamines and steroids are adjuncts — they do not treat the life-threatening components (airway compromise, shock).' },
+			{ type: 'heading', level: 1, text: 'Biphasic Reactions' },
+			{ type: 'paragraph', text: 'Up to 20% of anaphylaxis cases have a biphasic phase — recurrence of symptoms hours after initial resolution, typically 4-12 hours later. This is why observation for 4-6 hours after treatment is standard, and patients with severe initial reactions should be observed longer (up to 24 hours). Corticosteroids are given primarily to reduce biphasic reaction risk, though evidence is limited.' },
+		],
+		references: [
+			{ id: 'wao2024', authors: 'Cardona V, Ansotegui IJ, Ebisawa M, et al.', title: 'World Allergy Organization Anaphylaxis Guidance 2024', journal: 'World Allergy Organ J', year: 2024, note: 'WAO updated anaphylaxis management guidance' },
+		],
+	},
+};

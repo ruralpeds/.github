@@ -73,13 +73,18 @@ NEW: Peds (SvelteKit + WASM)       (UI, decision trees, textbook, clinical conte
 | Clinical flowcharts | 3 HTML files | content/flowcharts-legacy/ |
 | Documentation | 4 files | docs/ |
 
-### ✅ New Decision Trees Created
+### ✅ New Decision Trees Created (9 total)
 | Tree | Mode | Route |
 |---|---|---|
 | NRP Algorithm (8th Ed) | Neonatal | /resuscitation/nrp |
 | PALS Cardiac Arrest | Pediatric | /resuscitation/pals |
+| PALS Bradycardia with Pulse | Pediatric | /resuscitation/bradycardia |
+| PALS Tachycardia with Pulse | Pediatric | /resuscitation/tachycardia |
 | RSI Protocol | Pediatric | /airway/rapid-sequence |
 | Sepsis First-Hour Bundle | Pediatric | /sepsis/pathway |
+| Status Epilepticus | Both | /resuscitation/status-epilepticus |
+| DKA Protocol | Pediatric | /resuscitation/dka |
+| Anaphylaxis | Both | /resuscitation/anaphylaxis |
 
 ### ⬜ Decision Trees Still Needed (from old protocol modules)
 | Protocol | Old Source | Priority |
