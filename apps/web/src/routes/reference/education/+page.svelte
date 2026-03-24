@@ -21,6 +21,9 @@
 		{ topic: 'Surgical Emergencies', icon: '🔪', cheatSheet: 'neonatal_surgical_emergencies_cheat_sheet.docx', textbook: 'neonatal_surgical_emergencies_textbook.docx', audioTextbook: 'neonatal_surgical_emergencies_audio_textbook.docx' },
 		{ topic: 'Skin & Dermatology', icon: '🩹', cheatSheet: 'neonatal_skin_cheat_sheet.docx', textbook: 'neonatal_skin_textbook.docx', audioTextbook: 'neonatal_skin_audio_textbook.docx' },
 		{ topic: 'Urology', icon: '🏥', cheatSheet: 'neonatal_urology_cheat_sheet.docx', textbook: 'neonatal_urology_textbook.docx', audioTextbook: 'neonatal_urology_audio_textbook.docx' },
+		{ topic: 'Critical Care Stabilization', icon: '🚨', cheatSheet: 'critical_care_stabilization_cheat_sheet.docx', textbook: 'critical_care_stabilization_textbook.docx', audioTextbook: 'critical_care_stabilization_audio_textbook.docx' },
+		{ topic: 'Maternal Infections', icon: '🤰', cheatSheet: 'maternal_infections_cheat_sheet.docx', textbook: 'maternal_infections_textbook.docx', audioTextbook: 'maternal_infections_audio_textbook.docx' },
+		{ topic: 'Neonatal Ventilation Decision Tree', icon: '💨', cheatSheet: 'neonatal_ventilation_decision_tree_cheat_sheet.docx', textbook: 'neonatal_ventilation_decision_tree_textbook.docx', audioTextbook: 'neonatal_ventilation_decision_tree_audio_textbook.docx' },
 	];
 
 	const tabMeta = {
@@ -48,7 +51,7 @@
 	<div class="page-header">
 		<h1 class="page-title">Neonatal Education Guides</h1>
 		<p class="page-desc">
-			11 neonatal topics, each with three formats: a laminated cheat sheet for the bedside,
+			14 neonatal topics, each with three formats: a laminated cheat sheet for the bedside,
 			a comprehensive referenced textbook, and an audio-optimized version for TTS narration.
 		</p>
 	</div>
