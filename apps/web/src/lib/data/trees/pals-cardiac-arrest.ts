@@ -1,0 +1,115 @@
+import type { DecisionTree } from '$lib/d3/tree-schema';
+
+export const palsCardiacArrest: DecisionTree = {
+	id: 'pals-cardiac-arrest-2025',
+	title: 'PALS Cardiac Arrest Algorithm',
+	version: '1.0',
+	mode: 'pediatric',
+	source: 'AHA PALS 2025 Guidelines',
+	lastUpdated: '2025-03',
+	root: {
+		id: 'arrest',
+		label: 'Cardiac Arrest',
+		type: 'emergency',
+		description: 'Unresponsive, no pulse, not breathing normally',
+		panels: [
+			{ label: 'Immediate Actions', type: 'list', content: { title: 'START CPR IMMEDIATELY', items: ['Begin high-quality CPR: push hard, push fast', 'Compression rate: 100-120/min', 'Depth: at least 1/3 AP diameter of chest', 'Allow full recoil', 'Minimize interruptions (<10 sec for rhythm check)', 'Attach cardiac monitor/defibrillator', 'Establish IV/IO access'] } },
+		],
+		wasmCompute: [
+			{ fn: 'calculateDose', args: ['epinephrine'], displayKey: 'epiDose', format: 'dose' },
+		],
+		children: [
+			{
+				label: 'Check rhythm',
+				node: {
+					id: 'rhythm-check',
+					label: 'Shockable Rhythm?',
+					type: 'decision',
+					description: 'VF or pulseless VT?',
+					panels: [
+						{ label: 'Rhythm Identification', type: 'table', content: { headers: ['Rhythm', 'Pattern', 'Shockable?'], rows: [ ['VF', 'Chaotic, no organized QRS', 'YES'], ['Pulseless VT', 'Wide complex, regular, no pulse', 'YES'], ['Asystole', 'Flat line (confirm in 2 leads)', 'NO'], ['PEA', 'Organized rhythm, no pulse', 'NO'] ] } },
+					],
+					children: [
+						{
+							label: 'VF / pVT',
+							node: {
+								id: 'shockable',
+								label: 'SHOCK',
+								type: 'emergency',
+								description: 'Defibrillate 2 J/kg',
+								panels: [
+									{ label: 'Defibrillation', type: 'list', content: { title: 'Energy dosing', items: ['1st shock: 2 J/kg', '2nd shock: 4 J/kg', 'Subsequent: 4-10 J/kg (max 10 J/kg or adult dose)', 'Resume CPR immediately after shock — do NOT check rhythm for 2 min'] } },
+									{ label: 'Dosing', type: 'dosing', content: { drugs: ['epinephrine', 'amiodarone'], notes: 'Epinephrine q3-5 min. Amiodarone 5 mg/kg (max 300 mg) for refractory VF/pVT.' } },
+								],
+								children: [
+									{
+										label: 'CPR 2 min → Recheck',
+										node: {
+											id: 'recheck-shockable',
+											label: 'Still VF/pVT?',
+											type: 'decision',
+											description: 'Rhythm check after 2 min CPR',
+											children: [
+												{ label: 'Yes', node: { id: 'shock2', label: 'SHOCK 4 J/kg', type: 'emergency', description: 'Epinephrine q3-5 min. Amiodarone if refractory.', children: [
+													{ label: 'CPR 2 min → Recheck', node: { id: 'shock3-decision', label: 'Still VF/pVT?', type: 'decision', children: [
+														{ label: 'Yes', node: { id: 'shock3', label: 'SHOCK 4-10 J/kg', type: 'emergency', description: 'Continue CPR + epi q3-5 min. Consider reversible causes.' } },
+														{ label: 'No — organized', node: { id: 'rosc-from-vf', label: 'Check Pulse', type: 'assessment', description: 'Pulse present? → ROSC. No pulse? → Go to PEA/Asystole.' } },
+													] } },
+												] } },
+												{ label: 'No — organized', node: { id: 'rosc-check', label: 'Check Pulse', type: 'assessment', description: 'Pulse present → Post-cardiac arrest care' } },
+											],
+										},
+									},
+								],
+							},
+						},
+						{
+							label: 'Asystole / PEA',
+							node: {
+								id: 'non-shockable',
+								label: 'CPR + Epinephrine',
+								type: 'emergency',
+								description: 'High-quality CPR. Epinephrine ASAP, then q3-5 min.',
+								panels: [
+									{ label: 'Management', type: 'list', content: { items: ['High-quality CPR — do NOT interrupt for rhythm analysis', 'Epinephrine 0.01 mg/kg IV/IO q3-5 min', 'Consider advanced airway (do not interrupt CPR >10 sec)', 'Identify and treat reversible causes (Hs and Ts)'] } },
+									{ label: 'Hs and Ts', type: 'table', content: { headers: ['H', 'T'], rows: [ ['Hypovolemia', 'Tension pneumothorax'], ['Hypoxia', 'Tamponade (cardiac)'], ['Hydrogen ion (acidosis)', 'Toxins'], ['Hypo/hyperkalemia', 'Thrombosis (pulmonary)'], ['Hypothermia', 'Thrombosis (coronary)'] ], caption: 'Reversible causes of cardiac arrest' } },
+									{ label: 'Dosing', type: 'dosing', content: { drugs: ['epinephrine'], notes: 'Epinephrine 0.01 mg/kg (1:10,000) IV/IO every 3-5 minutes.' } },
+								],
+								children: [
+									{
+										label: 'CPR 2 min → Recheck',
+										node: {
+											id: 'recheck-non-shockable',
+											label: 'Rhythm Change?',
+											type: 'decision',
+											children: [
+												{ label: 'Now shockable', node: { id: 'convert-shock', label: 'Go to VF/pVT Pathway', type: 'urgent', description: 'Defibrillate 2 J/kg. Follow shockable pathway.' } },
+												{ label: 'Still asystole/PEA', node: { id: 'continue-cpr', label: 'Continue CPR + Epi', type: 'emergency', description: 'Continue CPR. Epi q3-5 min. Address Hs and Ts.' } },
+												{ label: 'Organized + pulse', node: { id: 'rosc', label: 'ROSC', type: 'stable', description: 'Post-cardiac arrest care. Targeted temperature management.' } },
+											],
+										},
+									},
+								],
+							},
+						},
+					],
+				},
+			},
+		],
+	},
+	textbook: {
+		title: 'PALS Cardiac Arrest Management',
+		blocks: [
+			{ type: 'heading', level: 1, text: 'Overview' },
+			{ type: 'paragraph', text: 'Pediatric cardiac arrest in the ED requires immediate, systematic intervention. Unlike adults, most pediatric arrests are respiratory in origin (asphyxial arrest), making oxygenation and ventilation critical components of resuscitation alongside chest compressions.' },
+			{ type: 'keypoint', text: 'CPR quality is the most important determinant of survival. Push hard (≥1/3 AP diameter), push fast (100-120/min), allow full recoil, and minimize interruptions. Compression fraction should be >80%.' },
+			{ type: 'heading', level: 1, text: 'Shockable vs Non-Shockable Rhythms' },
+			{ type: 'paragraph', text: 'VF and pulseless VT are shockable rhythms and have better survival rates when defibrillation is delivered early. Initial energy is 2 J/kg, escalating to 4 J/kg, then 4-10 J/kg for refractory VF/pVT. Amiodarone 5 mg/kg (max 300 mg) should be given for shock-refractory VF/pVT.' },
+			{ type: 'paragraph', text: 'Asystole and PEA are non-shockable rhythms. Management focuses on high-quality CPR, early epinephrine (0.01 mg/kg q3-5 min), and identifying reversible causes (Hs and Ts).' },
+			{ type: 'alert', severity: 'emergency', title: 'Epinephrine Timing', body: 'For non-shockable rhythms, give epinephrine as soon as IV/IO access is established. For shockable rhythms, give epinephrine after the second shock. In both cases, repeat every 3-5 minutes.' },
+		],
+		references: [
+			{ id: 'aha2025-pals', authors: 'Topjian AA, Raymond TT, Atkins D, et al.', title: 'Part 4: Pediatric Advanced Life Support — 2025 AHA Guidelines for CPR and ECC', journal: 'Circulation', year: 2025, note: 'Primary PALS cardiac arrest algorithm' },
+		],
+	},
+};

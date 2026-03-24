@@ -7,17 +7,28 @@
 
 import type { DecisionTree } from '$lib/d3/tree-schema';
 import { nrpAlgorithm } from './trees/nrp-algorithm';
+import { sepsisPathway } from './trees/sepsis-pathway';
+import { rsiProtocol } from './trees/rsi-protocol';
+import { palsCardiacArrest } from './trees/pals-cardiac-arrest';
 
 // Add new trees here as they're created:
-// import { palsAlgorithm } from './trees/pals-algorithm';
+// import { palsBradycardia } from './trees/pals-bradycardia';
+// import { palsTachycardia } from './trees/pals-tachycardia';
 // import { difficultAirway } from './trees/difficult-airway';
-// import { sepsisPathway } from './trees/sepsis-pathway';
+// import { dkaProtocol } from './trees/dka-protocol';
+// import { statusEpilepticus } from './trees/status-epilepticus';
+// import { anaphylaxis } from './trees/anaphylaxis';
+// import { burnsProtocol } from './trees/burns-protocol';
+// import { traumaAssessment } from './trees/trauma-assessment';
+// import { neonatalHypoglycemia } from './trees/neonatal-hypoglycemia';
+// import { neonatalSeizures } from './trees/neonatal-seizures';
+// import { respiratoryEscalation } from './trees/respiratory-escalation';
 
 export const TREE_REGISTRY: Record<string, DecisionTree> = {
 	'nrp-2025': nrpAlgorithm,
-	// 'pals-2025': palsAlgorithm,
-	// 'difficult-airway': difficultAirway,
-	// 'sepsis-pathway': sepsisPathway,
+	'sepsis-first-hour-2025': sepsisPathway,
+	'rsi-2025': rsiProtocol,
+	'pals-cardiac-arrest-2025': palsCardiacArrest,
 };
 
 /** Get all trees available for a mode */
