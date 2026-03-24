@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pediatric Clinical Decision Flowcharts — Rural &amp; Remote Settings</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --navy: #1a2744;
+    --blue: #2563eb;
+    --blue-light: #dbeafe;
+    --blue-mid: #93c5fd;
+    --teal: #0d9488;
+    --teal-light: #ccfbf1;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --red-mid: #fca5a5;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --purple: #7c3aed;
+    --purple-light: #ede9fe;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-500: #64748b;
+    --gray-700: #334155;
+    --gray-900: #0f172a;
+    --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    color: var(--gray-900);
+    background: var(--gray-50);
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── COVER ── */
+  .cover {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--navy) 0%, #1e3a5f 50%, #1a4a6e 100%);
+    color: white;
+    text-align: center;
+    padding: 3rem;
+    page-break-after: always;
+  }
+  .cover h1 { font-size: 2.6rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 0.75rem; line-height: 1.2; }
+  .cover .subtitle { font-size: 1.15rem; font-weight: 300; opacity: 0.85; max-width: 600px; margin-bottom: 2rem; }
+  .cover .badge { display: inline-block; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25); padding: 0.4rem 1.2rem; border-radius: 99px; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.5px; }
+
+  /* ── TABLE OF CONTENTS ── */
+  .toc {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+    page-break-after: always;
+  }
+  .toc h2 { font-size: 1.5rem; color: var(--navy); border-bottom: 3px solid var(--blue); padding-bottom: 0.5rem; margin-bottom: 1.5rem; }
+  .toc-section { margin-bottom: 1rem; }
+  .toc-section-title { font-weight: 600; color: var(--navy); font-size: 0.95rem; margin-bottom: 0.35rem; }
+  .toc-items { list-style: none; }
+  .toc-items li { padding: 0.2rem 0 0.2rem 1.2rem; font-size: 0.88rem; color: var(--gray-700); border-left: 2px solid var(--gray-200); }
+  .toc-items li a { color: var(--blue); text-decoration: none; }
+  .toc-items li a:hover { text-decoration: underline; }
+
+  /* ── FLOWCHART PAGE ── */
+  .flowchart-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+    page-break-after: always;
+    page-break-inside: avoid;
+  }
+
+  .fc-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--gray-200);
+  }
+  .fc-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+  .fc-title { font-size: 1.35rem; font-weight: 700; color: var(--navy); line-height: 1.2; }
+  .fc-subtitle { font-size: 0.82rem; color: var(--gray-500); margin-top: 0.15rem; }
+
+  /* ── FLOW NODES ── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--gray-500);
+    font-size: 0.72rem;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .arrow .line { width: 2px; height: 16px; background: var(--gray-400); }
+  .arrow .head { font-size: 0.9rem; line-height: 1; margin-top: -2px; }
+  .arrow .label { margin-top: 2px; color: var(--gray-500); font-style: italic; }
+
+  .node {
+    width: 100%;
+    max-width: 720px;
+    border-radius: 8px;
+    padding: 0.65rem 1rem;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .node strong { font-weight: 600; }
+  .node.start {
+    background: var(--navy);
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border-radius: 99px;
+    padding: 0.55rem 1.5rem;
+    max-width: 500px;
+  }
+  .node.assess {
+    background: var(--blue-light);
+    border: 2px solid var(--blue);
+    color: var(--navy);
+  }
+  .node.action {
+    background: white;
+    border: 2px solid var(--gray-300);
+    color: var(--gray-900);
+  }
+  .node.critical {
+    background: var(--red-light);
+    border: 2px solid var(--red);
+    color: #7f1d1d;
+    font-weight: 500;
+  }
+  .node.med {
+    background: var(--amber-light);
+    border: 2px solid var(--amber);
+    color: #78350f;
+  }
+  .node.success {
+    background: var(--green-light);
+    border: 2px solid var(--green);
+    color: #14532d;
+  }
+  .node.decision {
+    background: var(--purple-light);
+    border: 2px solid var(--purple);
+    color: #3b0764;
+    transform: none;
+    position: relative;
+    font-weight: 500;
+  }
+  .node.teal {
+    background: var(--teal-light);
+    border: 2px solid var(--teal);
+    color: #134e4a;
+  }
+  .node.warn {
+    background: #fff7ed;
+    border: 2px solid #ea580c;
+    color: #7c2d12;
+  }
+
+  /* ── BRANCH / SPLIT ── */
+  .branch {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 720px;
+    align-items: flex-start;
+  }
+  .branch-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .branch-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .branch-col .node {
+    max-width: 100%;
+    font-size: 0.78rem;
+  }
+
+  /* 3-col branch */
+  .branch-3 { gap: 0.5rem; }
+  .branch-3 .node { font-size: 0.75rem; padding: 0.5rem 0.6rem; }
+
+  /* ── CONNECTOR LINE ── */
+  .connector {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    height: 24px;
+  }
+  .connector::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 25%;
+    right: 25%;
+    height: 2px;
+    background: var(--gray-400);
+  }
+  .connector.wide::before { left: 5%; right: 5%; }
+  .connector .down-left,
+  .connector .down-right,
+  .connector .down-center {
+    position: absolute;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: var(--gray-400);
+  }
+  .connector .down-left { left: 25%; }
+  .connector .down-right { right: 25%; }
+  .connector .down-center { left: 50%; }
+  .connector.wide .down-left { left: 5%; }
+  .connector.wide .down-right { right: 5%; }
+
+  .connector-3::before { left: 10%; right: 10%; }
+  .connector-3 .down-left { left: 10%; }
+  .connector-3 .down-center { left: 50%; }
+  .connector-3 .down-right { right: 10%; }
+
+  /* ── REASSESS BAR ── */
+  .reassess {
+    width: 100%;
+    max-width: 720px;
+    background: linear-gradient(90deg, var(--navy), #1e3a5f);
+    color: white;
+    text-align: center;
+    padding: 0.45rem 1rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    margin-top: 4px;
+  }
+
+  /* ── SIDE NOTE ── */
+  .side-note {
+    width: 100%;
+    max-width: 720px;
+    background: var(--gray-100);
+    border-left: 4px solid var(--blue);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--gray-700);
+    border-radius: 0 6px 6px 0;
+    margin-top: 4px;
+    text-align: left;
+  }
+  .side-note strong { color: var(--navy); }
+
+  /* ── KEY BOX ── */
+  .key-box {
+    width: 100%;
+    max-width: 720px;
+    margin-top: 1rem;
+    padding: 0.65rem 0.85rem;
+    background: var(--gray-100);
+    border-radius: 8px;
+    font-size: 0.75rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.15rem 1.5rem;
+    text-align: left;
+  }
+  .key-box .key-title {
+    grid-column: 1 / -1;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: var(--navy);
+    margin-bottom: 0.2rem;
+  }
+  .key-box span { color: var(--gray-700); }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background: white; }
+    .cover { min-height: auto; padding: 4rem 2rem; }
+    .flowchart-page { padding: 1rem; max-width: 100%; }
+    .node { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ COVER ═══════════════════════ -->
+<div class="cover">
+  <h1>Pediatric Clinical Decision<br>Flowcharts</h1>
+  <div class="subtitle">
+    Individual algorithmic flowcharts for clinical decision support in rural and remote settings — covering trauma, respiratory failure, sepsis, neurologic, cardiac, metabolic, toxicologic, and special population emergencies
+  </div>
+  <div class="badge">24-HOUR STABILIZATION REFERENCE — MARCH 2026</div>
+</div>
+
+<!-- ═══════════════════════ TOC ═══════════════════════ -->
+<div class="toc">
+  <h2>Flowchart Index</h2>
+  <div class="toc-section">
+    <div class="toc-section-title">🔴 Trauma</div>
+    <ul class="toc-items">
+      <li><a href="#fc1">1. Pediatric Trauma Primary Survey</a></li>
+      <li><a href="#fc2">2. Hemorrhagic Shock</a></li>
+      <li><a href="#fc3">3. Traumatic Brain Injury</a></li>
+      <li><a href="#fc4">4. Pediatric Burns</a></li>
+      <li><a href="#fc5">5. Compartment Syndrome</a></li>
+    </ul>
+  </div>
+  <div class="toc-section">
+    <div class="toc-section-title">🔵 Respiratory</div>
+    <ul class="toc-items">
+      <li><a href="#fc6">6. Respiratory Failure Escalation</a></li>
+      <li><a href="#fc7">7. Rapid Sequence Intubation</a></li>
+      <li><a href="#fc8">8. Status Asthmaticus</a></li>
+      <li><a href="#fc9">9. Croup</a></li>
+      <li><a href="#fc10">10. Bronchiolitis</a></li>
+      <li><a href="#fc11">11. Foreign Body Aspiration</a></li>
+    </ul>
+  </div>
+  <div class="toc-section">
+    <div class="toc-section-title">🟠 Sepsis &amp; Infection</div>
+    <ul class="toc-items">
+      <li><a href="#fc12">12. Pediatric Sepsis &amp; Septic Shock</a></li>
+      <li><a href="#fc13">13. Neonatal Sepsis</a></li>
+      <li><a href="#fc14">14. Febrile Neonate (0–60 days)</a></li>
+    </ul>
+  </div>
+  <div class="toc-section">
+    <div class="toc-section-title">🟣 Neurologic</div>
+    <ul class="toc-items">
+      <li><a href="#fc15">15. Status Epilepticus</a></li>
+      <li><a href="#fc16">16. Altered Mental Status</a></li>
+      <li><a href="#fc17">17. Meningitis &amp; Encephalitis</a></li>
+    </ul>
+  </div>
+  <div class="toc-section">
+    <div class="toc-section-title">❤️ Cardiac</div>
+    <ul class="toc-items">
+      <li><a href="#fc18">18. Pediatric Cardiac Arrest</a></li>
+      <li><a href="#fc19">19. Supraventricular Tachycardia (SVT)</a></li>
+      <li><a href="#fc20">20. Myocarditis &amp; Cardiogenic Shock</a></li>
+      <li><a href="#fc21">21. Ductal-Dependent Congenital Heart Disease</a></li>
+    </ul>
+  </div>
+  <div class="toc-section">
+    <div class="toc-section-title">🟡 Metabolic &amp; Endocrine</div>
+    <ul class="toc-items">
+      <li><a href="#fc22">22. Diabetic Ketoacidosis (DKA)</a></li>
+      <li><a href="#fc23">23. Adrenal Crisis</a></li>
+    </ul>
+  </div>
+  <div class="toc-section">
+    <div class="toc-section-title">🟢 Other Emergencies</div>
+    <ul class="toc-items">
+      <li><a href="#fc24">24. Toxicologic Emergency (General)</a></li>
+      <li><a href="#fc25">25. Anaphylaxis</a></li>
+      <li><a href="#fc26">26. Pediatric Drowning</a></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 1: PEDIATRIC TRAUMA PRIMARY SURVEY
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc1">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--red);">1</div>
+    <div><div class="fc-title">Pediatric Trauma — Primary Survey</div>
+    <div class="fc-subtitle">ATLS-based systematic approach with pediatric modifications</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">PEDIATRIC TRAUMA ACTIVATION — Significant Mechanism of Injury</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>A — AIRWAY with C-Spine Protection</strong><br>Jaw thrust (no head tilt) · Shoulder roll for infant (large occiput) · Suction · OPA/NPA<br>RSI with in-line stabilization if needed (Ketamine 1–2 mg/kg + Rocuronium 1 mg/kg)</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>B — BREATHING</strong><br>Expose chest · Auscultate bilateral · Assess tracheal position · SpO2<br>Needle decompression if tension pneumothorax (2nd ICS MCL or 4th/5th ICS AAL)<br>Chest tube for hemothorax/pneumothorax (10–32 Fr by age)</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>C — CIRCULATION with Hemorrhage Control</strong><br>Direct pressure on external bleeding · IV/IO access ×2 · Labs (T&amp;S, CBC, lactate, BG, coags)<br>NS/LR 10–20 mL/kg bolus → Reassess → Repeat to 40 mL/kg max<br>If no improvement → Activate MTP → pRBC 10 mL/kg · TXA 15–20 mg/kg (max 1 g)</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>D — DISABILITY</strong><br>GCS (age-modified) · Pupil exam · Glucose check · Lateralizing signs</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>E — EXPOSURE &amp; ENVIRONMENT</strong><br>Fully expose → Logroll → Prevent hypothermia (warmed fluids, Bair Hugger, warm room)<br>FAST exam if available · Pelvic stability · Long bone assessment</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">HEMODYNAMICALLY STABLE?</div>
+    <div class="connector"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">YES</div>
+        <div class="node success"><strong>Secondary Survey</strong><br>Head-to-toe exam · Imaging as available (XR, FAST) · Serial reassessment q15–30 min<br>Arrange transfer to trauma center</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">NO</div>
+        <div class="node critical"><strong>Ongoing Resuscitation</strong><br>Blood products · Vasoactives if needed · Damage-control resuscitation principles<br>Identify source: chest, abdomen, pelvis, external, long bone<br>Emergent surgical consult · EXPEDITE transfer</div>
+      </div>
+    </div>
+    <div class="reassess">REASSESS q15 min: HR, BP, Cap Refill, UOP, Lactate, Mental Status</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 2: HEMORRHAGIC SHOCK
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc2">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--red);">2</div>
+    <div><div class="fc-title">Hemorrhagic Shock</div>
+    <div class="fc-subtitle">Damage-control resuscitation in the rural setting</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">SIGNS OF HEMORRHAGIC SHOCK — Tachycardia, Poor Perfusion, Altered MS</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>Immediate Actions</strong><br>Direct pressure on external hemorrhage · 2 large-bore IV or IO access<br>Type &amp; Screen/Crossmatch STAT · POC Hgb/lactate · Activate blood bank</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node med"><strong>1st Bolus:</strong> NS or LR 10–20 mL/kg over 5–10 min<br><strong>TXA:</strong> 15–20 mg/kg IV (max 1 g) over 10 min — within 3 hrs of injury</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">CLINICAL IMPROVEMENT?<br><em style="font-weight:400;font-size:0.75rem;">↑BP, ↓HR, improved cap refill, improved mental status</em></div>
+    <div class="connector"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">YES — RESPONDER</div>
+        <div class="node success">Continue crystalloid to restore perfusion<br>Monitor q15 min · Serial Hgb/lactate<br>Prepare for transfer</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">NO — AFTER 40 mL/kg</div>
+        <div class="node critical"><strong>Fluid-Refractory Hemorrhagic Shock</strong></div>
+      </div>
+    </div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node critical"><strong>Activate Massive Transfusion Protocol</strong><br>pRBC 10 mL/kg (O-neg or type-specific) · Target Hgb 7–10 g/dL<br>If available: FFP 10 mL/kg + Platelets · Goal ratio pRBC:FFP:Plt = 1:1:1<br>TXA infusion: 2 mg/kg/hr (max 125 mg/hr) for 8 hrs</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node warn"><strong>Monitor for Lethal Triad:</strong> Hypothermia + Acidosis + Coagulopathy<br>Warm all fluids/blood · Target temp &gt;36°C · Check ABG/coags q30–60 min<br>Correct Ca²⁺ (0.6 mL/kg Ca gluconate 10%) after every 40 mL/kg blood products</div>
+    <div class="reassess">REASSESS q5–15 min: HR, BP, Cap Refill, Lactate, Hgb, Coags, Temp</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 3: TBI
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc3">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--red);">3</div>
+    <div><div class="fc-title">Traumatic Brain Injury</div>
+    <div class="fc-subtitle">Prevention of secondary brain injury — sustained management</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">HEAD TRAUMA with Altered Mental Status or Neurologic Deficit</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>Rapid Assessment</strong><br>GCS (pediatric-modified for &lt;2 yr) · Pupils (size, reactivity, symmetry)<br>Lateralizing signs · Signs of basilar skull fracture (raccoon eyes, Battle sign, hemotympanum)<br>C-spine precautions · Glucose check</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">GCS ≤ 8 or Signs of Herniation?<br><em style="font-weight:400;font-size:0.75rem;">Herniation = Cushing triad (↑BP, ↓HR, irregular resp), fixed dilated pupil, posturing</em></div>
+    <div class="connector"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">GCS ≤ 8</div>
+        <div class="node critical"><strong>Definitive Airway — RSI</strong><br>Ketamine 1–2 mg/kg + Rocuronium 1 mg/kg<br>Avoid hypotension during induction<br>Target: SpO₂ &gt;94%, PaCO₂ 35–40</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">HERNIATION</div>
+        <div class="node critical"><strong>EMERGENT ICP Reduction</strong><br>3% HTS 2–5 mL/kg IV over 10–20 min (preferred)<br><em>OR</em> Mannitol 0.5–1 g/kg over 15–20 min<br>Brief hyperventilation to PaCO₂ 30–35 (temporizing ONLY)</div>
+      </div>
+    </div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node teal"><strong>Sustained TBI Management Targets</strong><br>
+      SpO₂ &gt;94% (PaO₂ &gt;60) · PaCO₂ 35–40 mmHg (avoid hypo- and hypercapnia)<br>
+      SBP &gt; age-appropriate 5th percentile · Glucose 80–180 mg/dL · Temp 36–37.5°C<br>
+      HOB 30° · Head midline · Avoid jugular vein compression · Seizure prophylaxis if GCS ≤8</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node med"><strong>Seizure Prophylaxis:</strong> Levetiracetam 40–60 mg/kg IV (max 3 g)<br>
+      <strong>Hyperosmolar Therapy:</strong> 3% HTS 2–5 mL/kg PRN for ↑ICP signs (may repeat)<br>
+      Mannitol: hold if serum osm &gt;320 · Ensure adequate volume status before mannitol</div>
+    <div class="reassess">REASSESS q15–30 min: GCS, Pupils, Vitals, Blood Gas, Glucose · Expedite Transfer to Neurosurgical Center</div>
+    <div class="side-note"><strong>Avoid:</strong> Hypotension (most harmful secondary insult), Hypoxia, Hyperthermia, Hyperglycemia, Hyponatremia, Seizures</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 4: BURNS
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc4">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--red);">4</div>
+    <div><div class="fc-title">Pediatric Burns</div>
+    <div class="fc-subtitle">Resuscitation, airway, and fluid management</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">BURN INJURY — Stop Burning Process, Remove Clothing</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>Assess TBSA</strong> (Lund-Browder chart for children)<br>
+      <strong>Assess Depth:</strong> Superficial · Partial thickness · Full thickness<br>
+      <strong>Identify Special Burns:</strong> Face, hands, feet, genitalia, circumferential, electrical, chemical, inhalation</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">Signs of Inhalation Injury?<br><em style="font-weight:400;font-size:0.75rem;">Facial burns, singed nasal hair, soot in oropharynx, hoarseness, stridor, carbonaceous sputum</em></div>
+    <div class="connector"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">YES</div>
+        <div class="node critical"><strong>EARLY INTUBATION</strong><br>Do not delay — progressive edema makes later intubation impossible<br>100% FiO₂ · SpO₂ unreliable (CO poisoning)<br>CO-oximetry if available · COHb level</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">NO</div>
+        <div class="node action">Supplemental O₂ as needed<br>Monitor for delayed airway edema<br>Low threshold to intubate if any stridor develops</div>
+      </div>
+    </div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node med"><strong>Fluid Resuscitation (Burns &gt;10% TBSA)</strong><br>
+      <strong>Parkland Formula (Pediatric):</strong> 3–4 mL × kg × %TBSA = total over 24 hrs<br>
+      Give ½ in first 8 hrs <em>from time of injury</em> · ½ over next 16 hrs<br>
+      <strong>Children &lt;20 kg:</strong> ADD maintenance fluids with dextrose (D5NS at maintenance rate)<br>
+      <strong>Target UOP:</strong> 1 mL/kg/hr (&lt;30 kg) or 0.5–1 mL/kg/hr (&gt;30 kg)</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>Wound Care:</strong> Cool water (not ice) to burns &lt;10% TBSA · Cover with clean dry dressing<br>
+      <strong>Pain:</strong> Morphine 0.1 mg/kg IV or Ketamine 0.3 mg/kg IV · Avoid NSAIDs initially<br>
+      <strong>Tetanus:</strong> Update if not current · <strong>Escharotomy</strong> for circumferential full-thickness burns with vascular compromise</div>
+    <div class="reassess">REASSESS q1h: UOP, Vitals, Fluid Rate Adjustment · Transfer to Burn Center</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 5: COMPARTMENT SYNDROME
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc5">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--red);">5</div>
+    <div><div class="fc-title">Compartment Syndrome</div>
+    <div class="fc-subtitle">Recognition and emergent management</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">EXTREMITY INJURY — Fracture, Crush, or Reperfusion Mechanism</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>Clinical Assessment</strong><br>
+      Pain out of proportion to injury (MOST RELIABLE early sign)<br>
+      Pain with passive stretch of involved compartment<br>
+      Increasing analgesic requirements · Tense/firm compartment on palpation<br>
+      <em>Late signs (less reliable): Paresthesias, Pallor, Pulselessness</em></div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node warn"><strong>Challenges in Children:</strong> Preverbal patients cannot report pain · Obtunded patients unreliable<br>
+      Increasing agitation/distress despite adequate analgesia is a RED FLAG<br>
+      <strong>The 3 A's:</strong> Anxiety, Agitation, increasing Analgesic need → suspect compartment syndrome</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>Immediate Actions:</strong><br>
+      Remove ALL circumferential dressings, splints, casts · Elevate limb to heart level (not above)<br>
+      Reassess perfusion after release · Compartment pressure measurement if device available<br>
+      <em>Pressure &gt;30 mmHg or within 30 mmHg of diastolic → confirms diagnosis</em></div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">Transfer to surgical facility feasible within 6 hours?</div>
+    <div class="connector"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">YES</div>
+        <div class="node success">Aggressive pain management<br>Serial neurovascular checks q30 min<br>EMERGENT transfer — time to fasciotomy is critical</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">NO — PROLONGED DELAY</div>
+        <div class="node critical"><strong>Consider Bedside Fasciotomy</strong><br>Phone/video guidance from orthopedic surgeon<br>Full-length skin incision over involved compartment<br>Definitive treatment cannot be delayed &gt;6 hrs</div>
+      </div>
+    </div>
+    <div class="reassess">Neurovascular Checks q30 min: Pulse, Sensation, Motor, Pain Level, Compartment Tension</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 6: RESPIRATORY FAILURE ESCALATION
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc6">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--blue);">6</div>
+    <div><div class="fc-title">Respiratory Failure — Stepwise Escalation</div>
+    <div class="fc-subtitle">Progressive respiratory support ladder</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">RESPIRATORY DISTRESS — ↑WOB, Tachypnea, ↓SpO₂, Abnormal PAT</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>Rapid Assessment</strong><br>Pediatric Assessment Triangle (Appearance, WOB, Circulation)<br>Type I (hypoxemic: PaO₂ &lt;60, SpO₂ &lt;90) vs Type II (hypercapnic: PaCO₂ &gt;50)<br>Auscultation · SpO₂ · Capnography if available</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action" style="background:#eff6ff;"><strong>STEP 1 — Supplemental O₂</strong><br>NC 0.25–4 L/min · Simple mask 6–10 L/min · NRB 10–15 L/min<br>Target SpO₂ 92–97% (neonates 94–99%)</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div><div class="label">Not improving</div></div>
+    <div class="node action" style="background:#dbeafe;"><strong>STEP 2 — High-Flow Nasal Cannula (HFNC)</strong><br>Infants: 2 L/kg/min (max 8 L/min) · Children: 1–2 L/kg/min (max 50–70 L/min)<br>Heated, humidified · Creates low-level positive pressure</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div><div class="label">Not improving</div></div>
+    <div class="node action" style="background:#bfdbfe;"><strong>STEP 3 — NIPPV (CPAP/BiPAP)</strong><br>CPAP: Start 5–8 cm H₂O · BiPAP: IPAP 10–12, EPAP 5–6 cm H₂O<br><em>Contraindicated:</em> Unable to protect airway, hemodynamic instability, undrained PTX</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div><div class="label">Not improving or unable to tolerate</div></div>
+    <div class="node critical"><strong>STEP 4 — Endotracheal Intubation</strong><br>RSI protocol (see Flowchart 7) · Indications: failure of non-invasive support,<br>inability to protect airway, impending arrest, need for reliable airway for transport</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node teal"><strong>Post-Intubation Ventilator Settings</strong><br>Mode: PC-SIMV or VC-SIMV · Vt 6–8 mL/kg IBW · PEEP 5 cm H₂O<br>Rate: age-appropriate · FiO₂: wean to &lt;0.60 · Plateau &lt;30 cm H₂O<br>Blood gas in 15–30 min → adjust</div>
+    <div class="reassess">REASSESS at each step: SpO₂, WOB, RR, Mental Status, ABG if available</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 7: RSI
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc7">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--blue);">7</div>
+    <div><div class="fc-title">Rapid Sequence Intubation (RSI)</div>
+    <div class="fc-subtitle">The 7 P's framework — rural pediatric adaptation</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">DECISION TO INTUBATE</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>P1 — PREPARATION (SOAP-ME)</strong><br>
+      <strong>S</strong>uction (Yankauer + flexible) · <strong>O</strong>xygen (BVM + mask, 15 L/min flow) · <strong>A</strong>irway (laryngoscope + blade tested, ETT + stylet, 1 size above/below, LMA backup) · <strong>P</strong>harmacology (induction + paralytic drawn, doses verified ×2) · <strong>M</strong>onitoring/<strong>E</strong>quipment (SpO₂, ETCO₂, cardiac monitor)</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>P2 — PREOXYGENATION</strong><br>
+      100% FiO₂ for 3–5 min via NRB or BVM without positive pressure if possible<br>
+      Apneic oxygenation: NC at max flow during intubation attempt</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>P3 — PRETREATMENT</strong> (optional)<br>
+      Glycopyrrolate 0.004–0.01 mg/kg (max 0.2 mg) for secretions (especially infants)<br>
+      Lidocaine 1.5 mg/kg IV for ↑ICP · Atropine 0.02 mg/kg for age &lt;1 yr (controversial)</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node med"><strong>P4 — PARALYSIS with INDUCTION</strong><br>
+      <strong>Induction:</strong> Ketamine 1–2 mg/kg IV (preferred — hemodynamic stability, bronchodilation)<br>
+      <strong>Paralytic:</strong> Rocuronium 1 mg/kg IV (onset 45–60 sec; preferred over succinylcholine)<br>
+      <em>Wait for jaw relaxation (45–60 sec)</em></div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>P5 — PLACEMENT with PROOF</strong><br>
+      Laryngoscopy → Visualize cords → Pass ETT to calculated depth<br>
+      <strong>Confirm:</strong> ETCO₂ waveform (GOLD STANDARD) · Bilateral breath sounds · Chest rise · SpO₂<br>
+      Secure with tape + commercial holder · Note depth at lip</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node teal"><strong>P6 — POST-INTUBATION MANAGEMENT</strong><br>
+      Initiate ventilator · Sedation infusion · Chest X-ray for tube position<br>
+      Blood gas in 15–30 min · NG/OG tube placement</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node warn"><strong>P7 — PLAN B (if intubation fails)</strong><br>
+      BVM ventilation → Reposition → Reattempt (max 3 attempts) → LMA insertion<br>
+      If cannot intubate AND cannot oxygenate: Surgical airway<br>
+      <em>&lt;8–10 yr:</em> Needle cricothyrotomy + jet ventilation · <em>≥10 yr:</em> Surgical cricothyrotomy</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 8: STATUS ASTHMATICUS
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc8">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--blue);">8</div>
+    <div><div class="fc-title">Status Asthmaticus</div>
+    <div class="fc-subtitle">Escalating bronchodilator and adjunctive therapy</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">SEVERE ASTHMA EXACERBATION — Refractory to Initial Bronchodilator</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node med"><strong>TIER 1 — Standard Therapy (Immediate)</strong><br>
+      Continuous albuterol nebulization 0.5 mg/kg/hr (max 15 mg/hr)<br>
+      Ipratropium 250–500 mcg neb × first 3 treatments<br>
+      Dexamethasone 0.6 mg/kg IV/IM (max 16 mg) OR Methylprednisolone 2 mg/kg IV (max 60 mg)<br>
+      Supplemental O₂ to maintain SpO₂ &gt;92%</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div><div class="label">Persistent distress after 30–60 min</div></div>
+    <div class="node med"><strong>TIER 2 — Escalation</strong><br>
+      Magnesium sulfate 25–75 mg/kg IV over 20 min (max 2 g) — single dose<br>
+      Continue continuous albuterol · Reassess frequently</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div><div class="label">Still refractory</div></div>
+    <div class="node critical"><strong>TIER 3 — Refractory Status Asthmaticus</strong><br>
+      IV Terbutaline: Load 10 mcg/kg over 10 min → Infusion 0.1–10 mcg/kg/min<br>
+      (Monitor: cardiac rhythm, lactate, K⁺ — terbutaline causes tachycardia, hypokalemia)<br>
+      IV Ketamine: 0.5–2 mg/kg bolus → 0.5–2 mg/kg/hr infusion (bronchodilatory properties)<br>
+      Heliox 70:30 or 80:20 if available</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div><div class="label">Respiratory failure</div></div>
+    <div class="node critical"><strong>INTUBATION — LAST RESORT in Asthma</strong><br>
+      <em>High risk of cardiovascular collapse from ↑ intrathoracic pressure</em><br>
+      Induction: Ketamine 1–2 mg/kg (NOT propofol) + Rocuronium 1 mg/kg<br>
+      <strong>Ventilator:</strong> Low rate (8–12) · I:E 1:3 to 1:4 · Vt 6–8 mL/kg<br>
+      Permissive hypercapnia (accept PaCO₂ 60–80 if pH &gt;7.15) · Low PEEP (3–5)</div>
+    <div class="reassess">REASSESS q15–30 min: SpO₂, WOB, Air Entry, Peak Pressures, ABG, K⁺, Lactate</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 9: CROUP
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc9">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--blue);">9</div>
+    <div><div class="fc-title">Croup (Laryngotracheobronchitis)</div>
+    <div class="fc-subtitle">Severity assessment and stepwise management</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">BARKY COUGH, STRIDOR, HOARSENESS — Typical Age 6 mo – 3 yr</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">SEVERITY ASSESSMENT (Westley Croup Score)</div>
+    <div class="connector wide"><div class="down-left"></div><div class="down-center"></div><div class="down-right"></div></div>
+    <div class="branch branch-3">
+      <div class="branch-col">
+        <div class="branch-label">MILD</div>
+        <div class="node action">Occasional barky cough<br>No stridor at rest<br>No/mild retractions<br><br><strong>Tx:</strong> Dexamethasone 0.6 mg/kg PO (max 16 mg)<br>Observe 2–4 hrs → Discharge if improved</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">MODERATE</div>
+        <div class="node med">Frequent barky cough<br>Stridor at rest<br>Visible retractions<br><br><strong>Tx:</strong> Dexamethasone 0.6 mg/kg PO/IV/IM<br>Racemic epi 0.05 mL/kg of 2.25% (max 0.5 mL) neb<br>Observe ≥2–4 hrs post racemic epi</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">SEVERE</div>
+        <div class="node critical">Stridor at rest, severe retractions<br>Altered mental status or cyanosis<br><br><strong>Tx:</strong> Dexamethasone 0.6 mg/kg IV/IM<br>Racemic epi neb — may repeat q15–20 min<br>Blow-by O₂ · Minimize agitation<br><strong>Prepare for intubation:</strong> ETT 0.5–1 mm smaller than predicted<br>Admit or transfer</div>
+      </div>
+    </div>
+    <div class="side-note"><strong>Red Flags for Alternative Diagnosis:</strong> No viral prodrome, toxic-appearing, drooling, tripod position → Consider epiglottitis, bacterial tracheitis, retropharyngeal abscess. <strong>Do not</strong> examine throat if epiglottitis suspected.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 10: BRONCHIOLITIS
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc10">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--blue);">10</div>
+    <div><div class="fc-title">Bronchiolitis</div>
+    <div class="fc-subtitle">Supportive care and escalation pathway</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">INFANT WITH WHEEZING/CRACKLES, RHINORRHEA, COUGH — Typical Age &lt;2 yr</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>Identify High-Risk Features</strong><br>
+      Age &lt;2 months · Former premature infant · Congenital heart disease<br>
+      Chronic lung disease · Immunodeficiency · Apnea history or observed apnea</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>Supportive Care (Mainstay of Treatment)</strong><br>
+      Nasal suctioning (bulb or mechanical) · Supplemental O₂ to maintain SpO₂ &gt;90–92%<br>
+      Ensure adequate hydration (PO or IV) · Elevate HOB slightly · Minimize handling<br>
+      <em>Bronchodilators and steroids have limited evidence in typical bronchiolitis</em></div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">Worsening Respiratory Distress Despite Supportive Care?</div>
+    <div class="connector"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">MODERATE — Escalate</div>
+        <div class="node med"><strong>HFNC:</strong> 2 L/kg/min (max 8 L/min in infants)<br>Continuous SpO₂ and cardiorespiratory monitoring<br>Consider trial of albuterol in wheezing infants &gt;6 mo — discontinue if no response</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">SEVERE — Respiratory Failure</div>
+        <div class="node critical"><strong>CPAP</strong> 5–8 cm H₂O via nasal interface<br>If failing CPAP or apneic episodes → <strong>INTUBATE</strong><br>Low threshold for intubation in young infants with apnea<br>Transfer to PICU</div>
+      </div>
+    </div>
+    <div class="reassess">REASSESS q1–2h: SpO₂, RR, WOB, Feeding Tolerance, Hydration Status, Apnea Episodes</div>
+    <div class="side-note"><strong>RSV Apnea:</strong> Young infants (&lt;2 mo) with RSV may present with apnea as the primary symptom BEFORE significant lower respiratory symptoms develop. Mandate continuous monitoring.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 11: FOREIGN BODY ASPIRATION
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc11">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--blue);">11</div>
+    <div><div class="fc-title">Foreign Body Aspiration</div>
+    <div class="fc-subtitle">Assessment and management by acuity</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">SUDDEN ONSET RESPIRATORY DISTRESS ± CHOKING HISTORY</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">Able to Cough / Adequate Air Exchange?</div>
+    <div class="connector"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">YES — MILD OBSTRUCTION</div>
+        <div class="node success">Allow the child to cough — do NOT interfere<br>Supplemental O₂ · Continuous monitoring<br>Arrange URGENT transfer for bronchoscopy<br>Keep child calm · Avoid agitation</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">NO — SEVERE OBSTRUCTION</div>
+        <div class="node critical"><strong>BLS Foreign Body Removal</strong></div>
+      </div>
+    </div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">Age of Child?</div>
+    <div class="connector"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">INFANT (&lt;1 YR)</div>
+        <div class="node med"><strong>5 back blows</strong> (heel of hand between scapulae, head lower than body)<br>+ <strong>5 chest thrusts</strong> (2 fingers on sternum)<br>Alternate until object expelled or infant becomes unresponsive</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">CHILD (≥1 YR)</div>
+        <div class="node med"><strong>Abdominal thrusts</strong> (Heimlich maneuver)<br>Repeat until object expelled or child becomes unresponsive</div>
+      </div>
+    </div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>If Unresponsive:</strong> Begin CPR · Open airway — look for visible object<br>If object visible → Remove with Magill forceps under direct laryngoscopy<br>If not visible → DO NOT blind finger sweep · Continue CPR · Attempt intubation (may push FB distally into one bronchus, enabling ventilation of the other lung)</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node teal"><strong>Definitive Treatment:</strong> Rigid bronchoscopy (not available in most rural settings)<br>Expedite transfer to facility with pediatric ENT/pulmonology capability</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 12: SEPSIS
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc12">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--amber);">12</div>
+    <div><div class="fc-title">Pediatric Sepsis &amp; Septic Shock</div>
+    <div class="fc-subtitle">First-hour bundle and vasoactive escalation</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">SUSPECTED INFECTION + ORGAN DYSFUNCTION = SEPSIS (Time Zero)</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node critical"><strong>FIRST-HOUR BUNDLE — All Within 60 Minutes</strong><br>
+      ① Blood culture (do not delay ABx) · ② Broad-spectrum IV ABx within 30 min (see age-based table)<br>
+      ③ POC glucose + lactate · ④ NS/LR 10–20 mL/kg bolus × repeat to 40–60 mL/kg if shock persists<br>
+      ⑤ Reassess after EACH bolus for improvement AND fluid overload signs</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">Shock Persists After 40–60 mL/kg Fluid?<br><em style="font-weight:400;font-size:0.75rem;">= FLUID-REFRACTORY SHOCK → Start Vasoactive Agent</em></div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">Identify Shock Phenotype</div>
+    <div class="connector wide"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">COLD SHOCK</div>
+        <div class="node med" style="text-align:left;"><em>Cool extremities, weak pulses, narrow pulse pressure, prolonged cap refill, mottled</em><br><br>
+          <strong>→ EPINEPHRINE</strong><br>Start 0.05 mcg/kg/min<br>Titrate up to 0.3 mcg/kg/min</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">WARM SHOCK</div>
+        <div class="node med" style="text-align:left;"><em>Warm extremities, bounding pulses, wide pulse pressure, flash cap refill</em><br><br>
+          <strong>→ NOREPINEPHRINE</strong><br>Start 0.05 mcg/kg/min<br>Titrate up to 2 mcg/kg/min</div>
+      </div>
+    </div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div><div class="label">Catecholamine-resistant shock</div></div>
+    <div class="node critical"><strong>CATECHOLAMINE-RESISTANT SHOCK</strong><br>
+      Add Vasopressin 0.0003–0.002 units/kg/min · Consider stress-dose Hydrocortisone 1–2 mg/kg IV (max 100 mg)<br>
+      Especially if: h/o chronic steroid use, purpura fulminans, refractory hypotension<br>
+      Target: MAP ≥ age-appropriate, UOP &gt;1 mL/kg/hr, lactate clearance &gt;10%/2hr</div>
+    <div class="reassess">REASSESS q5 min (active resus) → q15 min (stabilizing) → q30–60 min (stable): HR, BP, Cap Refill, UOP, Lactate, Mental Status</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 13: NEONATAL SEPSIS
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc13">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--amber);">13</div>
+    <div><div class="fc-title">Neonatal Sepsis</div>
+    <div class="fc-subtitle">Early-onset and late-onset neonatal sepsis management</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">NEONATE WITH SIGNS CONCERNING FOR SEPSIS</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>Recognition — Often Subtle and Nonspecific</strong><br>
+      Temperature instability (hypothermia more common than fever in neonates)<br>
+      Poor feeding · Lethargy · Apnea · Tachycardia · Hypoglycemia · Jaundice<br>
+      Irritability · Mottled skin · Delayed capillary refill</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">Early-Onset (&lt;72 hrs of life) or Late-Onset (&gt;72 hrs)?</div>
+    <div class="connector"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">EARLY-ONSET</div>
+        <div class="node med"><strong>Ampicillin</strong> 50 mg/kg q6–8h<br>+ <strong>Gentamicin</strong> 4–5 mg/kg q24h<br>(Add Cefotaxime if meningitis suspected)<br><strong>Pathogens:</strong> GBS, E. coli, Listeria<br>Add Acyclovir 20 mg/kg q8h if HSV risk</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">LATE-ONSET</div>
+        <div class="node med"><strong>Vancomycin</strong> 15 mg/kg q8–12h<br>+ <strong>Gentamicin</strong> or <strong>Cefepime</strong><br>Consider antifungal if: preterm, central line, prior ABx<br><strong>Pathogens:</strong> CoNS, S. aureus, GNR, Candida</div>
+      </div>
+    </div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>Resuscitation Modifications for Neonates</strong><br>
+      Fluid boluses: 10 mL/kg (more conservative) · Reassess after each for hepatomegaly, ↑WOB<br>
+      1st-line vasopressor: Epinephrine (evidence shifting away from dopamine)<br>
+      Hydrocortisone 1 mg/kg IV for catecholamine-resistant neonatal shock<br>
+      Meticulous glucose monitoring: D10W for hypoglycemia · Maintain 50–110 mg/dL</div>
+    <div class="reassess">REASSESS q15–30 min: Perfusion, Temp, Glucose, UOP, Apnea Episodes · Transfer to NICU</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 14: FEBRILE NEONATE
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc14">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--amber);">14</div>
+    <div><div class="fc-title">Febrile Neonate (0–60 Days)</div>
+    <div class="fc-subtitle">Risk stratification and empiric management</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">INFANT 0–60 DAYS WITH FEVER ≥ 38.0°C (Rectal)</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">Age 0–28 Days?</div>
+    <div class="connector"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">YES — 0 to 28 DAYS</div>
+        <div class="node critical"><strong>FULL SEPSIS EVALUATION — ALL PATIENTS</strong><br>
+          Blood culture · UA with culture · CSF (cell count, protein, glucose, culture, +HSV PCR)<br>
+          CBC, CMP, CRP/Procalcitonin if available · Surface HSV cultures if risk factors<br><br>
+          <strong>Empiric ABx:</strong> Ampicillin + Gentamicin (add Cefotaxime if meningitis suspected)<br>
+          <strong>Add Acyclovir 20 mg/kg q8h if:</strong> vesicles, seizures, ↑LFTs, ↓plts, CSF pleocytosis, maternal HSV<br><br>
+          <strong>ADMIT — No exceptions in this age group</strong></div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">29–60 DAYS</div>
+        <div class="node assess"><strong>Risk Stratification</strong><br>
+          Apply PECARN Febrile Infant Rule or Step-by-Step approach<br>
+          Blood culture · UA with culture · CBC, CRP/PCT<br>
+          LP strongly recommended; required if ill-appearing</div>
+      </div>
+    </div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">29–60 Day Infant: Well-Appearing with Low-Risk Labs?</div>
+    <div class="connector"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">LOW RISK</div>
+        <div class="node success">Consider Ceftriaxone IM + close follow-up in 24 hrs<br><em>In rural setting with limited follow-up:</em><br>Err toward admission with empiric ABx and observation<br>Conservative approach is safest</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">HIGH RISK or ILL-APPEARING</div>
+        <div class="node critical">Full sepsis workup including LP<br>Empiric ABx: Ampicillin + Ceftriaxone (or Cefotaxime)<br>Consider Acyclovir · Admit for observation<br>Transfer if deteriorating</div>
+      </div>
+    </div>
+    <div class="side-note"><strong>Rural Consideration:</strong> In settings with limited follow-up capability, a conservative approach (admission + empiric antibiotics) is the safest strategy for all febrile neonates 0–60 days regardless of risk stratification results.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 15: STATUS EPILEPTICUS
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc15">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--purple);">15</div>
+    <div><div class="fc-title">Status Epilepticus</div>
+    <div class="fc-subtitle">Time-based escalation protocol</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">SEIZURE ACTIVITY ≥ 5 MINUTES or Repeated Seizures Without Recovery</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>TIME 0–5 min: STABILIZATION</strong><br>
+      Airway positioning · O₂ · Protect from injury · IV/IO access<br>
+      <strong>CHECK GLUCOSE</strong> → If &lt;60 mg/dL: D10W 2–4 mL/kg IV<br>
+      Continuous SpO₂ and cardiac monitoring</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node med"><strong>TIME 5–20 min: 1st LINE — BENZODIAZEPINES</strong><br>
+      <strong>IV/IO access:</strong> Lorazepam 0.1 mg/kg (max 4 mg) OR Midazolam 0.1–0.2 mg/kg (max 5 mg)<br>
+      <strong>No IV access:</strong> Midazolam 0.2 mg/kg INTRANASAL (max 10 mg) or IM (max 10 mg)<br>
+      OR Diazepam 0.5 mg/kg PR (max 20 mg)<br>
+      <em>May repeat ×1 at 5 min if seizure continues</em></div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div><div class="label">Seizure continues after 2 doses of benzo</div></div>
+    <div class="node med"><strong>TIME 20–40 min: 2nd LINE AGENTS</strong><br>
+      <strong>Option A:</strong> Levetiracetam 40–60 mg/kg IV over 15 min (max 3 g) — <em>fewer hemodynamic effects</em><br>
+      <strong>Option B:</strong> Fosphenytoin 20 mg PE/kg IV (max rate 150 mg PE/min) — <em>cardiac monitor required</em><br>
+      <strong>Option C (neonates):</strong> Phenobarbital 20 mg/kg IV (max rate 1 mg/kg/min) — <em>respiratory depression risk</em></div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div><div class="label">Seizure continues = REFRACTORY STATUS</div></div>
+    <div class="node critical"><strong>TIME 40+ min: REFRACTORY STATUS EPILEPTICUS</strong><br>
+      Additional 2nd-line dosing (Fosphenytoin 5–10 mg PE/kg) OR<br>
+      <strong>Midazolam infusion</strong> 0.05–2 mg/kg/hr OR <strong>Ketamine</strong> 1–2 mg/kg bolus → 0.5–3 mg/kg/hr<br>
+      <strong>INTUBATION almost always required at this stage</strong><br>
+      EXPEDITE TRANSFER — Pentobarbital coma beyond rural scope</div>
+    <div class="reassess">REASSESS: Seizure activity, Airway, SpO₂, HR/BP, Glucose q15 min, Neuro exam between attempts</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 16: ALTERED MENTAL STATUS
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc16">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--purple);">16</div>
+    <div><div class="fc-title">Altered Mental Status</div>
+    <div class="fc-subtitle">AEIOU-TIPS systematic differential and approach</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">CHILD WITH ALTERED MENTAL STATUS — GCS &lt;15 or Abnormal AVPU</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node critical"><strong>IMMEDIATE LIFE THREATS — Address First</strong><br>
+      Airway: Protect if GCS ≤8 → Intubate · Glucose: Check STAT → D10W 2–4 mL/kg if &lt;60<br>
+      Herniation signs (Cushing triad, blown pupil)? → 3% HTS 2–5 mL/kg + HOB 30°<br>
+      Opioid exposure? → Naloxone 0.1 mg/kg IV/IN (max 2 mg)</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>Systematic Differential — AEIOU-TIPS</strong><br>
+      <strong>A</strong>lcohol / Abuse (NAT) · <strong>E</strong>ndocrine (DKA, adrenal crisis) · <strong>I</strong>nsulin (hypoglycemia)<br>
+      <strong>O</strong>piates / Overdose · <strong>U</strong>remia · <strong>T</strong>rauma · <strong>I</strong>nfection (meningitis, encephalitis, sepsis)<br>
+      <strong>P</strong>sychiatric · <strong>S</strong>eizure (postictal, non-convulsive status)</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>Targeted Workup</strong><br>
+      POC glucose, blood gas, BMP, CBC, ammonia, lactate, LFTs, UDS, ethanol level<br>
+      Blood/urine cultures if infection suspected · CT head if trauma or focal signs<br>
+      LP if meningitis/encephalitis suspected (after CT if signs of ↑ICP)<br>
+      EEG if non-convulsive status suspected (may not be available — treat empirically)</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node teal"><strong>Treat Identified Cause</strong><br>
+      Refer to disease-specific flowchart: DKA (#22) · Sepsis (#12) · Status Epilepticus (#15)<br>
+      Meningitis (#17) · TBI (#3) · Toxicology (#24) · Adrenal Crisis (#23)</div>
+    <div class="reassess">REASSESS q15–30 min: GCS, Pupils, Vitals, Glucose · Serial Neuro Exams</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 17: MENINGITIS & ENCEPHALITIS
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc17">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--purple);">17</div>
+    <div><div class="fc-title">Meningitis &amp; Encephalitis</div>
+    <div class="fc-subtitle">Empiric treatment should never be delayed for LP</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">FEVER + ALTERED MENTAL STATUS ± NECK STIFFNESS ± SEIZURE</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">Can LP Be Performed Immediately and Safely?<br><em style="font-weight:400;font-size:0.75rem;">Contraindications to immediate LP: GCS ≤12, focal neuro signs, hemodynamic instability, coagulopathy, signs ↑ICP</em></div>
+    <div class="connector"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">YES — LP SAFE</div>
+        <div class="node action">Draw blood culture → LP → Send CSF (cell count, protein, glucose, Gram stain, culture, ± HSV PCR)<br>
+          <strong>Then immediately start ABx</strong></div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">NO — LP DELAYED</div>
+        <div class="node critical"><strong>Draw blood culture → ABx IMMEDIATELY</strong><br>Do NOT delay antibiotics for LP or imaging<br>LP can be performed after stabilization if safe</div>
+      </div>
+    </div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node med"><strong>Dexamethasone</strong> 0.15 mg/kg IV (max 10 mg) — give BEFORE or WITH first ABx dose<br>
+      (Reduces inflammation, hearing loss risk — benefit greatest when given early)<br><br>
+      <strong>Empiric ABx:</strong> Ceftriaxone 50–100 mg/kg (meningitic dosing, max 4 g)<br>
+      + Vancomycin 15 mg/kg q6h (for resistant pneumococcus)<br>
+      <em>Neonates:</em> Ampicillin + Cefotaxime (or Gentamicin)<br><br>
+      <strong>Add Acyclovir</strong> 10–20 mg/kg IV q8h if: neonatal, temporal lobe focus, encephalitic features, CSF lymphocytic pleocytosis</div>
+    <div class="reassess">REASSESS q1–2h: Neuro status, GCS, Pupils, Seizure activity, Vitals · Transfer to PICU</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 18: CARDIAC ARREST
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc18">
+  <div class="fc-header">
+    <div class="fc-number" style="background:#dc2626;">18</div>
+    <div><div class="fc-title">Pediatric Cardiac Arrest</div>
+    <div class="fc-subtitle">AHA PALS algorithm — shockable vs non-shockable</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">UNRESPONSIVE · NO BREATHING · NO PULSE (or unsure within 10 sec)</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node critical"><strong>BEGIN HIGH-QUALITY CPR</strong><br>
+      Rate 100–120/min · Depth ≥⅓ AP diameter (4 cm infant, 5 cm child) · Full recoil<br>
+      15:2 (2 rescuers) or 30:2 (1 rescuer) · Minimize interruptions (&gt;80% CPR fraction)<br>
+      Apply defibrillator pads · Establish IV/IO</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">Rhythm Check — Shockable?</div>
+    <div class="connector wide"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">VF / pVT — SHOCKABLE</div>
+        <div class="node critical" style="text-align:left;">
+          <strong>Shock #1:</strong> 2 J/kg → CPR 2 min<br>
+          <strong>Shock #2:</strong> 4 J/kg → CPR 2 min → <strong>Epi</strong> 0.01 mg/kg IV/IO q3–5 min<br>
+          <strong>Shock #3:</strong> 4 J/kg → CPR 2 min → <strong>Amiodarone</strong> 5 mg/kg (max 300 mg)<br>
+          Continue cycle: Shock → CPR 2 min → Rhythm check<br>
+          Epi q3–5 min · Amiodarone may repeat ×2 (max 15 mg/kg)
+        </div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">ASYSTOLE / PEA — NON-SHOCKABLE</div>
+        <div class="node critical" style="text-align:left;">
+          <strong>Epinephrine</strong> 0.01 mg/kg IV/IO ASAP<br>
+          → CPR 2 min → Rhythm check<br>
+          → Repeat Epi q3–5 min<br>
+          <strong>Search for reversible causes (H's &amp; T's)</strong><br>
+          If rhythm becomes shockable → switch to left pathway
+        </div>
+      </div>
+    </div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node teal"><strong>H's and T's — Reversible Causes</strong><br>
+      <strong>H:</strong> Hypovolemia · Hypoxia · H⁺ (acidosis) · Hypo/Hyperkalemia · Hypothermia · Hypoglycemia<br>
+      <strong>T:</strong> Tension pneumothorax · Tamponade · Toxins · Thrombosis (PE/coronary)</div>
+    <div class="key-box">
+      <div class="key-title">CPR Quality Targets</div>
+      <span>Rate: 100–120/min</span><span>Depth: ≥⅓ AP diameter</span>
+      <span>Full chest recoil</span><span>Fraction: &gt;80%</span>
+      <span>Epi max: 1 mg/dose</span><span>Amio max: 300 mg 1st dose</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 19: SVT
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc19">
+  <div class="fc-header">
+    <div class="fc-number" style="background:#dc2626;">19</div>
+    <div><div class="fc-title">Supraventricular Tachycardia (SVT)</div>
+    <div class="fc-subtitle">Narrow complex tachycardia management</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">NARROW COMPLEX TACHYCARDIA — HR &gt;220 (infant) or &gt;180 (child)</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">Hemodynamically Stable?<br><em style="font-weight:400;font-size:0.75rem;">Signs of instability: hypotension, poor perfusion, altered mental status, signs of CHF</em></div>
+    <div class="connector"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">STABLE</div>
+        <div class="node action"><strong>Step 1 — Vagal Maneuvers</strong><br>
+          Infant: Ice to face (bag of ice water over forehead/bridge of nose for 15–30 sec)<br>
+          Older child: Bearing down (Valsalva), blowing through obstructed straw</div>
+        <div class="arrow"><div class="line"></div><div class="head">▼</div><div class="label">No conversion</div></div>
+        <div class="node med"><strong>Step 2 — Adenosine</strong><br>
+          1st dose: 0.1 mg/kg rapid IV push (max 6 mg)<br>
+          2nd dose: 0.2 mg/kg rapid IV push (max 12 mg)<br>
+          <em>Use IV closest to heart · 2-syringe rapid flush technique</em></div>
+        <div class="arrow"><div class="line"></div><div class="head">▼</div><div class="label">No conversion</div></div>
+        <div class="node action">Consider: Repeat adenosine · Synchronized cardioversion<br>Cardiology consultation</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">UNSTABLE</div>
+        <div class="node critical"><strong>SYNCHRONIZED CARDIOVERSION</strong><br>
+          1st attempt: 0.5–1 J/kg<br>
+          2nd attempt: 2 J/kg<br><br>
+          Ketamine 1–2 mg/kg IV for sedation<br><em>if hemodynamics permit</em><br>
+          DO NOT delay cardioversion for sedation<br>in critically unstable child</div>
+      </div>
+    </div>
+    <div class="side-note"><strong>If SVT Recurs:</strong> Consider maintenance therapy — consult pediatric cardiology for agent selection (propranolol, flecainide, amiodarone depending on mechanism and age)</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 20: MYOCARDITIS / CARDIOGENIC SHOCK
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc20">
+  <div class="fc-header">
+    <div class="fc-number" style="background:#dc2626;">20</div>
+    <div><div class="fc-title">Myocarditis &amp; Cardiogenic Shock</div>
+    <div class="fc-subtitle">Recognition and inotropic support</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">SUSPECTED CARDIOGENIC SHOCK — ↓Perfusion, Tachycardia, Hepatomegaly, Gallop</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node warn"><strong>KEY DISTINGUISHING FEATURES (vs Septic Shock)</strong><br>
+      Hepatomegaly · Gallop rhythm · Jugular venous distension<br>
+      Disproportionate tachycardia · WORSENS with fluid boluses<br>
+      May mimic: respiratory illness, sepsis, abdominal disease</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node critical"><strong>CRITICAL: CAUTIOUS or NO FLUID ADMINISTRATION</strong><br>
+      Fluid may worsen pulmonary edema and cardiac output<br>
+      If fluid given for initial undifferentiated shock: STOP if hepatomegaly or rales develop<br>
+      Max trial: 5–10 mL/kg with very close reassessment</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node med"><strong>Inotropic Support</strong><br>
+      <strong>Epinephrine</strong> 0.01–0.1 mcg/kg/min (most available in rural settings; titratable)<br>
+      <strong>Milrinone</strong> 0.25–0.75 mcg/kg/min (ideal: inotrope + afterload reduction; causes vasodilation)<br>
+      <strong>Diuresis:</strong> Furosemide 1 mg/kg IV if pulmonary edema present<br>
+      <strong>Avoid:</strong> Negative inotropes (beta-blockers, calcium channel blockers)</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>Diagnostics:</strong> 12-lead ECG (ST changes, low voltage, arrhythmias) · Troponin · BNP/NT-proBNP<br>
+      POCUS/Echo if available (↓EF, ↓contractility, chamber dilation)<br>
+      CXR: cardiomegaly, pulmonary edema · CBC, BMP, LFTs, coags</div>
+    <div class="reassess">REASSESS q15 min: Perfusion, Hepatomegaly, Lung Sounds, UOP, Rhythm · URGENT Transfer to Pediatric Cardiac Center</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 21: DUCTAL-DEPENDENT CHD
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc21">
+  <div class="fc-header">
+    <div class="fc-number" style="background:#dc2626;">21</div>
+    <div><div class="fc-title">Ductal-Dependent Congenital Heart Disease</div>
+    <div class="fc-subtitle">Neonatal presentation and PGE1 management</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">NEONATE (Days to Weeks of Life) WITH CYANOSIS ± SHOCK</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>Suspect Ductal-Dependent Lesion When:</strong><br>
+      Cyanosis unresponsive to supplemental O₂ · Shock without obvious infection source<br>
+      4-extremity SpO₂ differential (pre-ductal ≠ post-ductal) · New or loud murmur<br>
+      Absent or diminished femoral pulses · Metabolic acidosis · Collapse at 1–4 weeks of life</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node critical"><strong>START PROSTAGLANDIN E1 (Alprostadil)</strong><br>
+      <strong>Dose:</strong> 0.05–0.1 mcg/kg/min IV continuous infusion<br>
+      Can be started PERIPHERALLY — do not delay for central access<br>
+      May reduce to 0.01–0.025 mcg/kg/min once ductus reopens and patient improves</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node warn"><strong>PGE1 Side Effects — BE PREPARED</strong><br>
+      <strong>APNEA</strong> — occurs in up to 12% of neonates; have BVM and intubation equipment at bedside<br>
+      Hypotension · Fever · Jitteriness · Flushing<br>
+      Low threshold to electively intubate before transport if apnea occurs</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>Supportive Care:</strong><br>
+      Avoid excessive O₂ in suspected mixing lesions (may worsen by reducing pulmonary vascular resistance)<br>
+      Volume resuscitation if hypotensive (cautious 10 mL/kg boluses)<br>
+      Correct acidosis, hypoglycemia, hypothermia · NPO · OG tube for gastric decompression</div>
+    <div class="reassess">CONTINUOUS MONITORING: SpO₂, Cardiorespiratory, Apnea Watch · URGENT Transfer to Pediatric Cardiac Surgery Center</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 22: DKA
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc22">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--amber);">22</div>
+    <div><div class="fc-title">Diabetic Ketoacidosis (DKA)</div>
+    <div class="fc-subtitle">Fluid management, insulin, and cerebral edema watch</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">BG &gt;200 + pH &lt;7.3 (or HCO₃ &lt;15) + Ketones = DKA</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>Classify Severity</strong><br>
+      <strong>Mild:</strong> pH 7.2–7.3, HCO₃ 10–15 · <strong>Moderate:</strong> pH 7.1–7.2, HCO₃ 5–10 · <strong>Severe:</strong> pH &lt;7.1, HCO₃ &lt;5</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>Initial Fluid Bolus</strong><br>
+      NS 10–20 mL/kg over 1 hour (limit to 10 mL/kg in severe DKA unless hemodynamically unstable)<br>
+      Do NOT exceed 40 mL/kg in first 4 hours · Reassess perfusion after each bolus</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node med"><strong>Insulin Infusion</strong><br>
+      Regular insulin 0.05–0.1 units/kg/hr IV infusion<br>
+      <strong>NO IV INSULIN BOLUS</strong> (↑ cerebral edema risk)<br>
+      Continue until: pH &gt;7.3, HCO₃ &gt;15, AG closed</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>Ongoing Fluid Management</strong><br>
+      Calculate 5–10% deficit → Replace over 24–48 hrs with 0.45–0.9% NS<br>
+      When BG &lt;300: Add dextrose (D5 or D10 with 0.45% NS) — keep BG 150–300 during infusion<br>
+      <strong>K⁺ Replacement:</strong> Add KCl 20–40 mEq/L to fluids once K⁺ &lt;5.5 and UOP confirmed<br>
+      If K⁺ &lt;3.5: Replace K⁺ BEFORE starting insulin</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node critical"><strong>⚠ CEREBRAL EDEMA WATCH ⚠</strong><br>
+      <strong>Signs:</strong> Headache, AMS (especially after initial improvement), vomiting recurrence, Cushing triad, focal neuro signs<br>
+      <strong>IMMEDIATE Treatment:</strong> 3% HTS 2–5 mL/kg over 10–20 min <em>OR</em> Mannitol 0.5–1 g/kg<br>
+      HOB 30° · Reduce IV rate to maintenance · Prepare for intubation (avoid hyperventilation)</div>
+    <div class="reassess">MONITOR: BG q1h · BMP + VBG q2–4h · Neuro checks q1h · Strict I&O · ECG for K⁺ changes</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 23: ADRENAL CRISIS
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc23">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--amber);">23</div>
+    <div><div class="fc-title">Adrenal Crisis</div>
+    <div class="fc-subtitle">Acute adrenal insufficiency emergency management</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">REFRACTORY HYPOTENSION + HYPOGLYCEMIA ± HYPONATREMIA ± HYPERKALEMIA</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>Suspect Adrenal Crisis When:</strong><br>
+      Known CAH, adrenal insufficiency, or chronic steroid use with intercurrent illness/trauma<br>
+      Neonate with ambiguous genitalia + electrolyte abnormalities + hypoglycemia<br>
+      Shock refractory to fluids and vasopressors without clear etiology<br>
+      Unexplained hyperkalemia + hyponatremia</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node critical"><strong>IMMEDIATE TREATMENT — Do Not Delay for Labs</strong><br>
+      <strong>Hydrocortisone Stress Dose:</strong><br>
+      Infant: 25 mg IV · Child: 50 mg IV · Adolescent: 100 mg IV<br>
+      (Or 50–100 mg/m² IV bolus)<br>
+      Then: 50–100 mg/m²/day divided q6–8h</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node med"><strong>Fluid Resuscitation</strong><br>
+      NS or D5NS 20 mL/kg boluses — repeat as needed for hypotension<br>
+      Use dextrose-containing fluids (D5NS or D10NS) to address concurrent hypoglycemia<br>
+      Monitor glucose q30 min initially · May need D10W boluses for refractory hypoglycemia</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>Address Hyperkalemia if Present</strong><br>
+      Ca gluconate 10% — 0.6 mL/kg IV slow push (cardiac membrane stabilization)<br>
+      Insulin + Dextrose · Kayexalate (controversial) · Albuterol neb<br>
+      Hydrocortisone itself helps correct electrolyte abnormalities</div>
+    <div class="reassess">REASSESS q15–30 min: BP, Glucose, Electrolytes (Na⁺, K⁺), Perfusion · Response to steroids often dramatic</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 24: TOXICOLOGIC EMERGENCY
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc24">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--green);">24</div>
+    <div><div class="fc-title">Toxicologic Emergency (General Approach)</div>
+    <div class="fc-subtitle">Toxidrome identification and targeted management</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">SUSPECTED POISONING / TOXIC EXPOSURE</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node critical"><strong>ABCs FIRST — Stabilize Before Decontamination</strong><br>
+      Protect airway if GCS ≤8 · IV/IO access · Continuous monitoring<br>
+      <strong>Call Poison Control: 1-800-222-1222</strong></div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>Identify Toxidrome</strong><br>
+      <strong>Sympathomimetic:</strong> ↑HR, ↑BP, ↑Temp, dilated pupils, agitation, diaphoresis<br>
+      <strong>Anticholinergic:</strong> ↑HR, ↑Temp, dilated pupils, dry skin, urinary retention, delirium<br>
+      <strong>Cholinergic (SLUDGE):</strong> Salivation, Lacrimation, Urination, Defecation, GI, Emesis + miosis, bradycardia<br>
+      <strong>Opioid:</strong> ↓RR, ↓GCS, miosis · <strong>Sedative-Hypnotic:</strong> ↓RR, ↓GCS, ↓BP, normal pupils</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">Decontamination Indicated?</div>
+    <div class="connector wide"><div class="down-left"></div><div class="down-center"></div><div class="down-right"></div></div>
+    <div class="branch branch-3">
+      <div class="branch-col">
+        <div class="branch-label">ACTIVATED CHARCOAL</div>
+        <div class="node action">1 g/kg PO (max 50 g)<br>Within 1–2 hrs of ingestion<br>Alert, airway intact<br><em>Not for: caustics, hydrocarbons, metals, lithium</em></div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">WHOLE BOWEL IRRIGATION</div>
+        <div class="node action">GoLYTELY via NG<br>Children: 25 mL/kg/hr<br>For: sustained-release, body packers, heavy metals</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">SKIN DECONTAMINATION</div>
+        <div class="node action">Remove all clothing<br>Wash with soap + water<br>Provider PPE required<br>For: organophosphates, chemicals</div>
+      </div>
+    </div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node med"><strong>SPECIFIC ANTIDOTES (See Antidote Table in Chapter 10)</strong><br>
+      Opioids → Naloxone 0.1 mg/kg · Organophosphates → Atropine + 2-PAM<br>
+      Acetaminophen → NAC · TCAs → NaHCO₃ · Benzos → Flumazenil (with caution)<br>
+      Methanol/EG → Fomepizole · Ca-channel blockers → Ca gluconate + high-dose insulin</div>
+    <div class="reassess">REASSESS: GCS, Vitals, ECG, Serial Toxicology Levels, Hepatic/Renal Function</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 25: ANAPHYLAXIS
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc25">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--green);">25</div>
+    <div><div class="fc-title">Anaphylaxis</div>
+    <div class="fc-subtitle">Immediate recognition and epinephrine-first approach</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">ACUTE ALLERGIC REACTION — Multi-System Involvement ± Hemodynamic Compromise</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node critical"><strong>EPINEPHRINE — FIRST AND MOST IMPORTANT TREATMENT</strong><br>
+      IM Epinephrine 1:1,000 (1 mg/mL): <strong>0.01 mg/kg</strong> in anterolateral thigh<br>
+      Max: 0.3 mg (&lt;30 kg prepubertal) or 0.5 mg (≥30 kg / adolescent)<br>
+      <strong>May repeat every 5–15 minutes</strong> if symptoms persist or recur</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node action"><strong>Simultaneous Actions:</strong><br>
+      Remove trigger if possible · Position: supine with legs elevated (unless respiratory distress)<br>
+      High-flow O₂ · IV/IO access · Continuous monitoring · Fluid resuscitation NS 20 mL/kg if hypotensive</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node med"><strong>ADJUNCTIVE THERAPIES</strong><br>
+      Albuterol 2.5–5 mg neb for bronchospasm · Diphenhydramine 1 mg/kg IV/IM (max 50 mg)<br>
+      Ranitidine/Famotidine 1 mg/kg IV (max 50 mg) as H2 blocker<br>
+      Dexamethasone 0.15–0.6 mg/kg IV (max 10 mg) to reduce biphasic reaction risk<br>
+      <em>On beta-blockers?</em> → Glucagon 20–30 mcg/kg (max 1 mg) for refractory anaphylaxis</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">Response to Treatment?</div>
+    <div class="connector"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">RESPONDING</div>
+        <div class="node success"><strong>Observation Period:</strong><br>
+          1 dose of epi: observe 4–6 hrs<br>
+          >1 dose of epi: observe 12–24 hrs<br>
+          Biphasic reaction occurs in up to 20%</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">REFRACTORY</div>
+        <div class="node critical">Repeat IM epinephrine q5 min<br>
+          Epinephrine infusion 0.1–1 mcg/kg/min<br>
+          Aggressive fluid resuscitation<br>
+          Prepare for intubation (early if airway edema)<br>
+          Transfer to PICU</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FLOWCHART 26: DROWNING
+     ═══════════════════════════════════════════════════════ -->
+<div class="flowchart-page" id="fc26">
+  <div class="fc-header">
+    <div class="fc-number" style="background:var(--green);">26</div>
+    <div><div class="fc-title">Pediatric Drowning</div>
+    <div class="fc-subtitle">Submersion injury assessment and management</div></div>
+  </div>
+  <div class="flow">
+    <div class="node start">SUBMERSION / IMMERSION INJURY</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node assess"><strong>Initial Assessment</strong><br>
+      ABCs · C-spine precautions if diving mechanism<br>
+      Core temperature · Duration of submersion · Water type (contamination?)<br>
+      GCS · Respiratory status · Cardiac rhythm</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node decision">Breathing / Pulse Present?</div>
+    <div class="connector"><div class="down-left"></div><div class="down-right"></div></div>
+    <div class="branch">
+      <div class="branch-col">
+        <div class="branch-label">NO — CARDIAC ARREST</div>
+        <div class="node critical"><strong>Full PALS Resuscitation</strong><br>
+          Prioritize ventilation (primary mechanism = hypoxia)<br>
+          High-quality CPR · Epinephrine per PALS<br>
+          <strong>If hypothermic:</strong> Continue CPR until rewarmed to 32–35°C<br>
+          "Not dead until warm and dead"</div>
+      </div>
+      <div class="branch-col">
+        <div class="branch-label">YES — BREATHING</div>
+        <div class="node action"><strong>Respiratory Support</strong><br>
+          Supplemental O₂ → HFNC/NIPPV → Intubation as needed<br>
+          Continuous SpO₂ and cardiac monitoring<br>
+          ABG · CXR · BMP · Lactate</div>
+      </div>
+    </div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node med"><strong>Active Rewarming for Hypothermia</strong><br>
+      Mild (32–35°C): External warming (blankets, Bair Hugger, warm environment)<br>
+      Moderate (28–32°C): Add warmed IV fluids (40–42°C), warm humidified O₂<br>
+      Severe (&lt;28°C): Warmed lavage (bladder, gastric), warmed IV fluids, consider ECMO if available</div>
+    <div class="arrow"><div class="line"></div><div class="head">▼</div></div>
+    <div class="node teal"><strong>Post-Resuscitation Monitoring</strong><br>
+      ARDS may develop 6–72 hrs after event — continuous respiratory monitoring<br>
+      Neurologic assessment · Targeted temperature management per PICU protocol<br>
+      Prophylactic ABx only if heavily contaminated water · Monitor for secondary infection</div>
+    <div class="reassess">REASSESS q30–60 min: Respiratory Status, Temp, GCS, CXR in 6–12 hrs · Transfer to PICU</div>
+    <div class="side-note"><strong>Prognostic Factors:</strong> Submersion &lt;5 min with rapid CPR has better outcomes. Submersion &gt;25 min or core temp &lt;25°C upon arrival generally indicates very poor prognosis but resuscitation should continue until rewarmed.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════════════════ -->
+<div style="max-width:800px;margin:2rem auto;padding:1rem 2rem;text-align:center;color:var(--gray-500);font-size:0.8rem;border-top:1px solid var(--gray-200);">
+  <p>These flowcharts are intended as clinical decision support references for rural and remote healthcare facilities. They do not replace clinical judgment, institutional protocols, or real-time specialist consultation. All protocols should be adapted to local resources and reviewed regularly.</p>
+  <p style="margin-top:0.5rem;">Reference Document — March 2026</p>
+</div>
+
+</body>
+</html>

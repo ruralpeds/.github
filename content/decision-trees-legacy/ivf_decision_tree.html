@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pediatric IVF Decision Tree</title>
+<!-- React + ReactDOM + Recharts via CDN — no build step required -->
+<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://cdn.jsdelivr.net/npm/recharts@2/umd/Recharts.min.js" crossorigin></script>
+<!-- Babel Standalone — in-browser JSX compilation, no build step -->
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js" crossorigin></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #06090f; color: #d4dce8; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+  #root { min-height: 100vh; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+// ─── Global destructuring so CDN globals match import style ───────────────
+const { useState, useMemo } = React;
+const {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, ReferenceLine, ComposedChart, Bar,
+  ReferenceArea, BarChart, Cell
+} = Recharts;
+
+// ════════════════════════════════════════════════════════════
+// CLINICAL DATA — AAP 2018, Surviving Sepsis 2020, ISPAD 2022
+// ════════════════════════════════════════════════════════════
+
+const IV_FLUIDS = {
+  NS: { name: "0.9% NaCl (NS)", na: 154, cl: 154, k: 0, ca: 0, lactate: 0, osm: 308, ph: "5.0", dex: 0, tonic: "Isotonic" },
+  LR: { name: "Lactated Ringer's", na: 130, cl: 109, k: 4, ca: 2.7, lactate: 28, osm: 273, ph: "6.5", dex: 0, tonic: "Isotonic" },
+  D5NS: { name: "D5 0.9% NaCl", na: 154, cl: 154, k: 0, ca: 0, lactate: 0, osm: 560, ph: "4.0", dex: 5, tonic: "Isotonic+Dex" },
+  D5halfNS: { name: "D5 0.45% NaCl", na: 77, cl: 77, k: 0, ca: 0, lactate: 0, osm: 406, ph: "4.0", dex: 5, tonic: "Hypotonic" },
+  D5quarterNS: { name: "D5 0.2% NaCl", na: 34, cl: 34, k: 0, ca: 0, lactate: 0, osm: 321, ph: "4.0", dex: 5, tonic: "Hypotonic" },
+  PlasmaLyte: { name: "Plasma-Lyte 148", na: 140, cl: 98, k: 5, ca: 0, lactate: 0, osm: 294, ph: "7.4", dex: 0, tonic: "Isotonic" },
+  HTS3: { name: "3% NaCl (Hypertonic)", na: 513, cl: 513, k: 0, ca: 0, lactate: 0, osm: 1026, ph: "5.0", dex: 0, tonic: "Hypertonic" },
+};
+
+function calcMaintenance(wt) {
+  if (wt <= 0) return { hourly: 0, daily: 0 };
+  let daily = 0;
+  if (wt <= 10) daily = wt * 100;
+  else if (wt <= 20) daily = 1000 + (wt - 10) * 50;
+  else daily = 1500 + (wt - 20) * 20;
+  return { hourly: Math.round((daily / 24) * 10) / 10, daily: Math.round(daily) };
+}
+
+function calcBSA(wt, ht) {
+  if (wt <= 0 || ht <= 0) return 0;
+  return Math.round(Math.sqrt((wt * ht) / 3600) * 100) / 100;
+}
+
+const DEHYDRATION = {
+  mild: { pct: [3, 5], signs: "Slightly dry mucous membranes, mild thirst, normal HR, normal cap refill, tears present" },
+  moderate: { pct: [6, 9], signs: "Dry mucous membranes, tachycardia, decreased skin turgor, sunken eyes, decreased tears, delayed cap refill (2-3s), irritability" },
+  severe: { pct: [10, 15], signs: "Very dry membranes, marked tachycardia, mottled/cool skin, sunken fontanelle, absent tears, cap refill >3s, lethargy/obtundation, hypotension (LATE)" },
+};
+
+// ════════════════════════════════════════════════════════════
+
+function PediatricIVFDecisionTree() {
+  const [tab, setTab] = useState("pathway");
+  const [weight, setWeight] = useState(15);
+  const [height, setHeight] = useState(100);
+  const [age, setAge] = useState("1-5yr");
+  const [scenario, setScenario] = useState("maintenance");
+  const [dehydPct, setDehydPct] = useState(5);
+  const [burnPct, setBurnPct] = useState(20);
+  const [naLevel, setNaLevel] = useState(140);
+  const [fluidRestrict, setFluidRestrict] = useState(100);
+
+  const maint = useMemo(() => calcMaintenance(weight), [weight]);
+  const bsa = useMemo(() => calcBSA(weight, height), [weight, height]);
+  const deficit = Math.round(dehydPct * weight * 10);
+  const parkland = Math.round(4 * weight * burnPct);
+  const parklandMaint = maint.daily;
+  const restrictedVol = Math.round(maint.daily * fluidRestrict / 100);
+  const restrictedRate = Math.round((restrictedVol / 24) * 10) / 10;
+
+  const tabs = [
+    { id: "pathway", label: "Decision Pathway" },
+    { id: "calc", label: "Calculator" },
+    { id: "dehydration", label: "Dehydration" },
+    { id: "special", label: "Special Pops" },
+    { id: "fluids", label: "Fluid Comp" },
+    { id: "ref", label: "Reference" },
+  ];
+
+  return (
+    <div style={{ minHeight: "100vh", background: "linear-gradient(160deg, #06090f 0%, #0c1220 40%, #0a0f1a 100%)", color: "#d4dce8", fontFamily: "'Segoe UI', system-ui, sans-serif", padding: 16 }}>
+      <div style={{ textAlign: "center", marginBottom: 16 }}>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: "#e8edf5", margin: 0, letterSpacing: "-0.02em" }}>Pediatric IVF Management Decision Tree</h1>
+        <p style={{ fontSize: 11, color: "#5a6b82", margin: "4px 0 0" }}>AAP 2018 Guideline-Based — Ages 1 Month to 18 Years — Interactive Clinical Decision Support</p>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: 4, marginBottom: 14, justifyContent: "center", flexWrap: "wrap" }}>
+        {tabs.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)} style={{
+            padding: "5px 12px", borderRadius: 6, border: `1px solid ${tab === t.id ? "#3b82f6" : "#1a2236"}`,
+            background: tab === t.id ? "rgba(59,130,246,0.15)" : "rgba(10,16,30,0.7)",
+            color: tab === t.id ? "#60a5fa" : "#5a6b82", fontSize: 10, fontWeight: 600, cursor: "pointer",
+          }}>{t.label}</button>
+        ))}
+      </div>
+
+      {/* Inputs */}
+      <div style={{ background: "rgba(12,18,32,0.8)", border: "1px solid #1a2236", borderRadius: 10, padding: 14, marginBottom: 14 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10 }}>
+          <NumInput label="Weight (kg)" value={weight} set={setWeight} min={2} max={120} step={0.5} />
+          <NumInput label="Height (cm)" value={height} set={setHeight} min={40} max={200} step={1} />
+          <div>
+            <Lbl>Age Group</Lbl>
+            <select value={age} onChange={e => setAge(e.target.value)} style={selStyle}>
+              {["1-6mo","6-12mo","1-5yr","6-12yr","13-18yr"].map(a => <option key={a} value={a}>{a}</option>)}
+            </select>
+          </div>
+          <div>
+            <Lbl>Clinical Scenario</Lbl>
+            <select value={scenario} onChange={e => setScenario(e.target.value)} style={selStyle}>
+              <option value="maintenance">Maintenance IVF</option>
+              <option value="resuscitation">Bolus / Resuscitation</option>
+              <option value="dehydration">Dehydration Correction</option>
+              <option value="periop">Perioperative</option>
+              <option value="dka">DKA</option>
+              <option value="neuro">Neurosurgical</option>
+              <option value="cardiac">Post-Cardiac Surgery</option>
+              <option value="burns">Burns</option>
+              <option value="renal">Renal / Nephrotic</option>
+            </select>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <Pill color="#10b981">Maint: {maint.hourly} mL/hr ({maint.daily} mL/day)</Pill>
+          <Pill color="#3b82f6">BSA: {bsa} m²</Pill>
+          <Pill color="#8b5cf6">{weight} kg</Pill>
+        </div>
+      </div>
+
+      {/* ═══ PATHWAY TAB ═══ */}
+      {tab === "pathway" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <PathNode type="assess" title="Child Requires IV Fluids" sub="Age 1 month – 18 years" detail="Assess: hemodynamic status, hydration, NPO status, underlying condition, serum Na/K/Glucose/Cr, urine output. Is the patient in SHOCK or severely dehydrated?" />
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: 280, display: "flex", flexDirection: "column", gap: 10 }}>
+              <PathNode type="decide" title="YES — Hemodynamically Unstable" sub="Shock, severe dehydration, or hemodynamic compromise" />
+              <PathNode type="escalate" title="Bolus Resuscitation" sub="10–20 mL/kg isotonic crystalloid" detail={`NS or LR over 5–20 min. Reassess after each bolus. May repeat ×3 (total 40–60 mL/kg). If no response after 40 mL/kg → fluid-refractory shock → vasopressors.\n\nFor ${weight} kg: Bolus = ${Math.round(weight*20)} mL (20 mL/kg)\nMax before pressors: ${Math.round(weight*60)} mL (60 mL/kg)\n\nFEAST Trial caveat: In resource-limited settings without ICU access, aggressive bolus >20 mL/kg may increase mortality.`} />
+              <PathNode type="treat" title="Post-Resuscitation" sub="Transition to scenario-specific IVF" detail="After hemodynamic stabilization, transition to maintenance IVF (isotonic per AAP 2018) or scenario-specific protocol. Reassess volume status q1–4h. Monitor UOP goal 1–2 mL/kg/hr." />
+            </div>
+            <div style={{ flex: 1, minWidth: 280, display: "flex", flexDirection: "column", gap: 10 }}>
+              <PathNode type="decide" title="NO — Hemodynamically Stable" sub="Assess reason for IVF" />
+              <PathNode type="decide" title="Is there a special condition?" sub="DKA, neurosurgical, cardiac, burns, renal?" detail="Special populations have MODIFIED fluid protocols that differ significantly from standard maintenance." />
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <MiniNode type="adjunct" title="DKA" sub="1–1.5× maint, 2-bag" />
+                <MiniNode type="adjunct" title="Neuro" sub="SIADH vs CSW" />
+                <MiniNode type="adjunct" title="Cardiac" sub="50–75% maint" />
+                <MiniNode type="adjunct" title="Burns" sub="Parkland formula" />
+                <MiniNode type="adjunct" title="Renal" sub="IWL + UOP" />
+              </div>
+              <PathNode type="treat" title="Standard Maintenance IVF" sub="AAP 2018 KAS 1-3" detail={`KAS 1: Use ISOTONIC fluids (0.9% NaCl or LR/balanced)\nKAS 2: Monitor Na, K, glucose, Cr, UOP\nKAS 3: Add 5% dextrose (D5NS or D5LR)\n\nFor ${weight} kg:\n• Rate: ${maint.hourly} mL/hr (${maint.daily} mL/day)\n• Fluid: D5 0.9% NaCl + 20 mEq/L KCl`} />
+            </div>
+          </div>
+          <PathNode type="assess" title="Dehydration Assessment" sub="Classify severity: mild (3–5%), moderate (6–9%), severe (≥10%)" detail="Use clinical signs: skin turgor, cap refill, mucous membranes, tears, mental status, HR, fontanelle." />
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <PathNode type="wean" title="Mild (3–5%)" sub="ORT first line" detail={`ORT (WHO ORS): 50 mL/kg over 4 hours.\nFor ${weight} kg: ${Math.round(weight*50)} mL over 4h (${Math.round(weight*50/4)} mL/hr)`} />
+            <PathNode type="treat" title="Moderate (6–9%)" sub="ORT preferred; IV if fails" detail={`Deficit = ${deficit} mL\nFirst 8h: ${Math.round((deficit/2 + maint.daily/3) / 8)} mL/hr\nNext 16h: ${Math.round((deficit/2 + maint.daily*2/3) / 16)} mL/hr`} />
+            <PathNode type="escalate" title="Severe (≥10%)" sub="IV resuscitation required" detail={`Bolus: ${Math.round(weight*20)} mL NS/LR over 20 min, repeat PRN.\nDeficit at 10%: ${Math.round(10*weight*10)} mL.\nReplace over 24–48h.`} />
+          </div>
+          <PathNode type="decide" title="Check Serum Sodium" sub="Correction rate depends on Na type" detail={`Current Na: ${naLevel} mEq/L → ${naLevel > 150 ? "HYPERNATREMIC — ≤0.5 mEq/L/hr, 48–72h total" : naLevel < 130 ? "HYPONATREMIC — ≤8–10 mEq/L/24h" : "Isonatremic — standard protocol"}`} />
+        </div>
+      )}
+
+      {/* ═══ CALCULATOR TAB ═══ */}
+      {tab === "calc" && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+          <CalcCard title="Maintenance (Holliday-Segar)" results={[
+            { label: "Hourly Rate", value: `${maint.hourly} mL/hr`, color: "#10b981" },
+            { label: "Daily Volume", value: `${maint.daily} mL/day`, color: "#10b981" },
+            { label: "2/3 Maintenance", value: `${Math.round(maint.daily*2/3)} mL/day`, color: "#f59e0b" },
+            { label: "1/2 Maintenance", value: `${Math.round(maint.daily/2)} mL/day`, color: "#f59e0b" },
+            { label: "1.5× Maintenance", value: `${Math.round(maint.daily*1.5)} mL/day`, color: "#3b82f6" },
+          ]} formula="4 mL/kg/hr (first 10 kg) + 2 mL/kg/hr (next 10 kg) + 1 mL/kg/hr (>20 kg)" />
+          <CalcCard title="Bolus Resuscitation" results={[
+            { label: "10 mL/kg", value: `${Math.round(weight*10)} mL`, color: "#f59e0b" },
+            { label: "20 mL/kg", value: `${Math.round(weight*20)} mL`, color: "#ef4444" },
+            { label: "Max (60 mL/kg)", value: `${Math.round(weight*60)} mL`, color: "#ef4444" },
+          ]} formula="NS or LR over 5–20 min. Reassess after each bolus." />
+          <CalcCard title="Dehydration Deficit" results={[
+            { label: `${dehydPct}% deficit`, value: `${deficit} mL`, color: "#3b82f6" },
+            { label: "First 8h rate", value: `${Math.round((deficit/2 + maint.daily/3)/8)} mL/hr`, color: "#3b82f6" },
+            { label: "Next 16h rate", value: `${Math.round((deficit/2 + maint.daily*2/3)/16)} mL/hr`, color: "#3b82f6" },
+          ]} formula="Deficit (mL) = % × weight (kg) × 10">
+            <NumInput label="Dehydration %" value={dehydPct} set={setDehydPct} min={1} max={15} step={1} />
+          </CalcCard>
+          <CalcCard title="DKA Protocol" results={[
+            { label: "Bolus (10 mL/kg)", value: `${Math.round(weight*10)} mL NS`, color: "#f59e0b" },
+            { label: "1.5× maintenance", value: `${(maint.hourly*1.5).toFixed(1)} mL/hr`, color: "#8b5cf6" },
+            { label: "Insulin (0.1 U/kg/hr)", value: `${(weight*0.1).toFixed(1)} units/hr`, color: "#8b5cf6" },
+          ]} formula="PECARN FLUID trial: rate/tonicity don't affect neuro outcomes." />
+          <CalcCard title="Burns (Parkland)" results={[
+            { label: `Total 24h (${burnPct}% TBSA)`, value: `${parkland} mL LR`, color: "#ef4444" },
+            { label: "First 8h", value: `${Math.round(parkland/16)} mL/hr`, color: "#ef4444" },
+            { label: "Next 16h", value: `${Math.round(parkland/32)} mL/hr`, color: "#f59e0b" },
+            { label: "If <20 kg, add maint", value: `+${maint.daily} mL/day D5LR`, color: "#10b981" },
+          ]} formula="4 mL/kg × %TBSA. Calculate from TIME OF BURN.">
+            <NumInput label="% TBSA Burned" value={burnPct} set={setBurnPct} min={1} max={90} step={1} />
+          </CalcCard>
+          <CalcCard title="Fluid Restriction" results={[
+            { label: `${fluidRestrict}% maintenance`, value: `${restrictedVol} mL/day`, color: "#f59e0b" },
+            { label: "Hourly rate", value: `${restrictedRate} mL/hr`, color: "#f59e0b" },
+          ]} formula="SIADH: 50–67%. Cardiac: 50–75%. Renal: IWL+UOP.">
+            <NumInput label="% of Maintenance" value={fluidRestrict} set={setFluidRestrict} min={25} max={200} step={5} />
+          </CalcCard>
+          <CalcCard title="3% NaCl (Hypertonic)" results={[
+            { label: "Seizure dose (3 mL/kg)", value: `${Math.round(weight*3)} mL over 10–20 min`, color: "#ef4444" },
+            { label: "Max dose (5 mL/kg)", value: `${Math.round(weight*5)} mL`, color: "#ef4444" },
+          ]} formula="Max correction ≤8–10 mEq/L/24h." />
+          <CalcCard title="Na Deficit / Free Water Deficit" results={[
+            { label: "Na deficit (hyponatremic)", value: `${Math.round(0.6 * weight * (140 - naLevel))} mEq`, color: "#3b82f6" },
+            { label: "Free water deficit (hypernatremic)", value: `${Math.round(0.6 * weight * ((naLevel/140) - 1) * 1000)} mL`, color: "#ef4444" },
+          ]} formula="Na deficit = 0.6 × Wt × (140 − current Na)">
+            <NumInput label="Serum Na (mEq/L)" value={naLevel} set={setNaLevel} min={110} max={180} step={1} />
+          </CalcCard>
+        </div>
+      )}
+
+      {/* ═══ DEHYDRATION TAB ═══ */}
+      {tab === "dehydration" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
+            {Object.entries(DEHYDRATION).map(([sev, d]) => (
+              <div key={sev} style={{ background: sev==="severe"?"rgba(239,68,68,0.06)":sev==="moderate"?"rgba(245,158,11,0.06)":"rgba(16,185,129,0.04)", border:`1px solid ${sev==="severe"?"#ef444422":sev==="moderate"?"#f59e0b22":"#10b98122"}`, borderRadius:10, padding:14 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:sev==="severe"?"#ef4444":sev==="moderate"?"#f59e0b":"#10b981", textTransform:"capitalize", marginBottom:4 }}>{sev} ({d.pct[0]}–{d.pct[1]}%)</div>
+                <div style={{ fontSize:10, color:"#8892a8", lineHeight:1.6, marginBottom:8 }}>{d.signs}</div>
+                <div style={{ fontSize:10, color:"#d4dce8", fontWeight:600 }}>Deficit: {d.pct[0]*weight*10}–{d.pct[1]*weight*10} mL</div>
+              </div>
+            ))}
+          </div>
+          <Panel title="WHO Rehydration Plans">
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(200px, 1fr))", gap:12 }}>
+              <PlanCard name="Plan A — Home" color="#10b981" text={`No dehydration/prevention.\n• Continue feeding\n• Extra fluids after each loose stool\n  <2yr: 50–100 mL, 2–10yr: 100–200 mL`} />
+              <PlanCard name="Plan B — ORT Clinic" color="#f59e0b" text={`Mild-moderate dehydration.\n• ORS 75 mL/kg over 4 hours\n• For ${weight} kg: ${Math.round(weight*75)} mL over 4h\n• Reassess at 4h`} />
+              <PlanCard name="Plan C — IV" color="#ef4444" text={`Severe dehydration.\n• NS/LR 20 mL/kg bolus → reassess\n• Bolus: ${Math.round(weight*20)} mL\n• Deficit: ${Math.round(weight*70)} mL over 3–5h`} />
+            </div>
+          </Panel>
+          <Panel title="Correction by Sodium Type">
+            <Row icon="Na=" label="Isonatremic (130–150)" text="Replace deficit over 24h with isotonic (D5NS)." color="#10b981" />
+            <Row icon="Na↓" label="Hyponatremic (<130)" text="Correct ≤8–10 mEq/L per 24h. If seizures → 3% NaCl 3–5 mL/kg over 10–20 min." color="#3b82f6" />
+            <Row icon="Na↑" label="Hypernatremic (>150)" text="Correct ≤0.5 mEq/L/hr (≤10–12/24h). D5 0.45NS or D5 0.2NS. Target 48–72h." color="#ef4444" />
+          </Panel>
+          <Panel title="Holliday-Segar Rate by Weight">
+            <ResponsiveContainer width="100%" height={240}>
+              <ComposedChart data={Array.from({length:25},(_,i)=>{ const w=(i+1)*2; const m=calcMaintenance(w); return {weight:w, rate:m.hourly}; })} margin={{top:10,right:20,bottom:5,left:0}}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1a2236" />
+                <XAxis dataKey="weight" stroke="#3b4a63" tick={{fontSize:10,fill:"#5a6b82"}} label={{value:"Weight (kg)",position:"insideBottom",offset:-2,fontSize:10,fill:"#5a6b82"}} />
+                <YAxis stroke="#3b4a63" tick={{fontSize:10,fill:"#5a6b82"}} label={{value:"mL/hr",angle:-90,position:"insideLeft",fontSize:10,fill:"#5a6b82"}} />
+                <Tooltip contentStyle={{background:"#0c1220",border:"1px solid #1a2236",borderRadius:8,fontSize:10,color:"#d4dce8"}} />
+                <Line type="monotone" dataKey="rate" stroke="#10b981" strokeWidth={2.5} dot={false} />
+                <ReferenceLine x={weight} stroke="#f59e0b" strokeDasharray="6 3" label={{value:`${weight}kg`,fontSize:9,fill:"#f59e0b"}} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </Panel>
+        </div>
+      )}
+
+      {/* ═══ SPECIAL POPULATIONS ═══ */}
+      {tab === "special" && (
+        <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+          <SpecialCard title="DKA" color="#8b5cf6" sections={[
+            {h:"Bolus",t:`NS ${Math.round(weight*10)}–${Math.round(weight*20)} mL ONLY if hemodynamically compromised.`},
+            {h:"Maintenance",t:`1–1.5× = ${Math.round(maint.daily)}–${Math.round(maint.daily*1.5)} mL/day. Replace deficit evenly over 24–48h.`},
+            {h:"Two-Bag System",t:"Bag 1: NS+KCl (no dextrose). Bag 2: D10+NS+KCl. Titrate ratio to BG 150–250."},
+            {h:"PECARN FLUID (2018)",t:"No difference in neuro outcomes with 0.45% vs 0.9% NaCl or rapid vs slow rehydration."},
+          ]} />
+          <SpecialCard title="SIADH vs CSW" color="#3b82f6" sections={[
+            {h:"SIADH → RESTRICT",t:`50–67% maint = ${Math.round(maint.daily*0.5)}–${Math.round(maint.daily*0.67)} mL/day. Euvolemic. Elevated ADH.`},
+            {h:"CSW → EXPAND",t:`NS 1.5–2× maint = ${Math.round(maint.daily*1.5)}–${Math.round(maint.daily*2)} mL/day. HYPOVOLEMIC.`},
+            {h:"Key",t:"FEurate: normalizes in SIADH, stays >11% in CSW. If uncertain → treat as CSW."},
+          ]} />
+          <SpecialCard title="Post-Cardiac Surgery" color="#ef4444" sections={[
+            {h:"Restrict",t:`50–75% maint = ${Math.round(maint.daily*0.5)}–${Math.round(maint.daily*0.75)} mL/day for 24–48h post-CPB.`},
+            {h:"Rationale",t:"Capillary leak post-bypass → fluid third-spacing → restrict."},
+            {h:"Diuresis",t:`Furosemide 1 mg/kg = ${Math.round(weight)} mg q6–12h when hemodynamically stable.`},
+          ]} />
+          <SpecialCard title="Burns" color="#f97316" sections={[
+            {h:"Parkland",t:`4 × ${weight} × ${burnPct}% TBSA = ${parkland} mL LR. First 8h (from BURN time): ${Math.round(parkland/16)} mL/hr. Next 16h: ${Math.round(parkland/32)} mL/hr.`},
+            {h:"Peds Mod",t:`<20 kg: add D5LR maintenance ${maint.daily} mL/day alongside Parkland.`},
+            {h:"UOP target",t:`1–2 mL/kg/hr = ${Math.round(weight)}–${Math.round(weight*2)} mL/hr.`},
+          ]} />
+          <SpecialCard title="Renal / Nephrotic" color="#06b6d4" sections={[
+            {h:"Nephrotic",t:"AVOID aggressive IVF. 25% albumin 0.5–1 g/kg THEN furosemide immediately after."},
+            {h:"AKI",t:`Restrict to insensible (~400 mL/m²/day = ${Math.round(400*bsa)} mL/day) + UOP. No K in IVF.`},
+          ]} />
+        </div>
+      )}
+
+      {/* ═══ FLUID COMPOSITION ═══ */}
+      {tab === "fluids" && (
+        <div>
+          <Panel title="IV Fluid Composition Comparison">
+            <div style={{ overflowX:"auto" }}>
+              <table style={{ width:"100%", borderCollapse:"collapse", fontSize:10 }}>
+                <thead>
+                  <tr>{["Fluid","Na⁺","Cl⁻","K⁺","Ca²⁺","Lactate","Osm","pH","Dex%","Tonicity"].map((h,i)=>(
+                    <th key={i} style={{ padding:"6px",background:"rgba(59,130,246,0.1)",color:"#93c5fd",fontWeight:600,textAlign:"left",borderBottom:"1px solid #1a2236",whiteSpace:"nowrap" }}>{h}</th>
+                  ))}</tr>
+                </thead>
+                <tbody>
+                  {Object.values(IV_FLUIDS).map((f,i)=>(
+                    <tr key={i} style={{ background: i%2===0?"transparent":"rgba(15,23,42,0.3)" }}>
+                      <td style={{ padding:"5px 6px",color:"#d4dce8",fontWeight:600,borderBottom:"1px solid #111827",whiteSpace:"nowrap" }}>{f.name}</td>
+                      {[f.na,f.cl,f.k,f.ca,f.lactate,f.osm,f.ph,f.dex,f.tonic].map((v,j)=>(
+                        <td key={j} style={{ padding:"5px 6px",color:"#8892a8",borderBottom:"1px solid #111827" }}>{v}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Panel>
+          <Panel title="Sodium Content by Fluid">
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={Object.entries(IV_FLUIDS).map(([k,v])=>({name:k,na:v.na}))} margin={{top:10,right:20,bottom:30,left:0}}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1a2236" />
+                <XAxis dataKey="name" stroke="#3b4a63" tick={{fontSize:8,fill:"#5a6b82",angle:-30,textAnchor:"end"}} height={50} />
+                <YAxis stroke="#3b4a63" tick={{fontSize:10,fill:"#5a6b82"}} />
+                <Tooltip contentStyle={{background:"#0c1220",border:"1px solid #1a2236",borderRadius:8,fontSize:10}} />
+                <ReferenceLine y={154} stroke="#10b981" strokeDasharray="4 4" label={{value:"Isotonic",fontSize:9,fill:"#10b981"}} />
+                <Bar dataKey="na" radius={[4,4,0,0]}>
+                  {Object.values(IV_FLUIDS).map((f,i)=>(
+                    <Cell key={i} fill={f.na>200?"#ef4444":f.na>=130?"#10b981":"#f59e0b"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </Panel>
+          <Panel title="AAP 2018 Key Action Statements">
+            <KAS num="1" grade="B" rec="Use ISOTONIC solutions with KCl and dextrose for maintenance IVF." detail="0.9% NaCl, LR, or Plasma-Lyte. Prevents hospital-acquired hyponatremia." />
+            <KAS num="2" grade="X" rec="Monitor serum Na, K, glucose, Cr, and UOP." detail="Check BMP within 24h. More frequent if risk factors present." />
+            <KAS num="3" grade="B" rec="Add 5% dextrose to isotonic maintenance fluids." detail="Prevents catabolism/ketosis. D5NS or D5LR." />
+          </Panel>
+        </div>
+      )}
+
+      {/* ═══ REFERENCE ═══ */}
+      {tab === "ref" && (
+        <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+          <Panel title="Perioperative Quick Reference">
+            <div style={{ fontSize:11, color:"#8892a8", lineHeight:1.8 }}>
+              <div><strong style={{color:"#d4dce8"}}>NPO Deficit:</strong> {maint.hourly} mL/hr × hrs NPO</div>
+              <div><strong style={{color:"#d4dce8"}}>Replacement:</strong> 50% in 1st hour, 25% in 2nd, 25% in 3rd</div>
+              <div><strong style={{color:"#d4dce8"}}>Intraop rate:</strong> {(maint.hourly*2/3).toFixed(1)}–{maint.hourly} mL/hr (2/3–full maintenance)</div>
+              <div><strong style={{color:"#d4dce8"}}>3rd-space losses:</strong> Minor 2–4, moderate 4–6, major 6–10 mL/kg/hr</div>
+              <div><strong style={{color:"#d4dce8"}}>Post-op fluid:</strong> D5NS + KCl 20 mEq/L at maintenance rate</div>
+            </div>
+          </Panel>
+          <Panel title="Key Evidence">
+            <Ref n={1} t="Feld LG et al. Maintenance IVF in Children. Pediatrics 2018;142(6):e20183083. PMID: 30478247" />
+            <Ref n={2} t="Holliday MA, Segar WE. Pediatrics 1957;19:823-832. PMID: 13431307" />
+            <Ref n={3} t="Weiss SL et al. Surviving Sepsis 2020. Pediatr Crit Care Med 2020;21(2):e52. PMID: 32032273" />
+            <Ref n={4} t="Kuppermann N et al. PECARN FLUID DKA Trial. NEJM 2018;378(24):2275. PMID: 29897851" />
+            <Ref n={5} t="Maitland K et al. FEAST Trial. NEJM 2011;364(26):2483. PMID: 21615299" />
+          </Panel>
+          <Panel title="Monitoring Checklist">
+            <div style={{ fontSize:11, color:"#8892a8", lineHeight:1.8 }}>
+              <div>☐ BMP within 24h of starting IVF</div>
+              <div>☐ Repeat BMP q12–24h (q4–6h for DKA/dysnatremia)</div>
+              <div>☐ Strict I&O documented q shift</div>
+              <div>☐ Daily weight</div>
+              <div>☐ UOP goal: 1–2 mL/kg/hr</div>
+              <div>☐ Reassess plan with every clinical change</div>
+              <div>☐ Transition to PO as soon as possible</div>
+            </div>
+          </Panel>
+        </div>
+      )}
+
+      <div style={{ textAlign:"center", marginTop:16, fontSize:9, color:"#2a3548" }}>
+        Pediatric IVF Decision Tree — AAP 2018 — For educational and clinical reference only
+      </div>
+    </div>
+  );
+}
+
+// ════════ SUB-COMPONENTS ════════
+const selStyle = { width:"100%", padding:"7px 8px", borderRadius:6, border:"1px solid #1a2236", background:"#0a0f1e", color:"#d4dce8", fontSize:12 };
+
+function Lbl({children}) { return <label style={{fontSize:9,color:"#5a6b82",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",display:"block",marginBottom:3}}>{children}</label>; }
+function NumInput({label,value,set,min,max,step}) {
+  return <div><Lbl>{label}</Lbl><input type="number" value={value} min={min} max={max} step={step} onChange={e=>set(Number(e.target.value))} style={{width:"100%",padding:"7px 8px",borderRadius:6,border:"1px solid #1a2236",background:"#0a0f1e",color:"#d4dce8",fontSize:13,fontWeight:500,boxSizing:"border-box"}} /></div>;
+}
+function Pill({children,color}) { return <span style={{padding:"3px 10px",borderRadius:5,border:`1px solid ${color}33`,background:`${color}10`,color,fontSize:10,fontWeight:600}}>{children}</span>; }
+function Panel({title,children}) { return <div style={{background:"rgba(12,18,32,0.8)",border:"1px solid #1a2236",borderRadius:10,padding:14}}><h3 style={{fontSize:13,fontWeight:600,color:"#e8edf5",margin:"0 0 10px"}}>{title}</h3>{children}</div>; }
+
+const typeColors = { assess:"#3b82f6", decide:"#8b5cf6", treat:"#10b981", escalate:"#ef4444", wean:"#06b6d4", adjunct:"#f97316" };
+
+function PathNode({type,title,sub,detail}) {
+  const c = typeColors[type]||"#3b82f6";
+  const [open,setOpen] = useState(false);
+  return (
+    <div onClick={()=>detail&&setOpen(!open)} style={{background:`${c}08`,border:`1px solid ${c}22`,borderRadius:8,padding:"10px 12px",cursor:detail?"pointer":"default"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div>
+          <span style={{fontSize:8,fontWeight:700,color:c,textTransform:"uppercase",letterSpacing:"0.08em",background:`${c}18`,padding:"1px 6px",borderRadius:3,marginRight:8}}>{type}</span>
+          <span style={{fontSize:12,fontWeight:600,color:"#e8edf5"}}>{title}</span>
+        </div>
+        {detail&&<span style={{fontSize:10,color:"#5a6b82"}}>{open?"▾":"▸"}</span>}
+      </div>
+      <div style={{fontSize:10,color:"#6b7a94",marginTop:3}}>{sub}</div>
+      {open&&detail&&<div style={{marginTop:8,padding:10,background:"rgba(0,0,0,0.2)",borderRadius:6,fontSize:10,color:"#8892a8",lineHeight:1.7,whiteSpace:"pre-line"}}>{detail}</div>}
+    </div>
+  );
+}
+function MiniNode({type,title,sub}) {
+  const c=typeColors[type]||"#f97316";
+  return <div style={{background:`${c}08`,border:`1px solid ${c}22`,borderRadius:6,padding:"6px 10px",flex:"1 1 80px",minWidth:80}}><div style={{fontSize:10,fontWeight:600,color:c}}>{title}</div><div style={{fontSize:8,color:"#5a6b82"}}>{sub}</div></div>;
+}
+function CalcCard({title,results,formula,children}) {
+  return <div style={{background:"rgba(12,18,32,0.8)",border:"1px solid #1a2236",borderRadius:10,padding:14}}>
+    <h4 style={{fontSize:12,fontWeight:600,color:"#e8edf5",margin:"0 0 8px"}}>{title}</h4>
+    {children&&<div style={{marginBottom:8}}>{children}</div>}
+    {results.map((r,i)=>(
+      <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",borderBottom:i<results.length-1?"1px solid #111827":"none"}}>
+        <span style={{fontSize:10,color:"#6b7a94"}}>{r.label}</span>
+        <span style={{fontSize:11,fontWeight:700,color:r.color}}>{r.value}</span>
+      </div>
+    ))}
+    {formula&&<div style={{marginTop:8,fontSize:9,color:"#3b4a63",fontStyle:"italic"}}>{formula}</div>}
+  </div>;
+}
+function SpecialCard({title,color,sections}) {
+  const [open,setOpen]=useState(false);
+  return <div style={{background:`${color}06`,border:`1px solid ${color}22`,borderRadius:10,padding:14}}>
+    <div onClick={()=>setOpen(!open)} style={{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}}>
+      <h3 style={{fontSize:14,fontWeight:600,color,margin:0}}>{title}</h3>
+      <span style={{fontSize:12,color:"#5a6b82"}}>{open?"▾":"▸"}</span>
+    </div>
+    {open&&sections.map((s,i)=>(
+      <div key={i} style={{marginTop:10}}>
+        <div style={{fontSize:11,fontWeight:600,color:"#d4dce8",marginBottom:3}}>{s.h}</div>
+        <div style={{fontSize:10,color:"#8892a8",lineHeight:1.6,whiteSpace:"pre-line"}}>{s.t}</div>
+      </div>
+    ))}
+    {!open&&<div style={{fontSize:10,color:"#5a6b82",marginTop:4}}>Click to expand {sections.length} protocols</div>}
+  </div>;
+}
+function PlanCard({name,color,text}) {
+  return <div style={{background:`${color}08`,border:`1px solid ${color}22`,borderRadius:8,padding:12}}>
+    <div style={{fontSize:12,fontWeight:700,color,marginBottom:6}}>{name}</div>
+    <div style={{fontSize:10,color:"#8892a8",lineHeight:1.6,whiteSpace:"pre-line"}}>{text}</div>
+  </div>;
+}
+function Row({icon,label,text,color}) {
+  return <div style={{display:"flex",gap:10,padding:"8px 0",borderBottom:"1px solid #141d2e"}}>
+    <div style={{width:32,height:32,borderRadius:6,background:`${color}15`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color,flexShrink:0}}>{icon}</div>
+    <div><div style={{fontSize:11,fontWeight:600,color:"#d4dce8"}}>{label}</div><div style={{fontSize:10,color:"#8892a8",marginTop:2,lineHeight:1.5}}>{text}</div></div>
+  </div>;
+}
+function KAS({num,grade,rec,detail}) {
+  return <div style={{padding:"10px 0",borderBottom:"1px solid #141d2e"}}>
+    <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:4}}>
+      <span style={{fontSize:9,fontWeight:700,color:"#60a5fa",background:"rgba(59,130,246,0.15)",padding:"1px 6px",borderRadius:3}}>KAS {num}</span>
+      <span style={{fontSize:9,fontWeight:600,color:"#f59e0b",background:"rgba(245,158,11,0.1)",padding:"1px 6px",borderRadius:3}}>Grade {grade}</span>
+    </div>
+    <div style={{fontSize:11,fontWeight:600,color:"#d4dce8",marginBottom:3}}>{rec}</div>
+    <div style={{fontSize:10,color:"#6b7a94"}}>{detail}</div>
+  </div>;
+}
+function Ref({n,t}) {
+  return <div style={{fontSize:10,color:"#6b7a94",padding:"3px 0",lineHeight:1.5}}><span style={{color:"#60a5fa",fontWeight:600}}>[{n}]</span> {t}</div>;
+}
+
+// ═══════ MOUNT ═══════
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<PediatricIVFDecisionTree />);
+</script>
+</body>
+</html>

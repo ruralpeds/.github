@@ -1,0 +1,718 @@
+{
+  "registry_version": "1.0.0",
+  "project": "Pediatric_emergency_CDS",
+  "last_updated": "2026-03-19T03:26:02Z",
+  "modules": {
+    "src/protocols/acid_base.rs": {
+      "created": "2026-03-04T12:19:21-0500",
+      "created_commit": "09b1332b3cfc4309fcb9760ac445c0b9b9430ffb",
+      "last_modified": "2026-03-13T09:55:04+0000",
+      "last_modified_commit": "70c431a162d1009a1a77ec8021157f0f7d41818b",
+      "source_documents": [],
+      "description": "Acid-base and electrolyte calculations (anion gap, delta-delta, ABG interpretation, fluid deficits, electrolyte replacements)"
+    },
+    "src/protocols/burns.rs": {
+      "created": "2026-03-03T00:31:13+0000",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "last_modified": "2026-03-03T19:20:23-0500",
+      "last_modified_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "source_documents": [],
+      "description": "Burns protocol including Parkland formula and fluid resuscitation"
+    },
+    "src/protocols/cardiac.rs": {
+      "created": "2026-03-03T00:31:13+0000",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "last_modified": "2026-03-03T19:32:00-0500",
+      "last_modified_commit": "e39fa1822777ae1fc2ead18bd5a179cc53bf1d49",
+      "source_documents": [],
+      "description": "Cardiac arrest and resuscitation protocol"
+    },
+    "src/protocols/cardiology_calc.rs": {
+      "created": "2026-03-04T12:19:21-0500",
+      "created_commit": "09b1332b3cfc4309fcb9760ac445c0b9b9430ffb",
+      "last_modified": "2026-03-04T12:19:21-0500",
+      "last_modified_commit": "09b1332b3cfc4309fcb9760ac445c0b9b9430ffb",
+      "source_documents": [],
+      "description": "Cardiology calculations: MAP, cardiac output, QTc, defibrillation energy, ECG references"
+    },
+    "src/protocols/drowning.rs": {
+      "created": "2026-03-03T19:20:23-0500",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "last_modified": "2026-03-18T23:14:17-0400",
+      "last_modified_commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+      "source_documents": [],
+      "description": "Drowning/submersion injury protocol"
+    },
+    "src/protocols/environmental.rs": {
+      "created": "2026-03-03T19:20:23-0500",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "last_modified": "2026-03-18T23:14:17-0400",
+      "last_modified_commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+      "source_documents": [
+        "module_source/Pediatric_Emergency_Medicine_Rural_ED_Guide_Volume_II.docx"
+      ],
+      "description": "Environmental emergencies: heat stroke, hypothermia, envenomation"
+    },
+    "src/protocols/fluid_electrolyte_acidbase.rs": {
+      "created": "2026-03-06T22:47:39-0500",
+      "created_commit": "0934e83ba43ab4441f788bbd53247a8aee003d2a",
+      "last_modified": "2026-03-06T22:47:39-0500",
+      "last_modified_commit": "0934e83ba43ab4441f788bbd53247a8aee003d2a",
+      "source_documents": [],
+      "description": "Comprehensive fluid, electrolyte, and acid-base management module"
+    },
+    "src/protocols/hematology.rs": {
+      "created": "2026-03-03T19:20:23-0500",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "last_modified": "2026-03-03T19:32:00-0500",
+      "last_modified_commit": "e39fa1822777ae1fc2ead18bd5a179cc53bf1d49",
+      "source_documents": [],
+      "description": "Hematology protocol: anemia, bleeding, transfusion guidance"
+    },
+    "src/protocols/hematology_calc.rs": {
+      "created": "2026-03-04T12:19:21-0500",
+      "created_commit": "09b1332b3cfc4309fcb9760ac445c0b9b9430ffb",
+      "last_modified": "2026-03-18T23:14:17-0400",
+      "last_modified_commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+      "source_documents": [],
+      "description": "Hematology calculations: CBC indices, reticulocyte, MABL, transfusion volumes, coagulation"
+    },
+    "src/protocols/metabolic.rs": {
+      "created": "2026-03-03T00:31:13+0000",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "last_modified": "2026-03-03T19:20:23-0500",
+      "last_modified_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "source_documents": [],
+      "description": "DKA and metabolic emergency protocol"
+    },
+    "src/protocols/musculoskeletal.rs": {
+      "created": "2026-03-03T19:20:23-0500",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "last_modified": "2026-03-18T23:14:17-0400",
+      "last_modified_commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+      "source_documents": [],
+      "description": "Musculoskeletal emergencies: fractures, compartment syndrome, septic arthritis"
+    },
+    "src/protocols/neuro.rs": {
+      "created": "2026-03-03T00:31:13+0000",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "last_modified": "2026-03-03T19:20:23-0500",
+      "last_modified_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "source_documents": [],
+      "description": "Neurological emergencies: status epilepticus protocol"
+    },
+    "src/protocols/pediatric_cardiology.rs": {
+      "created": "2026-03-06T22:47:39-0500",
+      "created_commit": "0934e83ba43ab4441f788bbd53247a8aee003d2a",
+      "last_modified": "2026-03-06T22:47:39-0500",
+      "last_modified_commit": "0934e83ba43ab4441f788bbd53247a8aee003d2a",
+      "source_documents": [],
+      "description": "Comprehensive pediatric cardiology: hemodynamics, echocardiography, ECG analysis"
+    },
+    "src/protocols/procedures.rs": {
+      "created": "2026-03-03T19:20:23-0500",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "last_modified": "2026-03-03T19:32:00-0500",
+      "last_modified_commit": "e39fa1822777ae1fc2ead18bd5a179cc53bf1d49",
+      "source_documents": [],
+      "description": "Procedural guidance: IO access, chest tube, LP, central line"
+    },
+    "src/protocols/psychiatric.rs": {
+      "created": "2026-03-03T19:20:23-0500",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "last_modified": "2026-03-18T23:14:17-0400",
+      "last_modified_commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+      "source_documents": [],
+      "description": "Psychiatric emergencies: agitation, safety assessment"
+    },
+    "src/protocols/renal.rs": {
+      "created": "2026-03-03T19:20:23-0500",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "last_modified": "2026-03-18T23:14:17-0400",
+      "last_modified_commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+      "source_documents": [],
+      "description": "Renal emergencies: AKI, UTI, nephritis protocol"
+    },
+    "src/protocols/renal_calc.rs": {
+      "created": "2026-03-04T12:19:21-0500",
+      "created_commit": "09b1332b3cfc4309fcb9760ac445c0b9b9430ffb",
+      "last_modified": "2026-03-13T09:55:04+0000",
+      "last_modified_commit": "70c431a162d1009a1a77ec8021157f0f7d41818b",
+      "source_documents": [],
+      "description": "Renal calculations: eGFR, FENa, UPCR, urine output assessment"
+    },
+    "src/protocols/respiratory.rs": {
+      "created": "2026-03-03T00:31:13+0000",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "last_modified": "2026-03-03T19:20:23-0500",
+      "last_modified_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "source_documents": [
+        "module_source/Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx",
+        "module_source/respiratory_scores_ventilation.docx"
+      ],
+      "description": "Respiratory emergency protocol: bronchiolitis, asthma, croup"
+    },
+    "src/protocols/respiratory_scoring.rs": {
+      "created": "2026-03-03T20:27:11-0500",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "last_modified": "2026-03-03T20:27:11-0500",
+      "last_modified_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "source_documents": [
+        "module_source/respiratory_scoring_systems.docx",
+        "module_source/respiratory_scoring_systems_2.docx",
+        "module_source/respiratory_scores_ventilation.docx"
+      ],
+      "description": "Respiratory scoring systems: PEWS, RADS, Westley croup score, RDAI, asthma severity"
+    },
+    "src/protocols/rsi.rs": {
+      "created": "2026-03-03T00:31:13+0000",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "last_modified": "2026-03-03T19:20:23-0500",
+      "last_modified_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "source_documents": [],
+      "description": "Rapid sequence intubation protocol: drug dosing, equipment sizing"
+    },
+    "src/protocols/sepsis.rs": {
+      "created": "2026-03-03T00:31:13+0000",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "last_modified": "2026-03-03T19:20:23-0500",
+      "last_modified_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "source_documents": [
+        "module_source/Pediatric_Emergency_Medicine_Rural_ED_Guide.docx"
+      ],
+      "description": "Sepsis and septic shock protocol: fluid boluses, antibiotics, vasopressors"
+    },
+    "src/protocols/skin_infections.rs": {
+      "created": "2026-03-03T19:20:23-0500",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "last_modified": "2026-03-18T23:14:17-0400",
+      "last_modified_commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+      "source_documents": [],
+      "description": "Skin and soft tissue infections protocol: cellulitis, abscess, necrotizing fasciitis"
+    },
+    "src/protocols/toxicology.rs": {
+      "created": "2026-03-03T00:31:13+0000",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "last_modified": "2026-03-03T19:20:23-0500",
+      "last_modified_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "source_documents": [],
+      "description": "Toxicology and antidotes: weight-based antidote dosing"
+    },
+    "src/protocols/trauma.rs": {
+      "created": "2026-03-03T00:31:13+0000",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "last_modified": "2026-03-03T19:20:23-0500",
+      "last_modified_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "source_documents": [],
+      "description": "Trauma protocol: primary survey, hemorrhage control, TBI management"
+    },
+    "src/respiratory_cds/assessment.rs": {
+      "created": "2026-03-03T20:27:11-0500",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "last_modified": "2026-03-03T20:27:11-0500",
+      "last_modified_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "source_documents": [
+        "module_source/Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx"
+      ],
+      "description": "Respiratory clinical assessment logic"
+    },
+    "src/respiratory_cds/bipap.rs": {
+      "created": "2026-03-03T20:27:11-0500",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "last_modified": "2026-03-03T20:27:11-0500",
+      "last_modified_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "source_documents": [
+        "module_source/Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx"
+      ],
+      "description": "BiPAP settings and management"
+    },
+    "src/respiratory_cds/calculations.rs": {
+      "created": "2026-03-03T20:27:11-0500",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "last_modified": "2026-03-13T09:55:04+0000",
+      "last_modified_commit": "70c431a162d1009a1a77ec8021157f0f7d41818b",
+      "source_documents": [
+        "module_source/Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx"
+      ],
+      "description": "Respiratory calculations: OI, OSI, tidal volumes, lung compliance"
+    },
+    "src/respiratory_cds/cpap.rs": {
+      "created": "2026-03-03T20:27:11-0500",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "last_modified": "2026-03-03T20:27:11-0500",
+      "last_modified_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "source_documents": [
+        "module_source/Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx"
+      ],
+      "description": "CPAP settings and management"
+    },
+    "src/respiratory_cds/equipment.rs": {
+      "created": "2026-03-03T20:27:11-0500",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "last_modified": "2026-03-03T20:27:11-0500",
+      "last_modified_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "source_documents": [],
+      "description": "Respiratory equipment sizing and selection"
+    },
+    "src/respiratory_cds/hfnc.rs": {
+      "created": "2026-03-03T20:27:11-0500",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "last_modified": "2026-03-03T20:27:11-0500",
+      "last_modified_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "source_documents": [
+        "module_source/Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx"
+      ],
+      "description": "High-flow nasal cannula (HFNC) settings and management"
+    },
+    "src/respiratory_cds/medications.rs": {
+      "created": "2026-03-03T20:27:11-0500",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "last_modified": "2026-03-03T20:27:11-0500",
+      "last_modified_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "source_documents": [],
+      "description": "Respiratory medications: bronchodilators, steroids, surfactant"
+    },
+    "src/respiratory_cds/nippv.rs": {
+      "created": "2026-03-03T20:27:11-0500",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "last_modified": "2026-03-03T20:27:11-0500",
+      "last_modified_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "source_documents": [
+        "module_source/Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx"
+      ],
+      "description": "Non-invasive positive pressure ventilation (NIPPV)"
+    },
+    "src/respiratory_cds/ventilator.rs": {
+      "created": "2026-03-03T20:27:11-0500",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "last_modified": "2026-03-03T20:27:11-0500",
+      "last_modified_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "source_documents": [
+        "module_source/Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx",
+        "module_source/respiratory_scores_ventilation.docx"
+      ],
+      "description": "Mechanical ventilation: initial settings, modes, monitoring"
+    },
+    "src/vitals.rs": {
+      "created": "2026-03-03T00:31:13+00:00",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "last_modified": "2026-03-03T00:31:13+00:00",
+      "last_modified_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "source_documents": [],
+      "description": "Vital sign references by age group"
+    },
+    "src/medications.rs": {
+      "created": "2026-03-03T00:31:13+00:00",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "last_modified": "2026-03-03T00:31:13+00:00",
+      "last_modified_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "source_documents": [],
+      "description": "Medication dosing entry point (delegates to Cds_core)"
+    },
+    "src/equipment.rs": {
+      "created": "2026-03-03T00:31:13+00:00",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "last_modified": "2026-03-03T00:31:13+00:00",
+      "last_modified_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "source_documents": [],
+      "description": "Equipment sizing: ETT, blades, catheters by weight/age"
+    },
+    "src/weight.rs": {
+      "created": "2026-03-03T00:31:13+00:00",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "last_modified": "2026-03-03T00:31:13+00:00",
+      "last_modified_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "source_documents": [],
+      "description": "Weight estimation algorithms (Broselow, Age-based)"
+    },
+    "src/assessment.rs": {
+      "created": "2026-03-03T00:31:13+00:00",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "last_modified": "2026-03-03T00:31:13+00:00",
+      "last_modified_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "source_documents": [],
+      "description": "Clinical assessment: GCS, AVPU, Pediatric Assessment Triangle"
+    },
+    "src/checklists.rs": {
+      "created": "2026-03-03T00:31:13+00:00",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "last_modified": "2026-03-03T00:31:13+00:00",
+      "last_modified_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "source_documents": [],
+      "description": "Clinical checklists for common emergency procedures"
+    },
+    "src/algorithms/mod.rs": {
+      "created": "2026-03-03T22:00:36+0000",
+      "created_commit": "f54e5fdcf40f3fe13495caab759d0490d4b4518f",
+      "last_modified": "2026-03-03T19:20:23-0500",
+      "last_modified_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "source_documents": [],
+      "description": "mod module (description not yet set — run register_module.sh to update)"
+    },
+    "src/calculators/mod.rs": {
+      "created": "2026-03-03T22:00:36+0000",
+      "created_commit": "f54e5fdcf40f3fe13495caab759d0490d4b4518f",
+      "last_modified": "2026-03-03T19:20:23-0500",
+      "last_modified_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "source_documents": [],
+      "description": "mod module (description not yet set — run register_module.sh to update)"
+    },
+    "src/components/mod.rs": {
+      "created": "2026-03-03T22:00:36+0000",
+      "created_commit": "f54e5fdcf40f3fe13495caab759d0490d4b4518f",
+      "last_modified": "2026-03-18T22:40:16-0400",
+      "last_modified_commit": "9c51c53393a88e79d013eaca8951368a2aad531f",
+      "source_documents": [],
+      "description": "mod module (description not yet set — run register_module.sh to update)"
+    },
+    "src/content/mod.rs": {
+      "created": "2026-03-03T22:00:36+0000",
+      "created_commit": "f54e5fdcf40f3fe13495caab759d0490d4b4518f",
+      "last_modified": "2026-03-03T19:20:23-0500",
+      "last_modified_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "source_documents": [],
+      "description": "mod module (description not yet set — run register_module.sh to update)"
+    },
+    "src/content/models.rs": {
+      "created": "2026-03-03T22:00:36+0000",
+      "created_commit": "f54e5fdcf40f3fe13495caab759d0490d4b4518f",
+      "last_modified": "2026-03-03T19:20:23-0500",
+      "last_modified_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "source_documents": [],
+      "description": "models module (description not yet set — run register_module.sh to update)"
+    },
+    "src/protocols/mod.rs": {
+      "created": "2026-03-03T00:31:13+0000",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "last_modified": "2026-03-13T03:38:33+0000",
+      "last_modified_commit": "162212a3ed04d86c78356d7a6050386a4ff5a901",
+      "source_documents": [],
+      "description": "mod module (description not yet set — run register_module.sh to update)"
+    },
+    "src/respiratory_cds/mod.rs": {
+      "created": "2026-03-03T20:27:11-0500",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "last_modified": "2026-03-03T20:27:11-0500",
+      "last_modified_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "source_documents": [],
+      "description": "mod module (description not yet set — run register_module.sh to update)"
+    },
+    "src/respiratory_cds/models.rs": {
+      "created": "2026-03-03T20:27:11-0500",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "last_modified": "2026-03-03T20:27:11-0500",
+      "last_modified_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "source_documents": [],
+      "description": "models module (description not yet set — run register_module.sh to update)"
+    },
+    "src/respiratory_cds/monitoring.rs": {
+      "created": "2026-03-03T20:27:11-0500",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "last_modified": "2026-03-03T20:27:11-0500",
+      "last_modified_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "source_documents": [],
+      "description": "monitoring module (description not yet set — run register_module.sh to update)"
+    },
+    "src/respiratory_cds/vitals.rs": {
+      "created": "2026-03-03T20:27:11-0500",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "last_modified": "2026-03-03T20:27:11-0500",
+      "last_modified_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "source_documents": [],
+      "description": "vitals module (description not yet set — run register_module.sh to update)"
+    },
+    "src/search/mod.rs": {
+      "created": "2026-03-03T22:00:36+0000",
+      "created_commit": "f54e5fdcf40f3fe13495caab759d0490d4b4518f",
+      "last_modified": "2026-03-03T19:20:23-0500",
+      "last_modified_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "source_documents": [],
+      "description": "mod module (description not yet set — run register_module.sh to update)"
+    },
+    "src/utils/mod.rs": {
+      "created": "2026-03-03T22:00:36+0000",
+      "created_commit": "f54e5fdcf40f3fe13495caab759d0490d4b4518f",
+      "last_modified": "2026-03-06T22:47:39-0500",
+      "last_modified_commit": "0934e83ba43ab4441f788bbd53247a8aee003d2a",
+      "source_documents": [],
+      "description": "mod module (description not yet set — run register_module.sh to update)"
+    },
+    "src/components/medication_list.rs": {
+      "created": "2026-03-11T09:56:06-0400",
+      "created_commit": "892f92573d7e36cb9d2e56e59e58441e3cc6047a",
+      "last_modified": "2026-03-13T10:32:15+0000",
+      "last_modified_commit": "1807fdf254de1ba75ea96a601c8061786500ca5e",
+      "source_documents": [],
+      "description": "medication_list module (description not yet set — run register_module.sh to update)"
+    },
+    "src/protocols/neonatal_ivf.rs": {
+      "created": "2026-03-11T09:56:06-0400",
+      "created_commit": "892f92573d7e36cb9d2e56e59e58441e3cc6047a",
+      "last_modified": "2026-03-11T09:56:06-0400",
+      "last_modified_commit": "892f92573d7e36cb9d2e56e59e58441e3cc6047a",
+      "source_documents": [],
+      "description": "neonatal_ivf module (description not yet set — run register_module.sh to update)"
+    },
+    "src/components/about.rs": {
+      "created": "2026-03-07T23:16:21+0000",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "last_modified": "2026-03-07T23:16:21+0000",
+      "last_modified_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "source_documents": [],
+      "description": "about module (description not yet set — run register_module.sh to update)"
+    },
+    "src/components/assessment.rs": {
+      "created": "2026-03-07T23:16:21+0000",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "last_modified": "2026-03-18T22:40:16-0400",
+      "last_modified_commit": "9c51c53393a88e79d013eaca8951368a2aad531f",
+      "source_documents": [],
+      "description": "assessment module (description not yet set — run register_module.sh to update)"
+    },
+    "src/components/calculators.rs": {
+      "created": "2026-03-07T23:16:21+0000",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "last_modified": "2026-03-18T23:14:17-0400",
+      "last_modified_commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+      "source_documents": [],
+      "description": "calculators module (description not yet set — run register_module.sh to update)"
+    },
+    "src/components/checklists.rs": {
+      "created": "2026-03-07T23:16:21+0000",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "last_modified": "2026-03-18T22:40:16-0400",
+      "last_modified_commit": "9c51c53393a88e79d013eaca8951368a2aad531f",
+      "source_documents": [],
+      "description": "checklists module (description not yet set — run register_module.sh to update)"
+    },
+    "src/components/contacts.rs": {
+      "created": "2026-03-07T23:16:21+0000",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "last_modified": "2026-03-07T23:16:21+0000",
+      "last_modified_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "source_documents": [],
+      "description": "contacts module (description not yet set — run register_module.sh to update)"
+    },
+    "src/components/equipment.rs": {
+      "created": "2026-03-07T23:16:21+0000",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "last_modified": "2026-03-18T22:40:16-0400",
+      "last_modified_commit": "9c51c53393a88e79d013eaca8951368a2aad531f",
+      "source_documents": [],
+      "description": "equipment module (description not yet set — run register_module.sh to update)"
+    },
+    "src/components/medications.rs": {
+      "created": "2026-03-07T23:16:21+0000",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "last_modified": "2026-03-18T22:40:16-0400",
+      "last_modified_commit": "9c51c53393a88e79d013eaca8951368a2aad531f",
+      "source_documents": [],
+      "description": "medications module (description not yet set — run register_module.sh to update)"
+    },
+    "src/components/patient_setup.rs": {
+      "created": "2026-03-07T23:16:21+0000",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "last_modified": "2026-03-18T22:40:16-0400",
+      "last_modified_commit": "9c51c53393a88e79d013eaca8951368a2aad531f",
+      "source_documents": [],
+      "description": "patient_setup module (description not yet set — run register_module.sh to update)"
+    },
+    "src/components/protocols.rs": {
+      "created": "2026-03-07T23:16:21+0000",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "last_modified": "2026-03-18T22:40:16-0400",
+      "last_modified_commit": "9c51c53393a88e79d013eaca8951368a2aad531f",
+      "source_documents": [],
+      "description": "protocols module (description not yet set — run register_module.sh to update)"
+    },
+    "src/components/reference.rs": {
+      "created": "2026-03-07T23:16:21+0000",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "last_modified": "2026-03-07T23:16:21+0000",
+      "last_modified_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "source_documents": [],
+      "description": "reference module (description not yet set — run register_module.sh to update)"
+    },
+    "src/components/scoring.rs": {
+      "created": "2026-03-07T23:16:21+0000",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "last_modified": "2026-03-18T22:40:16-0400",
+      "last_modified_commit": "9c51c53393a88e79d013eaca8951368a2aad531f",
+      "source_documents": [],
+      "description": "scoring module (description not yet set — run register_module.sh to update)"
+    },
+    "src/components/textbook.rs": {
+      "created": "2026-03-07T23:16:21+0000",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "last_modified": "2026-03-07T23:16:21+0000",
+      "last_modified_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "source_documents": [],
+      "description": "textbook module (description not yet set — run register_module.sh to update)"
+    },
+    "src/protocols/neonatal.rs": {
+      "created": "2026-03-03T19:20:23-0500",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "last_modified": "2026-03-13T03:38:33+0000",
+      "last_modified_commit": "162212a3ed04d86c78356d7a6050386a4ff5a901",
+      "source_documents": [],
+      "description": "neonatal module (description not yet set — run register_module.sh to update)"
+    },
+    "src/scoring/bedside.rs": {
+      "created": "2026-03-12T14:49:22+0000",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "last_modified": "2026-03-12T14:49:22+0000",
+      "last_modified_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "source_documents": [],
+      "description": "bedside module (description not yet set — run register_module.sh to update)"
+    },
+    "src/scoring/fluid_balance.rs": {
+      "created": "2026-03-13T09:55:04+0000",
+      "created_commit": "70c431a162d1009a1a77ec8021157f0f7d41818b",
+      "last_modified": "2026-03-18T23:26:02-0400",
+      "last_modified_commit": "9a67db941d6f28286c65f09637d8c09c3f7c4bb4",
+      "source_documents": [],
+      "description": "fluid_balance module (description not yet set — run register_module.sh to update)"
+    },
+    "src/scoring/ivf_calc.rs": {
+      "created": "2026-03-13T09:55:04+0000",
+      "created_commit": "70c431a162d1009a1a77ec8021157f0f7d41818b",
+      "last_modified": "2026-03-13T09:55:04+0000",
+      "last_modified_commit": "70c431a162d1009a1a77ec8021157f0f7d41818b",
+      "source_documents": [],
+      "description": "ivf_calc module (description not yet set — run register_module.sh to update)"
+    },
+    "src/scoring/mod.rs": {
+      "created": "2026-03-12T14:49:22+0000",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "last_modified": "2026-03-13T09:55:04+0000",
+      "last_modified_commit": "70c431a162d1009a1a77ec8021157f0f7d41818b",
+      "source_documents": [],
+      "description": "mod module (description not yet set — run register_module.sh to update)"
+    },
+    "src/scoring/neonatal.rs": {
+      "created": "2026-03-12T14:49:22+0000",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "last_modified": "2026-03-18T23:14:17-0400",
+      "last_modified_commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+      "source_documents": [],
+      "description": "neonatal module (description not yet set — run register_module.sh to update)"
+    },
+    "src/scoring/neonatal_fluids.rs": {
+      "created": "2026-03-12T16:13:26+0000",
+      "created_commit": "6001624a194e4f037848634d505e5bb39521d598",
+      "last_modified": "2026-03-18T23:14:17-0400",
+      "last_modified_commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+      "source_documents": [],
+      "description": "neonatal_fluids module (description not yet set — run register_module.sh to update)"
+    },
+    "src/scoring/nutritional_safety.rs": {
+      "created": "2026-03-12T14:49:22+0000",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "last_modified": "2026-03-12T14:49:22+0000",
+      "last_modified_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "source_documents": [],
+      "description": "nutritional_safety module (description not yet set — run register_module.sh to update)"
+    },
+    "src/scoring/pain_sedation.rs": {
+      "created": "2026-03-12T14:49:22+0000",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "last_modified": "2026-03-12T14:49:22+0000",
+      "last_modified_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "source_documents": [],
+      "description": "pain_sedation module (description not yet set — run register_module.sh to update)"
+    },
+    "src/scoring/pews.rs": {
+      "created": "2026-03-12T14:49:22+0000",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "last_modified": "2026-03-12T14:49:22+0000",
+      "last_modified_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "source_documents": [],
+      "description": "pews module (description not yet set — run register_module.sh to update)"
+    },
+    "src/scoring/renal_scores.rs": {
+      "created": "2026-03-12T14:49:22+0000",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "last_modified": "2026-03-12T14:49:22+0000",
+      "last_modified_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "source_documents": [],
+      "description": "renal_scores module (description not yet set — run register_module.sh to update)"
+    },
+    "src/scoring/respiratory_cardiac.rs": {
+      "created": "2026-03-12T14:49:22+0000",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "last_modified": "2026-03-12T14:49:22+0000",
+      "last_modified_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "source_documents": [],
+      "description": "respiratory_cardiac module (description not yet set — run register_module.sh to update)"
+    },
+    "src/scoring/sepsis_scores.rs": {
+      "created": "2026-03-12T14:49:22+0000",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "last_modified": "2026-03-18T23:14:17-0400",
+      "last_modified_commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+      "source_documents": [],
+      "description": "sepsis_scores module (description not yet set — run register_module.sh to update)"
+    },
+    "src/scoring/trauma.rs": {
+      "created": "2026-03-12T14:49:22+0000",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "last_modified": "2026-03-12T14:49:22+0000",
+      "last_modified_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "source_documents": [],
+      "description": "trauma module (description not yet set — run register_module.sh to update)"
+    }
+  },
+  "source_document_index": {
+    "module_source/Pediatric_Emergency_Medicine_Rural_ED_Guide.docx": {
+      "original_filename": "Pediatric_Emergency_Medicine_Rural_ED_Guide.docx",
+      "date_added": "2026-03-06T23:04:53-05:00",
+      "modules_produced": [
+        "src/protocols/sepsis.rs"
+      ]
+    },
+    "module_source/Pediatric_Emergency_Medicine_Rural_ED_Guide_Volume_II.docx": {
+      "original_filename": "Pediatric_Emergency_Medicine_Rural_ED_Guide_Volume_II.docx",
+      "date_added": "2026-03-06T23:04:53-05:00",
+      "modules_produced": [
+        "src/protocols/environmental.rs"
+      ]
+    },
+    "module_source/Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx": {
+      "original_filename": "Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx",
+      "date_added": "2026-03-06T23:04:53-05:00",
+      "modules_produced": [
+        "src/protocols/respiratory.rs",
+        "src/respiratory_cds/assessment.rs",
+        "src/respiratory_cds/bipap.rs",
+        "src/respiratory_cds/calculations.rs",
+        "src/respiratory_cds/cpap.rs",
+        "src/respiratory_cds/hfnc.rs",
+        "src/respiratory_cds/nippv.rs",
+        "src/respiratory_cds/ventilator.rs"
+      ]
+    },
+    "module_source/respiratory_scoring_systems.docx": {
+      "original_filename": "respiratory_scoring_systems.docx",
+      "date_added": "2026-03-06T23:04:53-05:00",
+      "modules_produced": [
+        "src/protocols/respiratory_scoring.rs"
+      ]
+    },
+    "module_source/respiratory_scoring_systems_2.docx": {
+      "original_filename": "respiratory_scoring_systems_2.docx",
+      "date_added": "2026-03-06T23:04:53-05:00",
+      "modules_produced": [
+        "src/protocols/respiratory_scoring.rs"
+      ]
+    },
+    "module_source/respiratory_scores_ventilation.docx": {
+      "original_filename": "respiratory_scores_ventilation.docx",
+      "date_added": "2026-03-06T23:04:53-05:00",
+      "modules_produced": [
+        "src/protocols/respiratory.rs",
+        "src/protocols/respiratory_scoring.rs",
+        "src/respiratory_cds/ventilator.rs"
+      ]
+    }
+  }
+}

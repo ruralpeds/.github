@@ -1,0 +1,19 @@
+{
+  "contacts": [
+    { "resource": "Regional Children's Hospital Transfer Center", "number": "", "notes": "Primary transfer destination" },
+    { "resource": "Pediatric Critical Care Telemedicine", "number": "", "notes": "For real-time consultation" },
+    { "resource": "Poison Control Center", "number": "1-800-222-1222", "notes": "24/7 national hotline" },
+    { "resource": "Burn Center", "number": "", "notes": "Regional burn center" },
+    { "resource": "Child Protective Services", "number": "", "notes": "State/county CPS hotline" },
+    { "resource": "Air Medical Transport", "number": "", "notes": "Helicopter/fixed-wing service" },
+    { "resource": "Ground Critical Care Transport", "number": "", "notes": "Pediatric transport team" },
+    { "resource": "Blood Bank", "number": "", "notes": "Emergency release protocol" },
+    { "resource": "Pharmacy (after-hours)", "number": "", "notes": "" },
+    { "resource": "Respiratory Therapy", "number": "", "notes": "" },
+    { "resource": "Laboratory (STAT)", "number": "", "notes": "" },
+    { "resource": "Radiology (STAT/CT)", "number": "", "notes": "" },
+    { "resource": "On-Call Pediatrician", "number": "", "notes": "" },
+    { "resource": "On-Call Surgeon", "number": "", "notes": "" },
+    { "resource": "Social Work / Chaplain", "number": "", "notes": "" }
+  ]
+}
