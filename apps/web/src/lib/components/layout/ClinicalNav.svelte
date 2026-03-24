@@ -96,6 +96,8 @@
 			href: '/reference',
 			modes: ['neonatal', 'pediatric'],
 			children: [
+				{ label: 'Decision Trees', href: '/reference/decision-trees' },
+				{ label: 'Education Guides', href: '/reference/education' },
 				{ label: 'Drug Formulary', href: '/reference/formulary' },
 				{ label: 'Normal Values', href: '/reference/normals' },
 				{ label: 'Equipment Sizing', href: '/reference/equipment' },
