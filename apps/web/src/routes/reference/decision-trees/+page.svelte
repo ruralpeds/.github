@@ -27,6 +27,7 @@
 		{ name: 'Urological', file: 'neonatal_urological_decision_tree.html', icon: '🏥', mode: 'neonatal', category: 'Urology' },
 		{ name: 'Pain & Sedation', file: 'neonatal_pain_sedation_decision_tree.html', icon: '💉', mode: 'neonatal', category: 'Pain' },
 		{ name: 'Transport', file: 'neonatal_transport_decision_tree.html', icon: '🚑', mode: 'neonatal', category: 'Transport' },
+		{ name: 'NOWS / NAS', file: 'neonatal_nows_nas_decision_tree.html', icon: '💊', mode: 'neonatal', category: 'Substance Exposure' },
 		{ name: 'Newborn Discharge Readiness', file: 'newborn_discharge_readiness_decision_tree.html', icon: '🏠', mode: 'neonatal', category: 'Discharge' },
 		{ name: 'Newborn Screening Follow-up', file: 'newborn_screening_followup_decision_tree.html', icon: '🔍', mode: 'neonatal', category: 'Screening' },
 		{ name: 'Obstetric Emergencies', file: 'obstetric_emergencies_decision_tree.html', icon: '🤰', mode: 'neonatal', category: 'Obstetric' },
