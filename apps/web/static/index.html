@@ -180,16 +180,16 @@ footer a{color:var(--accent,#1D4ED8)}
     <div class="field" id="field-ga" style="display:none">
       <span class="field-label">GA (weeks)</span>
       <div class="field-row">
-        <input type="number" id="inp-ga-weeks" step="1" min="22" max="44" value="39" style="width:50px">
+        <input type="number" id="inp-ga-weeks" step="1" min="22" max="44" placeholder="39" style="width:50px">
         <span class="unit">+</span>
-        <input type="number" id="inp-ga-days" step="1" min="0" max="6" value="0" style="width:38px">
+        <input type="number" id="inp-ga-days" step="1" min="0" max="6" placeholder="0" style="width:38px">
         <span class="unit">d</span>
       </div>
     </div>
     <div class="field" id="field-dol" style="display:none">
       <span class="field-label">Day of Life</span>
       <div class="field-row">
-        <input type="number" id="inp-dol" step="1" min="0" max="28" value="0" style="width:50px">
+        <input type="number" id="inp-dol" step="1" min="0" max="28" placeholder="0" style="width:50px">
       </div>
     </div>
     <div class="field">
@@ -378,8 +378,8 @@ function selectMode(m) {
   document.getElementById('field-dol').style.display = isNeo ? '' : 'none';
 
   var w = document.getElementById('inp-weight');
-  if (isNeo) { w.value = 3.5; w.min = 0.3; w.max = 6; w.step = 0.05; }
-  else { w.value = 12; w.min = 3; w.max = 150; w.step = 0.1; document.getElementById('inp-age').value = 24; }
+  if (isNeo) { w.value = ''; w.min = 0.3; w.max = 6; w.step = 0.05; w.placeholder = 'kg'; }
+  else { w.value = ''; w.min = 3; w.max = 150; w.step = 0.1; w.placeholder = 'kg'; document.getElementById('inp-age').value = ''; document.getElementById('inp-age').placeholder = 'months'; }
 
   buildTabs();
   buildTreeGrids();
@@ -400,18 +400,19 @@ function switchMode() {
 // ═══════════════════════════════════════════════════
 
 function loadPatient() {
-  var w = parseFloat(document.getElementById('inp-weight').value) || 0;
-  if (w <= 0) return;
+  var wEl = document.getElementById('inp-weight');
+  var w = parseFloat(wEl.value) || 0;
+  if (w <= 0) { wEl.style.borderColor = 'var(--red, #DC2626)'; wEl.focus(); setTimeout(function(){ wEl.style.borderColor = ''; }, 2000); return; }
 
   patient = { weight: w, sex: document.getElementById('inp-sex').value };
 
   if (mode === 'neonatal') {
-    patient.gaWeeks = parseInt(document.getElementById('inp-ga-weeks').value) || 39;
+    patient.gaWeeks = parseInt(document.getElementById('inp-ga-weeks').value) || 0;
     patient.gaDays = parseInt(document.getElementById('inp-ga-days').value) || 0;
     patient.dol = parseInt(document.getElementById('inp-dol').value) || 0;
     patient.ageMonths = 0;
   } else {
-    patient.ageMonths = parseInt(document.getElementById('inp-age').value) || 12;
+    patient.ageMonths = parseInt(document.getElementById('inp-age').value) || 0;
     patient.broselow = BROSELOW.find(function(b) { return w >= b.min && w < b.max; }) || BROSELOW[BROSELOW.length-1];
   }
 
