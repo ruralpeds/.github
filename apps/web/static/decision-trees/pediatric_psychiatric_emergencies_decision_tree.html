@@ -123,4 +123,5 @@ function showP(data){const ov=document.getElementById("po"),c=CM[data.type]||CM.
 function swT(i){document.querySelectorAll('.tb').forEach((b,j)=>b.classList.toggle('active',j===i));document.querySelectorAll('.tc').forEach((c,j)=>c.classList.toggle('active',j===i));}function closeP(e){if(!e||e.target===document.getElementById("po"))document.getElementById("po").classList.remove("active");}document.addEventListener("keydown",e=>{if(e.key==="Escape")closeP();});
 function resetZ(){svg.transition().duration(500).call(zm.transform,iT);}function expAll(){root.descendants().forEach(d=>{if(d._children){d.children=d._children;d._children=null;}});upd(root);}function colAll(){root.descendants().forEach(d=>{if(d.depth>0&&d.children){d._children=d.children;d.children=null;}});upd(root);}addEventListener("resize",()=>{svg.attr("width",innerWidth).attr("height",innerHeight);});
 </script><script src="../theme-bridge.js"></script>
+<script src="../shell.js"></script>
 </body></html>

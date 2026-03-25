@@ -6,88 +6,67 @@
 <title>Education Guides — PED CDS</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root { --bg: #FAFAF9; --text: #1C1917; --text2: #44403C; --text3: #78716C; --surface: #FFFFFF; --border: #D6D3D1; --accent: #1D4ED8; --shadow: rgba(28,25,23,0.08); }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'IBM Plex Sans', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem 1.5rem; max-width: 800px; margin: 0 auto; }
-  h1 { font-family: 'DM Serif Display', serif; font-size: 1.75rem; color: var(--text); margin-bottom: 0.5rem; }
-  .sub { font-size: 0.9375rem; color: var(--text3); margin-bottom: 2rem; }
-  .tabs { display: flex; gap: 4px; margin-bottom: 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 4px; width: fit-content; }
-  .tab { padding: 8px 16px; border: none; border-radius: 8px; background: transparent; color: var(--text3); font-family: 'IBM Plex Sans', sans-serif; font-size: 0.8125rem; font-weight: 600; cursor: pointer; }
-  .tab.active { background: var(--accent); color: white; }
-  .section { display: none; }
-  .section.active { display: block; }
-  h2 { font-size: 1.1rem; font-weight: 600; color: var(--text2); margin-bottom: 1rem; }
-  .list { display: flex; flex-direction: column; gap: 0.35rem; }
-  a.item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--text); transition: all 0.15s; }
-  a.item:hover { border-color: var(--accent); box-shadow: 0 2px 6px var(--shadow); }
-  .item-icon { font-size: 1.25rem; }
-  .item-name { font-weight: 500; font-size: 0.875rem; }
-  .item-size { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--text3); margin-left: auto; }
-  .back { display: inline-block; margin-bottom: 1rem; font-size: 0.8125rem; color: var(--accent); text-decoration: none; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg,#FAFAF9);color:var(--text,#1C1917);min-height:100vh}
+.page{max-width:900px;margin:0 auto;padding:24px 20px 60px}
+h1{font-family:'DM Serif Display',serif;font-size:1.75rem;margin-bottom:.4rem}
+.desc{font-size:.9375rem;color:var(--text3,#78716C);margin-bottom:1.5rem;line-height:1.5}
+.tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--surface,#FFF);border:1px solid var(--border,#D6D3D1);border-radius:10px;padding:4px;width:fit-content}
+.tab{padding:8px 16px;border:none;border-radius:8px;background:transparent;color:var(--text3,#78716C);font-family:'IBM Plex Sans',sans-serif;font-size:.8125rem;font-weight:600;cursor:pointer;transition:all .15s}
+.tab.active{background:var(--accent,#1D4ED8);color:#FFF}
+.tab:hover:not(.active){color:var(--text,#1C1917)}
+.section{display:none}.section.active{display:block}
+.section-desc{font-size:.8125rem;color:var(--text3,#78716C);font-style:italic;margin-bottom:14px}
+.topic-grid{display:flex;flex-direction:column;gap:6px}
+.topic-card{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface,#FFF);border:1px solid var(--border,#D6D3D1);border-radius:10px;transition:all .12s}
+.topic-card:hover{border-color:var(--accent,#1D4ED8);box-shadow:0 2px 6px var(--shadow,rgba(28,25,23,.06))}
+.tc-icon{font-size:1.5rem;flex-shrink:0}
+.tc-content{flex:1;min-width:0}
+.tc-name{font-size:.9375rem;font-weight:600;color:var(--text,#1C1917)}
+.tc-actions{display:flex;gap:6px;margin-top:6px}
+.act-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:5px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;font-weight:600;text-decoration:none;transition:all .12s;cursor:pointer;border:1px solid}
+.act-read{background:var(--bbg,#EFF6FF);color:var(--blue,#2563EB);border-color:rgba(37,99,235,.2)}
+.act-read:hover{border-color:var(--blue,#2563EB)}
+.act-dl{background:var(--surface,#FFF);color:var(--text3,#78716C);border-color:var(--border,#D6D3D1)}
+.act-dl:hover{color:var(--accent,#1D4ED8);border-color:var(--accent,#1D4ED8)}
+.back{display:inline-block;margin-bottom:14px;font-size:.8125rem;color:var(--accent,#1D4ED8);text-decoration:none}
 </style>
 </head>
 <body>
-<a href="../" class="back">← Back to PED CDS</a>
+<div class="page">
+<a href="../" class="back">← PED CDS</a>
 <h1>Neonatal Education Guides</h1>
-<p class="sub">14 topics × 3 formats. Click to download DOCX files.</p>
-
-<div class="tabs">
-  <button class="tab active" onclick="showTab('cs')">📋 Cheat Sheets</button>
-  <button class="tab" onclick="showTab('tb')">📖 Textbooks</button>
-  <button class="tab" onclick="showTab('au')">🎧 Audio</button>
+<p class="desc">14 topics, each with three formats. Read online or download DOCX for offline use, printing, or audio narration.</p>
+<div class="tabs" id="tab-bar"></div>
+<div id="sec-cs" class="section"><p class="section-desc">📋 2–4 page laminated quick-reference cards for bedside use</p><div class="topic-grid" id="grid-cs"></div></div>
+<div id="sec-tb" class="section"><p class="section-desc">📖 Comprehensive referenced education guides (15,000–40,000+ words)</p><div class="topic-grid" id="grid-tb"></div></div>
+<div id="sec-au" class="section"><p class="section-desc">🎧 Narration-optimized versions for Speechify or TTS conversion</p><div class="topic-grid" id="grid-au"></div></div>
 </div>
-
-<div id="cs" class="section active">
-<h2>Cheat Sheets — 2-4 page laminated quick-reference</h2>
-<div class="list" id="cs-list"></div>
-</div>
-
-<div id="tb" class="section">
-<h2>Textbooks — 15,000-40,000+ word referenced guides</h2>
-<div class="list" id="tb-list"></div>
-</div>
-
-<div id="au" class="section">
-<h2>Audio Textbooks — Speechify/TTS-optimized narration</h2>
-<div class="list" id="au-list"></div>
-</div>
-
 <script>
-var topics = [
-  {name:"Pulmonary Disorders",icon:"🫁",cs:"neonatal_pulmonary_disorders_cheat_sheet.docx",tb:"neonatal_pulmonary_disorders_textbook.docx",au:"neonatal_pulmonary_disorders_audio_textbook.docx"},
-  {name:"Infectious Diseases",icon:"🦠",cs:"neonatal_infectious_diseases_cheat_sheet.docx",tb:"neonatal_infectious_diseases_textbook.docx",au:"neonatal_infectious_diseases_audio_textbook.docx"},
-  {name:"Hematology",icon:"🩸",cs:"neonatal_hematology_cheat_sheet.docx",tb:"neonatal_hematology_textbook.docx",au:"neonatal_hematology_audio_textbook.docx"},
-  {name:"Neurology",icon:"🧠",cs:"neonatal_neurology_cheat_sheet.docx",tb:"neonatal_neurology_textbook.docx",au:"neonatal_neurology_audio_textbook.docx"},
-  {name:"Fluids, Electrolytes & Nutrition",icon:"💧",cs:"neonatal_fen_cheat_sheet.docx",tb:"neonatal_fen_textbook.docx",au:"neonatal_fen_audio_textbook.docx"},
-  {name:"GI & Liver",icon:"🔬",cs:"neonatal_gi_liver_cheat_sheet.docx",tb:"neonatal_gi_liver_textbook.docx",au:"neonatal_gi_liver_audio_textbook.docx"},
-  {name:"Endocrine Abnormalities",icon:"⚗️",cs:"neonatal_endocrine_abnormalities_cheat_sheet.docx",tb:"neonatal_endocrine_abnormalities_textbook.docx",au:"neonatal_endocrine_abnormalities_audio_textbook.docx"},
-  {name:"Renal",icon:"🫘",cs:"neonatal_renal_cheat_sheet.docx",tb:"neonatal_renal_textbook.docx",au:"neonatal_renal_audio_textbook.docx"},
-  {name:"Surgical Emergencies",icon:"🔪",cs:"neonatal_surgical_emergencies_cheat_sheet.docx",tb:"neonatal_surgical_emergencies_textbook.docx",au:"neonatal_surgical_emergencies_audio_textbook.docx"},
-  {name:"Skin & Dermatology",icon:"🩹",cs:"neonatal_skin_cheat_sheet.docx",tb:"neonatal_skin_textbook.docx",au:"neonatal_skin_audio_textbook.docx"},
-  {name:"Urology",icon:"🏥",cs:"neonatal_urology_cheat_sheet.docx",tb:"neonatal_urology_textbook.docx",au:"neonatal_urology_audio_textbook.docx"},
-  {name:"Critical Care Stabilization",icon:"🚨",cs:"critical_care_stabilization_cheat_sheet.docx",tb:"critical_care_stabilization_textbook.docx",au:"critical_care_stabilization_audio_textbook.docx"},
-  {name:"Maternal Infections",icon:"🤰",cs:"maternal_infections_cheat_sheet.docx",tb:"maternal_infections_textbook.docx",au:"maternal_infections_audio_textbook.docx"},
-  {name:"Neonatal Ventilation",icon:"💨",cs:"neonatal_ventilation_decision_tree_cheat_sheet.docx",tb:"neonatal_ventilation_decision_tree_textbook.docx",au:"neonatal_ventilation_decision_tree_audio_textbook.docx"},
+var topics=[
+  {n:"Pulmonary Disorders",i:"🫁",k:"neonatal_pulmonary_disorders"},
+  {n:"Infectious Diseases",i:"🦠",k:"neonatal_infectious_diseases"},
+  {n:"Hematology",i:"🩸",k:"neonatal_hematology"},
+  {n:"Neurology",i:"🧠",k:"neonatal_neurology"},
+  {n:"Fluids, Electrolytes & Nutrition",i:"💧",k:"neonatal_fen"},
+  {n:"GI & Liver",i:"🔬",k:"neonatal_gi_liver"},
+  {n:"Endocrine Abnormalities",i:"⚗️",k:"neonatal_endocrine_abnormalities"},
+  {n:"Renal",i:"🫘",k:"neonatal_renal"},
+  {n:"Surgical Emergencies",i:"🔪",k:"neonatal_surgical_emergencies"},
+  {n:"Skin & Dermatology",i:"🩹",k:"neonatal_skin"},
+  {n:"Urology",i:"🏥",k:"neonatal_urology"},
+  {n:"Critical Care Stabilization",i:"🚨",k:"critical_care_stabilization"},
+  {n:"Maternal Infections",i:"🤰",k:"maternal_infections"},
+  {n:"Neonatal Ventilation",i:"💨",k:"neonatal_ventilation_decision_tree"},
 ];
-
-function render(listId, pathPrefix, field) {
-  var el = document.getElementById(listId);
-  el.innerHTML = topics.map(function(t) {
-    return '<a class="item" href="'+pathPrefix+t[field]+'" download><span class="item-icon">'+t.icon+'</span><span class="item-name">'+t.name+'</span><span class="item-size">DOCX ↓</span></a>';
-  }).join('');
-}
-
-render('cs-list', './cheat-sheets/', 'cs');
-render('tb-list', './textbooks/', 'tb');
-render('au-list', './audio-textbooks/', 'au');
-
-function showTab(id) {
-  document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
-  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
-  document.getElementById(id).classList.add('active');
-  event.target.classList.add('active');
-}
+var FMTS={cs:{label:'📋 Cheat Sheets',dir:'cheat-sheets',suffix:'_cheat_sheet.docx'},tb:{label:'📖 Textbooks',dir:'textbooks',suffix:'_textbook.docx'},au:{label:'🎧 Audio Textbooks',dir:'audio-textbooks',suffix:'_audio_textbook.docx'}};
+var activeTab='cs';
+function buildTabs(){var bar=document.getElementById('tab-bar');bar.innerHTML='';['cs','tb','au'].forEach(function(f){var btn=document.createElement('button');btn.className='tab'+(f===activeTab?' active':'');btn.textContent=FMTS[f].label;btn.onclick=function(){activeTab=f;buildTabs();showSection();};bar.appendChild(btn);});}
+function showSection(){['cs','tb','au'].forEach(function(f){document.getElementById('sec-'+f).className='section'+(f===activeTab?' active':'');});}
+function buildGrid(gridId,fmtKey){var f=FMTS[fmtKey];document.getElementById(gridId).innerHTML=topics.map(function(t){var docxFile='./'+f.dir+'/'+t.k+f.suffix;var viewUrl='./viewer.html?file='+encodeURIComponent(docxFile)+'&format='+fmtKey;return '<div class="topic-card"><span class="tc-icon">'+t.i+'</span><div class="tc-content"><div class="tc-name">'+t.n+'</div><div class="tc-actions"><a class="act-btn act-read" href="'+viewUrl+'">📄 Read Online</a><a class="act-btn act-dl" href="'+docxFile+'" download>⬇ DOCX</a></div></div></div>';}).join('');}
+buildTabs();buildGrid('grid-cs','cs');buildGrid('grid-tb','tb');buildGrid('grid-au','au');showSection();
 </script>
 <script src="../theme-bridge.js"></script>
+<script src="../shell.js"></script>
 </body>
 </html>

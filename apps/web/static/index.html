@@ -416,6 +416,8 @@ function loadPatient() {
     patient.broselow = BROSELOW.find(function(b) { return w >= b.min && w < b.max; }) || BROSELOW[BROSELOW.length-1];
   }
 
+  try { localStorage.setItem('ped-cds-patient', JSON.stringify(patient)); } catch(e) {}
+
   showSummary();
 }
 
@@ -463,6 +465,7 @@ function editPatient() {
 
 function clearPatient() {
   patient = null;
+  try { localStorage.removeItem('ped-cds-patient'); } catch(e) {}
   document.getElementById('summary-bar').style.display = 'none';
   document.getElementById('patient-banner').style.display = 'block';
 }
@@ -534,8 +537,9 @@ function buildEduContent() {
   var p = prefixes[eduMode], s = suffixes[eduMode];
 
   document.getElementById('edu-content').innerHTML = '<div class="edu-list">' + eduTopics.map(function(t) {
-    var file = t.cs + s;
-    return '<a class="edu-item" href="' + p + file + '" download><span class="edu-icon">' + t.i + '</span><span class="edu-name">' + t.n + '</span><span class="edu-dl">DOCX ↓</span></a>';
+    var docxFile = p + t.cs + s;
+    var viewUrl = './education/viewer.html?file=' + encodeURIComponent('./' + {cs:'cheat-sheets',tb:'textbooks',au:'audio-textbooks'}[eduMode] + '/' + t.cs + s) + '&format=' + eduMode;
+    return '<a class="edu-item" href="' + viewUrl + '"><span class="edu-icon">' + t.i + '</span><span class="edu-name">' + t.n + '</span><span class="edu-dl" style="margin-left:auto">📄 Read</span></a>';
   }).join('') + '</div>';
 }
 

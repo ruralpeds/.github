@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loading... — PED CDS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg,#FAFAF9);color:var(--text,#1C1917);min-height:100vh}
+
+/* Toolbar */
+.toolbar{position:sticky;top:0;z-index:200;display:flex;align-items:center;gap:12px;padding:10px 20px;background:var(--surface,#FFF);border-bottom:1px solid var(--border,#D6D3D1);box-shadow:0 1px 3px var(--shadow,rgba(28,25,23,.06))}
+.toolbar-left{display:flex;align-items:center;gap:10px}
+.tb-home{text-decoration:none;font-size:13px;font-weight:600;color:var(--accent,#1D4ED8)}
+.tb-sep{color:var(--border,#D6D3D1)}
+.tb-title{font-family:'DM Serif Display',serif;font-size:15px;color:var(--text,#1C1917);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:500px}
+.tb-format{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:3px 8px;border-radius:12px;text-transform:uppercase}
+.tb-format.cs{background:var(--gbg,#F0FDF4);color:var(--green,#16A34A);border:1px solid var(--green,#16A34A)}
+.tb-format.tb{background:var(--bbg,#EFF6FF);color:var(--blue,#2563EB);border:1px solid var(--blue,#2563EB)}
+.tb-format.au{background:var(--pbg,#F5F3FF);color:var(--purple,#7C3AED);border:1px solid var(--purple,#7C3AED)}
+.toolbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.btn{padding:6px 14px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;border-radius:6px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px;transition:all .15s}
+.btn-dl{background:var(--accent,#1D4ED8);color:#FFF;border:none}
+.btn-dl:hover{filter:brightness(.9)}
+.btn-sec{background:var(--surface,#FFF);color:var(--text2,#44403C);border:1px solid var(--border,#D6D3D1)}
+.btn-sec:hover{border-color:var(--accent,#1D4ED8);color:var(--accent,#1D4ED8)}
+
+/* Patient banner (injected by shell.js) gets pushed above toolbar by z-index */
+
+/* Format switcher */
+.format-bar{display:flex;gap:4px;padding:12px 20px;background:var(--surface2,#F5F5F4);border-bottom:1px solid var(--border,#D6D3D1)}
+.fmt-btn{padding:6px 14px;border:1px solid var(--border,#D6D3D1);border-radius:6px;background:var(--surface,#FFF);color:var(--text3,#78716C);font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none}
+.fmt-btn.active{border-color:var(--accent,#1D4ED8);color:var(--accent,#1D4ED8);background:var(--bbg,#EFF6FF)}
+.fmt-btn:hover:not(.active){border-color:var(--text3,#78716C)}
+
+/* Content area */
+.content{max-width:860px;margin:0 auto;padding:32px 24px 60px}
+.content h1{font-family:'DM Serif Display',serif;font-size:1.8rem;color:var(--text,#1C1917);margin-bottom:12px;line-height:1.25}
+.content h2{font-family:'DM Serif Display',serif;font-size:1.35rem;color:var(--text,#1C1917);margin:28px 0 10px;padding-top:16px;border-top:1px solid var(--border,#D6D3D1)}
+.content h3{font-size:1.05rem;font-weight:600;color:var(--text2,#44403C);margin:20px 0 8px}
+.content h4{font-size:.95rem;font-weight:600;color:var(--text2,#44403C);margin:16px 0 6px}
+.content p{font-size:.9375rem;line-height:1.7;color:var(--text2,#44403C);margin-bottom:10px}
+.content ul,.content ol{margin:8px 0 14px 24px;font-size:.9375rem;line-height:1.7;color:var(--text2,#44403C)}
+.content li{margin-bottom:4px}
+.content table{width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:.85rem}
+.content th{text-align:left;font-size:.75rem;font-weight:700;color:var(--accent,#1D4ED8);padding:8px 10px;border-bottom:2px solid var(--border,#D6D3D1);text-transform:uppercase;letter-spacing:.04em;background:var(--surface2,#F5F5F4)}
+.content td{padding:7px 10px;border-bottom:1px solid var(--border,#D6D3D1);color:var(--text,#1C1917);vertical-align:top}
+.content strong{color:var(--text,#1C1917)}
+.content blockquote{margin:12px 0;padding:10px 16px;border-left:3px solid var(--accent,#1D4ED8);background:var(--surface2,#F5F5F4);border-radius:0 6px 6px 0;font-style:italic;color:var(--text2,#44403C)}
+.content img{max-width:100%;height:auto;border-radius:8px;margin:12px 0}
+
+/* Loading */
+.loading{text-align:center;padding:80px 20px;color:var(--text3,#78716C)}
+.loading .spinner{display:inline-block;width:28px;height:28px;border:3px solid var(--border,#D6D3D1);border-top-color:var(--accent,#1D4ED8);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error{text-align:center;padding:80px 20px;color:var(--red,#DC2626)}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="toolbar-left">
+    <a href="../" class="tb-home">PED CDS</a>
+    <span class="tb-sep">›</span>
+    <a href="../education/" class="tb-home">Education</a>
+    <span class="tb-sep">›</span>
+    <span class="tb-title" id="doc-title">Loading...</span>
+    <span class="tb-format" id="doc-format"></span>
+  </div>
+  <div class="toolbar-right">
+    <a class="btn btn-dl" id="btn-download" download>⬇ Download DOCX</a>
+  </div>
+</div>
+
+<div class="format-bar" id="format-bar"></div>
+
+<div class="content" id="content">
+  <div class="loading"><div class="spinner"></div><br>Loading document...</div>
+</div>
+
+<script>
+// Parse query params
+var params = new URLSearchParams(window.location.search);
+var file = params.get('file') || '';
+var format = params.get('format') || 'cs'; // cs, tb, au
+
+// Topic registry — maps base names to display names
+var TOPICS = {
+  'neonatal_pulmonary_disorders': 'Pulmonary Disorders',
+  'neonatal_infectious_diseases': 'Infectious Diseases',
+  'neonatal_hematology': 'Hematology',
+  'neonatal_neurology': 'Neurology',
+  'neonatal_fen': 'Fluids, Electrolytes & Nutrition',
+  'neonatal_gi_liver': 'GI & Liver',
+  'neonatal_endocrine_abnormalities': 'Endocrine Abnormalities',
+  'neonatal_renal': 'Renal',
+  'neonatal_surgical_emergencies': 'Surgical Emergencies',
+  'neonatal_skin': 'Skin & Dermatology',
+  'neonatal_urology': 'Urology',
+  'critical_care_stabilization': 'Critical Care Stabilization',
+  'maternal_infections': 'Maternal Infections',
+  'neonatal_ventilation_decision_tree': 'Neonatal Ventilation',
+};
+
+var FORMAT_META = {
+  cs: { label: 'Cheat Sheet', cls: 'cs', icon: '📋', dir: 'cheat-sheets', suffix: '_cheat_sheet.docx' },
+  tb: { label: 'Textbook', cls: 'tb', icon: '📖', dir: 'textbooks', suffix: '_textbook.docx' },
+  au: { label: 'Audio', cls: 'au', icon: '🎧', dir: 'audio-textbooks', suffix: '_audio_textbook.docx' },
+};
+
+// Derive base topic name from file path
+var baseName = '';
+for (var key in TOPICS) {
+  if (file.indexOf(key) !== -1) { baseName = key; break; }
+}
+if (!baseName && file) {
+  // Try to extract from filename
+  baseName = file.replace(/.*\//, '').replace(/_cheat_sheet\.docx|_textbook\.docx|_audio_textbook\.docx/, '');
+}
+
+var topicName = TOPICS[baseName] || baseName.replace(/_/g, ' ');
+var fmt = FORMAT_META[format] || FORMAT_META.cs;
+
+// Determine actual file path
+var docxPath = file;
+if (!docxPath && baseName) {
+  docxPath = './' + fmt.dir + '/' + baseName + fmt.suffix;
+}
+
+// Update UI
+document.getElementById('doc-title').textContent = topicName;
+document.title = topicName + ' — ' + fmt.label + ' — PED CDS';
+var fmtEl = document.getElementById('doc-format');
+fmtEl.textContent = fmt.label;
+fmtEl.className = 'tb-format ' + fmt.cls;
+document.getElementById('btn-download').href = docxPath;
+
+// Build format switcher
+var fbar = document.getElementById('format-bar');
+['cs', 'tb', 'au'].forEach(function(f) {
+  var m = FORMAT_META[f];
+  var btn = document.createElement('a');
+  btn.className = 'fmt-btn' + (f === format ? ' active' : '');
+  btn.textContent = m.icon + ' ' + m.label;
+  btn.href = '?file=' + encodeURIComponent('./' + m.dir + '/' + baseName + m.suffix) + '&format=' + f;
+  fbar.appendChild(btn);
+});
+
+// Load and render DOCX
+if (docxPath) {
+  fetch(docxPath)
+    .then(function(r) {
+      if (!r.ok) throw new Error('File not found: ' + docxPath);
+      return r.arrayBuffer();
+    })
+    .then(function(buf) {
+      return mammoth.convertToHtml({ arrayBuffer: buf }, {
+        styleMap: [
+          "p[style-name='Heading 1'] => h1:fresh",
+          "p[style-name='Heading 2'] => h2:fresh",
+          "p[style-name='Heading 3'] => h3:fresh",
+          "p[style-name='Heading 4'] => h4:fresh",
+        ]
+      });
+    })
+    .then(function(result) {
+      document.getElementById('content').innerHTML = result.value;
+      if (result.messages.length > 0) {
+        console.log('Mammoth warnings:', result.messages);
+      }
+    })
+    .catch(function(err) {
+      document.getElementById('content').innerHTML =
+        '<div class="error"><p>⚠ Could not load document</p><p>' + err.message + '</p>' +
+        '<p style="margin-top:16px"><a href="' + docxPath + '" download class="btn btn-dl">⬇ Download DOCX instead</a></p></div>';
+    });
+} else {
+  document.getElementById('content').innerHTML = '<div class="error"><p>No document specified</p><p><a href="../education/">← Back to Education Hub</a></p></div>';
+}
+</script>
+<script src="../theme-bridge.js"></script>
+<script src="../shell.js"></script>
+</body>
+</html>
