@@ -23,3 +23,10 @@ Cargo.lock
 # Environment
 .env
 .env.local
+
+# Build pipeline — DOCX binaries in queue/done folders are not tracked;
+# only the .gitkeep placeholders are committed.
+build-queue/to-build/*.docx
+build-queue/built/*.docx
+add-education/incoming/*.docx
+add-education/educational-material/*.docx
