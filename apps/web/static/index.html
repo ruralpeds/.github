@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pediatric Emergency CDS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1D4ED8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:var(--bg,#FAFAF9);color:var(--text,#1C1917);min-height:100vh;transition:background .2s,color .2s}
+h1,h2,h3{font-family:'DM Serif Display',serif}
+code,.mono{font-family:'IBM Plex Mono',monospace}
+
+/* Header */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--surface,#FFF);border-bottom:1px solid var(--border,#D6D3D1);position:sticky;top:0;z-index:100;box-shadow:0 1px 3px var(--shadow,rgba(28,25,23,.06))}
+.hdr-left{display:flex;align-items:baseline;gap:6px}
+.logo-mark{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--accent,#1D4ED8)}
+.logo-sub{font-family:'IBM Plex Mono',monospace;font-size:.82rem;color:var(--text3,#78716C)}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.hdr-right select{font-family:'IBM Plex Sans',sans-serif;font-size:.78rem;padding:4px 8px;border:1px solid var(--border,#D6D3D1);border-radius:6px;background:var(--surface,#FFF);color:var(--text,#1C1917);cursor:pointer}
+
+/* Mode selector */
+#mode-screen{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 52px);padding:2rem}
+.mode-inner{max-width:580px;width:100%;text-align:center}
+.mode-inner h1{font-size:2.2rem;color:var(--accent,#1D4ED8);margin-bottom:.5rem}
+.mode-inner p{color:var(--text3,#78716C);margin-bottom:2rem;font-size:1rem}
+.mode-cards{display:flex;flex-direction:column;gap:1rem}
+.mode-card{display:flex;align-items:center;gap:1rem;padding:1.25rem 1.5rem;background:var(--surface,#FFF);border:2px solid var(--border,#D6D3D1);border-radius:14px;cursor:pointer;text-align:left;width:100%;transition:all .15s}
+.mode-card:hover{border-color:var(--accent,#1D4ED8);box-shadow:0 4px 12px var(--shadow,rgba(28,25,23,.08));transform:translateY(-1px)}
+.mode-card .mc-icon{font-size:2.5rem}
+.mode-card .mc-title{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--text,#1C1917)}
+.mode-card .mc-desc{font-size:.85rem;color:var(--text3,#78716C);margin-top:.15rem}
+.mode-card .mc-tags{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.4rem}
+.mc-tag{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--text3,#78716C);background:var(--surface2,#F5F5F4);padding:2px 7px;border-radius:4px}
+.mc-arrow{margin-left:auto;font-size:1.5rem;color:var(--text3,#78716C);transition:all .15s}
+.mode-card:hover .mc-arrow{color:var(--accent,#1D4ED8);transform:translateX(3px)}
+
+/* Patient banner */
+#patient-banner{display:none;background:var(--surface2,#F5F5F4);border-bottom:1px solid var(--border,#D6D3D1);padding:10px 20px}
+.banner-row{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.mode-badge{font-family:'IBM Plex Mono',monospace;font-size:.72rem;font-weight:600;padding:4px 10px;border-radius:20px;align-self:center}
+.mode-badge.neo{background:var(--obg,#FFF7ED);color:var(--orange,#EA580C);border:1px solid var(--orange,#EA580C)}
+.mode-badge.peds{background:var(--bbg,#EFF6FF);color:var(--blue,#2563EB);border:1px solid var(--blue,#2563EB)}
+.field{display:flex;flex-direction:column;gap:3px}
+.field-label{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text3,#78716C)}
+.field-row{display:flex;align-items:center;gap:4px}
+.field input,.field select{padding:5px 8px;font-family:'IBM Plex Mono',monospace;font-size:.875rem;border:1px solid var(--border,#D6D3D1);border-radius:5px;background:var(--surface,#FFF);color:var(--text,#1C1917);width:75px}
+.field select{width:auto;font-family:'IBM Plex Sans',sans-serif;cursor:pointer}
+.field .unit{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--text3,#78716C)}
+.btn-load{padding:6px 18px;font-family:'IBM Plex Sans',sans-serif;font-size:.8rem;font-weight:600;border:none;border-radius:6px;background:var(--accent,#1D4ED8);color:#FFF;cursor:pointer;transition:background .15s}
+.btn-load:hover{filter:brightness(.9)}
+.btn-sm{font-size:.7rem;font-weight:500;padding:3px 8px;border:1px solid var(--border,#D6D3D1);border-radius:4px;background:var(--surface,#FFF);color:var(--text3,#78716C);cursor:pointer}
+.btn-sm:hover{border-color:var(--accent,#1D4ED8);color:var(--accent,#1D4ED8)}
+
+/* Summary bar */
+#summary-bar{display:none;background:var(--surface,#FFF);border-bottom:1px solid var(--border,#D6D3D1);padding:8px 20px}
+.summary-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.stat{display:flex;flex-direction:column;align-items:center;gap:1px}
+.stat-label{font-size:.58rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3,#78716C)}
+.stat-value{font-family:'IBM Plex Mono',monospace;font-size:.9rem;font-weight:600;color:var(--text,#1C1917)}
+.bros-badge{display:flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--text2,#44403C)}
+.bros-dot{width:12px;height:12px;border-radius:50%;border:1px solid var(--border,#D6D3D1)}
+.equip-tag{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--text3,#78716C);background:var(--surface2,#F5F5F4);padding:3px 8px;border-radius:4px}
+
+/* Main tabs */
+#main-content{display:none}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border,#D6D3D1);padding:0 20px;overflow-x:auto;background:var(--surface,#FFF)}
+.tabs::-webkit-scrollbar{height:0}
+.tab{padding:10px 14px;border:none;background:none;font-family:'IBM Plex Sans',sans-serif;font-size:.8rem;font-weight:600;color:var(--text3,#78716C);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.tab:hover{color:var(--text,#1C1917)}
+.tab.active{color:var(--accent,#1D4ED8);border-bottom-color:var(--accent,#1D4ED8)}
+.tab-content{display:none;padding:20px}
+.tab-content.active{display:block}
+
+/* Content grid */
+.section-title{font-family:'IBM Plex Sans',sans-serif;font-size:1rem;font-weight:600;color:var(--text2,#44403C);margin-bottom:12px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-bottom:24px}
+.card{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface,#FFF);border:1px solid var(--border,#D6D3D1);border-radius:8px;text-decoration:none;color:var(--text,#1C1917);transition:all .12s;cursor:pointer}
+.card:hover{border-color:var(--accent,#1D4ED8);box-shadow:0 2px 6px var(--shadow,rgba(28,25,23,.06))}
+.card-icon{font-size:1.3rem;flex-shrink:0}
+.card-name{font-size:.85rem;font-weight:600}
+.card-cat{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--text3,#78716C)}
+.card-arrow{margin-left:auto;color:var(--text3,#78716C);font-size:.85rem}
+.card:hover .card-arrow{color:var(--accent,#1D4ED8)}
+
+/* Info boxes */
+.info-box{padding:12px 16px;border-radius:8px;font-size:.85rem;line-height:1.6;margin-bottom:16px}
+.info-blue{background:var(--bbg,#EFF6FF);color:var(--blue,#2563EB);border:1px solid rgba(37,99,235,.2)}
+.info-yellow{background:var(--ybg,#FEFCE8);color:var(--yellow,#CA8A04);border:1px solid rgba(202,138,4,.2)}
+
+/* Education list */
+.edu-list{display:flex;flex-direction:column;gap:4px;margin-bottom:20px}
+.edu-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface,#FFF);border:1px solid var(--border,#D6D3D1);border-radius:6px;text-decoration:none;color:var(--text,#1C1917)}
+.edu-item:hover{border-color:var(--accent,#1D4ED8)}
+.edu-icon{font-size:1.1rem}
+.edu-name{font-size:.85rem;font-weight:500;flex:1}
+.edu-dl{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--accent,#1D4ED8)}
+
+footer{text-align:center;padding:30px 20px;font-size:.75rem;color:var(--text3,#78716C);border-top:1px solid var(--border,#D6D3D1);margin-top:20px}
+footer a{color:var(--accent,#1D4ED8)}
+
+@media(max-width:640px){.banner-row{flex-direction:column;align-items:stretch;gap:8px}.mode-badge{align-self:flex-start}}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="hdr">
+  <div class="hdr-left">
+    <span class="logo-mark">PED</span>
+    <span class="logo-sub">CDS</span>
+  </div>
+  <div class="hdr-right">
+    <span id="offline-badge" style="display:none;font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--yellow,#CA8A04);padding:3px 8px;border:1px solid var(--yellow,#CA8A04);border-radius:20px;background:var(--ybg,#FEFCE8)">⚠ Offline</span>
+    <select id="theme-select" onchange="pedTheme.apply(this.value)">
+      <option value="clinical-light">☀️ Light</option>
+      <option value="clinical-dark">🌙 Dark</option>
+      <option value="high-contrast">◐ High Contrast</option>
+    </select>
+  </div>
+</div>
+
+<!-- Mode Selection Screen -->
+<div id="mode-screen">
+  <div class="mode-inner">
+    <h1>PED CDS</h1>
+    <p>Pediatric Emergency Medicine — Clinical Decision Support<br>for the Rural Emergency Department</p>
+    <div class="mode-cards">
+      <button class="mode-card" onclick="selectMode('neonatal')">
+        <span class="mc-icon">👶</span>
+        <div>
+          <div class="mc-title">Neonatal</div>
+          <div class="mc-desc">Birth to 28 days — Level I–II+ nursery and neonatal resuscitation</div>
+          <div class="mc-tags">
+            <span class="mc-tag">0.4–6 kg</span>
+            <span class="mc-tag">Gestational age</span>
+            <span class="mc-tag">NRP protocols</span>
+          </div>
+        </div>
+        <span class="mc-arrow">→</span>
+      </button>
+      <button class="mode-card" onclick="selectMode('pediatric')">
+        <span class="mc-icon">🧒</span>
+        <div>
+          <div class="mc-title">Pediatric</div>
+          <div class="mc-desc">1 month to 18 years — Pediatric emergency department</div>
+          <div class="mc-tags">
+            <span class="mc-tag">3–150 kg</span>
+            <span class="mc-tag">Broselow coding</span>
+            <span class="mc-tag">PALS protocols</span>
+          </div>
+        </div>
+        <span class="mc-arrow">→</span>
+      </button>
+    </div>
+    <p style="font-size:.78rem;color:var(--text3,#78716C);margin-top:1.5rem">Mode can be changed at any time. All tools work offline after first load.</p>
+  </div>
+</div>
+
+<!-- Patient Banner (shown after mode selection) -->
+<div id="patient-banner">
+  <div class="banner-row" id="banner-form">
+    <span class="mode-badge" id="mode-badge-form"></span>
+    <div class="field">
+      <span class="field-label">Weight</span>
+      <div class="field-row">
+        <input type="number" id="inp-weight" step="0.1" min="0.3" max="150">
+        <span class="unit">kg</span>
+      </div>
+    </div>
+    <div class="field" id="field-age" style="display:none">
+      <span class="field-label">Age</span>
+      <div class="field-row">
+        <input type="number" id="inp-age" step="1" min="1" max="216">
+        <span class="unit">months</span>
+      </div>
+    </div>
+    <div class="field" id="field-ga" style="display:none">
+      <span class="field-label">GA (weeks)</span>
+      <div class="field-row">
+        <input type="number" id="inp-ga-weeks" step="1" min="22" max="44" value="39" style="width:50px">
+        <span class="unit">+</span>
+        <input type="number" id="inp-ga-days" step="1" min="0" max="6" value="0" style="width:38px">
+        <span class="unit">d</span>
+      </div>
+    </div>
+    <div class="field" id="field-dol" style="display:none">
+      <span class="field-label">Day of Life</span>
+      <div class="field-row">
+        <input type="number" id="inp-dol" step="1" min="0" max="28" value="0" style="width:50px">
+      </div>
+    </div>
+    <div class="field">
+      <span class="field-label">Sex</span>
+      <select id="inp-sex"><option value="male">Male</option><option value="female">Female</option></select>
+    </div>
+    <button class="btn-load" onclick="loadPatient()">Load Patient</button>
+    <button class="btn-sm" onclick="switchMode()" style="align-self:center">Switch Mode</button>
+  </div>
+</div>
+
+<!-- Patient Summary Bar (shown after loading patient) -->
+<div id="summary-bar">
+  <div class="summary-row">
+    <span class="mode-badge" id="mode-badge-summary"></span>
+    <div class="stat"><span class="stat-label">Weight</span><span class="stat-value" id="s-weight">—</span></div>
+    <div class="stat"><span class="stat-label">Age</span><span class="stat-value" id="s-age">—</span></div>
+    <div class="stat"><span class="stat-label">Sex</span><span class="stat-value" id="s-sex">—</span></div>
+    <div class="stat" id="s-ga-container" style="display:none"><span class="stat-label">GA</span><span class="stat-value" id="s-ga">—</span></div>
+    <div class="stat" id="s-dol-container" style="display:none"><span class="stat-label">DOL</span><span class="stat-value" id="s-dol">—</span></div>
+    <div id="s-broselow" style="display:none" class="bros-badge"><span class="bros-dot" id="s-bros-dot"></span><span id="s-bros-name"></span></div>
+    <span id="s-ett" class="equip-tag" style="display:none"></span>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <button class="btn-sm" onclick="editPatient()">Edit</button>
+      <button class="btn-sm" onclick="clearPatient()">Clear</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main Tabbed Content -->
+<div id="main-content">
+  <div class="tabs" id="tab-bar"></div>
+
+  <!-- Decision Trees tab -->
+  <div class="tab-content" id="tc-trees">
+    <div id="trees-neo" style="display:none">
+      <h3 class="section-title">Neonatal Decision Trees</h3>
+      <div class="card-grid" id="grid-neo-trees"></div>
+    </div>
+    <div id="trees-peds" style="display:none">
+      <h3 class="section-title">Pediatric Decision Trees</h3>
+      <div class="card-grid" id="grid-peds-trees"></div>
+    </div>
+  </div>
+
+  <!-- Calculators tab -->
+  <div class="tab-content" id="tc-calc">
+    <div class="info-box info-blue">All calculators auto-populate with the patient weight entered above.</div>
+    <div class="card-grid" id="grid-calcs"></div>
+  </div>
+
+  <!-- Education tab -->
+  <div class="tab-content" id="tc-edu">
+    <div class="info-box info-yellow">Download DOCX files for offline reference, printing, or Speechify narration.</div>
+    <div style="display:flex;gap:4px;margin-bottom:14px" id="edu-tabs"></div>
+    <div id="edu-content"></div>
+  </div>
+
+  <!-- Reference tab -->
+  <div class="tab-content" id="tc-ref">
+    <h3 class="section-title">Quick Reference</h3>
+    <div class="card-grid">
+      <a href="/education/" class="card"><span class="card-icon">📋</span><div><span class="card-name">Education Hub</span><br><span class="card-cat">All cheat sheets, textbooks, audio</span></div></a>
+      <a href="/decision-trees/" class="card"><span class="card-icon">🌳</span><div><span class="card-name">All Decision Trees</span><br><span class="card-cat">34 interactive clinical algorithms</span></div></a>
+      <a href="/calculators/" class="card"><span class="card-icon">🧮</span><div><span class="card-name">All Calculators</span><br><span class="card-cat">IVF, Electrolyte, Special Pops</span></div></a>
+    </div>
+    <div class="info-box info-blue" style="margin-top:16px">
+      <strong>Offline Capability:</strong> This application works without internet after first load. All decision trees, calculators, and education downloads are cached locally. Install as a PWA for instant access.
+    </div>
+  </div>
+</div>
+
+<footer>
+  Pediatric Emergency CDS — Clinical Decision Support for Rural Emergency Departments<br>
+  <a href="https://github.com/timothyhartzog/Peds">GitHub</a> · Does NOT replace clinical judgment
+</footer>
+
+<script src="/theme-bridge.js"></script>
+<script>
+// ═══════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════
+
+var neoTrees = [
+  {n:"NRP Resuscitation",f:"nrp_resuscitation_decision_tree.html",i:"⚡",c:"Resuscitation"},
+  {n:"Cardiac / PDA",f:"neonatal_cardiac_pda_decision_tree.html",i:"❤️",c:"Cardiac"},
+  {n:"Pulmonary",f:"neonatal_pulmonary_decision_tree.html",i:"🫁",c:"Respiratory"},
+  {n:"Infectious Diseases",f:"neonatal_infectious_diseases_decision_tree.html",i:"🦠",c:"Infectious Disease"},
+  {n:"FEN",f:"neonatal_fen_decision_tree.html",i:"💧",c:"Fluids/Electrolytes"},
+  {n:"Neurology",f:"neonatal_neurology_decision_tree.html",i:"🧠",c:"Neuro"},
+  {n:"Hematology",f:"neonatal_hematology_decision_tree.html",i:"🩸",c:"Hematology"},
+  {n:"Endocrine",f:"neonatal_endocrine_decision_tree.html",i:"⚗️",c:"Endocrine"},
+  {n:"GI / Liver",f:"neonatal_gi_liver_decision_tree.html",i:"🔬",c:"GI"},
+  {n:"Renal",f:"neonatal_renal_decision_tree.html",i:"🫘",c:"Renal"},
+  {n:"Surgical Emergencies",f:"neonatal_surgical_emergencies_decision_tree.html",i:"🔪",c:"Surgical"},
+  {n:"Ophthalmology (ROP)",f:"neonatal_ophthalmology_decision_tree.html",i:"👁️",c:"Ophthalmology"},
+  {n:"Skin / Dermatology",f:"neonatal_skin_decision_tree.html",i:"🩹",c:"Skin"},
+  {n:"Urological",f:"neonatal_urological_decision_tree.html",i:"🏥",c:"Urology"},
+  {n:"NOWS / NAS",f:"neonatal_nows_nas_decision_tree.html",i:"💊",c:"Substance Exposure"},
+  {n:"Pain & Sedation",f:"neonatal_pain_sedation_decision_tree.html",i:"💉",c:"Pain"},
+  {n:"Transport",f:"neonatal_transport_decision_tree.html",i:"🚑",c:"Transport"},
+  {n:"Discharge Readiness",f:"newborn_discharge_readiness_decision_tree.html",i:"🏠",c:"Discharge"},
+  {n:"Newborn Screening",f:"newborn_screening_followup_decision_tree.html",i:"🔍",c:"Screening"},
+  {n:"Obstetric Emergencies",f:"obstetric_emergencies_decision_tree.html",i:"🤰",c:"Obstetric"},
+  {n:"Shoulder Dystocia",f:"shoulder_dystocia_decision_tree.html",i:"👶",c:"Obstetric"},
+];
+
+var pedsTrees = [
+  {n:"PALS Algorithm",f:"pals_algorithm_decision_tree.html",i:"⚡",c:"Resuscitation"},
+  {n:"Sepsis & Shock",f:"pediatric_sepsis_shock_decision_tree.html",i:"🩸",c:"Sepsis"},
+  {n:"Respiratory Emergencies",f:"pediatric_respiratory_emergencies_decision_tree.html",i:"🫁",c:"Respiratory"},
+  {n:"Cardiac Emergencies",f:"pediatric_cardiac_emergencies_decision_tree.html",i:"❤️",c:"Cardiac"},
+  {n:"Trauma",f:"pediatric_trauma_decision_tree.html",i:"🚑",c:"Trauma"},
+  {n:"Seizures",f:"pediatric_seizures_decision_tree.html",i:"🧠",c:"Neuro"},
+  {n:"DKA",f:"pediatric_dka_decision_tree.html",i:"📊",c:"Endocrine"},
+  {n:"Anaphylaxis",f:"pediatric_anaphylaxis_decision_tree.html",i:"🚨",c:"Allergy"},
+  {n:"Burns",f:"pediatric_burns_decision_tree.html",i:"🔥",c:"Burns"},
+  {n:"Toxicology",f:"pediatric_toxicology_decision_tree.html",i:"☠️",c:"Toxicology"},
+  {n:"Abdominal Pain",f:"pediatric_abdominal_pain_decision_tree.html",i:"🤢",c:"GI"},
+  {n:"Orthopedic",f:"pediatric_orthopedic_decision_tree.html",i:"🦴",c:"Orthopedic"},
+  {n:"Psychiatric",f:"pediatric_psychiatric_emergencies_decision_tree.html",i:"🧩",c:"Psychiatric"},
+];
+
+var calcs = [
+  {n:"Pediatric IVF Management",f:"/calculators/pediatric_ivf_calculator.html",i:"💧",c:"Holliday-Segar, dehydration, burns, fluid composition"},
+  {n:"IVF Educational Reference",f:"/calculators/pediatric_ivf_educational.html",i:"📖",c:"Teaching mode with guideline context"},
+  {n:"Electrolyte Calculator",f:"/calculators/pediatric_electrolyte_calculator.html",i:"⚗️",c:"Na/K/Ca/Mg/PO4, DKA, burns, renal"},
+];
+
+var eduTopics = [
+  {n:"Pulmonary Disorders",i:"🫁",cs:"neonatal_pulmonary_disorders",tb:"neonatal_pulmonary_disorders",au:"neonatal_pulmonary_disorders"},
+  {n:"Infectious Diseases",i:"🦠",cs:"neonatal_infectious_diseases",tb:"neonatal_infectious_diseases",au:"neonatal_infectious_diseases"},
+  {n:"Hematology",i:"🩸",cs:"neonatal_hematology",tb:"neonatal_hematology",au:"neonatal_hematology"},
+  {n:"Neurology",i:"🧠",cs:"neonatal_neurology",tb:"neonatal_neurology",au:"neonatal_neurology"},
+  {n:"FEN",i:"💧",cs:"neonatal_fen",tb:"neonatal_fen",au:"neonatal_fen"},
+  {n:"GI & Liver",i:"🔬",cs:"neonatal_gi_liver",tb:"neonatal_gi_liver",au:"neonatal_gi_liver"},
+  {n:"Endocrine",i:"⚗️",cs:"neonatal_endocrine_abnormalities",tb:"neonatal_endocrine_abnormalities",au:"neonatal_endocrine_abnormalities"},
+  {n:"Renal",i:"🫘",cs:"neonatal_renal",tb:"neonatal_renal",au:"neonatal_renal"},
+  {n:"Surgical Emergencies",i:"🔪",cs:"neonatal_surgical_emergencies",tb:"neonatal_surgical_emergencies",au:"neonatal_surgical_emergencies"},
+  {n:"Skin",i:"🩹",cs:"neonatal_skin",tb:"neonatal_skin",au:"neonatal_skin"},
+  {n:"Urology",i:"🏥",cs:"neonatal_urology",tb:"neonatal_urology",au:"neonatal_urology"},
+  {n:"Critical Care Stabilization",i:"🚨",cs:"critical_care_stabilization",tb:"critical_care_stabilization",au:"critical_care_stabilization"},
+  {n:"Maternal Infections",i:"🤰",cs:"maternal_infections",tb:"maternal_infections",au:"maternal_infections"},
+  {n:"Neonatal Ventilation",i:"💨",cs:"neonatal_ventilation_decision_tree",tb:"neonatal_ventilation_decision_tree",au:"neonatal_ventilation_decision_tree"},
+];
+
+var BROSELOW = [
+  {min:0,max:5,color:"Grey",hex:"#9CA3AF",age:"0–2 mo",ett:3.0},
+  {min:5,max:7,color:"Pink",hex:"#F472B6",age:"2–4 mo",ett:3.5},
+  {min:7,max:9,color:"Red",hex:"#EF4444",age:"5–8 mo",ett:3.5},
+  {min:9,max:11,color:"Purple",hex:"#A855F7",age:"9–11 mo",ett:4.0},
+  {min:11,max:13,color:"Yellow",hex:"#EAB308",age:"1–2 yr",ett:4.0},
+  {min:13,max:16,color:"White",hex:"#D1D5DB",age:"2–3 yr",ett:4.5},
+  {min:16,max:19,color:"Blue",hex:"#3B82F6",age:"4–5 yr",ett:5.0},
+  {min:19,max:24,color:"Orange",hex:"#F97316",age:"6–7 yr",ett:5.5},
+  {min:24,max:30,color:"Green",hex:"#22C55E",age:"8–10 yr",ett:6.0},
+  {min:30,max:999,color:"Adult",hex:"#6B7280",age:"11+",ett:7.0},
+];
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+
+var mode = null; // 'neonatal' | 'pediatric'
+var patient = null;
+
+// ═══════════════════════════════════════════════════
+// MODE SELECTION
+// ═══════════════════════════════════════════════════
+
+function selectMode(m) {
+  mode = m;
+  try { localStorage.setItem('ped-cds-mode', m); } catch(e) {}
+  document.getElementById('mode-screen').style.display = 'none';
+  document.getElementById('patient-banner').style.display = 'block';
+  document.getElementById('main-content').style.display = 'block';
+
+  var isNeo = m === 'neonatal';
+  var badge = document.getElementById('mode-badge-form');
+  badge.textContent = isNeo ? '👶 Neo' : '🧒 Peds';
+  badge.className = 'mode-badge ' + (isNeo ? 'neo' : 'peds');
+
+  document.getElementById('field-age').style.display = isNeo ? 'none' : '';
+  document.getElementById('field-ga').style.display = isNeo ? '' : 'none';
+  document.getElementById('field-dol').style.display = isNeo ? '' : 'none';
+
+  var w = document.getElementById('inp-weight');
+  if (isNeo) { w.value = 3.5; w.min = 0.3; w.max = 6; w.step = 0.05; }
+  else { w.value = 12; w.min = 3; w.max = 150; w.step = 0.1; document.getElementById('inp-age').value = 24; }
+
+  buildTabs();
+  buildTreeGrids();
+  buildCalcGrid();
+  buildEduContent();
+}
+
+function switchMode() {
+  mode = null; patient = null;
+  document.getElementById('mode-screen').style.display = '';
+  document.getElementById('patient-banner').style.display = 'none';
+  document.getElementById('summary-bar').style.display = 'none';
+  document.getElementById('main-content').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════════
+// PATIENT
+// ═══════════════════════════════════════════════════
+
+function loadPatient() {
+  var w = parseFloat(document.getElementById('inp-weight').value) || 0;
+  if (w <= 0) return;
+
+  patient = { weight: w, sex: document.getElementById('inp-sex').value };
+
+  if (mode === 'neonatal') {
+    patient.gaWeeks = parseInt(document.getElementById('inp-ga-weeks').value) || 39;
+    patient.gaDays = parseInt(document.getElementById('inp-ga-days').value) || 0;
+    patient.dol = parseInt(document.getElementById('inp-dol').value) || 0;
+    patient.ageMonths = 0;
+  } else {
+    patient.ageMonths = parseInt(document.getElementById('inp-age').value) || 12;
+    patient.broselow = BROSELOW.find(function(b) { return w >= b.min && w < b.max; }) || BROSELOW[BROSELOW.length-1];
+  }
+
+  showSummary();
+}
+
+function showSummary() {
+  document.getElementById('patient-banner').style.display = 'none';
+  document.getElementById('summary-bar').style.display = 'block';
+
+  var isNeo = mode === 'neonatal';
+  var badge = document.getElementById('mode-badge-summary');
+  badge.textContent = isNeo ? '👶 Neo' : '🧒 Peds';
+  badge.className = 'mode-badge ' + (isNeo ? 'neo' : 'peds');
+
+  document.getElementById('s-weight').textContent = isNeo && patient.weight < 10 ? Math.round(patient.weight * 1000) + ' g' : patient.weight + ' kg';
+  document.getElementById('s-sex').textContent = patient.sex === 'male' ? 'M' : 'F';
+
+  if (isNeo) {
+    document.getElementById('s-age').textContent = patient.dol > 0 ? 'DOL ' + patient.dol : 'DOL 0';
+    document.getElementById('s-ga-container').style.display = '';
+    document.getElementById('s-ga').textContent = patient.gaWeeks + '+' + patient.gaDays;
+    document.getElementById('s-dol-container').style.display = '';
+    document.getElementById('s-dol').textContent = patient.dol;
+    document.getElementById('s-broselow').style.display = 'none';
+    document.getElementById('s-ett').style.display = 'inline';
+    var ett = patient.weight < 1 ? 2.5 : patient.weight < 2 ? 3.0 : patient.weight < 3 ? 3.0 : 3.5;
+    document.getElementById('s-ett').textContent = 'ETT ' + ett;
+  } else {
+    var am = patient.ageMonths;
+    document.getElementById('s-age').textContent = am < 24 ? am + ' mo' : Math.floor(am/12) + ' yr';
+    document.getElementById('s-ga-container').style.display = 'none';
+    document.getElementById('s-dol-container').style.display = 'none';
+    if (patient.broselow) {
+      document.getElementById('s-broselow').style.display = '';
+      document.getElementById('s-bros-dot').style.backgroundColor = patient.broselow.hex;
+      document.getElementById('s-bros-name').textContent = patient.broselow.color;
+      document.getElementById('s-ett').style.display = 'inline';
+      document.getElementById('s-ett').textContent = 'ETT ' + patient.broselow.ett + ' · ' + patient.broselow.age;
+    }
+  }
+}
+
+function editPatient() {
+  document.getElementById('summary-bar').style.display = 'none';
+  document.getElementById('patient-banner').style.display = 'block';
+}
+
+function clearPatient() {
+  patient = null;
+  document.getElementById('summary-bar').style.display = 'none';
+  document.getElementById('patient-banner').style.display = 'block';
+}
+
+// ═══════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════
+
+var tabDefs = [
+  {id:'trees',label:'Decision Trees',icon:'🌳'},
+  {id:'calc',label:'Calculators',icon:'🧮'},
+  {id:'edu',label:'Education',icon:'📋'},
+  {id:'ref',label:'Reference',icon:'📖'},
+];
+
+function buildTabs() {
+  var bar = document.getElementById('tab-bar');
+  bar.innerHTML = '';
+  tabDefs.forEach(function(t, i) {
+    var btn = document.createElement('button');
+    btn.className = 'tab' + (i === 0 ? ' active' : '');
+    btn.textContent = t.icon + ' ' + t.label;
+    btn.onclick = function() { showTab(t.id); };
+    bar.appendChild(btn);
+  });
+  showTab('trees');
+}
+
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('tc-' + id).classList.add('active');
+  var tabs = document.querySelectorAll('.tab');
+  tabDefs.forEach(function(t, i) { if (t.id === id) tabs[i].classList.add('active'); });
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER CONTENT
+// ═══════════════════════════════════════════════════
+
+function makeCard(item, base) {
+  return '<a href="' + (base || '/decision-trees/') + item.f + '" target="_blank" class="card">' +
+    '<span class="card-icon">' + item.i + '</span><div><span class="card-name">' + item.n + '</span><br><span class="card-cat">' + item.c + '</span></div>' +
+    '<span class="card-arrow">↗</span></a>';
+}
+
+function buildTreeGrids() {
+  var isNeo = mode === 'neonatal';
+  document.getElementById('trees-neo').style.display = isNeo ? '' : 'none';
+  document.getElementById('trees-peds').style.display = isNeo ? 'none' : '';
+  document.getElementById('grid-neo-trees').innerHTML = neoTrees.map(function(t) { return makeCard(t); }).join('');
+  document.getElementById('grid-peds-trees').innerHTML = pedsTrees.map(function(t) { return makeCard(t); }).join('');
+}
+
+function buildCalcGrid() {
+  document.getElementById('grid-calcs').innerHTML = calcs.map(function(c) { return makeCard(c, ''); }).join('');
+}
+
+var eduMode = 'cs';
+function buildEduContent() {
+  var tabs = document.getElementById('edu-tabs');
+  tabs.innerHTML = ['cs','tb','au'].map(function(m) {
+    var labels = {cs:'📋 Cheat Sheets', tb:'📖 Textbooks', au:'🎧 Audio'};
+    return '<button class="btn-sm' + (eduMode === m ? ' active' : '') + '" style="' + (eduMode === m ? 'border-color:var(--accent);color:var(--accent)' : '') + '" onclick="eduMode=\'' + m + '\';buildEduContent()">' + labels[m] + '</button>';
+  }).join('');
+
+  var prefixes = {cs:'/education/cheat-sheets/',tb:'/education/textbooks/',au:'/education/audio-textbooks/'};
+  var suffixes = {cs:'_cheat_sheet.docx',tb:'_textbook.docx',au:'_audio_textbook.docx'};
+  var p = prefixes[eduMode], s = suffixes[eduMode];
+
+  document.getElementById('edu-content').innerHTML = '<div class="edu-list">' + eduTopics.map(function(t) {
+    var file = t.cs + s;
+    return '<a class="edu-item" href="' + p + file + '" download><span class="edu-icon">' + t.i + '</span><span class="edu-name">' + t.n + '</span><span class="edu-dl">DOCX ↓</span></a>';
+  }).join('') + '</div>';
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+
+(function() {
+  // Restore mode from storage
+  try {
+    var saved = localStorage.getItem('ped-cds-mode');
+    if (saved === 'neonatal' || saved === 'pediatric') selectMode(saved);
+  } catch(e) {}
+
+  // Sync theme selector
+  try {
+    var tid = localStorage.getItem('ped-cds-theme') || 'clinical-light';
+    document.getElementById('theme-select').value = tid;
+  } catch(e) {}
+
+  // Offline indicator
+  if (!navigator.onLine) document.getElementById('offline-badge').style.display = '';
+  window.addEventListener('offline', function() { document.getElementById('offline-badge').style.display = ''; });
+  window.addEventListener('online', function() { document.getElementById('offline-badge').style.display = 'none'; });
+})();
+</script>
+</body>
+</html>
