@@ -47,6 +47,7 @@
 		{ name: 'Abdominal Pain', file: 'pediatric_abdominal_pain_decision_tree.html', icon: '🤢', mode: 'pediatric', category: 'GI' },
 		{ name: 'Orthopedic Emergencies', file: 'pediatric_orthopedic_decision_tree.html', icon: '🦴', mode: 'pediatric', category: 'Orthopedic' },
 		{ name: 'Psychiatric Emergencies', file: 'pediatric_psychiatric_emergencies_decision_tree.html', icon: '🧩', mode: 'pediatric', category: 'Psychiatric' },
+		{ name: 'SIADH vs CSW', file: 'pediatric_siadh_csw_decision_tree.html', icon: '🧪', mode: 'pediatric', category: 'Fluids/Electrolytes' },
 	];
 
 	$: mode = $clinicalMode;
