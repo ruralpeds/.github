@@ -7,7 +7,7 @@
  * Reads `ped-cds-theme` from localStorage and applies CSS custom properties.
  * Also adds a floating theme toggle so users can switch without returning to the app.
  * 
- * Usage: <script src="/theme-bridge.js"></script>
+ * Usage: <script src="../theme-bridge.js"></script>  (from subdirectory)
  */
 
 (function() {

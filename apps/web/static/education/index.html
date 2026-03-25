@@ -27,7 +27,7 @@
 </style>
 </head>
 <body>
-<a href="/" class="back">← Back to PED CDS</a>
+<a href="../" class="back">← Back to PED CDS</a>
 <h1>Neonatal Education Guides</h1>
 <p class="sub">14 topics × 3 formats. Click to download DOCX files.</p>
 
@@ -77,9 +77,9 @@ function render(listId, pathPrefix, field) {
   }).join('');
 }
 
-render('cs-list', '/education/cheat-sheets/', 'cs');
-render('tb-list', '/education/textbooks/', 'tb');
-render('au-list', '/education/audio-textbooks/', 'au');
+render('cs-list', './cheat-sheets/', 'cs');
+render('tb-list', './textbooks/', 'tb');
+render('au-list', './audio-textbooks/', 'au');
 
 function showTab(id) {
   document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
@@ -88,6 +88,6 @@ function showTab(id) {
   event.target.classList.add('active');
 }
 </script>
-<script src="/theme-bridge.js"></script>
+<script src="../theme-bridge.js"></script>
 </body>
 </html>

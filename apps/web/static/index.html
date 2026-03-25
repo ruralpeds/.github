@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pediatric Emergency CDS</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#1D4ED8">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -252,9 +252,9 @@ footer a{color:var(--accent,#1D4ED8)}
   <div class="tab-content" id="tc-ref">
     <h3 class="section-title">Quick Reference</h3>
     <div class="card-grid">
-      <a href="/education/" class="card"><span class="card-icon">📋</span><div><span class="card-name">Education Hub</span><br><span class="card-cat">All cheat sheets, textbooks, audio</span></div></a>
-      <a href="/decision-trees/" class="card"><span class="card-icon">🌳</span><div><span class="card-name">All Decision Trees</span><br><span class="card-cat">34 interactive clinical algorithms</span></div></a>
-      <a href="/calculators/" class="card"><span class="card-icon">🧮</span><div><span class="card-name">All Calculators</span><br><span class="card-cat">IVF, Electrolyte, Special Pops</span></div></a>
+      <a href="./education/" class="card"><span class="card-icon">📋</span><div><span class="card-name">Education Hub</span><br><span class="card-cat">All cheat sheets, textbooks, audio</span></div></a>
+      <a href="./decision-trees/" class="card"><span class="card-icon">🌳</span><div><span class="card-name">All Decision Trees</span><br><span class="card-cat">34 interactive clinical algorithms</span></div></a>
+      <a href="./calculators/" class="card"><span class="card-icon">🧮</span><div><span class="card-name">All Calculators</span><br><span class="card-cat">IVF, Electrolyte, Special Pops</span></div></a>
     </div>
     <div class="info-box info-blue" style="margin-top:16px">
       <strong>Offline Capability:</strong> This application works without internet after first load. All decision trees, calculators, and education downloads are cached locally. Install as a PWA for instant access.
@@ -267,7 +267,7 @@ footer a{color:var(--accent,#1D4ED8)}
   <a href="https://github.com/timothyhartzog/Peds">GitHub</a> · Does NOT replace clinical judgment
 </footer>
 
-<script src="/theme-bridge.js"></script>
+<script src="./theme-bridge.js"></script>
 <script>
 // ═══════════════════════════════════════════════════
 // DATA
@@ -315,9 +315,9 @@ var pedsTrees = [
 ];
 
 var calcs = [
-  {n:"Pediatric IVF Management",f:"/calculators/pediatric_ivf_calculator.html",i:"💧",c:"Holliday-Segar, dehydration, burns, fluid composition"},
-  {n:"IVF Educational Reference",f:"/calculators/pediatric_ivf_educational.html",i:"📖",c:"Teaching mode with guideline context"},
-  {n:"Electrolyte Calculator",f:"/calculators/pediatric_electrolyte_calculator.html",i:"⚗️",c:"Na/K/Ca/Mg/PO4, DKA, burns, renal"},
+  {n:"Pediatric IVF Management",f:"./calculators/pediatric_ivf_calculator.html",i:"💧",c:"Holliday-Segar, dehydration, burns, fluid composition"},
+  {n:"IVF Educational Reference",f:"./calculators/pediatric_ivf_educational.html",i:"📖",c:"Teaching mode with guideline context"},
+  {n:"Electrolyte Calculator",f:"./calculators/pediatric_electrolyte_calculator.html",i:"⚗️",c:"Na/K/Ca/Mg/PO4, DKA, burns, renal"},
 ];
 
 var eduTopics = [
@@ -504,7 +504,7 @@ function showTab(id) {
 // ═══════════════════════════════════════════════════
 
 function makeCard(item, base) {
-  return '<a href="' + (base || '/decision-trees/') + item.f + '" target="_blank" class="card">' +
+  return '<a href="' + (base || './decision-trees/') + item.f + '" target="_blank" class="card">' +
     '<span class="card-icon">' + item.i + '</span><div><span class="card-name">' + item.n + '</span><br><span class="card-cat">' + item.c + '</span></div>' +
     '<span class="card-arrow">↗</span></a>';
 }
@@ -529,7 +529,7 @@ function buildEduContent() {
     return '<button class="btn-sm' + (eduMode === m ? ' active' : '') + '" style="' + (eduMode === m ? 'border-color:var(--accent);color:var(--accent)' : '') + '" onclick="eduMode=\'' + m + '\';buildEduContent()">' + labels[m] + '</button>';
   }).join('');
 
-  var prefixes = {cs:'/education/cheat-sheets/',tb:'/education/textbooks/',au:'/education/audio-textbooks/'};
+  var prefixes = {cs:'./education/cheat-sheets/',tb:'./education/textbooks/',au:'./education/audio-textbooks/'};
   var suffixes = {cs:'_cheat_sheet.docx',tb:'_textbook.docx',au:'_audio_textbook.docx'};
   var p = prefixes[eduMode], s = suffixes[eduMode];
 
