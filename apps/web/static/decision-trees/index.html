@@ -251,7 +251,7 @@ footer a:hover { text-decoration: underline; }
   <h1>Pediatric Emergency <span>CDS</span> Library</h1>
   <p class="subtitle">Interactive D3.js clinical decision trees for neonatal, obstetric, and pediatric emergency medicine — built for rural Level I/II nurseries and emergency departments. Click any card to launch the decision tree.</p>
   <div class="stats-bar">
-    <div class="stat"><div class="stat-num">26</div><div class="stat-label">Decision Trees</div></div>
+    <div class="stat"><div class="stat-num">35</div><div class="stat-label">Decision Trees</div></div>
     <div class="stat"><div class="stat-num">250+</div><div class="stat-label">Clinical Nodes</div></div>
     <div class="stat"><div class="stat-num">770K</div><div class="stat-label">Clinical Content</div></div>
     <div class="stat"><div class="stat-num">100+</div><div class="stat-label">Tabbed Education Panels</div></div>
@@ -330,7 +330,7 @@ footer a:hover { text-decoration: underline; }
     <div class="cat-header">
       <div class="cat-icon">🏥</div>
       <div class="cat-title">Neonatal Specialized</div>
-      <div class="cat-count">4 trees</div>
+      <div class="cat-count">7 trees</div>
     </div>
     <div class="grid">
       <a class="card" href="neonatal_cardiac_pda_decision_tree.html" style="--i:0">
@@ -352,6 +352,21 @@ footer a:hover { text-decoration: underline; }
         <div class="card-top"><span class="card-emoji">🏠</span><span class="card-title">Discharge Readiness</span></div>
         <div class="card-desc">AAP criteria, Bhutani bilirubin zones, car seat testing, CCHD/hearing/NBS review, safe sleep ABCs, parent education</div>
         <div class="card-meta"><span class="tag">22K</span><span class="tag">8 nodes</span></div>
+      </a>
+      <a class="card" href="neonatal_nows_nas_decision_tree.html" style="--i:4">
+        <div class="card-top"><span class="card-emoji">💊</span><span class="card-title">NOWS / NAS</span></div>
+        <div class="card-desc">Finnegan-Loud scale, Eat Sleep Console (ESC) protocol, pharmacotherapy (morphine/clonidine), weaning schedule, substance use support</div>
+        <div class="card-meta"><span class="tag">NOWS</span><span class="tag">8 nodes</span></div>
+      </a>
+      <a class="card" href="neonatal_ophthalmology_decision_tree.html" style="--i:5">
+        <div class="card-top"><span class="card-emoji">👁️</span><span class="card-title">Ophthalmology (ROP)</span></div>
+        <div class="card-desc">ROP screening criteria (CRYO-ROP), red reflex assessment, congenital cataracts (urgent referral), nasolacrimal duct obstruction</div>
+        <div class="card-meta"><span class="tag">ROP</span><span class="tag">8 nodes</span></div>
+      </a>
+      <a class="card" href="newborn_screening_followup_decision_tree.html" style="--i:6">
+        <div class="card-top"><span class="card-emoji">🧬</span><span class="card-title">Newborn Screening Follow-Up</span></div>
+        <div class="card-desc">RUSP 35 conditions, urgent metabolic referral (crisis vs monitor), point-of-care vs lab algorithms, critical vs non-critical results</div>
+        <div class="card-meta"><span class="tag">NBS</span><span class="tag">8 nodes</span></div>
       </a>
     </div>
   </section>
@@ -387,48 +402,78 @@ footer a:hover { text-decoration: underline; }
     <div class="cat-header">
       <div class="cat-icon">🚑</div>
       <div class="cat-title">Pediatric Emergency Department</div>
-      <div class="cat-count">8 trees</div>
+      <div class="cat-count">14 trees</div>
     </div>
     <div class="grid">
-      <a class="card" href="pediatric_respiratory_emergencies_decision_tree.html" style="--i:0">
+      <a class="card" href="pals_algorithm_decision_tree.html" style="--i:0">
+        <div class="card-top"><span class="card-emoji">⚡</span><span class="card-title">PALS Algorithm</span></div>
+        <div class="card-desc">Cardiac arrest algorithm, pulseless arrest (VF/VT/PEA/asystole), bradycardia/tachycardia with pulse, post-ROSC care, 2020 AHA guidelines</div>
+        <div class="card-meta"><span class="tag">PALS</span><span class="tag">10 nodes</span></div>
+      </a>
+      <a class="card" href="pediatric_respiratory_emergencies_decision_tree.html" style="--i:1">
         <div class="card-top"><span class="card-emoji">🫁</span><span class="card-title">Respiratory Emergencies</span></div>
         <div class="card-desc">Croup (Westley/dexamethasone), bronchiolitis (RSV/supportive/nirsevimab), asthma (status protocol), foreign body, epiglottitis</div>
         <div class="card-meta"><span class="tag">30K</span><span class="tag">10 nodes</span></div>
       </a>
-      <a class="card" href="pediatric_seizures_decision_tree.html" style="--i:1">
+      <a class="card" href="pediatric_seizures_decision_tree.html" style="--i:2">
         <div class="card-top"><span class="card-emoji">⚡</span><span class="card-title">Seizures & Status Epilepticus</span></div>
         <div class="card-desc">Febrile seizures (AAP), first-time seizure workup, time-based status protocol (RAMPART), benzodiazepines, 2nd/3rd-line ASMs</div>
         <div class="card-meta"><span class="tag">21K</span><span class="tag">6 nodes</span></div>
       </a>
-      <a class="card" href="pediatric_dka_decision_tree.html" style="--i:2">
+      <a class="card" href="pediatric_dka_decision_tree.html" style="--i:3">
         <div class="card-top"><span class="card-emoji">💧</span><span class="card-title">DKA Management</span></div>
         <div class="card-desc">Two-bag method, insulin drip (no bolus), Parkland-style fluids, cerebral edema protocol (mannitol/3% NaCl), potassium management</div>
         <div class="card-meta"><span class="tag">22K</span><span class="tag">8 nodes</span></div>
       </a>
-      <a class="card" href="pediatric_sepsis_shock_decision_tree.html" style="--i:3">
+      <a class="card" href="pediatric_sepsis_shock_decision_tree.html" style="--i:4">
         <div class="card-top"><span class="card-emoji">🩸</span><span class="card-title">Sepsis & Shock</span></div>
         <div class="card-desc">Surviving Sepsis 2020, Phoenix 2024 criteria, warm vs cold shock, vasopressor selection, age-based empiric antibiotics</div>
         <div class="card-meta"><span class="tag">23K</span><span class="tag">8 nodes</span></div>
       </a>
-      <a class="card" href="pediatric_anaphylaxis_decision_tree.html" style="--i:4">
+      <a class="card" href="pediatric_anaphylaxis_decision_tree.html" style="--i:5">
         <div class="card-top"><span class="card-emoji">⚠️</span><span class="card-title">Anaphylaxis</span></div>
         <div class="card-desc">Epinephrine IM first-line (0.01 mg/kg), biphasic reaction monitoring, refractory protocol (epi drip), autoinjector prescribing</div>
         <div class="card-meta"><span class="tag">19K</span><span class="tag">4 nodes</span></div>
       </a>
-      <a class="card" href="pediatric_trauma_decision_tree.html" style="--i:5">
+      <a class="card" href="pediatric_trauma_decision_tree.html" style="--i:6">
         <div class="card-top"><span class="card-emoji">🚑</span><span class="card-title">Trauma</span></div>
         <div class="card-desc">ATLS primary survey, PECARN head CT rule, C-spine/SCIWORA, abdominal trauma (FAST/NOM), non-accidental trauma (TEN-4/skeletal survey)</div>
         <div class="card-meta"><span class="tag">24K</span><span class="tag">8 nodes</span></div>
       </a>
-      <a class="card" href="pediatric_toxicology_decision_tree.html" style="--i:6">
+      <a class="card" href="pediatric_toxicology_decision_tree.html" style="--i:7">
         <div class="card-top"><span class="card-emoji">☠️</span><span class="card-title">Toxicology</span></div>
         <div class="card-desc">Ingestion algorithm, 5 toxidromes, Rumack-Matthew nomogram, NAC protocol, antidote reference table, Poison Control</div>
         <div class="card-meta"><span class="tag">21K</span><span class="tag">6 nodes</span></div>
       </a>
-      <a class="card" href="pediatric_burns_decision_tree.html" style="--i:7">
+      <a class="card" href="pediatric_burns_decision_tree.html" style="--i:8">
         <div class="card-top"><span class="card-emoji">🔥</span><span class="card-title">Burns</span></div>
         <div class="card-desc">Parkland formula (pediatric modification), Lund-Browder chart, burn depth, ABA transfer criteria, abuse screening (immersion patterns)</div>
         <div class="card-meta"><span class="tag">22K</span><span class="tag">8 nodes</span></div>
+      </a>
+      <a class="card" href="pediatric_cardiac_emergencies_decision_tree.html" style="--i:9">
+        <div class="card-top"><span class="card-emoji">❤️</span><span class="card-title">Cardiac Emergencies</span></div>
+        <div class="card-desc">SVT (vagal/adenosine/synchronized cardioversion), myocarditis/cardiomyopathy, Kawasaki disease (IVIG criteria), syncope evaluation</div>
+        <div class="card-meta"><span class="tag">Cardiac</span><span class="tag">8 nodes</span></div>
+      </a>
+      <a class="card" href="pediatric_abdominal_pain_decision_tree.html" style="--i:10">
+        <div class="card-top"><span class="card-emoji">🫄</span><span class="card-title">Abdominal Pain</span></div>
+        <div class="card-desc">Appendicitis (PAS score/Alvarado), intussusception (ultrasound/air enema), testicular/ovarian torsion, pyloric stenosis, malrotation/volvulus</div>
+        <div class="card-meta"><span class="tag">Surgical</span><span class="tag">10 nodes</span></div>
+      </a>
+      <a class="card" href="pediatric_orthopedic_decision_tree.html" style="--i:11">
+        <div class="card-top"><span class="card-emoji">🦴</span><span class="card-title">Orthopedic Emergencies</span></div>
+        <div class="card-desc">Fracture management, Salter-Harris classification, compartment syndrome (6 P's), limp evaluation (septic arthritis vs LCP), SCFE</div>
+        <div class="card-meta"><span class="tag">Ortho</span><span class="tag">8 nodes</span></div>
+      </a>
+      <a class="card" href="pediatric_psychiatric_emergencies_decision_tree.html" style="--i:12">
+        <div class="card-top"><span class="card-emoji">🧠</span><span class="card-title">Psychiatric Emergencies</span></div>
+        <div class="card-desc">Columbia Suicide Severity Rating Scale, acute agitation (verbal de-escalation/medications), safety planning, medical clearance, disposition</div>
+        <div class="card-meta"><span class="tag">Psych</span><span class="tag">8 nodes</span></div>
+      </a>
+      <a class="card" href="pediatric_siadh_csw_decision_tree.html" style="--i:13">
+        <div class="card-top"><span class="card-emoji">🧪</span><span class="card-title">SIADH vs Cerebral Salt Wasting</span></div>
+        <div class="card-desc">Hyponatremia workup (serum/urine Na, osmolality), volume status assessment, SIADH (fluid restrict) vs CSW (replace sodium), 3% NaCl correction</div>
+        <div class="card-meta"><span class="tag">Fluids</span><span class="tag">8 nodes</span></div>
       </a>
     </div>
   </section>
