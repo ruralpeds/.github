@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import { theme } from '$lib/theme';
 	import { patient, hasPatient } from '$lib/stores/patient';
+	import { reportError } from '$lib/stores/errors';
+	import { WasmError } from '$lib/wasm/errors';
 	import type { DecisionTree, TreeNode, ReferencePanel, NodeType } from '$lib/d3/tree-schema';
 	import {
 		computeLayout,
@@ -34,6 +36,8 @@
 
 	// Computed WASM results cache
 	let wasmResults: Map<string, Map<string, any>> = new Map();
+	// Track nodes that failed WASM computation
+	let wasmErrors: Map<string, string> = new Map();
 
 	// ---------------------------------------------------------------------------
 	// Layout recomputation
@@ -78,9 +82,16 @@
 				}
 			}
 			wasmResults.set(node.id, results);
+			wasmErrors.delete(node.id);
 			wasmResults = wasmResults; // trigger reactivity
+			wasmErrors = wasmErrors;
 		} catch (err) {
-			console.warn('WASM compute failed for node', node.id, err);
+			reportError(err);
+			const msg = err instanceof WasmError
+				? (err.isValidationError ? `Invalid input: ${err.message}` : err.message)
+				: 'Calculation failed';
+			wasmErrors.set(node.id, msg);
+			wasmErrors = wasmErrors; // trigger reactivity
 		}
 	}
 
@@ -252,7 +263,19 @@
 					{/if}
 
 					<!-- WASM-computed value display -->
-					{#if wasmResults.has(node.id)}
+					{#if wasmErrors.has(node.id)}
+						<text
+							x={layout.nodeWidth / 2}
+							y="60"
+							text-anchor="middle"
+							font-size="10"
+							font-weight="600"
+							font-family="var(--font-mono)"
+							fill="var(--color-emergency, #EF4444)"
+						>
+							Calc error
+						</text>
+					{:else if wasmResults.has(node.id)}
 						{#each [...wasmResults.get(node.id).entries()] as [key, val]}
 							<text
 								x={layout.nodeWidth / 2}

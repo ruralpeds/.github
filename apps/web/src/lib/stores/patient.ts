@@ -1,6 +1,8 @@
 import { writable, derived, get } from 'svelte/store';
 import { clinicalMode, modeConfig } from './mode';
 import type { ClinicalMode } from './mode';
+import { reportError } from './errors';
+import { WasmError } from '$lib/wasm/errors';
 
 // =============================================================================
 // Patient Session Store — Mode-Aware
@@ -141,11 +143,16 @@ export async function loadPatient(input: {
 	let classification = null;
 	let vitalRanges = null;
 	try {
-		const wasmMod = await import('ped-wasm');
-		classification = wasmMod.classify_weight(input.weightKg);
-		vitalRanges = wasmMod.get_vital_ranges(input.ageMonths);
+		const { classifyBroselow, getVitalRanges } = await import('$lib/wasm');
+		classification = await classifyBroselow(input.weightKg);
+		vitalRanges = await getVitalRanges(input.ageMonths);
 	} catch (err) {
-		console.warn('WASM unavailable, using raw data:', err);
+		reportError(err);
+		if (err instanceof WasmError && err.isValidationError) {
+			// Validation errors mean the input is bad — don't silently proceed
+			throw err;
+		}
+		// Infrastructure errors: proceed with partial data, error is already reported
 	}
 
 	const data: PatientData = {

@@ -5,6 +5,7 @@
 	import PatientBanner from '$lib/components/layout/PatientBanner.svelte';
 	import ClinicalNav from '$lib/components/layout/ClinicalNav.svelte';
 	import OfflineIndicator from '$lib/components/layout/OfflineIndicator.svelte';
+	import ErrorBanner from '$lib/components/layout/ErrorBanner.svelte';
 	import '../app.css';
 </script>
 
@@ -30,6 +31,7 @@
 			</header>
 
 			<PatientBanner />
+			<ErrorBanner />
 
 			<div class="app-body">
 				<aside class="app-sidebar">
