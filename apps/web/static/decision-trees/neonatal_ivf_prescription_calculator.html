@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Neonatal IVF Prescription Calculator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=JetBrains+Mono:wght@400;500;600;700&family=Libre+Franklin:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════
+   DESIGN SYSTEM  — Dark ICU Terminal
+   ═══════════════════════════════════════════════════════ */
+:root{
+  --bg:#07090f; --bg2:#0d1117; --bg3:#161b22; --bg4:#1c2330; --bg5:#21262d;
+  --bdr:#21262d; --bdr2:#30363d; --bdr3:#444c56;
+  --tx:#e6edf3; --tx2:#8b949e; --tx3:#6e7681; --tx4:#4a5568;
+  --accent:#58a6ff;
+  /* GA palette */
+  --ga-ext:#79c0ff; --ga-vp:#56d364; --ga-pt:#e3b341;
+  --ga-mp:#f78166; --ga-lp:#d2a8ff; --ga-nt:#ff7b72; --ga-tm:#ffa657;
+  /* Fluid tiers */
+  --t0:#388bfd; --t1:#3dc9b0; --t2:#56d364; --t3:#e3b341; --t4:#f78166;
+  /* Calorie sources */
+  --kcal-dex:#388bfd; --kcal-lip:#d2a8ff; --kcal-aa:#56d364;
+  --kcal-ent:#e3b341; --kcal-oral:#ffa657;
+  /* Status */
+  --ok:#2ea043; --warn:#d29922; --danger:#da3633; --info:#388bfd;
+  --r:8px; --r2:12px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Libre Franklin',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+button,select,input{font-family:inherit}
+
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--bdr3);border-radius:3px}
+
+/* ═══ PAGE HEADER ═══════════════════════════════════════ */
+.page-hdr{
+  background:linear-gradient(180deg,#03050a 0%,var(--bg) 100%);
+  border-bottom:1px solid var(--bdr2);
+  padding:1rem 2rem .85rem; position:sticky; top:0; z-index:200;
+}
+.page-hdr-top{display:flex;align-items:baseline;gap:1rem;margin-bottom:.7rem;flex-wrap:wrap}
+.page-hdr h1{
+  font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;letter-spacing:-.02em;
+  background:linear-gradient(90deg,var(--ga-ext) 0%,var(--ga-vp) 45%,var(--ga-lp) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hdr-sub{font-size:.72rem;color:var(--tx3);font-style:italic}
+.hdr-badge{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:.62rem;background:var(--bg3);border:1px solid var(--bdr2);padding:.18rem .55rem;border-radius:4px;color:var(--tx2)}
+/* GA Week banner */
+.ga-banner-lbl{font-family:'JetBrains Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);margin-bottom:.45rem}
+.ga-weeks-scroll{display:flex;overflow-x:auto;gap:0;scrollbar-width:none}
+.ga-weeks-scroll::-webkit-scrollbar{display:none}
+.ga-group-sect{display:flex;flex-direction:column;border-right:1px solid var(--bdr);padding-right:2px;margin-right:2px;flex-shrink:0}
+.ga-group-sect:last-child{border-right:none}
+.ga-group-lbl{font-family:'JetBrains Mono',monospace;font-size:.5rem;text-transform:uppercase;letter-spacing:.05em;padding:.12rem .55rem 0;white-space:nowrap}
+.ga-group-weeks{display:flex}
+.gw-btn{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:.12rem;padding:.45rem .55rem .55rem;border:none;border-bottom:3px solid transparent;background:none;cursor:pointer;min-width:48px;flex-shrink:0;transition:background .13s,border-color .13s}
+.gw-btn:hover{background:var(--bg3)}
+.gw-btn.active{background:var(--bg3);border-bottom-color:var(--sel-col,var(--ga-ext))}
+.gw-num{font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:700;color:var(--tx2);line-height:1;transition:color .13s}
+.gw-btn.active .gw-num{color:var(--sel-col,var(--ga-ext))}
+.gw-sub{font-family:'JetBrains Mono',monospace;font-size:.52rem;color:var(--tx3);line-height:1}
+
+/* ═══ PATIENT INPUT BAR ════════════════════════════════ */
+.patient-bar{
+  background:var(--bg2);border-bottom:1px solid var(--bdr);
+  padding:.75rem 2rem;display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;
+}
+.pb-field{display:flex;flex-direction:column;gap:.2rem;min-width:0}
+.pb-lbl{font-family:'JetBrains Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3)}
+.pb-input{background:var(--bg3);border:1px solid var(--bdr2);border-radius:5px;padding:.38rem .6rem;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.88rem;font-weight:600;outline:none;width:100%;transition:border-color .13s}
+.pb-input:focus{border-color:var(--accent)}
+.pb-input.weight{width:110px}
+select.pb-input{cursor:pointer;width:auto;padding-right:1.4rem}
+.pb-sep{width:1px;height:36px;background:var(--bdr);flex-shrink:0;align-self:flex-end;margin-bottom:.2rem}
+
+/* ═══ CONTENT AREA ═════════════════════════════════════ */
+.content{padding:1.25rem 2rem 3rem;display:flex;flex-direction:column;gap:1.25rem}
+
+/* ═══ SECTION CARD ═════════════════════════════════════ */
+.section-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r2);overflow:hidden}
+.section-hdr{padding:.85rem 1.25rem .7rem;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:700;background:var(--bg3);border:1px solid var(--bdr2);border-radius:4px;padding:.12rem .5rem;color:var(--tx3)}
+.section-hdr h2{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--tx)}
+.section-hdr p{font-size:.72rem;color:var(--tx3);font-style:italic;margin-top:.05rem}
+.section-body{padding:1.1rem 1.25rem}
+
+/* ═══ GRID LAYOUTS ═════════════════════════════════════ */
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem}
+
+/* ═══ CALC RESULT BOX ══════════════════════════════════ */
+.calc-box{background:var(--bg3);border:1px solid var(--bdr2);border-radius:var(--r);padding:.85rem 1rem;display:flex;flex-direction:column;gap:.25rem}
+.calc-box.highlight{border-color:var(--sel-col,var(--accent));box-shadow:0 0 0 1px var(--sel-col,var(--accent)) inset,0 4px 16px rgba(0,0,0,.3)}
+.cb-label{font-family:'JetBrains Mono',monospace;font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3)}
+.cb-value{font-family:'JetBrains Mono',monospace;font-size:2rem;font-weight:700;line-height:1;color:var(--tx)}
+.cb-value.big{font-size:2.6rem}
+.cb-value.accent{color:var(--sel-col,var(--accent))}
+.cb-unit{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--tx3);margin-top:.05rem}
+.cb-sub{font-size:.7rem;color:var(--tx3);margin-top:.3rem;line-height:1.5}
+
+/* ═══ FLUID TYPE CARD ══════════════════════════════════ */
+.fluid-type-card{background:var(--bg3);border:2px solid var(--bdr2);border-radius:var(--r);padding:.9rem 1rem;cursor:pointer;transition:border-color .15s,background .15s;position:relative}
+.fluid-type-card:hover{background:var(--bg4)}
+.fluid-type-card.selected{border-color:var(--sel-col,var(--accent))}
+.ftc-name{font-family:'JetBrains Mono',monospace;font-size:.92rem;font-weight:700;margin-bottom:.3rem}
+.ftc-dex{font-size:.78rem;color:var(--tx2);margin-bottom:.2rem}
+.ftc-note{font-size:.68rem;color:var(--tx3);line-height:1.5}
+.ftc-badge{position:absolute;top:.6rem;right:.7rem;font-family:'JetBrains Mono',monospace;font-size:.58rem;padding:.12rem .45rem;border-radius:12px;font-weight:600;border:1px solid}
+.ftc-badge.recommended{color:#56d364;border-color:#56d36455;background:rgba(86,211,100,.12)}
+.ftc-badge.alternative{color:var(--tx3);border-color:var(--bdr2);background:var(--bg4)}
+
+/* ═══ ADDITIVE ROW ═════════════════════════════════════ */
+.additive-row{display:flex;align-items:center;gap:.75rem;padding:.55rem .75rem;background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--r);flex-wrap:wrap}
+.add-name{font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:600;min-width:140px;color:var(--tx2)}
+.add-dose{font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--accent)}
+.add-note{font-size:.68rem;color:var(--tx3);flex:1}
+.add-status{font-family:'JetBrains Mono',monospace;font-size:.6rem;padding:.12rem .45rem;border-radius:10px;font-weight:600;border:1px solid;white-space:nowrap}
+.add-status.add{color:#56d364;border-color:#56d36455;background:rgba(86,211,100,.12)}
+.add-status.hold{color:var(--t3);border-color:rgba(227,179,65,.4);background:rgba(227,179,65,.1)}
+.add-status.caution{color:var(--t4);border-color:rgba(247,129,102,.4);background:rgba(247,129,102,.1)}
+
+/* ═══ RANGE SLIDER ═════════════════════════════════════ */
+.range-wrap{display:flex;flex-direction:column;gap:.3rem}
+.range-row{display:flex;align-items:center;gap:.6rem}
+.rng{flex:1;height:4px;appearance:none;background:var(--bdr2);border-radius:2px;outline:none;cursor:pointer}
+.rng::-webkit-slider-thumb{appearance:none;width:14px;height:14px;border-radius:50%;background:var(--thumb-col,var(--accent));border:2px solid var(--bg);cursor:pointer;transition:transform .15s}
+.rng::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.rng-val{font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:700;min-width:52px;text-align:right}
+.rng-labels{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--tx3);padding:0 2px}
+
+/* ═══ FEED TABLE ═══════════════════════════════════════ */
+.feed-row{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:.75rem;align-items:center;padding:.6rem .75rem;background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--r);margin-bottom:.55rem}
+.feed-name{font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:700;color:var(--tx2)}
+.feed-input{background:var(--bg4);border:1px solid var(--bdr2);border-radius:4px;padding:.3rem .5rem;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.82rem;width:70px;outline:none;text-align:center}
+.feed-input:focus{border-color:var(--accent)}
+.feed-kcal{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--kcal-ent);min-width:70px;text-align:right}
+.feed-total{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--tx3);min-width:80px;text-align:right}
+select.feed-type{background:var(--bg4);border:1px solid var(--bdr2);border-radius:4px;padding:.3rem .5rem;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:.75rem;outline:none;cursor:pointer}
+select.feed-type:focus{border-color:var(--accent)}
+
+/* ═══ GIR GAUGE ════════════════════════════════════════ */
+.gir-wrap{display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap}
+.gir-gauge{width:110px;height:60px;position:relative;flex-shrink:0}
+.gir-gauge svg{overflow:visible}
+.gir-val{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:1.1rem;font-weight:700;white-space:nowrap}
+.gir-info{flex:1}
+.gir-label{font-family:'JetBrains Mono',monospace;font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-bottom:.25rem}
+.gir-status-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+
+/* ═══ KCAL SECTION ═════════════════════════════════════ */
+.kcal-source-row{display:flex;align-items:center;gap:.75rem;padding:.5rem .75rem;border-radius:6px;margin-bottom:.4rem;background:var(--bg3);border:1px solid var(--bdr)}
+.kcal-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.kcal-src-name{font-family:'JetBrains Mono',monospace;font-size:.78rem;font-weight:600;color:var(--tx2);min-width:130px}
+.kcal-bar-track{flex:1;height:8px;background:var(--bdr2);border-radius:4px;overflow:hidden;min-width:60px}
+.kcal-bar-fill{height:100%;border-radius:4px;transition:width .5s ease}
+.kcal-val{font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:700;min-width:65px;text-align:right}
+.kcal-pct{font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--tx3);min-width:38px;text-align:right}
+
+/* ═══ SUMMARY CARD ═════════════════════════════════════ */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-bottom:1.1rem}
+.sum-item{background:var(--bg3);border-radius:var(--r);padding:.75rem .9rem;border:1px solid var(--bdr)}
+.sum-lbl{font-family:'JetBrains Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-bottom:.2rem}
+.sum-val{font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:700}
+.sum-sub{font-size:.65rem;color:var(--tx3);margin-top:.15rem}
+.rx-box{background:var(--bg);border:1px solid var(--bdr3);border-radius:var(--r);padding:1rem 1.25rem;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.8;color:var(--tx2);white-space:pre-wrap}
+.rx-box strong{color:var(--accent)}
+
+/* ═══ ALERT BOXES ══════════════════════════════════════ */
+.alert{padding:.55rem .85rem;border-radius:6px;border-left:3px solid;font-size:.75rem;line-height:1.5;margin:.5rem 0}
+.alert-warn{background:rgba(210,153,34,.1);border-color:var(--warn);color:#d29922}
+.alert-danger{background:rgba(218,54,51,.1);border-color:var(--danger);color:#f85149}
+.alert-ok{background:rgba(46,160,67,.1);border-color:var(--ok);color:#56d364}
+.alert-info{background:rgba(56,139,253,.1);border-color:var(--info);color:#79c0ff}
+
+/* ═══ DIVIDER ══════════════════════════════════════════ */
+.divider{height:1px;background:var(--bdr);margin:.9rem 0}
+
+/* ═══ BADGE ════════════════════════════════════════════ */
+.badge{font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:600;padding:.14rem .5rem;border-radius:10px;border:1px solid}
+.badge-ok{color:#56d364;border-color:#56d36455;background:rgba(86,211,100,.1)}
+.badge-warn{color:var(--t3);border-color:rgba(227,179,65,.4);background:rgba(227,179,65,.1)}
+.badge-danger{color:var(--t4);border-color:rgba(247,129,102,.4);background:rgba(247,129,102,.1)}
+.badge-info{color:#79c0ff;border-color:rgba(121,192,255,.4);background:rgba(121,192,255,.1)}
+
+/* ═══ TOOLTIP ══════════════════════════════════════════ */
+#tt{position:fixed;pointer-events:none;z-index:9999;background:rgba(7,9,15,.97);border:1px solid var(--bdr2);border-radius:7px;padding:.55rem .85rem;font-size:.75rem;font-family:'Libre Franklin',sans-serif;max-width:230px;line-height:1.55;color:var(--tx);opacity:0;transition:opacity .1s;box-shadow:0 8px 32px rgba(0,0,0,.7)}
+#tt.on{opacity:1}
+#tt strong{display:block;font-weight:600;color:var(--accent);margin-bottom:.1rem;font-size:.8rem}
+#tt .lbl{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em}
+
+@media(max-width:700px){.content{padding:1rem};.grid-3,.grid-2{grid-template-columns:1fr}.feed-row{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     PAGE HEADER + GA BANNER
+     ══════════════════════════════════════════════════════ -->
+<header class="page-hdr">
+  <div class="page-hdr-top">
+    <h1>Neonatal IVF Prescription Calculator</h1>
+    <span class="hdr-sub">Weight-based · Fluid Type · Enteral Offset · Calorie Tracking</span>
+    <span class="hdr-badge">Clinical Decision Support</span>
+  </div>
+  <div class="ga-banner-lbl">Gestational Age at Birth</div>
+  <div class="ga-weeks-scroll" id="ga-banner"></div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════
+     PATIENT INPUT BAR
+     ══════════════════════════════════════════════════════ -->
+<div class="patient-bar">
+  <div class="pb-field">
+    <label class="pb-lbl">Current Weight (grams)</label>
+    <div style="display:flex;align-items:center;gap:.4rem">
+      <input class="pb-input weight" id="inp-wt" type="number" min="300" max="5000" step="10" value="1200" oninput="recalc()">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--tx3)">g</span>
+    </div>
+  </div>
+  <div class="pb-sep"></div>
+  <div class="pb-field">
+    <label class="pb-lbl">Day of Life</label>
+    <div style="display:flex;align-items:center;gap:.5rem">
+      <input type="range" class="rng" id="inp-dol" min="0" max="28" value="1" oninput="recalc()" style="width:120px;--thumb-col:var(--accent)">
+      <span id="dol-val" style="font-family:'JetBrains Mono',monospace;font-size:.88rem;font-weight:700;color:var(--accent);min-width:36px">DOL 1</span>
+    </div>
+  </div>
+  <div class="pb-sep"></div>
+  <div class="pb-field">
+    <label class="pb-lbl">Clinical Condition</label>
+    <select class="pb-input" id="inp-cond" onchange="recalc()">
+      <option value="stable">Stable</option>
+      <option value="rds">RDS / Resp. Distress</option>
+      <option value="sepsis">Sepsis / Infection</option>
+      <option value="nec">NEC (Restrict)</option>
+      <option value="pphn">PPHN / Hypoxia</option>
+      <option value="postop">Post-operative</option>
+    </select>
+  </div>
+  <div class="pb-sep"></div>
+  <div class="pb-field">
+    <label class="pb-lbl">Environment</label>
+    <select class="pb-input" id="inp-env" onchange="recalc()">
+      <option value="isolette">Isolette (incubator)</option>
+      <option value="warmer">Radiant warmer</option>
+      <option value="photo1">Single phototherapy</option>
+      <option value="photo2">Double phototherapy</option>
+    </select>
+  </div>
+  <div class="pb-sep"></div>
+  <!-- Live GA + Rate readout -->
+  <div style="margin-left:auto;display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center">
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3)">Selected GA</div>
+      <div id="hdr-ga" style="font-family:'JetBrains Mono',monospace;font-size:.92rem;font-weight:700;color:var(--ga-pt)">28 weeks</div>
+    </div>
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3)">Target Rate</div>
+      <div id="hdr-rate" style="font-family:'JetBrains Mono',monospace;font-size:.92rem;font-weight:700;color:var(--accent)">90 mL/kg/d</div>
+    </div>
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3)">Total Fluid</div>
+      <div id="hdr-total" style="font-family:'JetBrains Mono',monospace;font-size:.92rem;font-weight:700;color:var(--tx)">108 mL/day</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     MAIN CONTENT
+     ══════════════════════════════════════════════════════ -->
+<main class="content">
+
+<!-- ─── SECTION 1: FLUID RATE CALCULATOR ───────────────── -->
+<div class="section-card">
+  <div class="section-hdr">
+    <span class="section-num">①</span>
+    <div>
+      <h2>Fluid Rate Calculator</h2>
+      <p>Weight-based total fluid, exact IV pump rate, and glucose infusion rate</p>
+    </div>
+    <div id="s1-tier-badge" style="margin-left:auto"></div>
+  </div>
+  <div class="section-body">
+    <div class="grid-3" style="margin-bottom:1rem">
+      <div class="calc-box highlight">
+        <span class="cb-label">Target Rate</span>
+        <span class="cb-value big accent" id="s1-rate">90</span>
+        <span class="cb-unit">mL / kg / day</span>
+        <span class="cb-sub" id="s1-rate-range">Range: 80–100 mL/kg/d</span>
+      </div>
+      <div class="calc-box">
+        <span class="cb-label">Total Fluid / Day</span>
+        <span class="cb-value" id="s1-total-day">108</span>
+        <span class="cb-unit">mL / day  (rate × weight)</span>
+        <span class="cb-sub" id="s1-wt-display">@ 1.20 kg</span>
+      </div>
+      <div class="calc-box">
+        <span class="cb-label">IV Pump Rate (Total)</span>
+        <span class="cb-value accent" id="s1-pump-rate">4.5</span>
+        <span class="cb-unit">mL / hr  (before enteral offset)</span>
+        <span class="cb-sub">Infuse continuously — reassess q12–24h</span>
+      </div>
+    </div>
+
+    <!-- Manual rate adjustment -->
+    <div style="margin-bottom:1rem">
+      <div class="range-wrap">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3)">Manual Rate Adjustment</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--tx3)" id="s1-adj-note">Using protocol default</span>
+        </div>
+        <div class="range-row">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--tx3)">60</span>
+          <input type="range" class="rng" id="rate-adj" min="60" max="170" step="5" value="90" oninput="onRateAdj()" style="--thumb-col:#58a6ff">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--tx3)">170</span>
+          <span class="rng-val" id="rate-adj-val" style="color:var(--accent)">90 mL</span>
+        </div>
+        <div class="rng-labels"><span>Restrict</span><span>Conservative</span><span>Standard</span><span>Liberal</span><span>Max</span></div>
+      </div>
+    </div>
+
+    <!-- GIR -->
+    <div class="divider"></div>
+    <div class="gir-wrap">
+      <div class="gir-gauge" id="gir-gauge"></div>
+      <div class="gir-info">
+        <div class="gir-label">Glucose Infusion Rate (GIR)</div>
+        <div class="gir-status-row">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:1.6rem;font-weight:700" id="gir-val">6.2</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--tx3)">mg / kg / min</span>
+          <span class="badge" id="gir-badge">Normal</span>
+        </div>
+        <div style="font-size:.72rem;color:var(--tx3);margin-top:.35rem" id="gir-note">Target: 4–8 mg/kg/min · D10W at selected rate</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.4rem">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em">Dextrose concentration</div>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap" id="dex-btns">
+          <button class="badge badge-info" onclick="setDex(5,this)" data-dex="5">D5W</button>
+          <button class="badge badge-warn" onclick="setDex(10,this)" data-dex="10" style="border:2px solid var(--t3)">D10W ●</button>
+          <button class="badge badge-info" onclick="setDex(12.5,this)" data-dex="12.5">D12.5W</button>
+          <button class="badge badge-info" onclick="setDex(15,this)" data-dex="15">D15W</button>
+          <button class="badge badge-info" onclick="setDex(20,this)" data-dex="20">D20W (TPN)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SECTION 2: FLUID TYPE RECOMMENDATION ────────────── -->
+<div class="section-card">
+  <div class="section-hdr">
+    <span class="section-num">②</span>
+    <div>
+      <h2>Fluid Type &amp; Electrolyte Recommendation</h2>
+      <p>Based on GA, day of life, and clinical condition — click to select</p>
+    </div>
+  </div>
+  <div class="section-body">
+    <div class="grid-3" id="fluid-type-grid" style="margin-bottom:1.1rem">
+      <!-- Populated by JS -->
+    </div>
+    <div style="margin-bottom:.9rem">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-bottom:.6rem">Recommended Additives — DOL <span id="add-dol-label">1</span></div>
+      <div id="additives-list"><!-- JS --></div>
+    </div>
+    <div id="fluid-type-alert"></div>
+  </div>
+</div>
+
+<!-- ─── SECTION 3: ENTERAL FEED OFFSET ──────────────────── -->
+<div class="section-card">
+  <div class="section-hdr">
+    <span class="section-num">③</span>
+    <div>
+      <h2>Enteral / Oral Feed Volume &amp; IV Offset</h2>
+      <p>Subtract enteral intake from total fluid to get net IVF pump rate</p>
+    </div>
+  </div>
+  <div class="section-body">
+
+    <!-- Bolus feeds -->
+    <div style="font-family:'JetBrains Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-bottom:.6rem">Bolus / Intermittent Feeds</div>
+    <div class="feed-row" style="grid-template-columns:auto auto auto auto 1fr auto">
+      <select class="feed-type" id="bolus-type" onchange="recalc()">
+        <option value="bm20">Breast Milk (20 kcal/oz)</option>
+        <option value="bm_hmf24">BM + HMF (24 kcal/oz)</option>
+        <option value="formula20">Formula 20 kcal/oz</option>
+        <option value="formula22">Formula 22 kcal/oz</option>
+        <option value="formula24" selected>Premature Formula 24 kcal/oz</option>
+        <option value="formula30">Premature Formula 30 kcal/oz</option>
+        <option value="water">Sterile water / NS</option>
+      </select>
+      <div style="display:flex;flex-direction:column;gap:.15rem">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em">mL / feed</span>
+        <input class="feed-input" id="bolus-vol" type="number" min="0" max="60" step="1" value="10" oninput="recalc()">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.15rem">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em">Feeds / day</span>
+        <input class="feed-input" id="bolus-freq" type="number" min="0" max="12" step="1" value="8" oninput="recalc()">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.15rem;align-items:flex-end">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em">mL / day</span>
+        <span class="feed-kcal" id="bolus-mld" style="color:var(--tx2)">80</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.15rem;align-items:flex-end">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em">kcal / day</span>
+        <span class="feed-kcal" id="bolus-kcal">54</span>
+      </div>
+    </div>
+
+    <!-- Continuous feeds -->
+    <div style="font-family:'JetBrains Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-bottom:.6rem;margin-top:1rem">Continuous / NG Tube Feed</div>
+    <div class="feed-row" style="grid-template-columns:auto auto 1fr auto auto">
+      <select class="feed-type" id="cont-type" onchange="recalc()">
+        <option value="bm20">Breast Milk (20 kcal/oz)</option>
+        <option value="bm_hmf24" selected>BM + HMF (24 kcal/oz)</option>
+        <option value="formula20">Formula 20 kcal/oz</option>
+        <option value="formula24">Premature Formula 24 kcal/oz</option>
+        <option value="formula30">Premature Formula 30 kcal/oz</option>
+        <option value="water">Sterile water</option>
+      </select>
+      <div style="display:flex;flex-direction:column;gap:.15rem">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em">mL / hr</span>
+        <input class="feed-input" id="cont-rate" type="number" min="0" max="10" step="0.5" value="0" oninput="recalc()">
+      </div>
+      <div></div>
+      <div style="display:flex;flex-direction:column;gap:.15rem;align-items:flex-end">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em">mL / day</span>
+        <span class="feed-kcal" id="cont-mld" style="color:var(--tx2)">0</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.15rem;align-items:flex-end">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em">kcal / day</span>
+        <span class="feed-kcal" id="cont-kcal">0</span>
+      </div>
+    </div>
+
+    <!-- IVFE / Lipids -->
+    <div style="font-family:'JetBrains Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-bottom:.6rem;margin-top:1rem">IV Lipids (IVFE) — infused separately</div>
+    <div class="feed-row" style="grid-template-columns:auto auto auto 1fr auto auto">
+      <select class="feed-type" id="ivfe-conc" onchange="recalc()">
+        <option value="20">IVFE 20% (2.0 kcal/mL)</option>
+        <option value="30">IVFE 30% (3.0 kcal/mL)</option>
+      </select>
+      <div style="display:flex;flex-direction:column;gap:.15rem">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em">g / kg / day</span>
+        <input class="feed-input" id="ivfe-dose" type="number" min="0" max="3.5" step="0.5" value="2" oninput="recalc()">
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.15rem;align-items:flex-end">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em">mL / hr</span>
+        <span class="feed-kcal" id="ivfe-mlhr" style="color:var(--tx2)">0.5</span>
+      </div>
+      <div></div>
+      <div style="display:flex;flex-direction:column;gap:.15rem;align-items:flex-end">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em">mL / day</span>
+        <span class="feed-kcal" id="ivfe-mld" style="color:var(--tx2)">12</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.15rem;align-items:flex-end">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em">kcal / day</span>
+        <span class="feed-kcal" id="ivfe-kcal" style="color:var(--kcal-lip)">24</span>
+      </div>
+    </div>
+
+    <!-- Offset results -->
+    <div class="divider"></div>
+    <div class="grid-3">
+      <div class="calc-box">
+        <span class="cb-label">Total Oral + Enteral</span>
+        <span class="cb-value" id="s3-oral-total">80</span>
+        <span class="cb-unit">mL / day</span>
+      </div>
+      <div class="calc-box highlight">
+        <span class="cb-label">Net IVF Volume</span>
+        <span class="cb-value accent" id="s3-net-ivf">28</span>
+        <span class="cb-unit">mL / day  (total − enteral)</span>
+        <span class="cb-sub" id="s3-net-sub">IVFE counted separately</span>
+      </div>
+      <div class="calc-box">
+        <span class="cb-label">Net IVF Pump Rate</span>
+        <span class="cb-value accent" id="s3-net-pump">1.2</span>
+        <span class="cb-unit">mL / hr  (net IVF ÷ 24)</span>
+        <span class="cb-sub" id="s3-net-gir">GIR at net rate recalculated ↓</span>
+      </div>
+    </div>
+    <div id="s3-alert" style="margin-top:.75rem"></div>
+  </div>
+</div>
+
+<!-- ─── SECTION 4: CALORIE TRACKER ──────────────────────── -->
+<div class="section-card">
+  <div class="section-hdr">
+    <span class="section-num">④</span>
+    <div>
+      <h2>Calorie Tracker</h2>
+      <p>Total kcal/kg/day from all sources · protein contribution · goal tracking</p>
+    </div>
+    <div id="kcal-goal-badge" style="margin-left:auto"></div>
+  </div>
+  <div class="section-body">
+
+    <!-- AA / Protein input -->
+    <div style="display:flex;gap:1.25rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-bottom:.3rem">TPN Amino Acids</div>
+        <div style="display:flex;align-items:center;gap:.55rem">
+          <input type="range" class="rng" id="aa-dose" min="0" max="4" step="0.5" value="2.5" oninput="recalc()" style="width:130px;--thumb-col:var(--kcal-aa)">
+          <span class="rng-val" id="aa-val" style="color:var(--kcal-aa)">2.5 g/kg/d</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-bottom:.3rem">Calorie Goal</div>
+        <select class="pb-input" id="kcal-goal-sel" onchange="recalc()" style="font-size:.82rem">
+          <option value="100">100 kcal/kg/d (Term/conservative)</option>
+          <option value="110" selected>110 kcal/kg/d (Standard preterm)</option>
+          <option value="120">120 kcal/kg/d (Growth goal)</option>
+          <option value="130">130 kcal/kg/d (High metabolic demand)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Calorie source breakdown bars -->
+    <div id="kcal-bars" style="margin-bottom:1.1rem"><!-- JS --></div>
+
+    <!-- D3 calorie chart -->
+    <div style="margin-bottom:1rem">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);margin-bottom:.55rem">Projected Calorie Accumulation (DOL 0–28)</div>
+      <div id="kcal-chart"></div>
+    </div>
+
+    <!-- Totals -->
+    <div class="grid-3">
+      <div class="calc-box">
+        <span class="cb-label">Total kcal / day</span>
+        <span class="cb-value accent" id="kcal-total-day">72</span>
+        <span class="cb-unit">kcal / day (all sources)</span>
+      </div>
+      <div class="calc-box highlight">
+        <span class="cb-label">kcal / kg / day</span>
+        <span class="cb-value big accent" id="kcal-per-kg">60</span>
+        <span class="cb-unit">kcal / kg / day</span>
+        <span class="cb-sub" id="kcal-goal-note">Goal: 110 kcal/kg/d</span>
+      </div>
+      <div class="calc-box">
+        <span class="cb-label">Protein (AA)</span>
+        <span class="cb-value" id="prot-gkgd">2.5</span>
+        <span class="cb-unit">g / kg / day  (goal: 3.0–4.0 preterm)</span>
+        <span class="cb-sub" id="prot-total">3.0 g/day total @ 1.20 kg</span>
+      </div>
+    </div>
+    <div id="kcal-alert" style="margin-top:.75rem"></div>
+  </div>
+</div>
+
+<!-- ─── SECTION 5: PRESCRIPTION SUMMARY ─────────────────── -->
+<div class="section-card">
+  <div class="section-hdr">
+    <span class="section-num">⑤</span>
+    <div>
+      <h2>Prescription Summary</h2>
+      <p>Complete fluid and nutrition order — review before entering in EHR</p>
+    </div>
+    <button class="badge badge-info" onclick="copyRx()" style="margin-left:auto;cursor:pointer;padding:.25rem .8rem;font-size:.68rem">Copy Text</button>
+  </div>
+  <div class="section-body">
+    <div class="summary-grid" id="sum-grid"><!-- JS --></div>
+    <div class="rx-box" id="rx-box"></div>
+    <div id="sum-alerts" style="margin-top:.75rem"></div>
+  </div>
+</div>
+
+</main>
+<div id="tt"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     JAVASCRIPT — CLINICAL ENGINE
+     ══════════════════════════════════════════════════════ -->
+<script>
+/* ═══════════════════════════════════════════════════════
+   CLINICAL DATA
+   ═══════════════════════════════════════════════════════ */
+const GA_GROUPS=[
+  {id:'<25',  label:'< 25 wks',  sl:'EXT PT', col:'#79c0ff', weeks:[22,23,24]},
+  {id:'25-27',label:'25–27 wks', sl:'V.PT',   col:'#56d364', weeks:[25,26,27]},
+  {id:'28-29',label:'28–29 wks', sl:'PRETERM', col:'#e3b341', weeks:[28,29]},
+  {id:'30-32',label:'30–32 wks', sl:'MOD PT',  col:'#f78166', weeks:[30,31,32]},
+  {id:'33-34',label:'33–34 wks', sl:'LATE PT', col:'#d2a8ff', weeks:[33,34]},
+  {id:'35-36',label:'35–36 wks', sl:'NEAR T',  col:'#ff7b72', weeks:[35,36]},
+  {id:'37+',  label:'≥ 37 wks',  sl:'TERM',    col:'#ffa657', weeks:[37,38,39,40]},
+];
+const WEEK_TO_GA={};
+GA_GROUPS.forEach(g=>g.weeks.forEach(w=>WEEK_TO_GA[w]=g.id));
+
+const DOL_V=[0,1,2,3,4,5,6,7,10,14,21,28];
+const BASE_RATES={
+  '<25':  [80,90,100,110,120,130,140,150,155,160,155,150],
+  '25-27':[80,85, 95,105,115,125,135,145,150,155,150,145],
+  '28-29':[70,80, 90,100,110,120,130,140,145,150,145,140],
+  '30-32':[70,80, 85, 95,105,115,125,135,140,145,140,135],
+  '33-34':[65,75, 80, 90,100,110,120,130,135,140,135,130],
+  '35-36':[60,70, 80, 85, 95,105,115,125,130,135,130,125],
+  '37+':  [60,65, 75, 85, 90,100,110,120,125,130,125,120],
+};
+const COND_MOD={stable:0,rds:15,sepsis:15,nec:-20,pphn:10,postop:15};
+const ENV_MOD={isolette:0,warmer:25,photo1:15,photo2:20};
+
+// Fluid type library
+const FLUID_TYPES={
+  'D10W':  {name:'D10W',        dex:10,  kcalPerMl:0.34, desc:'Standard for most neonates DOL 0+'},
+  'D12.5W':{name:'D12.5W',      dex:12.5,kcalPerMl:0.43, desc:'Extreme preterm, high glucose needs'},
+  'D5W':   {name:'D5W',         dex:5,   kcalPerMl:0.17, desc:'Term infants, maintenance after feeds established'},
+  'D5NS':  {name:'D5 0.9% NS',  dex:5,   kcalPerMl:0.17, desc:'Postop or electrolyte replacement'},
+  'D5HNS': {name:'D5 ½NS',      dex:5,   kcalPerMl:0.17, desc:'Maintenance fluids term/late preterm'},
+  'TPN20': {name:'TPN (D20%)',   dex:20,  kcalPerMl:0.68, desc:'Central TPN — full nutrition support'},
+  'D15W':  {name:'D15W',        dex:15,  kcalPerMl:0.51, desc:'Bridge while TPN being compounded'},
+};
+
+// Fluid type recommendation by GA + DOL
+function getFluidRecommendations(gaId, dol, cond){
+  const isPT = ['<25','25-27','28-29'].includes(gaId);
+  const isMPT= ['30-32'].includes(gaId);
+  const isLPT= ['33-34','35-36'].includes(gaId);
+  const isTerm= gaId==='37+';
+  const earlyDOL = dol<=2, midDOL=dol>2&&dol<=7, lateDOL=dol>7;
+
+  if(gaId==='<25'){
+    if(earlyDOL) return [
+      {key:'D12.5W', recommended:true, note:'High GIR needed for brain glucose. Peripheral IV acceptable.'},
+      {key:'D10W',   recommended:false, note:'Acceptable if D12.5 unavailable; watch for hypoglycemia'},
+    ];
+    if(midDOL)   return [{key:'D10W',recommended:true,note:'Transition from D12.5. TPN with AA+IVFE should be running.'},{key:'TPN20',recommended:false,note:'If central access (UVC/PICC) established'}];
+    return [{key:'TPN20',recommended:true,note:'Full TPN via central line — maximize nutrition'},{key:'D10W',recommended:false,note:'Supplement if TPN temporarily unavailable'}];
+  }
+  if(isPT){
+    if(earlyDOL) return [{key:'D10W',recommended:true,note:'Standard for preterm DOL 0–2. Add Na after DOL 2.'},{key:'D12.5W',recommended:false,note:'Consider if birth weight <800g'}];
+    if(midDOL)   return [{key:'D10W',recommended:true,note:'Continue with electrolytes. Advance TPN.'},{key:'TPN20',recommended:false,note:'Transition to central TPN if PICC/UVC in place'}];
+    return [{key:'TPN20',recommended:true,note:'Full TPN — optimize nutrition for growth'},{key:'D15W',recommended:false,note:'Bridge only'}];
+  }
+  if(isMPT||isLPT){
+    if(earlyDOL) return [{key:'D10W',recommended:true,note:'Standard maintenance DOL 0–2.'},{key:'D5W',recommended:false,note:'Only if glucose stable and feeds advancing'}];
+    return [{key:'D10W',recommended:true,note:'Maintain while feeds advance. Wean IVF as tolerated.'},{key:'D5W',recommended:false,note:'As enteral feeds reach 50%+ of total fluid'}];
+  }
+  if(cond==='nec')  return [{key:'D10W',recommended:true,note:'NPO — IV only. Restrict total volume.'},{key:'TPN20',recommended:false,note:'Consider TPN for prolonged NPO >5 days'}];
+  if(cond==='sepsis')return [{key:'D10W',recommended:true,note:'D10W for maintenance. Bolus with NS 10 mL/kg if hypotensive.'}];
+  // Term
+  if(earlyDOL) return [{key:'D10W',recommended:true,note:'DOL 0–2 before feeds established.'},{key:'D5HNS',recommended:false,note:'If corrected Na low'}];
+  return [{key:'D5W',recommended:true,note:'Wean as feeds advance. Discontinue when full feeds.'},{key:'D5HNS',recommended:false,note:'Maintenance'}];
+}
+
+// Additive recommendations
+function getAdditives(gaId, dol, na, uo){
+  const arr=[];
+  const earlyDOL=dol<=2;
+  const isPT=['<25','25-27','28-29','30-32'].includes(gaId);
+  if(dol===0){
+    arr.push({name:'Sodium (Na)',dose:'Hold',note:'Do not add Na DOL 0 — monitor serum Na q6–8h',status:'hold'});
+    arr.push({name:'Potassium (K)',dose:'Hold',note:'Hold until adequate urine output established',status:'hold'});
+    arr.push({name:'Calcium gluconate',dose:'100–200 mg/kg/d',note:'Add to IVF or TPN DOL 0 for ELBW',status:isPT?'add':'hold'});
+  } else if(dol<=2){
+    arr.push({name:'Sodium (Na)',dose:'2–3 mEq/kg/d',note:'Start Na supplementation after Na begins to rise on DOL 1–2',status:'add'});
+    arr.push({name:'Potassium (K)',dose:'1–2 mEq/kg/d',note:'Add when UO >1 mL/kg/hr confirmed',status:'caution'});
+    arr.push({name:'Calcium gluconate',dose:'100–200 mg/kg/d',note:'Continue for preterm bone mineralization',status:isPT?'add':'hold'});
+  } else {
+    arr.push({name:'Sodium (Na)',dose:'2–4 mEq/kg/d',note:'Standard maintenance. Adjust for serum Na and losses.',status:'add'});
+    arr.push({name:'Potassium (K)',dose:'1–3 mEq/kg/d',note:'Maintenance — check renal function first.',status:'add'});
+    arr.push({name:'Calcium gluconate',dose:'200–400 mg/kg/d',note:'Ongoing supplementation — aim for positive Ca balance.',status:'add'});
+    arr.push({name:'Phosphate',dose:'1–2 mmol/kg/d',note:'Add to TPN. Avoid mixing with Ca (precipitate risk)',status:dol>3?'add':'hold'});
+    if(isPT) arr.push({name:'Magnesium',dose:'0.3–0.5 mEq/kg/d',note:'Add to TPN after DOL 3. Check serum Mg levels.',status:'add'});
+    if(dol>3) arr.push({name:'Vitamins (MVI)',dose:'2 mL/day',note:'Add to TPN daily. Light-protect IVFE.',status:'add'});
+    if(dol>3) arr.push({name:'Trace minerals',dose:'0.2 mL/kg/d',note:'Zinc, selenium, copper — add to TPN >DOL 3.',status:'add'});
+  }
+  return arr;
+}
+
+// Formula kcal/mL
+const FEED_KCAL={
+  bm20:0.676, bm_hmf24:0.811,
+  formula20:0.676,formula22:0.744,formula24:0.811,formula30:1.014,
+  water:0,
+};
+
+// Tier
+function tier(r){return r<80?0:r<100?1:r<120?2:r<140?3:4}
+const TIER_DATA=[
+  {label:'Restrict',     col:'#388bfd',range:'60–80'},
+  {label:'Conservative', col:'#3dc9b0',range:'80–100'},
+  {label:'Standard',     col:'#56d364',range:'100–120'},
+  {label:'Liberal',      col:'#e3b341',range:'120–140'},
+  {label:'Very Liberal', col:'#f78166',range:'140–160'},
+];
+
+/* ═══ STATE ═══════════════════════════════════════════════ */
+let selectedWeek=28;
+let dexConc=10;      // current dextrose %
+let manualRate=null; // if user drags rate slider
+let kcalChartBuilt=false;
+
+/* ═══ TOOLTIP ═══════════════════════════════════════════ */
+const TT=document.getElementById('tt');
+function showTT(html,e){TT.innerHTML=html;TT.classList.add('on');moveTT(e)}
+function moveTT(e){
+  const x=Math.min(e.clientX+14,window.innerWidth-250);
+  const y=Math.min(e.clientY-10,window.innerHeight-130);
+  TT.style.left=x+'px';TT.style.top=y+'px';
+}
+function hideTT(){TT.classList.remove('on')}
+
+/* ═══ GA BANNER ════════════════════════════════════════ */
+function buildBanner(){
+  const row=document.getElementById('ga-banner');
+  row.innerHTML='';
+  GA_GROUPS.forEach(group=>{
+    const sect=document.createElement('div');
+    sect.className='ga-group-sect';
+    const lbl=document.createElement('div');
+    lbl.className='ga-group-lbl';
+    lbl.style.color=group.col;
+    lbl.textContent=group.sl;
+    sect.appendChild(lbl);
+    const wkRow=document.createElement('div');
+    wkRow.className='ga-group-weeks';
+    group.weeks.forEach(wk=>{
+      const btn=document.createElement('button');
+      btn.className='gw-btn'+(wk===selectedWeek?' active':'');
+      btn.style.setProperty('--sel-col',group.col);
+      btn.innerHTML=`<span class="gw-num">${wk}<span style="font-size:.5em;opacity:.6">w</span></span><span class="gw-sub">${wk>=37?'term':'wks'}</span>`;
+      btn.onclick=()=>{
+        selectedWeek=wk;
+        document.querySelectorAll('.gw-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        document.documentElement.style.setProperty('--sel-col',group.col);
+        recalc();
+      };
+      wkRow.appendChild(btn);
+    });
+    sect.appendChild(wkRow);
+    row.appendChild(sect);
+  });
+}
+
+/* ═══ FLUID TYPE GRID ════════════════════════════════════ */
+let selectedFluidKey='D10W';
+function buildFluidTypeGrid(gaId,dol,cond){
+  const grid=document.getElementById('fluid-type-grid');
+  const recs=getFluidRecommendations(gaId,dol,cond);
+  grid.innerHTML='';
+  recs.forEach(rec=>{
+    const ft=FLUID_TYPES[rec.key];
+    if(!ft) return;
+    const card=document.createElement('div');
+    card.className='fluid-type-card'+(rec.key===selectedFluidKey?' selected':'');
+    card.dataset.key=rec.key;
+    const group=GA_GROUPS.find(g=>g.id===gaId);
+    const col=group?group.col:'#58a6ff';
+    card.innerHTML=`
+      <span class="ftc-badge ${rec.recommended?'recommended':'alternative'}">${rec.recommended?'RECOMMENDED':'ALTERNATIVE'}</span>
+      <div class="ftc-name" style="color:${rec.recommended?col:'var(--tx2)'}">${ft.name}</div>
+      <div class="ftc-dex">Dex: ${ft.dex}% · ${ft.kcalPerMl.toFixed(2)} kcal/mL</div>
+      <div class="ftc-note">${ft.desc}<br><span style="color:var(--tx3)">${rec.note}</span></div>
+    `;
+    card.onclick=()=>{
+      selectedFluidKey=rec.key;
+      dexConc=ft.dex;
+      document.querySelectorAll('.fluid-type-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      recalc();
+    };
+    grid.appendChild(card);
+  });
+  // Also update dexConc to match recommended if auto
+  const rec0=recs.find(r=>r.recommended);
+  if(rec0 && !recs.find(r=>r.key===selectedFluidKey)){
+    selectedFluidKey=rec0.key;
+    dexConc=FLUID_TYPES[rec0.key]?.dex||10;
+  }
+}
+
+/* ═══ ADDITIVES ══════════════════════════════════════════ */
+function buildAdditives(gaId,dol){
+  const adds=getAdditives(gaId,dol);
+  const list=document.getElementById('additives-list');
+  list.innerHTML='';
+  adds.forEach(a=>{
+    const row=document.createElement('div');
+    row.className='additive-row';
+    row.innerHTML=`
+      <span class="add-name">${a.name}</span>
+      <span class="add-dose" style="color:${a.status==='hold'?'var(--tx3)':a.status==='caution'?'var(--t3)':'#56d364'}">${a.dose}</span>
+      <span class="add-note">${a.note}</span>
+      <span class="add-status ${a.status}">${a.status.toUpperCase()}</span>
+    `;
+    list.appendChild(row);
+  });
+  document.getElementById('add-dol-label').textContent=dol;
+}
+
+/* ═══ GIR GAUGE (D3) ════════════════════════════════════ */
+function drawGirGauge(gir){
+  const wrap=document.getElementById('gir-gauge');
+  d3.select(wrap).selectAll('*').remove();
+  const W=110,H=60,cx=55,cy=56,R=44;
+  const svg=d3.select(wrap).append('svg').attr('width',W).attr('height',H);
+  const arc=d3.arc().innerRadius(R-10).outerRadius(R).startAngle(-Math.PI/1.1).endAngle(Math.PI/1.1);
+
+  // Background arc
+  svg.append('path').attr('d',arc({startAngle:-Math.PI/1.1,endAngle:Math.PI/1.1}))
+    .attr('transform',`translate(${cx},${cy})`).attr('fill','#21262d');
+
+  // Value arc
+  const maxGIR=12;
+  const frac=Math.min(gir/maxGIR,1);
+  const startA=-Math.PI/1.1;
+  const endA=startA+frac*(2*Math.PI/1.1);
+  const col=gir<4?'#388bfd':gir<=8?'#56d364':gir<=10?'#e3b341':'#f78166';
+  svg.append('path').attr('d',arc({startAngle:startA,endAngle:endA}))
+    .attr('transform',`translate(${cx},${cy})`).attr('fill',col);
+
+  // Needle
+  const needleA=startA+frac*(2*Math.PI/1.1)-Math.PI/2;
+  svg.append('line')
+    .attr('x1',cx).attr('y1',cy)
+    .attr('x2',cx+Math.cos(needleA)*(R-5))
+    .attr('y2',cy+Math.sin(needleA)*(R-5))
+    .attr('stroke',col).attr('stroke-width',2).attr('stroke-linecap','round');
+  svg.append('circle').attr('cx',cx).attr('cy',cy).attr('r',3).attr('fill',col);
+}
+
+/* ═══ KCAL CHART (D3) ════════════════════════════════════ */
+function drawKcalChart(kcalPerKg, goal, sources){
+  const wrap=document.getElementById('kcal-chart');
+  d3.select(wrap).selectAll('*').remove();
+  const W=Math.max(wrap.clientWidth||600,400);
+  const H=90, M={t:10,r:120,b:28,l:40};
+  const iW=W-M.l-M.r, iH=H-M.t-M.b;
+
+  const svg=d3.select(wrap).append('svg').attr('width',W).attr('height',H)
+    .style('background','var(--bg3)').style('border-radius','6px');
+  const g=svg.append('g').attr('transform',`translate(${M.l},${M.t})`);
+
+  const xS=d3.scaleLinear().domain([0,28]).range([0,iW]);
+  const yS=d3.scaleLinear().domain([0,Math.max(goal*1.15,140)]).range([iH,0]);
+
+  // Goal line
+  g.append('line').attr('x1',0).attr('x2',iW).attr('y1',yS(goal)).attr('y2',yS(goal))
+    .attr('stroke','#58a6ff').attr('stroke-width',1).attr('stroke-dasharray','4,3').attr('opacity',.6);
+  g.append('text').attr('x',iW+4).attr('y',yS(goal)).attr('dominant-baseline','middle')
+    .attr('font-family','JetBrains Mono, monospace').attr('font-size','8px').attr('fill','#58a6ff').text('Goal '+goal);
+
+  // Stack source lines across DOL
+  const srcCols={dex:'#388bfd',lip:'#d2a8ff',aa:'#56d364',ent:'#e3b341'};
+  const srcLabels={dex:'TPN Dex',lip:'Lipids',aa:'Amino Acids',ent:'Enteral'};
+
+  // Draw current point marker
+  const curX=xS(Math.min(parseInt(document.getElementById('inp-dol').value)||1,28));
+  g.append('line').attr('x1',curX).attr('x2',curX).attr('y1',0).attr('y2',iH)
+    .attr('stroke','var(--accent)').attr('stroke-width',1).attr('opacity',.4);
+
+  // Total kcal line (simplified trajectory)
+  const totalPts=DOL_V.map((dol,di)=>{
+    const gaId=WEEK_TO_GA[selectedWeek]||'28-29';
+    const condMod=COND_MOD[document.getElementById('inp-cond').value]||0;
+    const envMod=ENV_MOD[document.getElementById('inp-env').value]||0;
+    const r=Math.max(55,Math.min(170,BASE_RATES[gaId][di]+condMod+envMod));
+    const wt=(parseFloat(document.getElementById('inp-wt').value)||1200)/1000;
+    const ft=FLUID_TYPES[selectedFluidKey]||FLUID_TYPES['D10W'];
+    const dexKcal=r*ft.kcalPerMl;
+    const entFrac=dol<2?0:Math.min((dol-2)/12,0.5);
+    const entKcal=entFrac*r*0.811;
+    const lipKcal=parseFloat(document.getElementById('ivfe-dose').value||2)*2*Math.min(dol>1?1:0,1);
+    const aaKcal=parseFloat(document.getElementById('aa-dose').value||2.5)*4;
+    return {dol,kcal:Math.round((dexKcal+entKcal+lipKcal+aaKcal)*0.75)};
+  });
+
+  g.append('path').datum(totalPts)
+    .attr('d',d3.line().x(d=>xS(d.dol)).y(d=>yS(d.kcal)).curve(d3.curveCatmullRom))
+    .attr('fill','none').attr('stroke','#56d364').attr('stroke-width',2).attr('opacity',.85);
+
+  // Axes
+  g.append('g').attr('transform',`translate(0,${iH})`).call(
+    d3.axisBottom(xS).ticks(7).tickFormat(d=>'DOL'+d))
+    .selectAll('text').attr('font-size','8px').attr('font-family','JetBrains Mono, monospace').attr('fill','#6e7681');
+  g.append('g').call(d3.axisLeft(yS).ticks(4).tickFormat(d=>d))
+    .selectAll('text').attr('font-size','8px').attr('font-family','JetBrains Mono, monospace').attr('fill','#6e7681');
+
+  // Current kcal dot
+  g.append('circle').attr('cx',curX).attr('cy',yS(kcalPerKg)).attr('r',4)
+    .attr('fill','var(--accent)').attr('stroke','var(--bg)').attr('stroke-width',2);
+}
+
+/* ═══ KCAL BARS ══════════════════════════════════════════ */
+function drawKcalBars(sources, total, goal){
+  const container=document.getElementById('kcal-bars');
+  container.innerHTML='';
+  sources.forEach(s=>{
+    const pct=Math.round((s.kcal/goal)*100);
+    const div=document.createElement('div');
+    div.className='kcal-source-row';
+    div.innerHTML=`
+      <div class="kcal-dot" style="background:${s.col}"></div>
+      <div class="kcal-src-name">${s.label}</div>
+      <div class="kcal-bar-track">
+        <div class="kcal-bar-fill" style="width:${Math.min(pct,100)}%;background:${s.col}"></div>
+      </div>
+      <div class="kcal-val" style="color:${s.col}">${Math.round(s.kcal)}</div>
+      <div class="kcal-pct">${pct}%</div>
+    `;
+    container.appendChild(div);
+  });
+
+  // Total bar
+  const totalPct=Math.round((total/goal)*100);
+  const totDiv=document.createElement('div');
+  totDiv.className='kcal-source-row';
+  totDiv.style.background='var(--bg4)';
+  totDiv.style.borderColor='var(--bdr3)';
+  totDiv.innerHTML=`
+    <div class="kcal-dot" style="background:var(--accent)"></div>
+    <div class="kcal-src-name" style="color:var(--tx);font-weight:700">TOTAL</div>
+    <div class="kcal-bar-track">
+      <div class="kcal-bar-fill" style="width:${Math.min(totalPct,100)}%;background:var(--accent)"></div>
+    </div>
+    <div class="kcal-val" style="color:var(--accent);font-weight:700">${Math.round(total)}</div>
+    <div class="kcal-pct" style="color:var(--tx2)">${totalPct}%<br><span style="font-size:.58rem;color:var(--tx3)">of goal</span></div>
+  `;
+  container.appendChild(totDiv);
+}
+
+/* ═══ SUMMARY ════════════════════════════════════════════ */
+function buildSummary(data){
+  const {wt,wtG,gaId,gaLabel,dol,rate,totalFluid,netIvf,pumpRate,netPumpRate,
+         gir,fluidType,bolusMld,contMld,iVFEMld,totalOral,kcalPerKg,goal,
+         bolusFeed,contFeed,aaGKg,protTotal,kcalSources} = data;
+
+  const group=GA_GROUPS.find(g=>g.id===gaId)||GA_GROUPS[2];
+  const t=tier(rate);
+  const td=TIER_DATA[t];
+
+  // Summary boxes
+  const items=[
+    {lbl:'GA',   val:selectedWeek+'w', sub:gaLabel,   col:group.col},
+    {lbl:'Weight', val:wtG+' g', sub:(wt.toFixed(3)+' kg  ·  current weight'), col:'var(--tx)'},
+    {lbl:'DOL',  val:dol,         sub:'Day of Life',  col:'var(--accent)'},
+    {lbl:'Total Fluid', val:rate+' mL/kg/d', sub:totalFluid+' mL/day total', col:td.col},
+    {lbl:'IV Fluid',  val:pumpRate.toFixed(1)+' mL/hr', sub:'Total IVF pump rate', col:td.col},
+    {lbl:'Net IVF',   val:netPumpRate.toFixed(1)+' mL/hr', sub:'After enteral offset', col:'var(--accent)'},
+    {lbl:'Fluid Type', val:fluidType, sub:'GIR: '+gir.toFixed(1)+' mg/kg/min', col:'var(--tx2)'},
+    {lbl:'kcal/kg/d', val:Math.round(kcalPerKg), sub:'Goal: '+goal+' kcal/kg/d', col:kcalPerKg>=goal?'#56d364':kcalPerKg>goal*0.8?'#e3b341':'#f78166'},
+    {lbl:'Protein',  val:aaGKg+' g/kg/d', sub:protTotal.toFixed(1)+' g/day', col:'#56d364'},
+  ];
+  const grid=document.getElementById('sum-grid');
+  grid.innerHTML='';
+  items.forEach(item=>{
+    const div=document.createElement('div');
+    div.className='sum-item';
+    div.innerHTML=`<div class="sum-lbl">${item.lbl}</div><div class="sum-val" style="color:${item.col}">${item.val}</div><div class="sum-sub">${item.sub}</div>`;
+    grid.appendChild(div);
+  });
+
+  // Rx text
+  const ft=FLUID_TYPES[selectedFluidKey]||FLUID_TYPES['D10W'];
+  const cond=document.getElementById('inp-cond').value;
+  const env=document.getElementById('inp-env').value;
+  const ivfeDose=parseFloat(document.getElementById('ivfe-dose').value)||0;
+  const iVFEConc=document.getElementById('ivfe-conc').value;
+  const aaVal=parseFloat(document.getElementById('aa-dose').value)||2.5;
+  const bolusType=document.getElementById('bolus-type').value;
+  const bolusVol=document.getElementById('bolus-vol').value;
+  const bolusFreq=document.getElementById('bolus-freq').value;
+  const contRt=document.getElementById('cont-rate').value;
+  const contType=document.getElementById('cont-type').value;
+
+  const addsList=getAdditives(gaId,dol).filter(a=>a.status==='add').map(a=>`    ${a.name}: ${a.dose}`).join('\n');
+
+  document.getElementById('rx-box').innerHTML=`<strong>──── NEONATAL IVF PRESCRIPTION ────</strong>
+Patient:  GA ${selectedWeek} weeks  ·  Current weight ${wtG} g  (${wt.toFixed(3)} kg)  ·  DOL ${dol}
+Condition: ${cond.toUpperCase()}  ·  Environment: ${env.toUpperCase()}
+
+<strong>─ IV FLUIDS ─────────────────────────────────</strong>
+Fluid type:    ${ft.name}  (${ft.dex}% dextrose · ${ft.kcalPerMl.toFixed(2)} kcal/mL)
+Total fluid:   ${rate} mL/kg/day  =  ${totalFluid} mL/day
+Total IVF:     ${pumpRate.toFixed(1)} mL/hr  (continuous infusion)
+Net IVF:       ${netPumpRate.toFixed(1)} mL/hr  (after enteral offset)
+GIR:           ${gir.toFixed(1)} mg/kg/min at net pump rate
+
+<strong>─ ELECTROLYTES ──────────────────────────────</strong>
+${addsList||'    None — check DOL-specific protocol'}
+
+<strong>─ IV LIPIDS (IVFE) ──────────────────────────</strong>
+${ivfeDose>0?`IVFE ${iVFEConc}%:     ${ivfeDose} g/kg/day  ·  ${iVFEMld.toFixed(1)} mL/day  ·  ${(iVFEMld/24).toFixed(2)} mL/hr`:'IVFE: Not ordered'}
+
+<strong>─ TPN AMINO ACIDS ───────────────────────────</strong>
+Protein:       ${aaVal} g/kg/day  =  ${protTotal.toFixed(1)} g/day
+
+<strong>─ ENTERAL NUTRITION ─────────────────────────</strong>
+${bolusMld>0?`Bolus feeds:   ${bolusType.toUpperCase()}  ${bolusVol} mL q${Math.round(24/parseFloat(bolusFreq))}h  (${bolusMld} mL/day)`:'Bolus feeds:   None'}
+${parseFloat(contRt)>0?`Continuous:    ${contType.toUpperCase()}  ${contRt} mL/hr  (${(parseFloat(contRt)*24).toFixed(0)} mL/day)`:'Continuous:    None'}
+Total enteral: ${totalOral} mL/day
+
+<strong>─ CALORIE SUMMARY ───────────────────────────</strong>
+Total kcal:    ${Math.round(kcalPerKg*wt)} kcal/day  (${Math.round(kcalPerKg)} kcal/kg/day)
+Goal:          ${goal} kcal/kg/day  →  ${(kcalPerKg/goal*100).toFixed(0)}% of goal achieved
+${kcalSources.map(s=>`${s.label.padEnd(14)}: ${Math.round(s.kcal).toString().padStart(4)} kcal/day`).join('\n')}
+
+<strong>─ REASSESSMENT ──────────────────────────────</strong>
+Reassess fluid rate q12–24h. Electrolytes q8–12h (first 48h).
+Weight daily. Strict I&O. UO target: 1–3 mL/kg/hr.`;
+
+  // Summary alerts
+  const alerts=[];
+  if(kcalPerKg<goal*0.7) alerts.push({type:'danger',msg:`⚠ Caloric deficit — ${Math.round(kcalPerKg)} kcal/kg/d is well below goal of ${goal}. Advance enteral feeds or increase IVFE.`});
+  else if(kcalPerKg<goal*0.9) alerts.push({type:'warn',msg:`⚠ ${Math.round(kcalPerKg)} kcal/kg/d — approaching goal but not yet met. Consider increasing IVFE or advancing feeds.`});
+  else alerts.push({type:'ok',msg:`✓ Calorie intake adequate at ${Math.round(kcalPerKg)} kcal/kg/d (${(kcalPerKg/goal*100).toFixed(0)}% of goal).`});
+
+  if(gir>10) alerts.push({type:'danger',msg:'⚠ GIR >10 mg/kg/min — high risk of hyperglycemia. Reduce dextrose concentration or infusion rate.'});
+  else if(gir<3) alerts.push({type:'warn',msg:'⚠ GIR <3 mg/kg/min — risk of hypoglycemia. Increase dextrose concentration or rate.'});
+
+  if(netIvf<0) alerts.push({type:'warn',msg:'⚠ Enteral intake exceeds calculated total fluid — IVF should be discontinued or held. Verify enteral volumes.'});
+  if(parseFloat(document.getElementById('aa-dose').value)<2.5 && ['<25','25-27','28-29'].includes(gaId)) alerts.push({type:'warn',msg:'⚠ Protein intake <2.5 g/kg/d for preterm infant — increase amino acid dose to prevent catabolism.'});
+
+  document.getElementById('sum-alerts').innerHTML=alerts.map(a=>`<div class="alert alert-${a.type}">${a.msg}</div>`).join('');
+}
+
+/* ═══ MAIN RECALC ════════════════════════════════════════ */
+function recalc(){
+  const gaId  = WEEK_TO_GA[selectedWeek]||'28-29';
+  const group = GA_GROUPS.find(g=>g.id===gaId)||GA_GROUPS[2];
+  const dol   = parseInt(document.getElementById('inp-dol').value)||0;
+  const wtG   = parseFloat(document.getElementById('inp-wt').value)||1200;  // grams as entered
+  const wt    = wtG / 1000;  // convert to kg for all calculations
+  const cond  = document.getElementById('inp-cond').value;
+  const env   = document.getElementById('inp-env').value;
+
+  document.getElementById('dol-val').textContent='DOL '+dol;
+
+  // DOL index
+  const dolIdx=Math.max(0,Math.min(DOL_V.findIndex(d=>d>=dol),11));
+  const baseProt=BASE_RATES[gaId][dolIdx];
+  const condMod=COND_MOD[cond]||0;
+  const envMod=ENV_MOD[env]||0;
+  const protocolRate=Math.max(55,Math.min(170,baseProt+condMod+envMod));
+
+  // Rate (use manual if dragged, else protocol)
+  const rateAdj=parseInt(document.getElementById('rate-adj').value)||protocolRate;
+  if(document.getElementById('rate-adj').value!=protocolRate && manualRate===null){
+    document.getElementById('rate-adj').value=protocolRate;
+  }
+  const rate=parseInt(document.getElementById('rate-adj').value)||protocolRate;
+
+  document.getElementById('rate-adj-val').textContent=rate+' mL';
+  document.getElementById('s1-adj-note').textContent=rate===protocolRate?'Using protocol default':'Manual override';
+
+  const t=tier(rate);
+  const td=TIER_DATA[t];
+  const totalFluid=Math.round(rate*wt);
+  const pumpRate=totalFluid/24;
+
+  // GIR
+  const ft=FLUID_TYPES[selectedFluidKey]||FLUID_TYPES['D10W'];
+  const girTotal=(dexConc*pumpRate)/(wt*6);
+  const netPumpRateForGir=pumpRate; // will be updated below
+
+  // Update header
+  document.getElementById('hdr-ga').textContent=selectedWeek+' weeks';
+  document.getElementById('hdr-ga').style.color=group.col;
+  document.getElementById('hdr-rate').textContent=rate+' mL/kg/d';
+  document.getElementById('hdr-total').textContent=totalFluid+' mL/day';
+
+  // Section 1
+  document.getElementById('s1-rate').textContent=rate;
+  document.getElementById('s1-rate').style.color=td.col;
+  document.getElementById('s1-rate-range').textContent=`Tier: ${td.label} (${td.range} mL/kg/d)`;
+  document.getElementById('s1-total-day').textContent=totalFluid;
+  document.getElementById('s1-pump-rate').textContent=pumpRate.toFixed(1);
+  document.getElementById('s1-wt-display').textContent='@ '+wtG+' g  ('+wt.toFixed(3)+' kg)';
+
+  // Tier badge
+  document.getElementById('s1-tier-badge').innerHTML=`<span class="badge" style="color:${td.col};border-color:${td.col}55;background:${td.col}18;font-size:.72rem">${td.label} · ${td.range}</span>`;
+
+  // GIR
+  const girVal=(dexConc*pumpRate)/(wt*6);
+  drawGirGauge(girVal);
+  document.getElementById('gir-val').textContent=girVal.toFixed(1);
+  document.getElementById('gir-val').style.color=girVal<4?'#388bfd':girVal<=8?'#56d364':girVal<=10?'#e3b341':'#f78166';
+  const girStatus=girVal<3?'LOW ⚠':girVal<=4?'Low-Normal':girVal<=8?'Normal':girVal<=10?'High-Normal':'HIGH ⚠';
+  const girBadge=document.getElementById('gir-badge');
+  girBadge.textContent=girStatus;
+  girBadge.className='badge '+(girVal<3||girVal>10?'badge-danger':girVal<4||girVal>8?'badge-warn':'badge-ok');
+  document.getElementById('gir-note').textContent=`GIR = (D${dexConc}W × ${pumpRate.toFixed(1)} mL/hr) ÷ (${wt.toFixed(2)} kg × 6) — Target: 4–8 mg/kg/min`;
+
+  // Section 2 — fluid types
+  buildFluidTypeGrid(gaId,dol,cond);
+  buildAdditives(gaId,dol);
+
+  // Dex buttons styling
+  document.querySelectorAll('[data-dex]').forEach(b=>{
+    const d=parseFloat(b.dataset.dex);
+    b.style.border=d===dexConc?'2px solid var(--t3)':'1px solid';
+    b.textContent=b.dataset.dex==='10'?'D10W':(d===dexConc?'D'+d+'W ●':'D'+d+'W');
+  });
+
+  // Section 3 — enteral feeds
+  const bolusVol=parseFloat(document.getElementById('bolus-vol').value)||0;
+  const bolusFreq=parseFloat(document.getElementById('bolus-freq').value)||0;
+  const bolusType=document.getElementById('bolus-type').value;
+  const bolusMld=bolusVol*bolusFreq;
+  const bolusKcal=bolusMld*(FEED_KCAL[bolusType]||0);
+
+  const contRate=parseFloat(document.getElementById('cont-rate').value)||0;
+  const contType=document.getElementById('cont-type').value;
+  const contMld=contRate*24;
+  const contKcal=contMld*(FEED_KCAL[contType]||0);
+
+  // IVFE
+  const ivfeDose=parseFloat(document.getElementById('ivfe-dose').value)||0;
+  const ivfeConc=parseInt(document.getElementById('ivfe-conc').value)||20;
+  const ivfeMld=(ivfeDose*wt/(ivfeConc/100));
+  const ivfeKcalPerMl=ivfeConc===30?3.0:2.0;
+  const ivfeKcal=ivfeMld*ivfeKcalPerMl;
+  document.getElementById('ivfe-mlhr').textContent=(ivfeMld/24).toFixed(2);
+  document.getElementById('ivfe-mld').textContent=ivfeMld.toFixed(1);
+  document.getElementById('ivfe-kcal').textContent=Math.round(ivfeKcal);
+
+  document.getElementById('bolus-mld').textContent=bolusMld;
+  document.getElementById('bolus-kcal').textContent=Math.round(bolusKcal);
+  document.getElementById('cont-mld').textContent=contMld.toFixed(1);
+  document.getElementById('cont-kcal').textContent=Math.round(contKcal);
+
+  const totalOral=bolusMld+contMld;
+  const netIvf=totalFluid-totalOral;
+  const netPumpRate=Math.max(0,netIvf)/24;
+  const girNet=(dexConc*netPumpRate)/(wt*6);
+
+  document.getElementById('s3-oral-total').textContent=totalOral.toFixed(0);
+  document.getElementById('s3-net-ivf').textContent=Math.max(0,netIvf).toFixed(0);
+  document.getElementById('s3-net-pump').textContent=netPumpRate.toFixed(2);
+  document.getElementById('s3-net-pump').style.color=netIvf<0?'#f78166':'var(--accent)';
+  document.getElementById('s3-net-gir').textContent=`Net GIR: ${girNet.toFixed(1)} mg/kg/min at ${dexConc}% dextrose`;
+  document.getElementById('s3-net-sub').textContent=`IVFE (${ivfeMld.toFixed(0)} mL/day) runs separately`;
+
+  const s3alert=document.getElementById('s3-alert');
+  if(netIvf<=0) s3alert.innerHTML=`<div class="alert alert-warn">⚠ Enteral volume meets or exceeds total fluid target — consider discontinuing or holding IV maintenance fluids. Verify volumes are accurate.</div>`;
+  else if(totalOral>totalFluid*0.6) s3alert.innerHTML=`<div class="alert alert-ok">✓ Enteral feeds providing ${Math.round(totalOral/totalFluid*100)}% of total fluid — IV fluids appropriately weaned.</div>`;
+  else s3alert.innerHTML='';
+
+  // Section 4 — calories
+  const aaGKg=parseFloat(document.getElementById('aa-dose').value)||2.5;
+  const aaDayTotal=aaGKg*wt;
+  const aaKcal=aaDayTotal*4;
+  const dexKcal=netIvf>0?netIvf*(ft.kcalPerMl||0.34):0;
+  const goal=parseInt(document.getElementById('kcal-goal-sel').value)||110;
+  const kcalGoalDay=goal*wt;
+
+  const sources=[
+    {label:'TPN Dextrose',col:'#388bfd',kcal:dexKcal/wt},
+    {label:'IV Lipids',   col:'#d2a8ff',kcal:ivfeKcal/wt},
+    {label:'Amino Acids', col:'#56d364',kcal:aaKcal/wt},
+    {label:'Enteral Feeds',col:'#e3b341',kcal:(bolusKcal+contKcal)/wt},
+  ];
+  const kcalPerKg=sources.reduce((s,x)=>s+x.kcal,0);
+
+  drawKcalBars(sources,kcalPerKg,goal);
+  drawKcalChart(kcalPerKg,goal,sources);
+
+  document.getElementById('kcal-total-day').textContent=Math.round(kcalPerKg*wt);
+  document.getElementById('kcal-per-kg').textContent=Math.round(kcalPerKg);
+  document.getElementById('kcal-per-kg').style.color=kcalPerKg>=goal?'#56d364':kcalPerKg>goal*0.8?'#e3b341':'#f78166';
+  document.getElementById('kcal-goal-note').textContent='Goal: '+goal+' kcal/kg/d';
+  document.getElementById('prot-gkgd').textContent=aaGKg;
+  document.getElementById('prot-total').textContent=aaDayTotal.toFixed(2)+' g/day total @ '+wtG+'g  ('+wt.toFixed(3)+' kg)';
+
+  const gcBadge=document.getElementById('kcal-goal-badge');
+  const pctGoal=Math.round(kcalPerKg/goal*100);
+  gcBadge.innerHTML=`<span class="badge ${pctGoal>=95?'badge-ok':pctGoal>70?'badge-warn':'badge-danger'}">${pctGoal}% of ${goal} kcal/kg/d goal</span>`;
+
+  const kcalAlerts=[];
+  if(kcalPerKg<60) kcalAlerts.push(`<div class="alert alert-danger">🚨 Critical caloric deficit — ${Math.round(kcalPerKg)} kcal/kg/d. Urgent nutrition optimization needed.</div>`);
+  else if(kcalPerKg<goal*0.8) kcalAlerts.push(`<div class="alert alert-warn">⚠ Caloric intake ${Math.round(kcalPerKg)} kcal/kg/d is ${Math.round(100-pctGoal)}% below goal. Advance enteral feeds or increase IVFE.</div>`);
+  if(aaGKg<2 && ['<25','25-27','28-29'].includes(gaId)) kcalAlerts.push(`<div class="alert alert-warn">⚠ Protein <2 g/kg/d for extreme/very preterm — increase AA to 3–4 g/kg/d to prevent catabolism.</div>`);
+  if(ivfeDose>3) kcalAlerts.push(`<div class="alert alert-warn">⚠ IVFE >3 g/kg/d — maximum recommended dose. Monitor triglycerides.</div>`);
+  document.getElementById('kcal-alert').innerHTML=kcalAlerts.join('');
+
+  // Section 5 — summary
+  buildSummary({
+    wt,wtG,gaId,gaLabel:group.label,dol,rate,totalFluid,
+    netIvf,pumpRate,netPumpRate,
+    gir:girVal,fluidType:ft.name,
+    bolusMld,contMld,iVFEMld:ivfeMld,totalOral,
+    kcalPerKg,goal,
+    bolusFeed:bolusType,contFeed:document.getElementById('cont-type').value,
+    aaGKg,protTotal:aaDayTotal,
+    kcalSources:sources,
+  });
+}
+
+/* ═══ RATE MANUAL ADJUST ════════════════════════════════ */
+function onRateAdj(){
+  manualRate=parseInt(document.getElementById('rate-adj').value);
+  recalc();
+}
+
+/* ═══ DEX SELECTOR ═══════════════════════════════════════ */
+function setDex(d,btn){
+  dexConc=d;
+  recalc();
+}
+
+/* ═══ COPY RX ════════════════════════════════════════════ */
+function copyRx(){
+  const text=document.getElementById('rx-box').innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.badge-info[onclick="copyRx()"]');
+    btn.textContent='Copied ✓';
+    setTimeout(()=>btn.textContent='Copy Text',2000);
+  });
+}
+
+/* ═══ INIT ═══════════════════════════════════════════════ */
+buildBanner();
+const initGroup=GA_GROUPS.find(g=>g.weeks.includes(selectedWeek));
+if(initGroup) document.documentElement.style.setProperty('--sel-col',initGroup.col);
+recalc();
+window.addEventListener('resize',()=>recalc());
+</script>
+<script src="../theme-bridge.js"></script>
+<script src="../shell.js"></script>
+<script src="../edu-links.js"></script>
+</body>
+</html>
