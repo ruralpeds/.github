@@ -3,7 +3,7 @@
   "description": "Tracking registry for all clinical decision trees in timothyhartzog/Peds",
   "repository": "timothyhartzog/Peds",
   "base_path": "apps/web/static/decision-trees",
-  "last_updated": "2026-03-26",
+  "last_updated": "2026-03-26T10:23:25Z",
   "standards": {
     "engine": "D3.js 7.8.5 (cdnjs)",
     "fonts": "DM Serif Display, IBM Plex Sans, IBM Plex Mono",
@@ -16,7 +16,8 @@
       "\u24d8 tabbed info popups",
       "\ud83d\udcda Education resources panel",
       "PubMed-sourced evidence"
-    ]
+    ],
+    "data_separation": "All 36 trees: clinical data in tree-data/*.js \u2014 rendering code in HTML loader. Edit .js files to update protocols without touching HTML."
   },
   "trees": [
     {
@@ -67,7 +68,9 @@
           "version": "1.0.0",
           "changes": "Initial creation with PubMed literature review, 4 decision branches, education panel, banner config"
         }
-      ]
+      ],
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_glucose_management_dt.js"
     },
     {
       "id": "neonatal_cardiac_pda",
@@ -95,7 +98,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_cardiac_pda.js"
     },
     {
       "id": "neonatal_endocrine",
@@ -129,7 +134,9 @@
         "cheat_sheets": [
           "neonatal_endocrine_abnormalities"
         ]
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_endocrine.js"
     },
     {
       "id": "neonatal_fen",
@@ -163,7 +170,9 @@
         "cheat_sheets": [
           "neonatal_fen"
         ]
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_fen.js"
     },
     {
       "id": "neonatal_gi_liver",
@@ -197,7 +206,9 @@
         "cheat_sheets": [
           "neonatal_gi_liver"
         ]
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_gi_liver.js"
     },
     {
       "id": "neonatal_hematology",
@@ -229,7 +240,9 @@
         "cheat_sheets": [
           "neonatal_hematology"
         ]
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_hematology.js"
     },
     {
       "id": "neonatal_infectious_diseases",
@@ -263,7 +276,9 @@
         "cheat_sheets": [
           "neonatal_infectious_diseases"
         ]
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_infectious_diseases.js"
     },
     {
       "id": "neonatal_neurology",
@@ -298,7 +313,9 @@
         "cheat_sheets": [
           "neonatal_neurology"
         ]
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_neurology.js"
     },
     {
       "id": "neonatal_nows_nas",
@@ -327,7 +344,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_nows_nas.js"
     },
     {
       "id": "neonatal_pulmonary",
@@ -366,7 +385,9 @@
         "cheat_sheets": [
           "neonatal_pulmonary_disorders"
         ]
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_pulmonary.js"
     },
     {
       "id": "neonatal_renal",
@@ -397,7 +418,9 @@
         "cheat_sheets": [
           "neonatal_renal"
         ]
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_renal.js"
     },
     {
       "id": "neonatal_skin",
@@ -428,7 +451,9 @@
         "cheat_sheets": [
           "neonatal_skin"
         ]
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_skin.js"
     },
     {
       "id": "neonatal_surgical_emergencies",
@@ -460,7 +485,9 @@
         "cheat_sheets": [
           "neonatal_surgical_emergencies"
         ]
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_surgical_emergencies.js"
     },
     {
       "id": "neonatal_transport",
@@ -493,7 +520,9 @@
         "cheat_sheets": [
           "critical_care_stabilization"
         ]
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_transport.js"
     },
     {
       "id": "neonatal_urological",
@@ -524,7 +553,9 @@
         "cheat_sheets": [
           "neonatal_urology"
         ]
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_urological.js"
     },
     {
       "id": "neonatal_ophthalmology",
@@ -550,7 +581,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_ophthalmology.js"
     },
     {
       "id": "neonatal_pain_sedation",
@@ -576,7 +609,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_pain_sedation.js"
     },
     {
       "id": "newborn_discharge_readiness",
@@ -604,7 +639,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/newborn_discharge_readiness.js"
     },
     {
       "id": "newborn_screening_followup",
@@ -630,7 +667,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/newborn_screening_followup.js"
     },
     {
       "id": "nrp_resuscitation",
@@ -665,7 +704,9 @@
         "cheat_sheets": [
           "critical_care_stabilization"
         ]
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/nrp_resuscitation.js"
     },
     {
       "id": "obstetric_emergencies",
@@ -698,7 +739,9 @@
         "cheat_sheets": [
           "maternal_infections"
         ]
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/obstetric_emergencies.js"
     },
     {
       "id": "shoulder_dystocia",
@@ -723,7 +766,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/shoulder_dystocia.js"
     },
     {
       "id": "pals_algorithm",
@@ -758,7 +803,9 @@
         "cheat_sheets": [
           "critical_care_stabilization"
         ]
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pals_algorithm.js"
     },
     {
       "id": "pediatric_abdominal_pain",
@@ -782,7 +829,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_abdominal_pain.js"
     },
     {
       "id": "pediatric_anaphylaxis",
@@ -806,7 +855,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_anaphylaxis.js"
     },
     {
       "id": "pediatric_burns",
@@ -831,7 +882,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_burns.js"
     },
     {
       "id": "pediatric_cardiac_emergencies",
@@ -856,7 +909,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_cardiac_emergencies.js"
     },
     {
       "id": "pediatric_dka",
@@ -881,7 +936,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_dka.js"
     },
     {
       "id": "pediatric_orthopedic",
@@ -906,7 +963,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_orthopedic.js"
     },
     {
       "id": "pediatric_psychiatric_emergencies",
@@ -931,7 +990,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_psychiatric_emergencies.js"
     },
     {
       "id": "pediatric_respiratory_emergencies",
@@ -960,7 +1021,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_respiratory_emergencies.js"
     },
     {
       "id": "pediatric_seizures",
@@ -985,7 +1048,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_seizures.js"
     },
     {
       "id": "pediatric_sepsis_shock",
@@ -1012,7 +1077,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_sepsis_shock.js"
     },
     {
       "id": "pediatric_siadh_csw",
@@ -1037,7 +1104,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_siadh_csw.js"
     },
     {
       "id": "pediatric_toxicology",
@@ -1062,7 +1131,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_toxicology.js"
     },
     {
       "id": "pediatric_trauma",
@@ -1088,7 +1159,9 @@
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_trauma.js"
     },
     {
       "id": "neonatal_ivf_prescription_calculator",
@@ -1150,7 +1223,9 @@
         "AAP Committee on Nutrition 2022",
         "Cloherty & Stark NICU Manual 8th Edition",
         "Tsang et al. Nutrition of the Preterm Infant 3rd Edition"
-      ]
+      ],
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_ivf_prescription_calculator.js"
     }
   ]
 }

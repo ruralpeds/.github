@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Pediatric Trauma Decision Tree</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -27,124 +27,22 @@
 <body>
 <div id="hdr"><div><h1>Pediatric Trauma Decision Tree</h1><div class="sub">Enhanced Clinical Edition — ATLS primary survey, PECARN head CT rule, C-spine clearance, abdominal trauma (FAST/NOM), non-accidental trauma (NAT)</div></div>
 <div class="ctrls"><button onclick="resetZ()">⟲ Reset</button><button onclick="expAll()">⊞ Expand</button><button onclick="colAll()">⊟ Collapse</button></div></div>
-<svg id="tc"></svg>
-<div id="po" onclick="closeP(event)"><div id="pp" onclick="event.stopPropagation()"><div id="ph"><div id="picon"></div><div><div id="ptitle"></div><div id="ptype"></div></div><button id="pclose" onclick="closeP()">&times;</button></div><div id="pbody"></div></div></div>
-<div id="lg"><div class="li"><div class="ld" style="background:var(--red)"></div>Emergency</div><div class="li"><div class="ld" style="background:var(--orange)"></div>Urgent</div><div class="li"><div class="ld" style="background:var(--yellow)"></div>Decision</div><div class="li"><div class="ld" style="background:var(--green)"></div>Action</div><div class="li"><div class="ld" style="background:var(--blue)"></div>Assessment</div><div class="li"><div class="ld" style="background:var(--purple)"></div>Diagnosis</div></div>
+<div id="po" onclick="closeP(event)"><div id="pp" onclick="event.stopPropagation()"><div id="ph"><div id="picon"></div><div><div id="ptitle"></div><div id="ptype"></div></div>
+<svg id="tc">
+<div id="lg"><div class="li"><div class="ld" style="background:var(--red)"></div>
 <div id="bc">Scroll to zoom · Drag to pan · Click ⓘ for education</div>
-<script>
-const T={
-name:"Pediatric Trauma\nAssessment",icon:"🚑",type:"assessment",sub:"Primary survey, PECARN head CT rule, C-spine, abdominal",edge:"",
-info:{tabs:["Primary Survey","PECARN Head CT Rule","C-Spine Clearance"],
-t0:`<p><strong>Pediatric primary survey (ABCDE):</strong></p>
-<ol class="sl">
-<li><strong>A — Airway</strong> with C-spine protection. Jaw thrust (not head tilt). Oral airway if unconscious. RSI if unable to protect airway. C-collar.</li>
-<li><strong>B — Breathing:</strong> Bilateral breath sounds? Tracheal deviation? Open pneumothorax? Tension pneumothorax? Flail chest? Needle decompression if tension.</li>
-<li><strong>C — Circulation:</strong> Control hemorrhage (direct pressure). 2 large-bore IVs. NS/LR 20 mL/kg bolus (max 3 boluses → then blood). Pelvic binder if unstable pelvic fracture. FAST exam.</li>
-<li><strong>D — Disability:</strong> GCS, pupils, motor response, glucose.</li>
-<li><strong>E — Exposure/Environment:</strong> Fully expose, log-roll with C-spine precautions, rectal tone. Then cover to prevent hypothermia (children lose heat rapidly).</li>
-</ol>`,
-t1:`<p><strong>PECARN Pediatric Head CT Decision Rule:</strong></p>
-<p><strong>Age &lt;2 years — CT NOT recommended if ALL of the following:</strong></p>
-<ul><li>GCS = 15 (normal)</li>
-<li>No palpable skull fracture</li>
-<li>Acting normally per parents</li>
-<li>No loss of consciousness</li>
-<li>Non-severe mechanism</li>
-<li>No scalp hematoma (EXCEPT frontal)</li></ul>
-<p><strong>Age ≥2 years — CT NOT recommended if ALL of the following:</strong></p>
-<ul><li>GCS = 15</li>
-<li>No signs of basilar skull fracture</li>
-<li>No loss of consciousness</li>
-<li>No vomiting</li>
-<li>Non-severe mechanism</li>
-<li>No severe headache</li></ul>
-<div class="bx bg">✓ <strong>PECARN rule has 99.9% negative predictive value.</strong> If ALL low-risk criteria are met, the risk of clinically important TBI requiring intervention is &lt;0.02% (&lt;2 years) or &lt;0.05% (≥2 years). CT can be safely avoided. Observation for 4–6 hours is a reasonable alternative.</div>`,
-t2:`<p><strong>Pediatric C-spine considerations:</strong></p>
-<ul><li>Children &lt;8 years have relatively larger heads → fulcrum of cervical motion is higher (C2–C3 vs C5–C6 in adults) → higher cervical injuries more common</li>
-<li>SCIWORA (Spinal Cord Injury Without Radiographic Abnormality): occurs in children due to ligamentous laxity. Normal X-ray/CT does NOT exclude spinal cord injury in a child with neurologic deficits. MRI is needed.</li>
-<li><strong>Clinical clearance (≥3 years, cooperative):</strong> No midline tenderness, no neurologic deficit, no distracting injury, normal mental status, no intoxication → can clinically clear without imaging</li>
-<li>If imaging needed: CT for bony injury; MRI for ligamentous/cord injury and SCIWORA</li></ul>`
-},children:[
-{name:"Head Injury /\nConcussion",icon:"🧠",type:"decision",sub:"PECARN · GCS monitoring · Return-to-play protocol",edge:"Head trauma\n+ any symptom",
-info:{tabs:["PECARN Application","Concussion Management"],
-t0:`<p><strong>Applying PECARN in the rural ED:</strong></p>
-<ul><li>If patient meets ALL low-risk PECARN criteria → observation 4–6 hours in ED → discharge with head injury precautions if normal</li>
-<li>If ANY PECARN risk factor present → clinical judgment. One risk factor = consider CT. Multiple risk factors or GCS &lt;15 = obtain CT.</li>
-<li>GCS &lt;14 or focal neurologic deficit → CT + neurosurgery consult</li>
-<li>Always reassess GCS serially (q30 min for first 2 hours minimum)</li></ul>`,
-t1:`<p><strong>Concussion (sport-related) — return-to-play protocol:</strong></p>
-<ol class="sl">
-<li>Symptom-limited activity (rest until symptoms improve, then light walking)</li>
-<li>Light aerobic exercise (stationary bike, walking — no resistance training)</li>
-<li>Sport-specific exercise (running, skating — no head impact)</li>
-<li>Non-contact training drills (can add resistance training)</li>
-<li>Full contact practice (after medical clearance)</li>
-<li>Return to competition</li>
-</ol>
-<p><em>Minimum 24 hours at each step. If symptoms recur → back to previous step. Minimum 1 week total before full return. Children take longer to recover than adults.</em></p>
-<div class="bx br">🚨 <strong>NEVER return same day.</strong> Any athlete suspected of concussion must be removed from play and NOT returned to activity that day. Second Impact Syndrome (rare but catastrophic cerebral edema from second impact before recovery) can be fatal.</div>`
-}},
-{name:"Abdominal\nTrauma",icon:"🫁",type:"urgent",sub:"FAST exam · Solid organ injury · Operative vs non-operative",edge:"Abdominal\npain/bruising",
-info:{tabs:["FAST Exam","Non-Operative Management","Operative Indications"],
-t0:`<p><strong>FAST (Focused Assessment with Sonography in Trauma):</strong></p>
-<ul><li>4 views: RUQ (Morison's pouch), LUQ (splenorenal recess), pelvis (suprapubic), subxiphoid (pericardial)</li>
-<li>Detects FREE FLUID (blood). Does NOT diagnose specific organ injury or grade it.</li>
-<li>Sensitivity: ~75–85% for significant hemoperitoneum (lower for solid organ injury without much free fluid)</li>
-<li>In pediatric trauma: a positive FAST in a hemodynamically unstable patient → OR</li>
-<li>A negative FAST does NOT exclude significant injury — CT abdomen/pelvis with IV contrast is the gold standard for stable patients with concerning mechanism or exam</li></ul>`,
-t1:`<p><strong>Non-operative management (NOM) is the standard for MOST pediatric solid organ injuries:</strong></p>
-<ul><li>Spleen: >95% managed non-operatively (even high-grade)</li>
-<li>Liver: >90% managed non-operatively</li>
-<li>Kidney: >85% managed non-operatively</li>
-<li><strong>Requirements for NOM:</strong> Hemodynamically stable (or stabilizes with ≤40 mL/kg fluids), serial exams reliable, surgical backup available, blood products available, PICU capability</li>
-<li>Activity restriction per APSA guidelines (grade + 2 = weeks of restricted activity; e.g., Grade III = 5 weeks light activity)</li></ul>`,
-t2:`<p><strong>Operative indications in pediatric abdominal trauma:</strong></p>
-<ul><li>Hemodynamic instability NOT responding to 40 mL/kg crystalloid + pRBCs</li>
-<li>Peritonitis on exam (rigid, diffuse tenderness, rebound)</li>
-<li>Hollow viscus injury (pneumoperitoneum on CT, bowel wall thickening with free fluid and no solid organ injury)</li>
-<li>Diaphragm rupture</li>
-<li>Pancreatic duct transection (may need delayed intervention)</li>
-<li>Major vascular injury</li></ul>`
-}},
-{name:"Non-Accidental\nTrauma (NAT)",icon:"🔍",type:"urgent",sub:"When to suspect · Mandatory reporting · Skeletal survey",edge:"Inconsistent\nhistory or\nconcerning\npattern",
-info:{tabs:["When to Suspect","Evaluation","Mandatory Reporting"],
-t0:`<p><strong>Red flags for non-accidental trauma:</strong></p>
-<ul><li>Injury inconsistent with developmental stage (e.g., rib fractures in a non-ambulatory infant)</li>
-<li>History inconsistent with injury pattern (changing story, "he just fell")</li>
-<li>Delay in seeking care</li>
-<li>Injuries in different stages of healing</li>
-<li>Specific high-risk patterns: bruising in pre-mobile infants (&lt;6 months), patterned burns, posterior rib fractures, metaphyseal corner fractures (classic), retinal hemorrhages + subdural hematoma (abusive head trauma), multiple fractures of varying ages</li>
-<li>TEN-4 bruising rule: bruises on Torso, Ear, Neck in a child &lt;4 years (or ANY bruise in an infant &lt;4 months) are highly suspicious for abuse</li></ul>
-<div class="bx br">🚨 <strong>"Those who don't cruise rarely bruise."</strong> Bruising in a pre-mobile infant (&lt;6 months, not yet pulling to stand) is NAT until proven otherwise. Accidental bruising is extremely rare before independent mobility.</div>`,
-t1:`<p><strong>NAT Evaluation:</strong></p>
-<ol class="sl">
-<li><strong>Skeletal survey</strong> (AP of all long bones, AP/lateral of axial skeleton, oblique ribs) for ALL children &lt;2 years with suspected abuse. Follow-up skeletal survey in 2 weeks detects healing fractures missed initially.</li>
-<li><strong>Head CT</strong> — for all infants &lt;6 months with suspected abuse (subdural hematoma even without external signs)</li>
-<li><strong>MRI brain</strong> — more sensitive for diffuse axonal injury, dating of subdurals</li>
-<li><strong>Ophthalmologic exam</strong> — retinal hemorrhages (bilateral, multi-layered retinal hemorrhages are highly specific for abusive head trauma)</li>
-<li><strong>Labs:</strong> CBC, CMP, LFTs (hepatic transaminases — occult abdominal injury), lipase, UA (renal injury), PT/aPTT/fibrinogen (coagulopathy workup to exclude bleeding disorder)</li>
-<li><strong>Screen siblings</strong> — if one child is abused, siblings are at high risk</li>
-</ol>`,
-t2:`<p><strong>Mandatory reporting:</strong></p>
-<ul><li>ALL healthcare providers are mandatory reporters in ALL US states</li>
-<li>Report to Child Protective Services (CPS) if there is <strong>reasonable suspicion</strong> — NOT certainty. You do not need to prove abuse.</li>
-<li>Failure to report is a CRIMINAL offense in most states</li>
-<li>Good-faith reporters are protected from liability by law</li>
-<li>Document findings objectively: describe injuries precisely (size, location, color, shape), use body diagrams, photograph injuries (with ruler for scale), record exact quotes from caregivers</li>
-<li>Do NOT accuse the caregiver — use neutral language ("these injuries are concerning for non-accidental trauma and I am required by law to report to CPS")</li>
-<li>Social work and child abuse pediatrics consult if available</li></ul>`
-}}
-]};;
-const CM={assessment:{f:"#0f1d3a",s:"#60a5fa",t:"#60a5fa",b:"Assessment"},decision:{f:"#2a2006",s:"#fbbf24",t:"#fbbf24",b:"Decision Point"},emergency:{f:"#2a1215",s:"#f87171",t:"#f87171",b:"Emergency"},urgent:{f:"#2a1a0a",s:"#fb923c",t:"#fb923c",b:"Urgent"},action:{f:"#0a2a1a",s:"#4ade80",t:"#4ade80",b:"Action"},diagnosis:{f:"#1a0f2e",s:"#c084fc",t:"#c084fc",b:"Diagnosis"}};
+<script src="tree-data/pediatric_trauma.js"></script>
+<script>const CM={assessment:{f:"#0f1d3a",s:"#60a5fa",t:"#60a5fa",b:"Assessment"},decision:{f:"#2a2006",s:"#fbbf24",t:"#fbbf24",b:"Decision Point"},emergency:{f:"#2a1215",s:"#f87171",t:"#f87171",b:"Emergency"},urgent:{f:"#2a1a0a",s:"#fb923c",t:"#fb923c",b:"Urgent"},action:{f:"#0a2a1a",s:"#4ade80",t:"#4ade80",b:"Action"},diagnosis:{f:"#1a0f2e",s:"#c084fc",t:"#c084fc",b:"Diagnosis"}};
 const svg=d3.select("#tc"),W=innerWidth,H=innerHeight;svg.attr("width",W).attr("height",H);const g=svg.append("g");const zm=d3.zoom().scaleExtent([0.2,3]).on("zoom",e=>g.attr("transform",e.transform));svg.call(zm);
-const nW=148,nH=62;const root=d3.hierarchy(T,d=>d.children);root.x0=H/2;root.y0=0;
+const nW=148,nH=62;const root=d3.hierarchy(TREE_DATA,d=>d.children);root.x0=H/2;root.y0=0;
 root.descendants().forEach(d=>{if(d.depth>1&&d.children){d._children=d.children;d.children=null;}});const tl=d3.tree().nodeSize([nH+32,nW+85]);
 function upd(src){const dur=420;tl(root);const nds=root.descendants(),lks=root.links();nds.forEach(d=>{d.y=d.depth*230;});const lk=g.selectAll(".lk").data(lks,d=>d.target.data.name);const le=lk.enter().append("path").attr("class","lk").attr("d",()=>{const o={x:src.x0,y:src.y0};return dg(o,o);});lk.merge(le).transition().duration(dur).attr("d",d=>dg(d.source,d.target));lk.exit().transition().duration(dur).attr("d",()=>{const o={x:src.x,y:src.y};return dg(o,o);}).remove();g.selectAll(".ll").remove();lks.forEach(d=>{if(d.target.data.edge){const ls=d.target.data.edge.split("\n"),mx=(d.source.x+d.target.x)/2,my=(d.source.y+d.target.y)/2;ls.forEach((l,i)=>{g.append("text").attr("class","ll").attr("x",my+12).attr("y",mx-4+i*11).text(l);});}});const nd=g.selectAll(".ng").data(nds,d=>d.data.name);const ne=nd.enter().append("g").attr("class","ng").attr("transform",`translate(${src.y0},${src.x0})`).on("click",(e,d)=>{if(d.children){d._children=d.children;d.children=null;}else if(d._children){d.children=d._children;d._children=null;}upd(d);});ne.append("rect").attr("class","nr").attr("x",-nW/2).attr("y",-nH/2).attr("width",nW).attr("height",nH).attr("fill",d=>CM[d.data.type]?.f||"#1e293b").attr("stroke",d=>CM[d.data.type]?.s||"#475569");ne.append("text").attr("class","ni").attr("y",-12).text(d=>d.data.icon);ne.each(function(d){const ls=d.data.name.split("\n"),el=d3.select(this);ls.forEach((l,i)=>{el.append("text").attr("class","nl").attr("y",4+i*13).text(l);});if(d.data.sub){el.append("text").attr("class","ns").attr("y",4+ls.length*13+5).text(d.data.sub.substring(0,32));}});ne.append("circle").attr("class","ib").attr("cx",nW/2-12).attr("cy",-nH/2+12).attr("r",10).attr("fill",d=>CM[d.data.type]?.s||"#60a5fa").attr("fill-opacity",.2).attr("stroke",d=>CM[d.data.type]?.s||"#60a5fa").attr("stroke-width",1.5).on("click",(e,d)=>{e.stopPropagation();showP(d.data);});ne.append("text").attr("x",nW/2-12).attr("y",-nH/2+16).attr("text-anchor","middle").attr("font-size","12px").attr("fill","#e2e8f0").attr("pointer-events","none").attr("font-weight","700").text("i");ne.append("text").attr("class","ei").attr("x",0).attr("y",nH/2+15).attr("text-anchor","middle").attr("font-size","10px").attr("fill","#475569");const nu=nd.merge(ne);nu.transition().duration(dur).attr("transform",d=>`translate(${d.y},${d.x})`);nu.select(".ei").text(d=>d._children?`▸ ${d._children.length} more`:"");nd.exit().transition().duration(dur).attr("transform",`translate(${src.y},${src.x})`).remove();nds.forEach(d=>{d.x0=d.x;d.y0=d.y;});}
 function dg(s,d){return`M${s.y} ${s.x}C${(s.y+d.y)/2} ${s.x},${(s.y+d.y)/2} ${d.x},${d.y} ${d.x}`;}upd(root);const iT=d3.zoomIdentity.translate(90,H/2-20).scale(0.82);svg.call(zm.transform,iT);
 function showP(data){const ov=document.getElementById("po"),c=CM[data.type]||CM.assessment;document.getElementById("picon").textContent=data.icon;document.getElementById("picon").style.background=c.f;document.getElementById("picon").style.border=`1.5px solid ${c.s}`;document.getElementById("ptitle").textContent=data.name.replace(/\n/g," ");const te=document.getElementById("ptype");te.textContent=c.b;te.style.background=c.f;te.style.color=c.t;te.style.border=`1px solid ${c.s}`;let h="";if(data.info.tabs){h+=`<div class="tabs">`;data.info.tabs.forEach((t,i)=>{h+=`<button class="tb${i===0?' active':''}" onclick="swT(${i})">${t}</button>`;});h+=`</div>`;data.info.tabs.forEach((t,i)=>{h+=`<div class="tc${i===0?' active':''}" data-t="${i}">${data.info['t'+i]||''}</div>`;});}if(data.sub){h+=`<div class="bx bb" style="margin-top:16px">ℹ️ <strong>Summary:</strong> ${data.sub}</div>`;}document.getElementById("pbody").innerHTML=h;ov.classList.add("active");document.getElementById("pp").scrollTop=0;}
 function swT(i){document.querySelectorAll('.tb').forEach((b,j)=>b.classList.toggle('active',j===i));document.querySelectorAll('.tc').forEach((c,j)=>c.classList.toggle('active',j===i));}function closeP(e){if(!e||e.target===document.getElementById("po"))document.getElementById("po").classList.remove("active");}document.addEventListener("keydown",e=>{if(e.key==="Escape")closeP();});
 function resetZ(){svg.transition().duration(500).call(zm.transform,iT);}function expAll(){root.descendants().forEach(d=>{if(d._children){d.children=d._children;d._children=null;}});upd(root);}function colAll(){root.descendants().forEach(d=>{if(d.depth>0&&d.children){d._children=d.children;d.children=null;}});upd(root);}addEventListener("resize",()=>{svg.attr("width",innerWidth).attr("height",innerHeight);});
-</script><script src="../theme-bridge.js"></script>
+</script>
+<script src="../theme-bridge.js"></script>
 <script src="../shell.js"></script>
 <script src="../edu-links.js"></script>
 </body></html>

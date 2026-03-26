@@ -1,0 +1,108 @@
+// Clinical tree data — Pediatric Trauma Decision Tree
+// Source: 
+// Auto-extracted from pediatric_trauma_decision_tree.html
+// Edit this file to update clinical content without touching rendering code.
+
+const TREE_DATA = {
+name:"Pediatric Trauma\nAssessment",icon:"🚑",type:"assessment",sub:"Primary survey, PECARN head CT rule, C-spine, abdominal",edge:"",
+info:{tabs:["Primary Survey","PECARN Head CT Rule","C-Spine Clearance"],
+t0:`<p><strong>Pediatric primary survey (ABCDE):</strong></p>
+<ol class="sl">
+<li><strong>A — Airway</strong> with C-spine protection. Jaw thrust (not head tilt). Oral airway if unconscious. RSI if unable to protect airway. C-collar.</li>
+<li><strong>B — Breathing:</strong> Bilateral breath sounds? Tracheal deviation? Open pneumothorax? Tension pneumothorax? Flail chest? Needle decompression if tension.</li>
+<li><strong>C — Circulation:</strong> Control hemorrhage (direct pressure). 2 large-bore IVs. NS/LR 20 mL/kg bolus (max 3 boluses → then blood). Pelvic binder if unstable pelvic fracture. FAST exam.</li>
+<li><strong>D — Disability:</strong> GCS, pupils, motor response, glucose.</li>
+<li><strong>E — Exposure/Environment:</strong> Fully expose, log-roll with C-spine precautions, rectal tone. Then cover to prevent hypothermia (children lose heat rapidly).</li>
+</ol>`,
+t1:`<p><strong>PECARN Pediatric Head CT Decision Rule:</strong></p>
+<p><strong>Age &lt;2 years — CT NOT recommended if ALL of the following:</strong></p>
+<ul><li>GCS = 15 (normal)</li>
+<li>No palpable skull fracture</li>
+<li>Acting normally per parents</li>
+<li>No loss of consciousness</li>
+<li>Non-severe mechanism</li>
+<li>No scalp hematoma (EXCEPT frontal)</li></ul>
+<p><strong>Age ≥2 years — CT NOT recommended if ALL of the following:</strong></p>
+<ul><li>GCS = 15</li>
+<li>No signs of basilar skull fracture</li>
+<li>No loss of consciousness</li>
+<li>No vomiting</li>
+<li>Non-severe mechanism</li>
+<li>No severe headache</li></ul>
+<div class="bx bg">✓ <strong>PECARN rule has 99.9% negative predictive value.</strong> If ALL low-risk criteria are met, the risk of clinically important TBI requiring intervention is &lt;0.02% (&lt;2 years) or &lt;0.05% (≥2 years). CT can be safely avoided. Observation for 4–6 hours is a reasonable alternative.</div>`,
+t2:`<p><strong>Pediatric C-spine considerations:</strong></p>
+<ul><li>Children &lt;8 years have relatively larger heads → fulcrum of cervical motion is higher (C2–C3 vs C5–C6 in adults) → higher cervical injuries more common</li>
+<li>SCIWORA (Spinal Cord Injury Without Radiographic Abnormality): occurs in children due to ligamentous laxity. Normal X-ray/CT does NOT exclude spinal cord injury in a child with neurologic deficits. MRI is needed.</li>
+<li><strong>Clinical clearance (≥3 years, cooperative):</strong> No midline tenderness, no neurologic deficit, no distracting injury, normal mental status, no intoxication → can clinically clear without imaging</li>
+<li>If imaging needed: CT for bony injury; MRI for ligamentous/cord injury and SCIWORA</li></ul>`
+},children:[
+{name:"Head Injury /\nConcussion",icon:"🧠",type:"decision",sub:"PECARN · GCS monitoring · Return-to-play protocol",edge:"Head trauma\n+ any symptom",
+info:{tabs:["PECARN Application","Concussion Management"],
+t0:`<p><strong>Applying PECARN in the rural ED:</strong></p>
+<ul><li>If patient meets ALL low-risk PECARN criteria → observation 4–6 hours in ED → discharge with head injury precautions if normal</li>
+<li>If ANY PECARN risk factor present → clinical judgment. One risk factor = consider CT. Multiple risk factors or GCS &lt;15 = obtain CT.</li>
+<li>GCS &lt;14 or focal neurologic deficit → CT + neurosurgery consult</li>
+<li>Always reassess GCS serially (q30 min for first 2 hours minimum)</li></ul>`,
+t1:`<p><strong>Concussion (sport-related) — return-to-play protocol:</strong></p>
+<ol class="sl">
+<li>Symptom-limited activity (rest until symptoms improve, then light walking)</li>
+<li>Light aerobic exercise (stationary bike, walking — no resistance training)</li>
+<li>Sport-specific exercise (running, skating — no head impact)</li>
+<li>Non-contact training drills (can add resistance training)</li>
+<li>Full contact practice (after medical clearance)</li>
+<li>Return to competition</li>
+</ol>
+<p><em>Minimum 24 hours at each step. If symptoms recur → back to previous step. Minimum 1 week total before full return. Children take longer to recover than adults.</em></p>
+<div class="bx br">🚨 <strong>NEVER return same day.</strong> Any athlete suspected of concussion must be removed from play and NOT returned to activity that day. Second Impact Syndrome (rare but catastrophic cerebral edema from second impact before recovery) can be fatal.</div>`
+}},
+{name:"Abdominal\nTrauma",icon:"🫁",type:"urgent",sub:"FAST exam · Solid organ injury · Operative vs non-operative",edge:"Abdominal\npain/bruising",
+info:{tabs:["FAST Exam","Non-Operative Management","Operative Indications"],
+t0:`<p><strong>FAST (Focused Assessment with Sonography in Trauma):</strong></p>
+<ul><li>4 views: RUQ (Morison's pouch), LUQ (splenorenal recess), pelvis (suprapubic), subxiphoid (pericardial)</li>
+<li>Detects FREE FLUID (blood). Does NOT diagnose specific organ injury or grade it.</li>
+<li>Sensitivity: ~75–85% for significant hemoperitoneum (lower for solid organ injury without much free fluid)</li>
+<li>In pediatric trauma: a positive FAST in a hemodynamically unstable patient → OR</li>
+<li>A negative FAST does NOT exclude significant injury — CT abdomen/pelvis with IV contrast is the gold standard for stable patients with concerning mechanism or exam</li></ul>`,
+t1:`<p><strong>Non-operative management (NOM) is the standard for MOST pediatric solid organ injuries:</strong></p>
+<ul><li>Spleen: >95% managed non-operatively (even high-grade)</li>
+<li>Liver: >90% managed non-operatively</li>
+<li>Kidney: >85% managed non-operatively</li>
+<li><strong>Requirements for NOM:</strong> Hemodynamically stable (or stabilizes with ≤40 mL/kg fluids), serial exams reliable, surgical backup available, blood products available, PICU capability</li>
+<li>Activity restriction per APSA guidelines (grade + 2 = weeks of restricted activity; e.g., Grade III = 5 weeks light activity)</li></ul>`,
+t2:`<p><strong>Operative indications in pediatric abdominal trauma:</strong></p>
+<ul><li>Hemodynamic instability NOT responding to 40 mL/kg crystalloid + pRBCs</li>
+<li>Peritonitis on exam (rigid, diffuse tenderness, rebound)</li>
+<li>Hollow viscus injury (pneumoperitoneum on CT, bowel wall thickening with free fluid and no solid organ injury)</li>
+<li>Diaphragm rupture</li>
+<li>Pancreatic duct transection (may need delayed intervention)</li>
+<li>Major vascular injury</li></ul>`
+}},
+{name:"Non-Accidental\nTrauma (NAT)",icon:"🔍",type:"urgent",sub:"When to suspect · Mandatory reporting · Skeletal survey",edge:"Inconsistent\nhistory or\nconcerning\npattern",
+info:{tabs:["When to Suspect","Evaluation","Mandatory Reporting"],
+t0:`<p><strong>Red flags for non-accidental trauma:</strong></p>
+<ul><li>Injury inconsistent with developmental stage (e.g., rib fractures in a non-ambulatory infant)</li>
+<li>History inconsistent with injury pattern (changing story, "he just fell")</li>
+<li>Delay in seeking care</li>
+<li>Injuries in different stages of healing</li>
+<li>Specific high-risk patterns: bruising in pre-mobile infants (&lt;6 months), patterned burns, posterior rib fractures, metaphyseal corner fractures (classic), retinal hemorrhages + subdural hematoma (abusive head trauma), multiple fractures of varying ages</li>
+<li>TEN-4 bruising rule: bruises on Torso, Ear, Neck in a child &lt;4 years (or ANY bruise in an infant &lt;4 months) are highly suspicious for abuse</li></ul>
+<div class="bx br">🚨 <strong>"Those who don't cruise rarely bruise."</strong> Bruising in a pre-mobile infant (&lt;6 months, not yet pulling to stand) is NAT until proven otherwise. Accidental bruising is extremely rare before independent mobility.</div>`,
+t1:`<p><strong>NAT Evaluation:</strong></p>
+<ol class="sl">
+<li><strong>Skeletal survey</strong> (AP of all long bones, AP/lateral of axial skeleton, oblique ribs) for ALL children &lt;2 years with suspected abuse. Follow-up skeletal survey in 2 weeks detects healing fractures missed initially.</li>
+<li><strong>Head CT</strong> — for all infants &lt;6 months with suspected abuse (subdural hematoma even without external signs)</li>
+<li><strong>MRI brain</strong> — more sensitive for diffuse axonal injury, dating of subdurals</li>
+<li><strong>Ophthalmologic exam</strong> — retinal hemorrhages (bilateral, multi-layered retinal hemorrhages are highly specific for abusive head trauma)</li>
+<li><strong>Labs:</strong> CBC, CMP, LFTs (hepatic transaminases — occult abdominal injury), lipase, UA (renal injury), PT/aPTT/fibrinogen (coagulopathy workup to exclude bleeding disorder)</li>
+<li><strong>Screen siblings</strong> — if one child is abused, siblings are at high risk</li>
+</ol>`,
+t2:`<p><strong>Mandatory reporting:</strong></p>
+<ul><li>ALL healthcare providers are mandatory reporters in ALL US states</li>
+<li>Report to Child Protective Services (CPS) if there is <strong>reasonable suspicion</strong> — NOT certainty. You do not need to prove abuse.</li>
+<li>Failure to report is a CRIMINAL offense in most states</li>
+<li>Good-faith reporters are protected from liability by law</li>
+<li>Document findings objectively: describe injuries precisely (size, location, color, shape), use body diagrams, photograph injuries (with ruler for scale), record exact quotes from caregivers</li>
+<li>Do NOT accuse the caregiver — use neutral language ("these injuries are concerning for non-accidental trauma and I am required by law to report to CPS")</li>
+<li>Social work and child abuse pediatrics consult if available</li></ul>`
+}}
+]};

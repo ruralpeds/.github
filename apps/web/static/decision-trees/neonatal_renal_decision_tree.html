@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Neonatal Renal Disorders Decision Tree</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -27,96 +27,22 @@
 <body>
 <div id="hdr"><div><h1>Neonatal Renal Disorders Decision Tree</h1><div class="sub">Enhanced Clinical Edition — AKI, renal anomalies, RVT, electrolyte management, nephrotoxin stewardship</div></div>
 <div class="ctrls"><button onclick="resetZ()">⟲ Reset</button><button onclick="expAll()">⊞ Expand</button><button onclick="colAll()">⊟ Collapse</button></div></div>
-<svg id="tc"></svg>
-<div id="po" onclick="closeP(event)"><div id="pp" onclick="event.stopPropagation()"><div id="ph"><div id="picon"></div><div><div id="ptitle"></div><div id="ptype"></div></div><button id="pclose" onclick="closeP()">&times;</button></div><div id="pbody"></div></div></div>
-<div id="lg"><div class="li"><div class="ld" style="background:var(--red)"></div>Emergency</div><div class="li"><div class="ld" style="background:var(--orange)"></div>Urgent</div><div class="li"><div class="ld" style="background:var(--yellow)"></div>Decision</div><div class="li"><div class="ld" style="background:var(--green)"></div>Action</div><div class="li"><div class="ld" style="background:var(--blue)"></div>Assessment</div><div class="li"><div class="ld" style="background:var(--purple)"></div>Diagnosis</div></div>
+<div id="po" onclick="closeP(event)"><div id="pp" onclick="event.stopPropagation()"><div id="ph"><div id="picon"></div><div><div id="ptitle"></div><div id="ptype"></div></div>
+<svg id="tc">
+<div id="lg"><div class="li"><div class="ld" style="background:var(--red)"></div>
 <div id="bc">Scroll to zoom · Drag to pan · Click ⓘ for education</div>
-<script>
-const T={
-name:"Neonatal Renal\nAssessment",icon:"🫘",type:"assessment",sub:"AKI, electrolytes, renal anomalies, RVT",edge:"",
-info:{tabs:["Renal Physiology","Normal Values","When to Evaluate"],
-t0:`<p>Neonatal renal physiology is unique: GFR at birth is very low (~20 mL/min/1.73m² in term; ~10 mL/min/1.73m² in preterm) and doubles by 2 weeks. Serum creatinine in the first 48h reflects MATERNAL Cr, not infant renal function. The nadir Cr at 1–4 weeks reflects true infant renal function.</p>
-<ul><li>Normal UOP: >1 mL/kg/hr after first 24h (first 24h may be oliguria from normal transition)</li>
-<li>Most neonates void within 24h of birth. Failure to void by 48h requires evaluation.</li></ul>`,
-t1:`<table class="rt"><thead><tr><th>Parameter</th><th>Term</th><th>Preterm</th><th>Notes</th></tr></thead><tbody>
-<tr><td>Serum Cr (birth)</td><td>0.6–1.0 mg/dL</td><td>0.6–1.2 mg/dL</td><td>Reflects MATERNAL Cr; not useful for infant assessment</td></tr>
-<tr><td>Serum Cr (nadir, 1–4 wk)</td><td>0.2–0.4 mg/dL</td><td>0.3–0.9 mg/dL</td><td>THIS reflects infant GFR; varies by GA</td></tr>
-<tr><td>GFR (term)</td><td>~20–40 mL/min/1.73m²</td><td>~10–20 mL/min/1.73m²</td><td>Doubles by 2 weeks; reaches adult levels by 1–2 years</td></tr>
-<tr><td>UOP (after 24h)</td><td>>1 mL/kg/hr</td><td>>1 mL/kg/hr</td><td>Oliguria = &lt;0.5 mL/kg/hr after 48h; Anuria = no urine</td></tr>
-<tr><td>Na</td><td>135–145 mEq/L</td><td>130–145 mEq/L</td><td>Preterm lose more Na (immature tubules); may need supplementation</td></tr>
-<tr><td>K</td><td>3.5–5.5 mEq/L</td><td>3.5–6.5 mEq/L</td><td>Higher normal range in preterm; non-hemolyzed sample essential</td></tr>
-</tbody></table>`,
-t2:`<p><strong>Evaluate renal function when:</strong></p>
-<ul><li>Oliguria (&lt;0.5 mL/kg/hr) or anuria after 48h of life</li>
-<li>Rising creatinine (compared to expected decline from maternal levels)</li>
-<li>Prenatal hydronephrosis or renal anomaly</li>
-<li>Abdominal mass (MCDK, hydronephrosis, Wilms [rare neonatal])</li>
-<li>Hypertension (renal artery thrombosis, coarctation, renal parenchymal disease)</li>
-<li>Perinatal asphyxia (AKI in 30–50% of HIE infants)</li>
-<li>Nephrotoxic medication exposure (aminoglycosides, NSAIDs, vancomycin)</li></ul>`
-},children:[
-{name:"Neonatal AKI",icon:"🔴",type:"emergency",sub:"AWAKEN study · Modified KDIGO · 20–30% NICU",edge:"Rising Cr or\noliguria",
-info:{tabs:["Definition","Causes","Management"],
-t0:`<p><strong>Neonatal AKI — Modified KDIGO Staging:</strong></p>
-<table class="rt"><thead><tr><th>Stage</th><th>Serum Creatinine</th><th>Urine Output</th></tr></thead><tbody>
-<tr><td>0</td><td>No change or rise &lt;0.3 mg/dL</td><td>≥1 mL/kg/hr</td></tr>
-<tr><td>1</td><td>Rise ≥0.3 mg/dL within 48h</td><td>0.5–1 mL/kg/hr</td></tr>
-<tr><td>2</td><td>Rise ≥200% from baseline</td><td>0.3–0.5 mL/kg/hr</td></tr>
-<tr><td>3</td><td>Rise ≥300% from baseline OR Cr ≥2.5 OR dialysis</td><td>&lt;0.3 mL/kg/hr</td></tr>
-</tbody></table>
-<p><strong>AWAKEN study (2017):</strong> Largest neonatal AKI study (n=2,022). AKI occurred in ~30% of NICU patients. Even stage 1 AKI independently associated with mortality (OR 4.6).</p>`,
-t1:`<table class="dt"><thead><tr><th>Type</th><th>Causes</th><th>Key Clue</th></tr></thead><tbody>
-<tr><td><strong>Prerenal (most common)</strong></td><td>Dehydration, sepsis, hemorrhage, NEC, cardiac</td><td>FENa &lt;2.5% (term) or &lt;3% (preterm); BUN:Cr >20; responds to volume</td></tr>
-<tr><td><strong>Intrinsic renal</strong></td><td>ATN (asphyxia, aminoglycosides), congenital anomalies (dysplasia, ARPKD)</td><td>FENa >3% (term) or >5% (preterm); muddy brown casts; does NOT respond to volume</td></tr>
-<tr><td><strong>Postrenal (obstructive)</strong></td><td>PUV, bilateral UPJO, neurogenic bladder</td><td>Bilateral hydronephrosis on US; distended bladder; catheterization → large residual</td></tr>
-</tbody></table>`,
-t2:`<ol class="sl">
-<li><strong>Identify and treat the cause:</strong> Volume for prerenal, catheterize for obstruction, stop nephrotoxins</li>
-<li><strong>Fluid management:</strong> Insensible losses + UOP replacement. Avoid fluid overload (associated with worse outcomes in AKI).</li>
-<li><strong>Hyperkalemia management:</strong> K >6.5 or ECG changes → Ca gluconate (cardiac protection), insulin/glucose, kayexalate, consider dialysis</li>
-<li><strong>Nephrotoxin stewardship (Baby NINJA):</strong> Review all meds. Adjust aminoglycoside dosing. Avoid NSAIDs.</li>
-<li><strong>Dialysis:</strong> Peritoneal dialysis (PD) is most common modality in neonates. Indications: refractory hyperkalemia, severe fluid overload, uremia, metabolic acidosis not responding to medical management.</li>
-</ol>
-<div class="bx bg">✓ <strong>Baby NINJA (Neonatal Injury Nephrotoxin Justified Avoidance):</strong> Nephrotoxin stewardship program that reduces AKI by systematically reviewing and minimizing nephrotoxic medication exposure in NICU patients.</div>`
-}},
-{name:"Renal Vein\nThrombosis",icon:"⚠️",type:"urgent",sub:"Flank mass + hematuria + thrombocytopenia",edge:"Flank mass\n+ hematuria",
-info:{tabs:["Diagnosis","Management"],
-t0:`<p><strong>Neonatal RVT:</strong> Triad = palpable flank mass + gross hematuria + thrombocytopenia. Risk factors: dehydration, sepsis, asphyxia, IDM, polycythemia, indwelling umbilical catheters, prothrombotic disorders.</p>
-<ul><li>Left side more common (~70%) but may be bilateral (25%)</li>
-<li>Diagnosis: renal US with Doppler (enlarged kidney, absent venous flow). May see extension into IVC.</li></ul>`,
-t1:`<ul><li><strong>Supportive:</strong> Hydration, correct underlying cause (treat sepsis, correct dehydration)</li>
-<li><strong>Anticoagulation:</strong> Controversial in neonates. Consider LMWH (enoxaparin 1.5 mg/kg SC q12h) if: IVC extension, bilateral RVT, or propagating clot. Monitor anti-Xa levels (target 0.5–1.0 U/mL).</li>
-<li><strong>Thrombolysis:</strong> Rarely used; only for life-threatening bilateral RVT with renal failure.</li>
-<li><strong>Follow-up:</strong> Serial renal US. Prothrombotic workup at 3–6 months (factor V Leiden, protein C/S, antithrombin). Long-term: monitor BP and renal function (affected kidney may atrophy).</li></ul>`
-}},
-{name:"Congenital Renal\nAnomalies",icon:"🔬",type:"diagnosis",sub:"MCDK, agenesis, ARPKD, dysplasia",edge:"Prenatal\nrenal anomaly",
-info:{tabs:["MCDK","Renal Agenesis","ARPKD"],
-t0:`<p><strong>MCDK (Multicystic Dysplastic Kidney):</strong></p>
-<ul><li>Non-functioning kidney with multiple non-communicating cysts. No normal renal parenchyma.</li>
-<li>Most common cystic renal disease in neonates</li>
-<li>Usually unilateral. Contralateral kidney compensates (hypertrophy).</li>
-<li>Management: observe (most involute over years). Monitor contralateral kidney (VUR in 15–25%). Nephrectomy rarely needed (if massive, hypertensive, or failing to involute).</li></ul>`,
-t1:`<p><strong>Renal agenesis:</strong></p>
-<ul><li><strong>Bilateral:</strong> Incompatible with life. Severe oligohydramnios → Potter sequence (pulmonary hypoplasia, compressed facies, limb deformities). No urine production.</li>
-<li><strong>Unilateral:</strong> Compatible with normal life. Contralateral kidney compensates. Monitor for hypertension, proteinuria long-term. Counsel on renal protection (avoid contact sports, nephrotoxins).</li>
-<li>Associated: VACTERL, genital anomalies (Müllerian in females), contralateral VUR</li></ul>`,
-t2:`<p><strong>ARPKD (Autosomal Recessive Polycystic Kidney Disease):</strong></p>
-<ul><li>PKHD1 gene mutation. Large, echogenic kidneys bilaterally on US. Cysts are microscopic (dilated collecting ducts), so kidneys appear diffusely echogenic rather than showing discrete cysts.</li>
-<li>Neonatal presentation: bilaterally enlarged kidneys, oligohydramnios (severe → pulmonary hypoplasia), hypertension, renal insufficiency</li>
-<li>Associated: congenital hepatic fibrosis (100% — Caroli disease/syndrome)</li>
-<li>Management: blood pressure control, manage renal insufficiency, monitor for portal hypertension from hepatic fibrosis. ~30% require renal replacement therapy by age 10.</li></ul>`
-}}
-]};
-const CM={assessment:{f:"#0f1d3a",s:"#60a5fa",t:"#60a5fa",b:"Assessment"},decision:{f:"#2a2006",s:"#fbbf24",t:"#fbbf24",b:"Decision Point"},emergency:{f:"#2a1215",s:"#f87171",t:"#f87171",b:"Emergency"},urgent:{f:"#2a1a0a",s:"#fb923c",t:"#fb923c",b:"Urgent"},action:{f:"#0a2a1a",s:"#4ade80",t:"#4ade80",b:"Action"},diagnosis:{f:"#1a0f2e",s:"#c084fc",t:"#c084fc",b:"Diagnosis"}};
+<script src="tree-data/neonatal_renal.js"></script>
+<script>const CM={assessment:{f:"#0f1d3a",s:"#60a5fa",t:"#60a5fa",b:"Assessment"},decision:{f:"#2a2006",s:"#fbbf24",t:"#fbbf24",b:"Decision Point"},emergency:{f:"#2a1215",s:"#f87171",t:"#f87171",b:"Emergency"},urgent:{f:"#2a1a0a",s:"#fb923c",t:"#fb923c",b:"Urgent"},action:{f:"#0a2a1a",s:"#4ade80",t:"#4ade80",b:"Action"},diagnosis:{f:"#1a0f2e",s:"#c084fc",t:"#c084fc",b:"Diagnosis"}};
 const svg=d3.select("#tc"),W=innerWidth,H=innerHeight;svg.attr("width",W).attr("height",H);const g=svg.append("g");const zm=d3.zoom().scaleExtent([0.2,3]).on("zoom",e=>g.attr("transform",e.transform));svg.call(zm);
-const nW=148,nH=62;const root=d3.hierarchy(T,d=>d.children);root.x0=H/2;root.y0=0;
+const nW=148,nH=62;const root=d3.hierarchy(TREE_DATA,d=>d.children);root.x0=H/2;root.y0=0;
 root.descendants().forEach(d=>{if(d.depth>1&&d.children){d._children=d.children;d.children=null;}});const tl=d3.tree().nodeSize([nH+32,nW+85]);
 function upd(src){const dur=420;tl(root);const nds=root.descendants(),lks=root.links();nds.forEach(d=>{d.y=d.depth*230;});const lk=g.selectAll(".lk").data(lks,d=>d.target.data.name);const le=lk.enter().append("path").attr("class","lk").attr("d",()=>{const o={x:src.x0,y:src.y0};return dg(o,o);});lk.merge(le).transition().duration(dur).attr("d",d=>dg(d.source,d.target));lk.exit().transition().duration(dur).attr("d",()=>{const o={x:src.x,y:src.y};return dg(o,o);}).remove();g.selectAll(".ll").remove();lks.forEach(d=>{if(d.target.data.edge){const ls=d.target.data.edge.split("\n"),mx=(d.source.x+d.target.x)/2,my=(d.source.y+d.target.y)/2;ls.forEach((l,i)=>{g.append("text").attr("class","ll").attr("x",my+12).attr("y",mx-4+i*11).text(l);});}});const nd=g.selectAll(".ng").data(nds,d=>d.data.name);const ne=nd.enter().append("g").attr("class","ng").attr("transform",`translate(${src.y0},${src.x0})`).on("click",(e,d)=>{if(d.children){d._children=d.children;d.children=null;}else if(d._children){d.children=d._children;d._children=null;}upd(d);});ne.append("rect").attr("class","nr").attr("x",-nW/2).attr("y",-nH/2).attr("width",nW).attr("height",nH).attr("fill",d=>CM[d.data.type]?.f||"#1e293b").attr("stroke",d=>CM[d.data.type]?.s||"#475569");ne.append("text").attr("class","ni").attr("y",-12).text(d=>d.data.icon);ne.each(function(d){const ls=d.data.name.split("\n"),el=d3.select(this);ls.forEach((l,i)=>{el.append("text").attr("class","nl").attr("y",4+i*13).text(l);});if(d.data.sub){el.append("text").attr("class","ns").attr("y",4+ls.length*13+5).text(d.data.sub.substring(0,32));}});ne.append("circle").attr("class","ib").attr("cx",nW/2-12).attr("cy",-nH/2+12).attr("r",10).attr("fill",d=>CM[d.data.type]?.s||"#60a5fa").attr("fill-opacity",.2).attr("stroke",d=>CM[d.data.type]?.s||"#60a5fa").attr("stroke-width",1.5).on("click",(e,d)=>{e.stopPropagation();showP(d.data);});ne.append("text").attr("x",nW/2-12).attr("y",-nH/2+16).attr("text-anchor","middle").attr("font-size","12px").attr("fill","#e2e8f0").attr("pointer-events","none").attr("font-weight","700").text("i");ne.append("text").attr("class","ei").attr("x",0).attr("y",nH/2+15).attr("text-anchor","middle").attr("font-size","10px").attr("fill","#475569");const nu=nd.merge(ne);nu.transition().duration(dur).attr("transform",d=>`translate(${d.y},${d.x})`);nu.select(".ei").text(d=>d._children?`▸ ${d._children.length} more`:"");nd.exit().transition().duration(dur).attr("transform",`translate(${src.y},${src.x})`).remove();nds.forEach(d=>{d.x0=d.x;d.y0=d.y;});}
 function dg(s,d){return`M${s.y} ${s.x}C${(s.y+d.y)/2} ${s.x},${(s.y+d.y)/2} ${d.x},${d.y} ${d.x}`;}upd(root);const iT=d3.zoomIdentity.translate(90,H/2-20).scale(0.82);svg.call(zm.transform,iT);
 function showP(data){const ov=document.getElementById("po"),c=CM[data.type]||CM.assessment;document.getElementById("picon").textContent=data.icon;document.getElementById("picon").style.background=c.f;document.getElementById("picon").style.border=`1.5px solid ${c.s}`;document.getElementById("ptitle").textContent=data.name.replace(/\n/g," ");const te=document.getElementById("ptype");te.textContent=c.b;te.style.background=c.f;te.style.color=c.t;te.style.border=`1px solid ${c.s}`;let h="";if(data.info.tabs){h+=`<div class="tabs">`;data.info.tabs.forEach((t,i)=>{h+=`<button class="tb${i===0?' active':''}" onclick="swT(${i})">${t}</button>`;});h+=`</div>`;data.info.tabs.forEach((t,i)=>{h+=`<div class="tc${i===0?' active':''}" data-t="${i}">${data.info['t'+i]||''}</div>`;});}if(data.sub){h+=`<div class="bx bb" style="margin-top:16px">ℹ️ <strong>Summary:</strong> ${data.sub}</div>`;}document.getElementById("pbody").innerHTML=h;ov.classList.add("active");document.getElementById("pp").scrollTop=0;}
 function swT(i){document.querySelectorAll('.tb').forEach((b,j)=>b.classList.toggle('active',j===i));document.querySelectorAll('.tc').forEach((c,j)=>c.classList.toggle('active',j===i));}function closeP(e){if(!e||e.target===document.getElementById("po"))document.getElementById("po").classList.remove("active");}document.addEventListener("keydown",e=>{if(e.key==="Escape")closeP();});
 function resetZ(){svg.transition().duration(500).call(zm.transform,iT);}function expAll(){root.descendants().forEach(d=>{if(d._children){d.children=d._children;d._children=null;}});upd(root);}function colAll(){root.descendants().forEach(d=>{if(d.depth>0&&d.children){d._children=d.children;d.children=null;}});upd(root);}addEventListener("resize",()=>{svg.attr("width",innerWidth).attr("height",innerHeight);});
-</script><script src="../theme-bridge.js"></script>
+</script>
+<script src="../theme-bridge.js"></script>
 <script src="../shell.js"></script>
 <script src="../edu-links.js"></script>
 </body></html>

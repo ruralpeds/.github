@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Shoulder Dystocia Decision Tree</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -27,116 +27,22 @@
 <body>
 <div id="hdr"><div><h1>Shoulder Dystocia Decision Tree</h1><div class="sub">Enhanced Clinical Edition — HELPERR mnemonic, McRoberts, suprapubic pressure, rotational maneuvers, neonatal brachial plexus assessment</div></div>
 <div class="ctrls"><button onclick="resetZ()">⟲ Reset</button><button onclick="expAll()">⊞ Expand</button><button onclick="colAll()">⊟ Collapse</button></div></div>
-<svg id="tc"></svg>
-<div id="po" onclick="closeP(event)"><div id="pp" onclick="event.stopPropagation()"><div id="ph"><div id="picon"></div><div><div id="ptitle"></div><div id="ptype"></div></div><button id="pclose" onclick="closeP()">&times;</button></div><div id="pbody"></div></div></div>
-<div id="lg"><div class="li"><div class="ld" style="background:var(--red)"></div>Emergency</div><div class="li"><div class="ld" style="background:var(--orange)"></div>Urgent</div><div class="li"><div class="ld" style="background:var(--yellow)"></div>Decision</div><div class="li"><div class="ld" style="background:var(--green)"></div>Action</div><div class="li"><div class="ld" style="background:var(--blue)"></div>Assessment</div><div class="li"><div class="ld" style="background:var(--purple)"></div>Diagnosis</div></div>
+<div id="po" onclick="closeP(event)"><div id="pp" onclick="event.stopPropagation()"><div id="ph"><div id="picon"></div><div><div id="ptitle"></div><div id="ptype"></div></div>
+<svg id="tc">
+<div id="lg"><div class="li"><div class="ld" style="background:var(--red)"></div>
 <div id="bc">Scroll to zoom · Drag to pan · Click ⓘ for education</div>
-<script>
-const T={
-name:"Shoulder Dystocia\nManagement",icon:"🤰",type:"assessment",sub:"HELPERR mnemonic · Turtle sign · Time-critical",edge:"",
-info:{tabs:["Recognition","Risk Factors","Documentation"],
-t0:`<p><strong>Shoulder dystocia:</strong> Failure of the fetal shoulders to deliver spontaneously after delivery of the head. The anterior shoulder is impacted behind the maternal pubic symphysis. Incidence: 0.2–3% of vaginal deliveries. Unpredictable — 50% occur without identifiable risk factors.</p>
-<p><strong>Recognition — "Turtle Sign":</strong> After delivery of the head, the chin retracts tightly against the perineum (head "turtles" back). The face may become plethoric/cyanotic. Gentle downward traction fails to deliver the anterior shoulder.</p>
-<div class="bx br">🚨 <strong>TIME IS CRITICAL.</strong> Risk of injury increases significantly after 5 minutes. Head-to-body delivery interval >5 min associated with acidosis; >7 min associated with permanent injury. Call for help IMMEDIATELY.</div>`,
-t1:`<p><strong>Risk factors (NOT predictive enough to alter delivery plan in most cases):</strong></p>
-<ul><li>Macrosomia (>4000g, especially >4500g)</li>
-<li>Maternal diabetes (fetal body disproportionately large relative to head)</li>
-<li>Previous shoulder dystocia (recurrence rate 10–25%)</li>
-<li>Maternal obesity</li>
-<li>Post-term pregnancy</li>
-<li>Prolonged second stage of labor</li>
-<li>Operative vaginal delivery (vacuum, forceps)</li></ul>
-<div class="bx bo">⚠️ <strong>50% of shoulder dystocia cases occur without ANY identifiable risk factors.</strong> Every delivery attendant must know the HELPERR mnemonic. It cannot be predicted or prevented — only managed.</div>`,
-t2:`<p><strong>Documentation (after the event):</strong></p>
-<ul><li>Time of head delivery and time of body delivery (head-to-body interval)</li>
-<li>Which maneuvers were performed and in what order</li>
-<li>Estimate of force used for traction</li>
-<li>Fetal presentation (which shoulder was anterior)</li>
-<li>Personnel present and when they arrived</li>
-<li>Cord gases (arterial and venous)</li>
-<li>Apgar scores</li>
-<li>Neonatal assessment: clavicle (fracture?), brachial plexus function (Erb vs Klumpke), Moro reflex symmetry</li>
-<li>Communicate with family about what happened — honest, compassionate, factual</li></ul>`
-},children:[
-{name:"HELPERR\nMnemonic",icon:"🔴",type:"emergency",sub:"Systematic maneuver sequence",edge:"Shoulder\nimpacted",
-info:{tabs:["HELPERR Steps","McRoberts + Suprapubic","Rotational Maneuvers","Last Resort"],
-t0:`<p><strong>HELPERR Mnemonic — perform in order:</strong></p>
-<ol class="sl">
-<li><strong>H</strong> — Help: Call for help (OB, anesthesia, pediatrics/NRP team, extra nursing). Announce "shoulder dystocia" clearly.</li>
-<li><strong>E</strong> — Evaluate for Episiotomy: Consider if soft tissue is preventing maneuvers (episiotomy alone does NOT relieve bony dystocia but creates room for internal maneuvers).</li>
-<li><strong>L</strong> — Legs: McRoberts maneuver (see next tab). First-line. Resolves ~40–50% alone.</li>
-<li><strong>P</strong> — Pressure: Suprapubic pressure (NOT fundal pressure). Combined with McRoberts, resolves ~50–60%.</li>
-<li><strong>E</strong> — Enter: Internal rotation maneuvers (Rubin II, Wood's screw). See rotational tab.</li>
-<li><strong>R</strong> — Remove posterior arm: Sweep posterior arm across chest and deliver. Often highly effective.</li>
-<li><strong>R</strong> — Roll: Gaskin maneuver (roll patient to all-fours position). Uses gravity and changes pelvic dimensions.</li>
-</ol>
-<div class="bx br">🚨 <strong>NEVER apply fundal pressure.</strong> Fundal pressure pushes the anterior shoulder further into the symphysis, worsening impaction and risking uterine rupture.</div>`,
-t1:`<p><strong>McRoberts Maneuver (L in HELPERR):</strong></p>
-<ul><li>Sharply flex maternal thighs onto abdomen (knees to chest)</li>
-<li>Requires two assistants (one per leg)</li>
-<li>Flattens the lumbar lordosis, rotates the pubic symphysis cephalad, and increases the AP diameter of the pelvis by ~1–2 cm</li>
-<li>Success rate: ~40–50% as sole maneuver</li>
-<li>First maneuver because it is fast, non-invasive, and highly effective</li></ul>
-<p><strong>Suprapubic Pressure (P in HELPERR):</strong></p>
-<ul><li>Applied by an assistant from the SIDE of the anterior shoulder</li>
-<li>Steady downward and lateral pressure on the anterior shoulder to push it under the symphysis</li>
-<li>NEVER press on the fundus — only suprapubic</li>
-<li>Combined with McRoberts: resolves ~50–60%</li></ul>`,
-t2:`<p><strong>Internal Rotation Maneuvers:</strong></p>
-<ul><li><strong>Rubin II:</strong> Place hand behind the anterior shoulder and push it toward the fetal chest (adduction). This reduces the bisacromial diameter and rotates the shoulder out from behind the symphysis.</li>
-<li><strong>Wood's Screw:</strong> Place hand on the anterior surface of the posterior shoulder and rotate the fetus 180° (like turning a screw). The posterior shoulder becomes anterior and delivers under the symphysis. May combine with Rubin II on the other shoulder for a "double screw" maneuver.</li>
-<li><strong>Reverse Wood's Screw:</strong> Rotate in the opposite direction if Wood's fails.</li></ul>
-<p><strong>Posterior Arm Delivery (R in HELPERR):</strong></p>
-<ul><li>Insert hand along the posterior shoulder, find the posterior arm/elbow</li>
-<li>Flex the elbow, sweep the forearm across the fetal chest, and deliver the posterior arm</li>
-<li>This shortens the bisacromial diameter by the width of the arm (~3 cm)</li>
-<li>Often very effective when rotational maneuvers fail</li>
-<li>Risk: humerus fracture (heals well, preferred over brachial plexus injury)</li></ul>`,
-t3:`<p><strong>Last Resort Maneuvers (if all above fail):</strong></p>
-<ul><li><strong>Gaskin maneuver:</strong> Roll patient to hands-and-knees position. Changes pelvic dimensions and uses gravity. May allow posterior shoulder to deliver first. Not possible with epidural sometimes.</li>
-<li><strong>Zavanelli maneuver:</strong> Replace the fetal head into the vagina (reverse restitution and then flexion), followed by emergent cesarean delivery. Associated with significant maternal and fetal morbidity. Absolute last resort.</li>
-<li><strong>Intentional clavicle fracture:</strong> Direct pressure on the clavicle to fracture it, reducing bisacromial diameter. Difficult to perform intentionally. Heals rapidly.</li>
-<li><strong>Symphysiotomy:</strong> Surgical division of the pubic symphysis. Almost never performed in developed countries. Significant maternal morbidity.</li></ul>
-<div class="bx bo">⚠️ <strong>Zavanelli and symphysiotomy are extreme measures with significant morbidity.</strong> In practice, posterior arm delivery and rotational maneuvers resolve the vast majority of shoulder dystocia cases. Zavanelli is reported in fewer than 100 cases in the literature.</div>`
-}},
-{name:"Neonatal\nAssessment\nAfter SD",icon:"👶",type:"urgent",sub:"Brachial plexus · Clavicle fracture · Cord gases",edge:"After\ndelivery",
-info:{tabs:["Immediate Assessment","Brachial Plexus Injury","Clavicle Fracture"],
-t0:`<p><strong>Immediate neonatal assessment after shoulder dystocia:</strong></p>
-<ol class="sl">
-<li><strong>NRP resuscitation as needed</strong> — prolonged delivery may cause asphyxia</li>
-<li><strong>Cord gases</strong> (arterial + venous) — document acid-base status</li>
-<li><strong>Apgar scores</strong> at 1 and 5 minutes (and 10 if needed)</li>
-<li><strong>Bilateral Moro reflex</strong> — asymmetry suggests brachial plexus injury</li>
-<li><strong>Spontaneous arm movements</strong> — observe for asymmetry</li>
-<li><strong>Palpate clavicles</strong> — crepitus or step-off = fracture</li>
-<li><strong>Respiratory status</strong> — phrenic nerve injury (C3-5) can cause diaphragm paralysis</li>
-<li><strong>Detailed exam documented within 1 hour of birth</strong></li>
-</ol>`,
-t1:`<p><strong>Brachial Plexus Injury:</strong></p>
-<table class="dt"><thead><tr><th>Type</th><th>Nerve Roots</th><th>Presentation</th><th>Prognosis</th></tr></thead><tbody>
-<tr><td><strong>Erb palsy (upper)</strong></td><td>C5–C6 (±C7)</td><td>"Waiter's tip" — arm adducted, internally rotated, elbow extended, forearm pronated, wrist flexed. Absent Moro on affected side.</td><td>~80–90% recover fully by 3–6 months. Poor prognostic sign: no biceps function by 3 months.</td></tr>
-<tr><td><strong>Klumpke palsy (lower)</strong></td><td>C8–T1</td><td>Hand/wrist paralysis with claw hand. Forearm supinated. May have Horner syndrome (ptosis, miosis, anhidrosis) if T1 sympathetic fibers involved.</td><td>Less common (~2%). Poorer recovery rate than Erb.</td></tr>
-<tr><td><strong>Total plexus palsy</strong></td><td>C5–T1</td><td>Complete flaccid paralysis of entire arm. No Moro, no grasp, no biceps.</td><td>Worst prognosis. May need surgical nerve grafting.</td></tr>
-</tbody></table>
-<p><strong>Management:</strong> Initial immobilization in adduction/internal rotation for 7–10 days (reduce traction on injured nerves). Physical therapy starting at 2–3 weeks. If no recovery by 3 months: MRI of plexus + neurosurgical consultation (nerve graft consideration at 3–6 months).</p>`,
-t2:`<p><strong>Clavicle fracture:</strong></p>
-<ul><li>Most common birth injury (~1–2% of all deliveries; higher with shoulder dystocia)</li>
-<li>Diagnosis: palpable crepitus or step-off along clavicle; decreased movement of affected arm; asymmetric Moro; CXR confirms</li>
-<li>Treatment: conservative. Pin the sleeve to the shirt for comfort. Heals with callus formation in 7–10 days. Excellent prognosis.</li>
-<li>A palpable callus at 7–10 days is REASSURING, not concerning</li>
-<li>Differentiate from brachial plexus injury: clavicle fracture = pain-limited movement (infant cries when arm moved); BPI = weakness-limited movement (no pain response, flaccid)</li></ul>`
-}}
-]};;
-const CM={assessment:{f:"#0f1d3a",s:"#60a5fa",t:"#60a5fa",b:"Assessment"},decision:{f:"#2a2006",s:"#fbbf24",t:"#fbbf24",b:"Decision Point"},emergency:{f:"#2a1215",s:"#f87171",t:"#f87171",b:"Emergency"},urgent:{f:"#2a1a0a",s:"#fb923c",t:"#fb923c",b:"Urgent"},action:{f:"#0a2a1a",s:"#4ade80",t:"#4ade80",b:"Action"},diagnosis:{f:"#1a0f2e",s:"#c084fc",t:"#c084fc",b:"Diagnosis"}};
+<script src="tree-data/shoulder_dystocia.js"></script>
+<script>const CM={assessment:{f:"#0f1d3a",s:"#60a5fa",t:"#60a5fa",b:"Assessment"},decision:{f:"#2a2006",s:"#fbbf24",t:"#fbbf24",b:"Decision Point"},emergency:{f:"#2a1215",s:"#f87171",t:"#f87171",b:"Emergency"},urgent:{f:"#2a1a0a",s:"#fb923c",t:"#fb923c",b:"Urgent"},action:{f:"#0a2a1a",s:"#4ade80",t:"#4ade80",b:"Action"},diagnosis:{f:"#1a0f2e",s:"#c084fc",t:"#c084fc",b:"Diagnosis"}};
 const svg=d3.select("#tc"),W=innerWidth,H=innerHeight;svg.attr("width",W).attr("height",H);const g=svg.append("g");const zm=d3.zoom().scaleExtent([0.2,3]).on("zoom",e=>g.attr("transform",e.transform));svg.call(zm);
-const nW=148,nH=62;const root=d3.hierarchy(T,d=>d.children);root.x0=H/2;root.y0=0;
+const nW=148,nH=62;const root=d3.hierarchy(TREE_DATA,d=>d.children);root.x0=H/2;root.y0=0;
 root.descendants().forEach(d=>{if(d.depth>1&&d.children){d._children=d.children;d.children=null;}});const tl=d3.tree().nodeSize([nH+32,nW+85]);
 function upd(src){const dur=420;tl(root);const nds=root.descendants(),lks=root.links();nds.forEach(d=>{d.y=d.depth*230;});const lk=g.selectAll(".lk").data(lks,d=>d.target.data.name);const le=lk.enter().append("path").attr("class","lk").attr("d",()=>{const o={x:src.x0,y:src.y0};return dg(o,o);});lk.merge(le).transition().duration(dur).attr("d",d=>dg(d.source,d.target));lk.exit().transition().duration(dur).attr("d",()=>{const o={x:src.x,y:src.y};return dg(o,o);}).remove();g.selectAll(".ll").remove();lks.forEach(d=>{if(d.target.data.edge){const ls=d.target.data.edge.split("\n"),mx=(d.source.x+d.target.x)/2,my=(d.source.y+d.target.y)/2;ls.forEach((l,i)=>{g.append("text").attr("class","ll").attr("x",my+12).attr("y",mx-4+i*11).text(l);});}});const nd=g.selectAll(".ng").data(nds,d=>d.data.name);const ne=nd.enter().append("g").attr("class","ng").attr("transform",`translate(${src.y0},${src.x0})`).on("click",(e,d)=>{if(d.children){d._children=d.children;d.children=null;}else if(d._children){d.children=d._children;d._children=null;}upd(d);});ne.append("rect").attr("class","nr").attr("x",-nW/2).attr("y",-nH/2).attr("width",nW).attr("height",nH).attr("fill",d=>CM[d.data.type]?.f||"#1e293b").attr("stroke",d=>CM[d.data.type]?.s||"#475569");ne.append("text").attr("class","ni").attr("y",-12).text(d=>d.data.icon);ne.each(function(d){const ls=d.data.name.split("\n"),el=d3.select(this);ls.forEach((l,i)=>{el.append("text").attr("class","nl").attr("y",4+i*13).text(l);});if(d.data.sub){el.append("text").attr("class","ns").attr("y",4+ls.length*13+5).text(d.data.sub.substring(0,32));}});ne.append("circle").attr("class","ib").attr("cx",nW/2-12).attr("cy",-nH/2+12).attr("r",10).attr("fill",d=>CM[d.data.type]?.s||"#60a5fa").attr("fill-opacity",.2).attr("stroke",d=>CM[d.data.type]?.s||"#60a5fa").attr("stroke-width",1.5).on("click",(e,d)=>{e.stopPropagation();showP(d.data);});ne.append("text").attr("x",nW/2-12).attr("y",-nH/2+16).attr("text-anchor","middle").attr("font-size","12px").attr("fill","#e2e8f0").attr("pointer-events","none").attr("font-weight","700").text("i");ne.append("text").attr("class","ei").attr("x",0).attr("y",nH/2+15).attr("text-anchor","middle").attr("font-size","10px").attr("fill","#475569");const nu=nd.merge(ne);nu.transition().duration(dur).attr("transform",d=>`translate(${d.y},${d.x})`);nu.select(".ei").text(d=>d._children?`▸ ${d._children.length} more`:"");nd.exit().transition().duration(dur).attr("transform",`translate(${src.y},${src.x})`).remove();nds.forEach(d=>{d.x0=d.x;d.y0=d.y;});}
 function dg(s,d){return`M${s.y} ${s.x}C${(s.y+d.y)/2} ${s.x},${(s.y+d.y)/2} ${d.x},${d.y} ${d.x}`;}upd(root);const iT=d3.zoomIdentity.translate(90,H/2-20).scale(0.82);svg.call(zm.transform,iT);
 function showP(data){const ov=document.getElementById("po"),c=CM[data.type]||CM.assessment;document.getElementById("picon").textContent=data.icon;document.getElementById("picon").style.background=c.f;document.getElementById("picon").style.border=`1.5px solid ${c.s}`;document.getElementById("ptitle").textContent=data.name.replace(/\n/g," ");const te=document.getElementById("ptype");te.textContent=c.b;te.style.background=c.f;te.style.color=c.t;te.style.border=`1px solid ${c.s}`;let h="";if(data.info.tabs){h+=`<div class="tabs">`;data.info.tabs.forEach((t,i)=>{h+=`<button class="tb${i===0?' active':''}" onclick="swT(${i})">${t}</button>`;});h+=`</div>`;data.info.tabs.forEach((t,i)=>{h+=`<div class="tc${i===0?' active':''}" data-t="${i}">${data.info['t'+i]||''}</div>`;});}if(data.sub){h+=`<div class="bx bb" style="margin-top:16px">ℹ️ <strong>Summary:</strong> ${data.sub}</div>`;}document.getElementById("pbody").innerHTML=h;ov.classList.add("active");document.getElementById("pp").scrollTop=0;}
 function swT(i){document.querySelectorAll('.tb').forEach((b,j)=>b.classList.toggle('active',j===i));document.querySelectorAll('.tc').forEach((c,j)=>c.classList.toggle('active',j===i));}function closeP(e){if(!e||e.target===document.getElementById("po"))document.getElementById("po").classList.remove("active");}document.addEventListener("keydown",e=>{if(e.key==="Escape")closeP();});
 function resetZ(){svg.transition().duration(500).call(zm.transform,iT);}function expAll(){root.descendants().forEach(d=>{if(d._children){d.children=d._children;d._children=null;}});upd(root);}function colAll(){root.descendants().forEach(d=>{if(d.depth>0&&d.children){d._children=d.children;d.children=null;}});upd(root);}addEventListener("resize",()=>{svg.attr("width",innerWidth).attr("height",innerHeight);});
-</script><script src="../theme-bridge.js"></script>
+</script>
+<script src="../theme-bridge.js"></script>
 <script src="../shell.js"></script>
 <script src="../edu-links.js"></script>
 </body></html>
