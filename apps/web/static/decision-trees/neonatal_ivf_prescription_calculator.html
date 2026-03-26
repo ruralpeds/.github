@@ -207,6 +207,7 @@ select.feed-type:focus{border-color:var(--accent)}
     <h1>Neonatal IVF Prescription Calculator</h1>
     <span class="hdr-sub">Weight-based · Fluid Type · Enteral Offset · Calorie Tracking</span>
     <span class="hdr-badge">Clinical Decision Support</span>
+    <span id="engine-badge" class="hdr-badge" style="cursor:help;transition:all .3s" title="Loading engine…">⚙ Loading…</span>
   </div>
   <div class="ga-banner-lbl">Gestational Age at Birth</div>
   <div class="ga-weeks-scroll" id="ga-banner"></div>
@@ -1025,6 +1026,12 @@ Weight daily. Strict I&O. UO target: 1–3 mL/kg/hr.`;
 }
 
 /* ═══ MAIN RECALC ════════════════════════════════════════ */
+async function recalcAsync(){
+  // Try WASM engine first — falls back automatically if not loaded
+  if(_wasmReady){ const ok=await recalcWasm(); if(ok) return; }
+  recalc(); // JS fallback
+}
+
 function recalc(){
   const gaId  = WEEK_TO_GA[selectedWeek]||'28-29';
   const group = GA_GROUPS.find(g=>g.id===gaId)||GA_GROUPS[2];
@@ -1218,12 +1225,254 @@ function copyRx(){
   });
 }
 
+/* ═══ WASM ENGINE INTEGRATION ════════════════════════════
+   Progressive enhancement: tries to load ped-wasm WASM module.
+   When loaded, WASM replaces the core calculation math.
+   If WASM fails to load (not yet built / offline), JS engine
+   continues running — the calculator works either way.
+   ═════════════════════════════════════════════════════════ */
+let _wasmMod = null;
+let _wasmReady = false;
+
+async function tryLoadWasm() {
+  try {
+    // Try to load compiled ped-wasm package from /wasm-pkg/
+    const mod = await import('/wasm-pkg/ped_wasm.js');
+    if (typeof mod.default === 'function') await mod.default('/wasm-pkg/ped_wasm_bg.wasm');
+    _wasmMod = mod;
+    _wasmReady = true;
+    updateEngineBadge(true);
+    recalc(); // Re-run with WASM engine
+    console.log('[IVF] WASM engine loaded — using rust-sci-core/sci-clinical');
+  } catch(e) {
+    console.info('[IVF] WASM not available, using JS fallback engine.', e.message);
+    updateEngineBadge(false);
+  }
+}
+
+function updateEngineBadge(wasm) {
+  const badge = document.getElementById('engine-badge');
+  if (!badge) return;
+  if (wasm) {
+    badge.textContent = '⚙ WASM Engine';
+    badge.style.color = '#56d364';
+    badge.style.borderColor = '#56d36455';
+    badge.style.background = 'rgba(86,211,100,.1)';
+    badge.title = 'Calculations powered by rust-sci-core via WebAssembly';
+  } else {
+    badge.textContent = '⚙ JS Fallback';
+    badge.style.color = 'var(--tx3)';
+    badge.style.borderColor = 'var(--bdr2)';
+    badge.style.background = 'var(--bg3)';
+    badge.title = 'WASM not loaded — using JavaScript calculation engine';
+  }
+}
+
+/** Wrap wasm_ok / wasm_err envelope — return value or throw */
+function unwrapWasm(raw) {
+  if (!raw) throw new Error('WASM returned null');
+  if (raw.error) throw new Error(raw.error.message || JSON.stringify(raw.error));
+  return raw.ok !== undefined ? raw.ok : raw;
+}
+
+/** Build PatientContext JSON for WASM ivf_calculate call */
+function buildIvfCtx() {
+  return {
+    weight_grams: parseFloat(document.getElementById('inp-wt').value)||1200,
+    gestational_age_weeks: selectedWeek,
+    day_of_life: parseInt(document.getElementById('inp-dol').value)||0,
+    condition: document.getElementById('inp-cond').value,
+    environment: document.getElementById('inp-env').value,
+    dextrose_percent: dexConc,
+  };
+}
+
+/** WASM-powered recalc: calls rust-sci-core for core math, JS for UI rendering */
+async function recalcWasm() {
+  if (!_wasmReady || !_wasmMod) return false;
+  try {
+    const ctx = buildIvfCtx();
+    const wt = ctx.weight_grams / 1000;
+
+    // ── Base prescription ─────────────────────────────────
+    const rxRaw = _wasmMod.ivf_calculate(JSON.stringify(ctx));
+    const rx = unwrapWasm(typeof rxRaw === 'string' ? JSON.parse(rxRaw) : rxRaw);
+
+    // ── Enteral feeds ────────────────────────────────────
+    const bolusType = document.getElementById('bolus-type').value;
+    const bolusVol  = parseFloat(document.getElementById('bolus-vol').value)||0;
+    const bolusFreq = parseFloat(document.getElementById('bolus-freq').value)||0;
+    const contType  = document.getElementById('cont-type').value;
+    const contRate  = parseFloat(document.getElementById('cont-rate').value)||0;
+
+    const bfRaw = _wasmMod.ivf_bolus_feed_kcal(bolusType, bolusVol, bolusFreq);
+    const bf    = unwrapWasm(typeof bfRaw === 'string' ? JSON.parse(bfRaw) : bfRaw);
+    const cfRaw = _wasmMod.ivf_continuous_feed_kcal(contType, contRate);
+    const cf    = unwrapWasm(typeof cfRaw === 'string' ? JSON.parse(cfRaw) : cfRaw);
+
+    // ── IVFE ─────────────────────────────────────────────
+    const ivfeDose = parseFloat(document.getElementById('ivfe-dose').value)||0;
+    const ivfeConc = parseInt(document.getElementById('ivfe-conc').value)||20;
+    const ivfeRaw  = _wasmMod.ivf_ivfe_params(ivfeDose, ctx.weight_grams, ivfeConc);
+    const ivfe     = unwrapWasm(typeof ivfeRaw === 'string' ? JSON.parse(ivfeRaw) : ivfeRaw);
+
+    const totalOral   = bf.ml_per_day + cf.ml_per_day;
+    const netIvf      = Math.max(0, rx.total_fluid_ml_day - totalOral);
+    const netPumpRate = netIvf / 24;
+
+    // ── Full nutrition ────────────────────────────────────
+    const aaGKg  = parseFloat(document.getElementById('aa-dose').value)||2.5;
+    const nutr   = {
+      net_ivf_ml_day:      netIvf,
+      ivfe_dose_g_kg_day:  ivfeDose,
+      ivfe_percent:        parseFloat(ivfeConc),
+      aa_dose_g_kg_day:    aaGKg,
+      enteral_kcal_day:    bf.kcal_per_day + cf.kcal_per_day,
+      enteral_ml_day:      totalOral,
+    };
+    const fullRxRaw = _wasmMod.ivf_calculate_with_nutrition(JSON.stringify(rx), JSON.stringify(nutr));
+    const fullRx    = unwrapWasm(typeof fullRxRaw === 'string' ? JSON.parse(fullRxRaw) : fullRxRaw);
+    const cb        = fullRx.calorie_breakdown;
+    const goal      = parseInt(document.getElementById('kcal-goal-sel').value)||110;
+    const kcalPerKg = cb ? cb.total_kcal_kg_day : 0;
+
+    // ── Apply rate override if user has dragged slider ────
+    const rateAdj = parseInt(document.getElementById('rate-adj').value);
+    const finalRx = (manualRate !== null && rateAdj !== rx.target_rate_ml_kg_day)
+      ? unwrapWasm(typeof _wasmMod.ivf_apply_rate_override(
+            JSON.stringify(rx), rateAdj, dexConc) === 'string'
+          ? JSON.parse(_wasmMod.ivf_apply_rate_override(JSON.stringify(rx), rateAdj, dexConc))
+          : _wasmMod.ivf_apply_rate_override(JSON.stringify(rx), rateAdj, dexConc))
+      : rx;
+
+    // ── Update DOM from WASM results ──────────────────────
+    document.getElementById('dol-val').textContent='DOL '+ctx.day_of_life;
+    document.getElementById('hdr-ga').textContent=selectedWeek+' weeks';
+    const grp = GA_GROUPS.find(g=>g.id===finalRx.ga_group_id)||GA_GROUPS[2];
+    document.getElementById('hdr-ga').style.color=grp.col;
+    document.getElementById('hdr-rate').textContent=Math.round(finalRx.target_rate_ml_kg_day)+' mL/kg/d';
+    document.getElementById('hdr-total').textContent=Math.round(finalRx.total_fluid_ml_day)+' mL/day';
+
+    document.getElementById('s1-rate').textContent=Math.round(finalRx.target_rate_ml_kg_day);
+    document.getElementById('s1-total-day').textContent=Math.round(finalRx.total_fluid_ml_day);
+    document.getElementById('s1-pump-rate').textContent=finalRx.pump_rate_ml_hr.toFixed(1);
+    document.getElementById('s1-wt-display').textContent=
+      '@ '+ctx.weight_grams+' g  ('+wt.toFixed(3)+' kg)  ·  WASM';
+
+    document.getElementById('rate-adj').value=Math.round(finalRx.target_rate_ml_kg_day);
+    document.getElementById('rate-adj-val').textContent=Math.round(finalRx.target_rate_ml_kg_day)+' mL';
+    document.getElementById('s1-adj-note').textContent=
+      manualRate!==null?'Manual override':'Using WASM protocol default';
+
+    const tier=TIER_DATA[tierIdx(finalRx.target_rate_ml_kg_day)];
+    document.getElementById('s1-tier-badge').innerHTML=
+      `<span class="badge" style="color:${tier.col};border-color:${tier.col}55;background:${tier.col}18;font-size:.72rem">
+        ${finalRx.fluid_tier_label} · ${tier.range}
+       </span>`;
+
+    // GIR
+    const girVal = finalRx.gir_mg_kg_min;
+    drawGirGauge(girVal);
+    document.getElementById('gir-val').textContent=girVal.toFixed(1);
+    document.getElementById('gir-val').style.color=
+      girVal<4?'#388bfd':girVal<=8?'#56d364':girVal<=10?'#e3b341':'#f78166';
+    document.getElementById('gir-badge').textContent=finalRx.gir_status;
+    document.getElementById('gir-note').textContent=
+      `GIR ${girVal.toFixed(1)} mg/kg/min · ${finalRx.gir_status} · ${finalRx.fluid_tier_label}`;
+
+    // Enteral offset
+    document.getElementById('bolus-mld').textContent=bf.ml_per_day;
+    document.getElementById('bolus-kcal').textContent=Math.round(bf.kcal_per_day);
+    document.getElementById('cont-mld').textContent=cf.ml_per_day.toFixed(1);
+    document.getElementById('cont-kcal').textContent=Math.round(cf.kcal_per_day);
+    document.getElementById('ivfe-mlhr').textContent=(ivfe.ml_per_day/24).toFixed(2);
+    document.getElementById('ivfe-mld').textContent=ivfe.ml_per_day.toFixed(1);
+    document.getElementById('ivfe-kcal').textContent=Math.round(ivfe.kcal_per_day);
+    document.getElementById('s3-oral-total').textContent=totalOral.toFixed(0);
+    document.getElementById('s3-net-ivf').textContent=netIvf.toFixed(0);
+    document.getElementById('s3-net-pump').textContent=netPumpRate.toFixed(2);
+    const netGir=(dexConc*netPumpRate)/(wt*6);
+    document.getElementById('s3-net-gir').textContent=
+      `Net GIR: ${netGir.toFixed(1)} mg/kg/min at ${dexConc}% dextrose`;
+
+    // Calories
+    if(cb){
+      const sources=[
+        {label:'TPN Dextrose',col:'#388bfd',kcal:cb.from_dextrose_kcal_kg},
+        {label:'IV Lipids',   col:'#d2a8ff',kcal:cb.from_ivfe_kcal_kg},
+        {label:'Amino Acids', col:'#56d364',kcal:cb.from_amino_acids_kcal_kg},
+        {label:'Enteral',     col:'#e3b341',kcal:cb.from_enteral_kcal_kg},
+      ];
+      drawKcalBars(sources, kcalPerKg, goal);
+      drawKcalChart(kcalPerKg, goal, sources);
+      document.getElementById('kcal-total-day').textContent=Math.round(cb.total_kcal_day);
+      document.getElementById('kcal-per-kg').textContent=Math.round(kcalPerKg);
+      document.getElementById('kcal-per-kg').style.color=
+        kcalPerKg>=goal?'#56d364':kcalPerKg>goal*0.8?'#e3b341':'#f78166';
+      document.getElementById('kcal-goal-note').textContent='Goal: '+goal+' kcal/kg/d';
+      document.getElementById('prot-gkgd').textContent=aaGKg;
+      document.getElementById('prot-total').textContent=
+        cb.protein_total_g_day.toFixed(2)+' g/day total @ '+ctx.weight_grams+'g  ('+wt.toFixed(3)+' kg)';
+      const gcBadge=document.getElementById('kcal-goal-badge');
+      const pctGoal=Math.round(kcalPerKg/goal*100);
+      gcBadge.innerHTML=`<span class="badge ${pctGoal>=95?'badge-ok':pctGoal>70?'badge-warn':'badge-danger'}">${pctGoal}% of ${goal} kcal/kg/d goal</span>`;
+    }
+
+    // Alerts from WASM
+    const s3alert=document.getElementById('s3-alert');
+    s3alert.innerHTML = netIvf<=0
+      ? `<div class="alert alert-warn">⚠ Enteral volume meets or exceeds total fluid — consider discontinuing IV fluids.</div>`
+      : totalOral>finalRx.total_fluid_ml_day*0.6
+        ? `<div class="alert alert-ok">✓ Enteral feeds at ${Math.round(totalOral/finalRx.total_fluid_ml_day*100)}% of total fluid — IV appropriately weaned.</div>`
+        : '';
+
+    const alerts = (finalRx.clinical_alerts||[]);
+    const kcalAlerts = [];
+    if(cb && kcalPerKg<60) kcalAlerts.push(`<div class="alert alert-danger">🚨 Critical caloric deficit — ${Math.round(kcalPerKg)} kcal/kg/d.</div>`);
+    document.getElementById('kcal-alert').innerHTML=kcalAlerts.join('');
+    document.getElementById('sum-alerts').innerHTML=
+      alerts.map(a=>`<div class="alert alert-${a.severity.toLowerCase()==='danger'?'danger':a.severity.toLowerCase()==='warning'?'warn':'info'}">${a.message}</div>`).join('');
+
+    // Summary — reuse existing buildSummary with WASM data
+    buildSummary({
+      wt, wtG:ctx.weight_grams, gaId:finalRx.ga_group_id,
+      gaLabel:finalRx.ga_group_label,
+      dol:ctx.day_of_life, rate:Math.round(finalRx.target_rate_ml_kg_day),
+      totalFluid:Math.round(finalRx.total_fluid_ml_day),
+      netIvf, pumpRate:finalRx.pump_rate_ml_hr, netPumpRate,
+      gir:girVal, fluidType:FLUID_TYPES[selectedFluidKey]?.name||'D10W',
+      bolusMld:bf.ml_per_day, contMld:cf.ml_per_day,
+      iVFEMld:ivfe.ml_per_day, totalOral,
+      kcalPerKg, goal,
+      bolusFeed:bolusType, contFeed:contType,
+      aaGKg, protTotal:(cb?cb.protein_total_g_day:aaGKg*wt),
+      kcalSources:cb?[
+        {label:'TPN Dextrose',col:'#388bfd',kcal:cb.from_dextrose_kcal_kg},
+        {label:'IV Lipids',   col:'#d2a8ff',kcal:cb.from_ivfe_kcal_kg},
+        {label:'Amino Acids', col:'#56d364',kcal:cb.from_amino_acids_kcal_kg},
+        {label:'Enteral',     col:'#e3b341',kcal:cb.from_enteral_kcal_kg},
+      ]:[],
+    });
+
+    buildFluidTypeGrid(finalRx.ga_group_id, ctx.day_of_life, ctx.condition);
+    buildAdditives(finalRx.ga_group_id, ctx.day_of_life);
+
+    return true; // WASM path succeeded
+  } catch(err) {
+    console.warn('[IVF] WASM recalc error, falling back to JS:', err.message);
+    return false;
+  }
+}
+
 /* ═══ INIT ═══════════════════════════════════════════════ */
 buildBanner();
 const initGroup=GA_GROUPS.find(g=>g.weeks.includes(selectedWeek));
 if(initGroup) document.documentElement.style.setProperty('--sel-col',initGroup.col);
+updateEngineBadge(false);
 recalc();
 window.addEventListener('resize',()=>recalc());
+// Async: try to upgrade to WASM engine after initial JS render
+tryLoadWasm();
 </script>
 <script src="../theme-bridge.js"></script>
 <script src="../shell.js"></script>

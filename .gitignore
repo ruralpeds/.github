@@ -1,7 +1,9 @@
 # Dependencies
 node_modules/
 target/
-wasm-pkg/
+# wasm-pkg is built by CI and committed to the repo (see .github/workflows/build-wasm.yml)
+# so it is NOT ignored here. To rebuild locally:
+#   wasm-pack build --target web --out-dir apps/web/wasm-pkg --release crates/ped-wasm
 
 # Build output
 apps/web/build/

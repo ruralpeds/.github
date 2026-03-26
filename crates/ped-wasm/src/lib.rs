@@ -413,3 +413,198 @@ pub fn calculate_percentile(
 // #[wasm_bindgen]
 // pub fn calculate_gcs(eye: u8, verbal: u8, motor: u8) -> JsValue { ... }
 // pub fn estimate_burn_bsa(mode: &str, age_months: u16, regions: JsValue) -> JsValue { ... }
+
+// =============================================================================
+// Neonatal IVF Prescription Calculator
+// =============================================================================
+//
+// Exposes the full sci-clinical::ivf engine to JavaScript.
+// All clinical protocol values live in TOML config files — not in source code.
+// The WASM module ships with embedded defaults (include_str! at compile time).
+// Pass custom TOML strings via ivf_with_custom_config() for runtime hot-update.
+//
+// Call pattern from JS:
+//   const rx = JSON.parse(wasm.ivf_calculate(JSON.stringify({ weight_grams, ... })));
+//   const full = JSON.parse(wasm.ivf_calculate_with_nutrition(JSON.stringify(rx), JSON.stringify(nutrition)));
+
+use sci_clinical::ivf::{IvfCalculator, PatientContext, NutritionInput};
+use sci_clinical::ivf::config::IvfConfig;
+
+/// Calculate the base IVF prescription from patient context.
+///
+/// Input JSON:
+/// ```json
+/// {
+///   "weight_grams": 1200,            // grams — NICU scale entry unit
+///   "gestational_age_weeks": 28,
+///   "day_of_life": 2,
+///   "condition": "stable",           // stable|rds|sepsis|nec|pphn|postop
+///   "environment": "isolette",       // isolette|warmer|photo1|photo2
+///   "dextrose_percent": 10.0
+/// }
+/// ```
+///
+/// Returns `{ ok: IvfPrescription }` or `{ error: WasmError }`.
+#[wasm_bindgen]
+pub fn ivf_calculate(ctx_json: &str) -> JsValue {
+    let func = "ivf_calculate";
+    let ctx: PatientContext = match serde_json::from_str(ctx_json) {
+        Ok(c) => c,
+        Err(e) => return wasm_err(
+            WasmErrorCode::ValidationError,
+            &format!("Invalid patient context JSON: {}", e),
+            func,
+            vec![("input_length".into(), ctx_json.len().to_string())],
+        ),
+    };
+    let calc = IvfCalculator::with_defaults();
+    match calc.calculate(&ctx) {
+        Ok(rx) => wasm_ok(&rx, func),
+        Err(e) => wasm_err(
+            WasmErrorCode::ValidationError,
+            &e.to_string(),
+            func,
+            vec![
+                ("weight_grams".into(), ctx.weight_grams.to_string()),
+                ("ga_weeks".into()    , ctx.gestational_age_weeks.to_string()),
+                ("dol".into()         , ctx.day_of_life.to_string()),
+            ],
+        ),
+    }
+}
+
+/// Add the full nutrition layer to a base prescription.
+///
+/// `base_rx_json` — JSON string from a previous `ivf_calculate` call.
+///
+/// `nutrition_json`:
+/// ```json
+/// {
+///   "net_ivf_ml_day": 80.0,
+///   "ivfe_dose_g_kg_day": 2.0,
+///   "ivfe_percent": 20.0,
+///   "aa_dose_g_kg_day": 2.5,
+///   "enteral_kcal_day": 54.0,
+///   "enteral_ml_day": 80.0
+/// }
+/// ```
+///
+/// Returns `{ ok: IvfPrescription }` (with calorie_breakdown populated).
+#[wasm_bindgen]
+pub fn ivf_calculate_with_nutrition(base_rx_json: &str, nutrition_json: &str) -> JsValue {
+    use sci_clinical::ivf::IvfPrescription;
+    let func = "ivf_calculate_with_nutrition";
+    let base: IvfPrescription = match serde_json::from_str(base_rx_json) {
+        Ok(r) => r,
+        Err(e) => return wasm_err(
+            WasmErrorCode::ValidationError,
+            &format!("Invalid base prescription JSON: {}", e),
+            func, vec![],
+        ),
+    };
+    let nutrition: NutritionInput = match serde_json::from_str(nutrition_json) {
+        Ok(n) => n,
+        Err(e) => return wasm_err(
+            WasmErrorCode::ValidationError,
+            &format!("Invalid nutrition input JSON: {}", e),
+            func, vec![],
+        ),
+    };
+    let calc = IvfCalculator::with_defaults();
+    let full_rx = calc.calculate_with_nutrition(&base, &nutrition);
+    wasm_ok(&full_rx, func)
+}
+
+/// Apply a manual fluid rate override (clinician adjusts from protocol default).
+///
+/// Returns updated `{ ok: IvfPrescription }` with recalculated pump rate, GIR, tier.
+#[wasm_bindgen]
+pub fn ivf_apply_rate_override(
+    base_rx_json: &str,
+    manual_rate_ml_kg_day: f64,
+    dextrose_percent: f64,
+) -> JsValue {
+    use sci_clinical::ivf::IvfPrescription;
+    let func = "ivf_apply_rate_override";
+    let base: IvfPrescription = match serde_json::from_str(base_rx_json) {
+        Ok(r) => r,
+        Err(e) => return wasm_err(
+            WasmErrorCode::ValidationError,
+            &format!("Invalid base prescription JSON: {}", e),
+            func, vec![],
+        ),
+    };
+    if manual_rate_ml_kg_day <= 0.0 || manual_rate_ml_kg_day > 250.0 {
+        return wasm_err(
+            WasmErrorCode::ValidationError,
+            &format!("Rate {:.1} out of range (0–250 mL/kg/day)", manual_rate_ml_kg_day),
+            func,
+            vec![("rate".into(), manual_rate_ml_kg_day.to_string())],
+        );
+    }
+    let calc = IvfCalculator::with_defaults();
+    let rx = calc.apply_rate_override(&base, manual_rate_ml_kg_day, dextrose_percent);
+    wasm_ok(&rx, func)
+}
+
+/// Calculate IVFE (IV fat emulsion) pump parameters.
+///
+/// Returns `{ ok: { ml_per_day, ml_per_hr, kcal_per_day } }`.
+#[wasm_bindgen]
+pub fn ivf_ivfe_params(
+    dose_g_kg_day: f64,
+    weight_grams: f64,
+    concentration_pct: f64,
+) -> JsValue {
+    use sci_clinical::ivf::nutrition::ivfe_parameters;
+    let func = "ivf_ivfe_params";
+    if weight_grams < 100.0 || weight_grams > 8000.0 {
+        return wasm_err(
+            WasmErrorCode::ValidationError,
+            &format!("Weight {:.0}g out of range (100–8000g)", weight_grams),
+            func, vec![("weight_grams".into(), weight_grams.to_string())],
+        );
+    }
+    let cfg = IvfConfig::embedded_defaults();
+    let wt_kg = weight_grams / 1000.0;
+    let (ml_day, ml_hr, kcal_day) = ivfe_parameters(dose_g_kg_day, wt_kg, concentration_pct, &cfg.nutrition);
+    #[derive(serde::Serialize)]
+    struct IvfeResult { ml_per_day: f64, ml_per_hr: f64, kcal_per_day: f64 }
+    wasm_ok(&IvfeResult { ml_per_day: ml_day, ml_per_hr: ml_hr, kcal_per_day: kcal_day }, func)
+}
+
+/// Calculate bolus enteral feed totals.
+///
+/// Returns `{ ok: { ml_per_day, kcal_per_day } }`.
+#[wasm_bindgen]
+pub fn ivf_bolus_feed_kcal(
+    feed_type: &str,
+    ml_per_feed: f64,
+    feeds_per_day: f64,
+) -> JsValue {
+    use sci_clinical::ivf::nutrition::BolusFeed;
+    let func = "ivf_bolus_feed_kcal";
+    let cfg  = IvfConfig::embedded_defaults();
+    let feed = BolusFeed { feed_type: feed_type.to_string(), ml_per_feed, feeds_per_day };
+    let ml_day   = feed.ml_per_day();
+    let kcal_day = feed.kcal_per_day(&cfg.nutrition);
+    #[derive(serde::Serialize)]
+    struct FeedResult { ml_per_day: f64, kcal_per_day: f64 }
+    wasm_ok(&FeedResult { ml_per_day: ml_day, kcal_per_day: kcal_day }, func)
+}
+
+/// Calculate continuous enteral feed totals.
+///
+/// Returns `{ ok: { ml_per_day, kcal_per_day } }`.
+#[wasm_bindgen]
+pub fn ivf_continuous_feed_kcal(feed_type: &str, ml_per_hr: f64) -> JsValue {
+    use sci_clinical::ivf::nutrition::ContinuousFeed;
+    let func = "ivf_continuous_feed_kcal";
+    let cfg  = IvfConfig::embedded_defaults();
+    let feed = ContinuousFeed { feed_type: feed_type.to_string(), ml_per_hr };
+    let ml_day   = feed.ml_per_day();
+    let kcal_day = feed.kcal_per_day(&cfg.nutrition);
+    #[derive(serde::Serialize)]
+    struct FeedResult { ml_per_day: f64, kcal_per_day: f64 }
+    wasm_ok(&FeedResult { ml_per_day: ml_day, kcal_per_day: kcal_day }, func)
+}
