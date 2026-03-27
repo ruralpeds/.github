@@ -3,7 +3,7 @@
   "description": "Tracking registry for all clinical decision trees in timothyhartzog/Peds",
   "repository": "timothyhartzog/Peds",
   "base_path": "apps/web/static/decision-trees",
-  "last_updated": "2026-03-26T10:23:25Z",
+  "last_updated": "2026-03-27",
   "standards": {
     "engine": "D3.js 7.8.5 (cdnjs)",
     "fonts": "DM Serif Display, IBM Plex Sans, IBM Plex Mono",
@@ -1226,6 +1226,135 @@
       ],
       "data_separated": true,
       "data_file": "tree-data/neonatal_ivf_prescription_calculator.js"
+    },
+    {
+      "id": "pediatric_difficult_airway",
+      "filename": "pediatric_difficult_airway_decision_tree.html",
+      "title": "Pediatric Difficult Airway Decision Tree",
+      "category": "pediatric",
+      "tags": [
+        "difficult airway",
+        "DIVA",
+        "RSI",
+        "video laryngoscopy",
+        "LMA",
+        "CICO",
+        "cricothyrotomy",
+        "intubation"
+      ],
+      "created": "2026-03-27",
+      "modified": "2026-03-27",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": true,
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_difficult_airway.js",
+      "sources": [
+        "DAS Pediatric Guidelines 2015",
+        "PALS 2025",
+        "Walls & Murphy 5th ed.",
+        "PeDI Collaborative"
+      ]
+    },
+    {
+      "id": "neonatal_eos_sepsis",
+      "filename": "neonatal_eos_sepsis_decision_tree.html",
+      "title": "Neonatal Early-Onset Sepsis (EOS) Decision Tree",
+      "category": "neonatal",
+      "tags": [
+        "EOS",
+        "sepsis",
+        "GBS",
+        "IAP",
+        "Kaiser calculator",
+        "neonatal",
+        "antibiotics",
+        "ampicillin",
+        "gentamicin"
+      ],
+      "created": "2026-03-27",
+      "modified": "2026-03-27",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": true,
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_eos_sepsis.js",
+      "sources": [
+        "AAP Pediatrics 2022",
+        "Kaiser EOS Calculator",
+        "Escobar et al.",
+        "Puopolo et al."
+      ]
+    },
+    {
+      "id": "neonatal_seizures",
+      "filename": "neonatal_seizures_decision_tree.html",
+      "title": "Neonatal Seizures Decision Tree",
+      "category": "neonatal",
+      "tags": [
+        "seizures",
+        "phenobarbital",
+        "levetiracetam",
+        "HIE",
+        "EEG",
+        "neonatal neurology",
+        "pyridoxine",
+        "jitteriness"
+      ],
+      "created": "2026-03-27",
+      "modified": "2026-03-27",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": true,
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_seizures.js",
+      "sources": [
+        "AAP/AES Pediatrics 2023",
+        "ILAE 2021 Classification",
+        "NEOLEV2 Trial JAMA 2019"
+      ]
+    },
+    {
+      "id": "neonatal_respiratory_escalation",
+      "filename": "neonatal_respiratory_escalation_decision_tree.html",
+      "title": "Neonatal Respiratory Escalation & NIV Decision Tree",
+      "category": "neonatal",
+      "tags": [
+        "respiratory",
+        "CPAP",
+        "HFNC",
+        "BiPAP",
+        "NIPPV",
+        "HFOV",
+        "iNO",
+        "surfactant",
+        "NIV",
+        "intubation",
+        "ECMO",
+        "RDS"
+      ],
+      "created": "2026-03-27",
+      "modified": "2026-03-27",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": true,
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_respiratory_escalation.js",
+      "sources": [
+        "European Consensus Guidelines 2023",
+        "AAP NRP 8th Ed.",
+        "SUPPORT Trial",
+        "NEOLEV2",
+        "VON"
+      ]
     }
   ]
 }
