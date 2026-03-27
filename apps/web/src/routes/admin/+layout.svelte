@@ -24,6 +24,7 @@
     { href: '/admin',            label: 'Dashboard',  icon: '⊞' },
     { href: '/admin/trees',      label: 'Trees',      icon: '🌳' },
     { href: '/admin/knowledge',  label: 'Knowledge',  icon: '📚' },
+    { href: '/admin/content',    label: 'Content',    icon: '📘' },
   ];
 </script>
 
