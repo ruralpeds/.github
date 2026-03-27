@@ -48,6 +48,7 @@
 				{ label: 'Fluid & Glucose', href: '/neonatal/fluids' },
 				{ label: 'Jaundice', href: '/neonatal/jaundice' },
 				{ label: 'Growth Charts', href: '/neonatal/growth' },
+				{ label: 'IVF Sparkline Matrix', href: '/neonatal/ivf-matrix' },
 			]
 		},
 		{
