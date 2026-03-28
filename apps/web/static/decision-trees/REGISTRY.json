@@ -3,7 +3,7 @@
   "description": "Tracking registry for all clinical decision trees in timothyhartzog/Peds",
   "repository": "timothyhartzog/Peds",
   "base_path": "apps/web/static/decision-trees",
-  "last_updated": "2026-03-24",
+  "last_updated": "2026-03-27",
   "standards": {
     "engine": "D3.js 7.8.5 (cdnjs)",
     "fonts": "DM Serif Display, IBM Plex Sans, IBM Plex Mono",
@@ -11,15 +11,28 @@
     "shell": "shell.js (patient banner, Broselow colors, mode badge)",
     "education_links": "edu-links.js (shared education resource slide-out panel, topic-mapped)",
     "node_types": "Emergency(red), Urgent(orange), Decision(yellow), Action(green), Assessment(blue), Diagnosis(purple)",
-    "features": ["Click-to-expand/collapse", "ⓘ tabbed info popups", "📚 Education resources panel", "PubMed-sourced evidence"]
+    "features": [
+      "Click-to-expand/collapse",
+      "\u24d8 tabbed info popups",
+      "\ud83d\udcda Education resources panel",
+      "PubMed-sourced evidence"
+    ],
+    "data_separation": "All 36 trees: clinical data in tree-data/*.js \u2014 rendering code in HTML loader. Edit .js files to update protocols without touching HTML."
   },
   "trees": [
     {
       "id": "neonatal_glucose_management",
       "filename": "neonatal_glucose_management_decision_tree.html",
-      "title": "Neonatal Glucose Management Decision Tree (32–35 wk)",
+      "title": "Neonatal Glucose Management Decision Tree (32\u201335 wk)",
       "category": "neonatal",
-      "tags": ["hypoglycemia", "glucose", "dextrose gel", "GIR", "late preterm", "Level II"],
+      "tags": [
+        "hypoglycemia",
+        "glucose",
+        "dextrose gel",
+        "GIR",
+        "late preterm",
+        "Level II"
+      ],
       "created": "2026-03-24",
       "modified": "2026-03-24",
       "version": "1.0.0",
@@ -30,21 +43,47 @@
       "literature_review": "content/literature-reviews/glucose_management_32_35wk_literature_review.docx",
       "pubmed_refs": 30,
       "education_links": {
-        "education_guides": ["01b", "05", "08", "11"],
-        "textbooks": ["neonatal_endocrine_abnormalities", "neonatal_fen"],
-        "audio_textbooks": ["neonatal_endocrine_abnormalities", "neonatal_fen"],
-        "cheat_sheets": ["neonatal_endocrine_abnormalities", "neonatal_fen"]
+        "education_guides": [
+          "01b",
+          "05",
+          "08",
+          "11"
+        ],
+        "textbooks": [
+          "neonatal_endocrine_abnormalities",
+          "neonatal_fen"
+        ],
+        "audio_textbooks": [
+          "neonatal_endocrine_abnormalities",
+          "neonatal_fen"
+        ],
+        "cheat_sheets": [
+          "neonatal_endocrine_abnormalities",
+          "neonatal_fen"
+        ]
       },
       "changelog": [
-        { "date": "2026-03-24", "version": "1.0.0", "changes": "Initial creation with PubMed literature review, 4 decision branches, education panel, banner config" }
-      ]
+        {
+          "date": "2026-03-24",
+          "version": "1.0.0",
+          "changes": "Initial creation with PubMed literature review, 4 decision branches, education panel, banner config"
+        }
+      ],
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_glucose_management_dt.js"
     },
     {
       "id": "neonatal_cardiac_pda",
       "filename": "neonatal_cardiac_pda_decision_tree.html",
       "title": "Neonatal Cardiac / PDA Decision Tree",
       "category": "neonatal",
-      "tags": ["PDA", "cardiac", "ibuprofen", "indomethacin", "echocardiogram"],
+      "tags": [
+        "PDA",
+        "cardiac",
+        "ibuprofen",
+        "indomethacin",
+        "echocardiogram"
+      ],
       "created": "2026-03-24",
       "modified": "2026-03-24",
       "version": "1.0.0",
@@ -53,18 +92,28 @@
       "has_shell": true,
       "has_edu_links": false,
       "education_links": {
-        "education_guides": ["20"],
+        "education_guides": [
+          "20"
+        ],
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_cardiac_pda.js"
     },
     {
       "id": "neonatal_endocrine",
       "filename": "neonatal_endocrine_decision_tree.html",
       "title": "Neonatal Endocrine Abnormalities Decision Tree",
       "category": "neonatal",
-      "tags": ["endocrine", "hypoglycemia", "hyperinsulinism", "thyroid", "adrenal"],
+      "tags": [
+        "endocrine",
+        "hypoglycemia",
+        "hyperinsulinism",
+        "thyroid",
+        "adrenal"
+      ],
       "created": "2026-03-24",
       "modified": "2026-03-24",
       "version": "1.0.0",
@@ -73,18 +122,34 @@
       "has_shell": true,
       "has_edu_links": false,
       "education_links": {
-        "education_guides": ["01b"],
-        "textbooks": ["neonatal_endocrine_abnormalities"],
-        "audio_textbooks": ["neonatal_endocrine_abnormalities"],
-        "cheat_sheets": ["neonatal_endocrine_abnormalities"]
-      }
+        "education_guides": [
+          "01b"
+        ],
+        "textbooks": [
+          "neonatal_endocrine_abnormalities"
+        ],
+        "audio_textbooks": [
+          "neonatal_endocrine_abnormalities"
+        ],
+        "cheat_sheets": [
+          "neonatal_endocrine_abnormalities"
+        ]
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_endocrine.js"
     },
     {
       "id": "neonatal_fen",
       "filename": "neonatal_fen_decision_tree.html",
       "title": "Neonatal Fluid, Electrolyte & Nutrition Decision Tree",
       "category": "neonatal",
-      "tags": ["fluids", "electrolytes", "nutrition", "TPN", "GIR"],
+      "tags": [
+        "fluids",
+        "electrolytes",
+        "nutrition",
+        "TPN",
+        "GIR"
+      ],
       "created": "2026-03-24",
       "modified": "2026-03-24",
       "version": "1.0.0",
@@ -93,18 +158,34 @@
       "has_shell": true,
       "has_edu_links": false,
       "education_links": {
-        "education_guides": ["11"],
-        "textbooks": ["neonatal_fen"],
-        "audio_textbooks": ["neonatal_fen"],
-        "cheat_sheets": ["neonatal_fen"]
-      }
+        "education_guides": [
+          "11"
+        ],
+        "textbooks": [
+          "neonatal_fen"
+        ],
+        "audio_textbooks": [
+          "neonatal_fen"
+        ],
+        "cheat_sheets": [
+          "neonatal_fen"
+        ]
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_fen.js"
     },
     {
       "id": "neonatal_gi_liver",
       "filename": "neonatal_gi_liver_decision_tree.html",
       "title": "Neonatal GI & Liver Disorders Decision Tree",
       "category": "neonatal",
-      "tags": ["GI", "liver", "NEC", "bilious", "meconium"],
+      "tags": [
+        "GI",
+        "liver",
+        "NEC",
+        "bilious",
+        "meconium"
+      ],
       "created": "2026-03-24",
       "modified": "2026-03-24",
       "version": "1.0.0",
@@ -113,18 +194,34 @@
       "has_shell": true,
       "has_edu_links": false,
       "education_links": {
-        "education_guides": ["13"],
-        "textbooks": ["neonatal_gi_liver"],
-        "audio_textbooks": ["neonatal_gi_liver"],
-        "cheat_sheets": ["neonatal_gi_liver"]
-      }
+        "education_guides": [
+          "13"
+        ],
+        "textbooks": [
+          "neonatal_gi_liver"
+        ],
+        "audio_textbooks": [
+          "neonatal_gi_liver"
+        ],
+        "cheat_sheets": [
+          "neonatal_gi_liver"
+        ]
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_gi_liver.js"
     },
     {
       "id": "neonatal_hematology",
       "filename": "neonatal_hematology_decision_tree.html",
       "title": "Neonatal Hematology Clinical Decision Tree",
       "category": "neonatal",
-      "tags": ["anemia", "polycythemia", "thrombocytopenia", "transfusion", "DIC"],
+      "tags": [
+        "anemia",
+        "polycythemia",
+        "thrombocytopenia",
+        "transfusion",
+        "DIC"
+      ],
       "created": "2026-03-24",
       "modified": "2026-03-24",
       "version": "1.0.0",
@@ -134,17 +231,31 @@
       "has_edu_links": false,
       "education_links": {
         "education_guides": [],
-        "textbooks": ["neonatal_hematology"],
-        "audio_textbooks": ["neonatal_hematology"],
-        "cheat_sheets": ["neonatal_hematology"]
-      }
+        "textbooks": [
+          "neonatal_hematology"
+        ],
+        "audio_textbooks": [
+          "neonatal_hematology"
+        ],
+        "cheat_sheets": [
+          "neonatal_hematology"
+        ]
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_hematology.js"
     },
     {
       "id": "neonatal_infectious_diseases",
       "filename": "neonatal_infectious_diseases_decision_tree.html",
       "title": "Neonatal Infectious Diseases Decision Tree",
       "category": "neonatal",
-      "tags": ["sepsis", "EOS", "LOS", "meningitis", "antibiotics"],
+      "tags": [
+        "sepsis",
+        "EOS",
+        "LOS",
+        "meningitis",
+        "antibiotics"
+      ],
       "created": "2026-03-24",
       "modified": "2026-03-24",
       "version": "1.0.0",
@@ -153,18 +264,34 @@
       "has_shell": true,
       "has_edu_links": false,
       "education_links": {
-        "education_guides": ["17"],
-        "textbooks": ["neonatal_infectious_diseases"],
-        "audio_textbooks": ["neonatal_infectious_diseases"],
-        "cheat_sheets": ["neonatal_infectious_diseases"]
-      }
+        "education_guides": [
+          "17"
+        ],
+        "textbooks": [
+          "neonatal_infectious_diseases"
+        ],
+        "audio_textbooks": [
+          "neonatal_infectious_diseases"
+        ],
+        "cheat_sheets": [
+          "neonatal_infectious_diseases"
+        ]
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_infectious_diseases.js"
     },
     {
       "id": "neonatal_neurology",
       "filename": "neonatal_neurology_decision_tree.html",
       "title": "Neonatal Neurology Decision Tree",
       "category": "neonatal",
-      "tags": ["seizures", "IVH", "HIE", "cooling", "EEG"],
+      "tags": [
+        "seizures",
+        "IVH",
+        "HIE",
+        "cooling",
+        "EEG"
+      ],
       "created": "2026-03-24",
       "modified": "2026-03-24",
       "version": "1.0.0",
@@ -173,18 +300,36 @@
       "has_shell": true,
       "has_edu_links": false,
       "education_links": {
-        "education_guides": ["14", "19"],
-        "textbooks": ["neonatal_neurology"],
-        "audio_textbooks": ["neonatal_neurology"],
-        "cheat_sheets": ["neonatal_neurology"]
-      }
+        "education_guides": [
+          "14",
+          "19"
+        ],
+        "textbooks": [
+          "neonatal_neurology"
+        ],
+        "audio_textbooks": [
+          "neonatal_neurology"
+        ],
+        "cheat_sheets": [
+          "neonatal_neurology"
+        ]
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_neurology.js"
     },
     {
       "id": "neonatal_nows_nas",
       "filename": "neonatal_nows_nas_decision_tree.html",
       "title": "NOWS / NAS Decision Tree",
       "category": "neonatal",
-      "tags": ["NAS", "NOWS", "opioid", "withdrawal", "Finnegan", "ESC"],
+      "tags": [
+        "NAS",
+        "NOWS",
+        "opioid",
+        "withdrawal",
+        "Finnegan",
+        "ESC"
+      ],
       "created": "2026-03-24",
       "modified": "2026-03-24",
       "version": "1.0.0",
@@ -193,18 +338,29 @@
       "has_shell": true,
       "has_edu_links": false,
       "education_links": {
-        "education_guides": ["22"],
+        "education_guides": [
+          "22"
+        ],
         "textbooks": [],
         "audio_textbooks": [],
         "cheat_sheets": []
-      }
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_nows_nas.js"
     },
     {
       "id": "neonatal_pulmonary",
       "filename": "neonatal_pulmonary_decision_tree.html",
       "title": "Neonatal Pulmonary Disorders Decision Tree",
       "category": "neonatal",
-      "tags": ["RDS", "TTN", "pneumothorax", "PPHN", "surfactant", "BPD"],
+      "tags": [
+        "RDS",
+        "TTN",
+        "pneumothorax",
+        "PPHN",
+        "surfactant",
+        "BPD"
+      ],
       "created": "2026-03-24",
       "modified": "2026-03-24",
       "version": "1.0.0",
@@ -213,271 +369,992 @@
       "has_shell": true,
       "has_edu_links": false,
       "education_links": {
-        "education_guides": ["09", "10", "13", "15", "21"],
-        "textbooks": ["neonatal_pulmonary_disorders"],
-        "audio_textbooks": ["neonatal_pulmonary_disorders"],
-        "cheat_sheets": ["neonatal_pulmonary_disorders"]
-      }
+        "education_guides": [
+          "09",
+          "10",
+          "13",
+          "15",
+          "21"
+        ],
+        "textbooks": [
+          "neonatal_pulmonary_disorders"
+        ],
+        "audio_textbooks": [
+          "neonatal_pulmonary_disorders"
+        ],
+        "cheat_sheets": [
+          "neonatal_pulmonary_disorders"
+        ]
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_pulmonary.js"
     },
     {
       "id": "neonatal_renal",
       "filename": "neonatal_renal_decision_tree.html",
       "title": "Neonatal Renal Disorders Decision Tree",
       "category": "neonatal",
-      "tags": ["AKI", "oliguria", "hydronephrosis", "renal"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": ["neonatal_renal"], "audio_textbooks": ["neonatal_renal"], "cheat_sheets": ["neonatal_renal"] }
+      "tags": [
+        "AKI",
+        "oliguria",
+        "hydronephrosis",
+        "renal"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [
+          "neonatal_renal"
+        ],
+        "audio_textbooks": [
+          "neonatal_renal"
+        ],
+        "cheat_sheets": [
+          "neonatal_renal"
+        ]
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_renal.js"
     },
     {
       "id": "neonatal_skin",
       "filename": "neonatal_skin_decision_tree.html",
       "title": "Neonatal Skin Disorders Decision Tree",
       "category": "neonatal",
-      "tags": ["skin", "rash", "birthmarks", "dermatology"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": ["neonatal_skin"], "audio_textbooks": ["neonatal_skin"], "cheat_sheets": ["neonatal_skin"] }
+      "tags": [
+        "skin",
+        "rash",
+        "birthmarks",
+        "dermatology"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [
+          "neonatal_skin"
+        ],
+        "audio_textbooks": [
+          "neonatal_skin"
+        ],
+        "cheat_sheets": [
+          "neonatal_skin"
+        ]
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_skin.js"
     },
     {
       "id": "neonatal_surgical_emergencies",
       "filename": "neonatal_surgical_emergencies_decision_tree.html",
       "title": "Neonatal Surgical Emergencies Decision Tree",
       "category": "neonatal",
-      "tags": ["surgical", "volvulus", "atresia", "omphalocele", "gastroschisis"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": ["neonatal_surgical_emergencies"], "audio_textbooks": ["neonatal_surgical_emergencies"], "cheat_sheets": ["neonatal_surgical_emergencies"] }
+      "tags": [
+        "surgical",
+        "volvulus",
+        "atresia",
+        "omphalocele",
+        "gastroschisis"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [
+          "neonatal_surgical_emergencies"
+        ],
+        "audio_textbooks": [
+          "neonatal_surgical_emergencies"
+        ],
+        "cheat_sheets": [
+          "neonatal_surgical_emergencies"
+        ]
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_surgical_emergencies.js"
     },
     {
       "id": "neonatal_transport",
       "filename": "neonatal_transport_decision_tree.html",
       "title": "Neonatal Transport Stabilization Decision Tree",
       "category": "neonatal",
-      "tags": ["transport", "stabilization", "S.T.A.B.L.E.", "transfer"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": ["08"], "textbooks": ["critical_care_stabilization"], "audio_textbooks": ["critical_care_stabilization"], "cheat_sheets": ["critical_care_stabilization"] }
+      "tags": [
+        "transport",
+        "stabilization",
+        "S.T.A.B.L.E.",
+        "transfer"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [
+          "08"
+        ],
+        "textbooks": [
+          "critical_care_stabilization"
+        ],
+        "audio_textbooks": [
+          "critical_care_stabilization"
+        ],
+        "cheat_sheets": [
+          "critical_care_stabilization"
+        ]
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_transport.js"
     },
     {
       "id": "neonatal_urological",
       "filename": "neonatal_urological_decision_tree.html",
       "title": "Neonatal Urological Disorders Decision Tree",
       "category": "neonatal",
-      "tags": ["urology", "hydronephrosis", "UTI", "undescended"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": ["neonatal_urology"], "audio_textbooks": ["neonatal_urology"], "cheat_sheets": ["neonatal_urology"] }
+      "tags": [
+        "urology",
+        "hydronephrosis",
+        "UTI",
+        "undescended"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [
+          "neonatal_urology"
+        ],
+        "audio_textbooks": [
+          "neonatal_urology"
+        ],
+        "cheat_sheets": [
+          "neonatal_urology"
+        ]
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_urological.js"
     },
     {
       "id": "neonatal_ophthalmology",
       "filename": "neonatal_ophthalmology_decision_tree.html",
       "title": "Neonatal Ophthalmology Decision Tree",
       "category": "neonatal",
-      "tags": ["ROP", "ophthalmology", "retinopathy"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": ["16"], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "ROP",
+        "ophthalmology",
+        "retinopathy"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [
+          "16"
+        ],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_ophthalmology.js"
     },
     {
       "id": "neonatal_pain_sedation",
       "filename": "neonatal_pain_sedation_decision_tree.html",
       "title": "Neonatal Pain & Sedation Decision Tree",
       "category": "neonatal",
-      "tags": ["pain", "sedation", "NPASS", "morphine", "fentanyl"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "pain",
+        "sedation",
+        "NPASS",
+        "morphine",
+        "fentanyl"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_pain_sedation.js"
     },
     {
       "id": "newborn_discharge_readiness",
       "filename": "newborn_discharge_readiness_decision_tree.html",
       "title": "Newborn Discharge Readiness Decision Tree",
       "category": "neonatal",
-      "tags": ["discharge", "readiness", "criteria", "car seat"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": ["01", "05"], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "discharge",
+        "readiness",
+        "criteria",
+        "car seat"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [
+          "01",
+          "05"
+        ],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/newborn_discharge_readiness.js"
     },
     {
       "id": "newborn_screening_followup",
       "filename": "newborn_screening_followup_decision_tree.html",
       "title": "Newborn Screening Follow-Up Decision Tree",
       "category": "neonatal",
-      "tags": ["newborn screening", "metabolic", "PKU", "CF", "sickle cell"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "newborn screening",
+        "metabolic",
+        "PKU",
+        "CF",
+        "sickle cell"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/newborn_screening_followup.js"
     },
     {
       "id": "nrp_resuscitation",
       "filename": "nrp_resuscitation_decision_tree.html",
       "title": "Neonatal Resuscitation (NRP) Decision Tree",
       "category": "neonatal",
-      "tags": ["NRP", "resuscitation", "delivery room", "intubation"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": ["02", "04", "08"], "textbooks": ["critical_care_stabilization"], "audio_textbooks": ["critical_care_stabilization"], "cheat_sheets": ["critical_care_stabilization"] }
+      "tags": [
+        "NRP",
+        "resuscitation",
+        "delivery room",
+        "intubation"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [
+          "02",
+          "04",
+          "08"
+        ],
+        "textbooks": [
+          "critical_care_stabilization"
+        ],
+        "audio_textbooks": [
+          "critical_care_stabilization"
+        ],
+        "cheat_sheets": [
+          "critical_care_stabilization"
+        ]
+      },
+      "data_separated": true,
+      "data_file": "tree-data/nrp_resuscitation.js"
     },
     {
       "id": "obstetric_emergencies",
       "filename": "obstetric_emergencies_decision_tree.html",
       "title": "Obstetric Emergencies Decision Tree",
       "category": "obstetric",
-      "tags": ["abruption", "eclampsia", "cord prolapse", "uterine rupture"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": ["15"], "textbooks": ["maternal_infections"], "audio_textbooks": ["maternal_infections"], "cheat_sheets": ["maternal_infections"] }
+      "tags": [
+        "abruption",
+        "eclampsia",
+        "cord prolapse",
+        "uterine rupture"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [
+          "15"
+        ],
+        "textbooks": [
+          "maternal_infections"
+        ],
+        "audio_textbooks": [
+          "maternal_infections"
+        ],
+        "cheat_sheets": [
+          "maternal_infections"
+        ]
+      },
+      "data_separated": true,
+      "data_file": "tree-data/obstetric_emergencies.js"
     },
     {
       "id": "shoulder_dystocia",
       "filename": "shoulder_dystocia_decision_tree.html",
       "title": "Shoulder Dystocia Decision Tree",
       "category": "obstetric",
-      "tags": ["shoulder dystocia", "McRoberts", "Rubin", "delivery"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "shoulder dystocia",
+        "McRoberts",
+        "Rubin",
+        "delivery"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/shoulder_dystocia.js"
     },
     {
       "id": "pals_algorithm",
       "filename": "pals_algorithm_decision_tree.html",
       "title": "PALS Algorithm Decision Tree",
       "category": "pediatric",
-      "tags": ["PALS", "cardiac arrest", "bradycardia", "tachycardia", "ACLS"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": ["04", "14"], "textbooks": ["critical_care_stabilization"], "audio_textbooks": ["critical_care_stabilization"], "cheat_sheets": ["critical_care_stabilization"] }
+      "tags": [
+        "PALS",
+        "cardiac arrest",
+        "bradycardia",
+        "tachycardia",
+        "ACLS"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [
+          "04",
+          "14"
+        ],
+        "textbooks": [
+          "critical_care_stabilization"
+        ],
+        "audio_textbooks": [
+          "critical_care_stabilization"
+        ],
+        "cheat_sheets": [
+          "critical_care_stabilization"
+        ]
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pals_algorithm.js"
     },
     {
       "id": "pediatric_abdominal_pain",
       "filename": "pediatric_abdominal_pain_decision_tree.html",
       "title": "Pediatric Abdominal Pain Decision Tree",
       "category": "pediatric",
-      "tags": ["abdominal pain", "appendicitis", "intussusception"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "abdominal pain",
+        "appendicitis",
+        "intussusception"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_abdominal_pain.js"
     },
     {
       "id": "pediatric_anaphylaxis",
       "filename": "pediatric_anaphylaxis_decision_tree.html",
       "title": "Pediatric Anaphylaxis Decision Tree",
       "category": "pediatric",
-      "tags": ["anaphylaxis", "epinephrine", "allergy"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "anaphylaxis",
+        "epinephrine",
+        "allergy"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_anaphylaxis.js"
     },
     {
       "id": "pediatric_burns",
       "filename": "pediatric_burns_decision_tree.html",
       "title": "Pediatric Burns Decision Tree",
       "category": "pediatric",
-      "tags": ["burns", "BSA", "Parkland", "wound care"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "burns",
+        "BSA",
+        "Parkland",
+        "wound care"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_burns.js"
     },
     {
       "id": "pediatric_cardiac_emergencies",
       "filename": "pediatric_cardiac_emergencies_decision_tree.html",
       "title": "Pediatric Cardiac Emergencies Decision Tree",
       "category": "pediatric",
-      "tags": ["SVT", "VT", "CHD", "prostaglandin"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "SVT",
+        "VT",
+        "CHD",
+        "prostaglandin"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_cardiac_emergencies.js"
     },
     {
       "id": "pediatric_dka",
       "filename": "pediatric_dka_decision_tree.html",
       "title": "Pediatric DKA Management Decision Tree",
       "category": "pediatric",
-      "tags": ["DKA", "diabetes", "insulin", "ketoacidosis"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "DKA",
+        "diabetes",
+        "insulin",
+        "ketoacidosis"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_dka.js"
     },
     {
       "id": "pediatric_orthopedic",
       "filename": "pediatric_orthopedic_decision_tree.html",
       "title": "Pediatric Orthopedic Emergencies Decision Tree",
       "category": "pediatric",
-      "tags": ["fracture", "Salter-Harris", "dislocation", "compartment syndrome"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "fracture",
+        "Salter-Harris",
+        "dislocation",
+        "compartment syndrome"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_orthopedic.js"
     },
     {
       "id": "pediatric_psychiatric_emergencies",
       "filename": "pediatric_psychiatric_emergencies_decision_tree.html",
       "title": "Pediatric Psychiatric Emergencies Decision Tree",
       "category": "pediatric",
-      "tags": ["psychiatric", "suicidal", "agitation", "restraint"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "psychiatric",
+        "suicidal",
+        "agitation",
+        "restraint"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_psychiatric_emergencies.js"
     },
     {
       "id": "pediatric_respiratory_emergencies",
       "filename": "pediatric_respiratory_emergencies_decision_tree.html",
       "title": "Pediatric Respiratory Emergencies Decision Tree",
       "category": "pediatric",
-      "tags": ["croup", "asthma", "bronchiolitis", "foreign body", "epiglottitis"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": ["09", "10"], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "croup",
+        "asthma",
+        "bronchiolitis",
+        "foreign body",
+        "epiglottitis"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [
+          "09",
+          "10"
+        ],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_respiratory_emergencies.js"
     },
     {
       "id": "pediatric_seizures",
       "filename": "pediatric_seizures_decision_tree.html",
       "title": "Pediatric Seizures & Status Epilepticus Decision Tree",
       "category": "pediatric",
-      "tags": ["seizures", "status epilepticus", "benzodiazepines", "febrile"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "seizures",
+        "status epilepticus",
+        "benzodiazepines",
+        "febrile"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_seizures.js"
     },
     {
       "id": "pediatric_sepsis_shock",
       "filename": "pediatric_sepsis_shock_decision_tree.html",
       "title": "Pediatric Sepsis & Shock Decision Tree",
       "category": "pediatric",
-      "tags": ["sepsis", "shock", "fluid resuscitation", "vasopressors"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": ["17"], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "sepsis",
+        "shock",
+        "fluid resuscitation",
+        "vasopressors"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [
+          "17"
+        ],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_sepsis_shock.js"
     },
     {
       "id": "pediatric_siadh_csw",
       "filename": "pediatric_siadh_csw_decision_tree.html",
       "title": "SIADH vs Cerebral Salt Wasting Decision Tree",
       "category": "pediatric",
-      "tags": ["SIADH", "CSW", "hyponatremia", "sodium"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "SIADH",
+        "CSW",
+        "hyponatremia",
+        "sodium"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_siadh_csw.js"
     },
     {
       "id": "pediatric_toxicology",
       "filename": "pediatric_toxicology_decision_tree.html",
       "title": "Pediatric Toxicology Decision Tree",
       "category": "pediatric",
-      "tags": ["poisoning", "overdose", "antidotes", "decontamination"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "poisoning",
+        "overdose",
+        "antidotes",
+        "decontamination"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_toxicology.js"
     },
     {
       "id": "pediatric_trauma",
       "filename": "pediatric_trauma_decision_tree.html",
       "title": "Pediatric Trauma Decision Tree",
       "category": "pediatric",
-      "tags": ["trauma", "ATLS", "head injury", "spleen", "liver"],
-      "created": "2026-03-24", "modified": "2026-03-24", "version": "1.0.0", "status": "complete",
-      "has_theme_bridge": true, "has_shell": true, "has_edu_links": false,
-      "education_links": { "education_guides": [], "textbooks": [], "audio_textbooks": [], "cheat_sheets": [] }
+      "tags": [
+        "trauma",
+        "ATLS",
+        "head injury",
+        "spleen",
+        "liver"
+      ],
+      "created": "2026-03-24",
+      "modified": "2026-03-24",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": false,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_trauma.js"
+    },
+    {
+      "id": "neonatal_ivf_prescription_calculator",
+      "filename": "neonatal_ivf_prescription_calculator.html",
+      "title": "Neonatal IVF Prescription Calculator",
+      "category": "neonatal",
+      "tags": [
+        "IVF",
+        "intravenous fluids",
+        "fluid management",
+        "TPN",
+        "GIR",
+        "glucose infusion rate",
+        "IVFE",
+        "lipids",
+        "amino acids",
+        "calorie tracking",
+        "electrolytes",
+        "preterm",
+        "ELBW",
+        "VLBW",
+        "neonatal nutrition",
+        "pump rate",
+        "mL/hr",
+        "enteral feeds",
+        "weight-based dosing"
+      ],
+      "created": "2026-03-26",
+      "modified": "2026-03-26",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": true,
+      "calculator_type": "prescription",
+      "rust_engine": "rust-sci-core/crates/sci-clinical/src/ivf",
+      "config_files": [
+        "config/ivf_protocols.toml",
+        "config/ivf_conditions.toml",
+        "config/ivf_nutrition.toml"
+      ],
+      "features": [
+        "GA banner selector (22\u201340 weeks)",
+        "Weight entry in grams with kg display",
+        "DOL slider with protocol-driven rate lookup",
+        "Condition modifiers (stable, RDS, sepsis, NEC, PPHN, post-op)",
+        "Environment modifiers (isolette, warmer, phototherapy)",
+        "Fluid type recommendation by GA + DOL",
+        "Electrolyte additive guidance with DOL-based start/hold",
+        "Enteral feed offset (bolus + continuous)",
+        "IVFE lipid calculation",
+        "GIR gauge with D3 visualization",
+        "Full calorie tracking (dextrose, IVFE, AA, enteral)",
+        "Printable Rx summary with copy-to-clipboard",
+        "Clinical alert system"
+      ],
+      "data_sources": [
+        "Vermont Oxford Network (VON)",
+        "AAP Committee on Nutrition 2022",
+        "Cloherty & Stark NICU Manual 8th Edition",
+        "Tsang et al. Nutrition of the Preterm Infant 3rd Edition"
+      ],
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_ivf_prescription_calculator.js"
+    },
+    {
+      "id": "pediatric_difficult_airway",
+      "filename": "pediatric_difficult_airway_decision_tree.html",
+      "title": "Pediatric Difficult Airway Decision Tree",
+      "category": "pediatric",
+      "tags": [
+        "difficult airway",
+        "DIVA",
+        "RSI",
+        "video laryngoscopy",
+        "LMA",
+        "CICO",
+        "cricothyrotomy",
+        "intubation"
+      ],
+      "created": "2026-03-27",
+      "modified": "2026-03-27",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": true,
+      "data_separated": true,
+      "data_file": "tree-data/pediatric_difficult_airway.js",
+      "sources": [
+        "DAS Pediatric Guidelines 2015",
+        "PALS 2025",
+        "Walls & Murphy 5th ed.",
+        "PeDI Collaborative"
+      ]
+    },
+    {
+      "id": "neonatal_eos_sepsis",
+      "filename": "neonatal_eos_sepsis_decision_tree.html",
+      "title": "Neonatal Early-Onset Sepsis (EOS) Decision Tree",
+      "category": "neonatal",
+      "tags": [
+        "EOS",
+        "sepsis",
+        "GBS",
+        "IAP",
+        "Kaiser calculator",
+        "neonatal",
+        "antibiotics",
+        "ampicillin",
+        "gentamicin"
+      ],
+      "created": "2026-03-27",
+      "modified": "2026-03-27",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": true,
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_eos_sepsis.js",
+      "sources": [
+        "AAP Pediatrics 2022",
+        "Kaiser EOS Calculator",
+        "Escobar et al.",
+        "Puopolo et al."
+      ]
+    },
+    {
+      "id": "neonatal_seizures",
+      "filename": "neonatal_seizures_decision_tree.html",
+      "title": "Neonatal Seizures Decision Tree",
+      "category": "neonatal",
+      "tags": [
+        "seizures",
+        "phenobarbital",
+        "levetiracetam",
+        "HIE",
+        "EEG",
+        "neonatal neurology",
+        "pyridoxine",
+        "jitteriness"
+      ],
+      "created": "2026-03-27",
+      "modified": "2026-03-27",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": true,
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_seizures.js",
+      "sources": [
+        "AAP/AES Pediatrics 2023",
+        "ILAE 2021 Classification",
+        "NEOLEV2 Trial JAMA 2019"
+      ]
+    },
+    {
+      "id": "neonatal_respiratory_escalation",
+      "filename": "neonatal_respiratory_escalation_decision_tree.html",
+      "title": "Neonatal Respiratory Escalation & NIV Decision Tree",
+      "category": "neonatal",
+      "tags": [
+        "respiratory",
+        "CPAP",
+        "HFNC",
+        "BiPAP",
+        "NIPPV",
+        "HFOV",
+        "iNO",
+        "surfactant",
+        "NIV",
+        "intubation",
+        "ECMO",
+        "RDS"
+      ],
+      "created": "2026-03-27",
+      "modified": "2026-03-27",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": true,
+      "has_edu_links": true,
+      "data_separated": true,
+      "data_file": "tree-data/neonatal_respiratory_escalation.js",
+      "sources": [
+        "European Consensus Guidelines 2023",
+        "AAP NRP 8th Ed.",
+        "SUPPORT Trial",
+        "NEOLEV2",
+        "VON"
+      ]
     }
   ]
 }

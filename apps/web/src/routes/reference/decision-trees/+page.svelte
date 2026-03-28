@@ -14,9 +14,13 @@
 		{ name: 'NRP Resuscitation', file: 'nrp_resuscitation_decision_tree.html', icon: '⚡', mode: 'neonatal', category: 'Resuscitation' },
 		{ name: 'Cardiac / PDA', file: 'neonatal_cardiac_pda_decision_tree.html', icon: '❤️', mode: 'neonatal', category: 'Cardiac' },
 		{ name: 'Pulmonary', file: 'neonatal_pulmonary_decision_tree.html', icon: '🫁', mode: 'neonatal', category: 'Respiratory' },
+		{ name: 'Respiratory Escalation & NIV', file: 'neonatal_respiratory_escalation_decision_tree.html', icon: '💨', mode: 'neonatal', category: 'Respiratory' },
 		{ name: 'Infectious Diseases', file: 'neonatal_infectious_diseases_decision_tree.html', icon: '🦠', mode: 'neonatal', category: 'Infectious Disease' },
+		{ name: 'Early-Onset Sepsis (EOS)', file: 'neonatal_eos_sepsis_decision_tree.html', icon: '🦠', mode: 'neonatal', category: 'Infectious Disease' },
 		{ name: 'Fluids, Electrolytes & Nutrition', file: 'neonatal_fen_decision_tree.html', icon: '💧', mode: 'neonatal', category: 'FEN' },
+		{ name: 'Glucose Management', file: 'neonatal_glucose_management_decision_tree.html', icon: '🍬', mode: 'neonatal', category: 'FEN' },
 		{ name: 'Neurology', file: 'neonatal_neurology_decision_tree.html', icon: '🧠', mode: 'neonatal', category: 'Neuro' },
+		{ name: 'Seizures', file: 'neonatal_seizures_decision_tree.html', icon: '🧠', mode: 'neonatal', category: 'Neuro' },
 		{ name: 'Hematology', file: 'neonatal_hematology_decision_tree.html', icon: '🩸', mode: 'neonatal', category: 'Hematology' },
 		{ name: 'Endocrine', file: 'neonatal_endocrine_decision_tree.html', icon: '⚗️', mode: 'neonatal', category: 'Endocrine' },
 		{ name: 'GI / Liver', file: 'neonatal_gi_liver_decision_tree.html', icon: '🔬', mode: 'neonatal', category: 'GI' },
@@ -35,6 +39,7 @@
 
 		// === PEDIATRIC ===
 		{ name: 'PALS Algorithm', file: 'pals_algorithm_decision_tree.html', icon: '⚡', mode: 'pediatric', category: 'Resuscitation' },
+		{ name: 'Difficult Airway', file: 'pediatric_difficult_airway_decision_tree.html', icon: '🌬️', mode: 'pediatric', category: 'Airway' },
 		{ name: 'Sepsis & Shock', file: 'pediatric_sepsis_shock_decision_tree.html', icon: '🩸', mode: 'pediatric', category: 'Sepsis' },
 		{ name: 'Respiratory Emergencies', file: 'pediatric_respiratory_emergencies_decision_tree.html', icon: '🫁', mode: 'pediatric', category: 'Respiratory' },
 		{ name: 'Cardiac Emergencies', file: 'pediatric_cardiac_emergencies_decision_tree.html', icon: '❤️', mode: 'pediatric', category: 'Cardiac' },

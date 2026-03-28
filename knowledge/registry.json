@@ -1,0 +1,3264 @@
+{
+  "schema_version": "1.0.0",
+  "project": "Pediatric_emergency_CDS",
+  "description": "Unified knowledge registry \u2014 single source of truth for all knowledge artifacts in the Peds project",
+  "last_updated": "2026-03-26T09:37:35Z",
+  "categories": {
+    "module": "Rust computation modules (algorithms, clinical math, protocols)",
+    "calculator": "Frontend calculator/scoring system definitions with WASM bindings",
+    "decision_tree": "Interactive D3.js clinical decision trees",
+    "education_guide": "Nursing education guides (DOCX/MD format)",
+    "textbook": "Comprehensive clinical textbooks (15k-40k words)",
+    "audio_textbook": "TTS-optimized narration versions of textbooks",
+    "cheat_sheet": "2-4 page quick-reference cards for bedside lamination",
+    "protocol": "Clinical protocol documentation and evidence basis",
+    "literature_review": "PubMed-sourced evidence reviews",
+    "source_document": "Original source documents that informed module development"
+  },
+  "entries": {
+    "module:acid_base": {
+      "id": "module:acid_base",
+      "category": "module",
+      "title": "Acid-Base & Electrolyte Calculations",
+      "description": "Anion gap, delta-delta, ABG interpretation, fluid deficits, electrolyte replacements",
+      "path": "src/protocols/acid_base.rs",
+      "created": "2026-03-04T12:19:21-0500",
+      "created_by": "git",
+      "created_commit": "09b1332b3cfc4309fcb9760ac445c0b9b9430ffb",
+      "modifications": [
+        {
+          "date": "2026-03-13T09:55:04+0000",
+          "commit": "70c431a162d1009a1a77ec8021157f0f7d41818b",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [
+        "acid-base",
+        "electrolytes",
+        "abg",
+        "anion-gap"
+      ],
+      "status": "active"
+    },
+    "module:burns": {
+      "id": "module:burns",
+      "category": "module",
+      "title": "Burns Protocol",
+      "description": "Burns protocol including Parkland formula and fluid resuscitation",
+      "path": "src/protocols/burns.rs",
+      "created": "2026-03-03T00:31:13+0000",
+      "created_by": "git",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "modifications": [
+        {
+          "date": "2026-03-03T19:20:23-0500",
+          "commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [
+        "burns",
+        "parkland",
+        "fluid-resuscitation",
+        "tbsa"
+      ],
+      "status": "active"
+    },
+    "module:cardiac": {
+      "id": "module:cardiac",
+      "category": "module",
+      "title": "Cardiac Arrest & Resuscitation Protocol",
+      "description": "Cardiac arrest and resuscitation protocol",
+      "path": "src/protocols/cardiac.rs",
+      "created": "2026-03-03T00:31:13+0000",
+      "created_by": "git",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "modifications": [
+        {
+          "date": "2026-03-03T19:32:00-0500",
+          "commit": "e39fa1822777ae1fc2ead18bd5a179cc53bf1d49",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [
+        "cardiac",
+        "arrest",
+        "resuscitation",
+        "pals"
+      ],
+      "status": "active"
+    },
+    "module:sepsis": {
+      "id": "module:sepsis",
+      "category": "module",
+      "title": "Sepsis Protocol",
+      "description": "Sepsis pathways including Phoenix criteria, first-hour bundle, fluid resuscitation",
+      "path": "src/protocols/sepsis.rs",
+      "created": "2026-03-03T00:31:13+0000",
+      "created_by": "git",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "modifications": [],
+      "source_documents": [
+        "Pediatric_Emergency_Medicine_Rural_ED_Guide.docx"
+      ],
+      "tags": [
+        "sepsis",
+        "phoenix",
+        "vasopressors",
+        "fluid-resuscitation"
+      ],
+      "status": "active"
+    },
+    "decision_tree:neonatal_glucose_management": {
+      "id": "decision_tree:neonatal_glucose_management",
+      "category": "decision_tree",
+      "title": "Neonatal Glucose Management (32-35 wk)",
+      "description": "Glucose screening, dextrose gel, GIR calculation for late preterm infants",
+      "path": "apps/web/static/decision-trees/neonatal_glucose_management.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "neonatal",
+        "glucose",
+        "hypoglycemia",
+        "dextrose-gel",
+        "gir"
+      ],
+      "education_links": {
+        "guides": [
+          "01b",
+          "05",
+          "08",
+          "11"
+        ],
+        "textbooks": [
+          "endocrine",
+          "fen"
+        ],
+        "cheat_sheets": [
+          "endocrine",
+          "fen"
+        ]
+      },
+      "evidence_refs": 30,
+      "status": "active"
+    },
+    "decision_tree:pals_algorithm": {
+      "id": "decision_tree:pals_algorithm",
+      "category": "decision_tree",
+      "title": "PALS Cardiac Arrest Algorithm",
+      "description": "PALS cardiac arrest, bradycardia, tachycardia algorithm",
+      "path": "apps/web/static/decision-trees/pals_algorithm.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "pals",
+        "cardiac-arrest",
+        "cpr",
+        "defibrillation",
+        "epinephrine"
+      ],
+      "education_links": {
+        "guides": [
+          "04",
+          "14"
+        ],
+        "textbooks": [
+          "critical_care"
+        ]
+      },
+      "evidence_refs": null,
+      "status": "active"
+    },
+    "education_guide:01": {
+      "id": "education_guide:01",
+      "category": "education_guide",
+      "title": "Comprehensive Newborn Nursery Care",
+      "description": "Universal guide for newborn nursery nursing education",
+      "path": "content/education-guides/",
+      "created": "2026-03-18T00:00:00Z",
+      "created_by": "author",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "nursery",
+        "newborn",
+        "level-i",
+        "level-ii",
+        "universal"
+      ],
+      "format": "markdown",
+      "status": "active"
+    },
+    "education_guide:14": {
+      "id": "education_guide:14",
+      "category": "education_guide",
+      "title": "Critical Care Stabilization Textbook",
+      "description": "Hemodynamics, vascular access, resuscitation, transport stabilization",
+      "path": "content/education-guides/",
+      "created": "2026-03-18T00:00:00Z",
+      "created_by": "author",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "critical-care",
+        "stabilization",
+        "hemodynamics",
+        "transport"
+      ],
+      "format": "docx",
+      "status": "active"
+    },
+    "protocol:evidence_sepsis": {
+      "id": "protocol:evidence_sepsis",
+      "category": "protocol",
+      "title": "Sepsis Evidence Basis",
+      "description": "ACCM 2017 + SSC 2020 guidelines, evidence level A",
+      "path": "apps/web/src/lib/data/contacts/evidence-registry.json",
+      "created": "2026-03-13T00:00:00Z",
+      "created_by": "author",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [
+        "Pediatric_Emergency_Medicine_Rural_ED_Guide.docx"
+      ],
+      "tags": [
+        "sepsis",
+        "evidence",
+        "accm",
+        "ssc",
+        "guidelines"
+      ],
+      "evidence_level": "A",
+      "primary_references": [
+        {
+          "doi": "10.1097/PCC.0000000000001078",
+          "year": 2017,
+          "type": "guideline"
+        },
+        {
+          "doi": "10.1007/s00134-020-05955-z",
+          "year": 2020,
+          "type": "guideline"
+        }
+      ],
+      "status": "active"
+    },
+    "module:mod": {
+      "id": "module:mod",
+      "category": "module",
+      "title": "Mod",
+      "description": "mod module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/algorithms/mod.rs",
+      "created": "2026-03-03T22:00:36+0000",
+      "created_by": "git",
+      "created_commit": "f54e5fdcf40f3fe13495caab759d0490d4b4518f",
+      "modifications": [
+        {
+          "date": "2026-03-03T19:20:23-0500",
+          "commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:assessment": {
+      "id": "module:assessment",
+      "category": "module",
+      "title": "Assessment",
+      "description": "Clinical assessment: GCS, AVPU, Pediatric Assessment Triangle",
+      "path": "src/assessment.rs",
+      "created": "2026-03-03T00:31:13+00:00",
+      "created_by": "git",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:checklists": {
+      "id": "module:checklists",
+      "category": "module",
+      "title": "Checklists",
+      "description": "Clinical checklists for common emergency procedures",
+      "path": "src/checklists.rs",
+      "created": "2026-03-03T00:31:13+00:00",
+      "created_by": "git",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:about": {
+      "id": "module:about",
+      "category": "module",
+      "title": "About",
+      "description": "about module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/components/about.rs",
+      "created": "2026-03-07T23:16:21+0000",
+      "created_by": "git",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:calculators": {
+      "id": "module:calculators",
+      "category": "module",
+      "title": "Calculators",
+      "description": "calculators module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/components/calculators.rs",
+      "created": "2026-03-07T23:16:21+0000",
+      "created_by": "git",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "modifications": [
+        {
+          "date": "2026-03-18T23:14:17-0400",
+          "commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:contacts": {
+      "id": "module:contacts",
+      "category": "module",
+      "title": "Contacts",
+      "description": "contacts module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/components/contacts.rs",
+      "created": "2026-03-07T23:16:21+0000",
+      "created_by": "git",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:equipment": {
+      "id": "module:equipment",
+      "category": "module",
+      "title": "Equipment",
+      "description": "equipment module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/components/equipment.rs",
+      "created": "2026-03-07T23:16:21+0000",
+      "created_by": "git",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "modifications": [
+        {
+          "date": "2026-03-18T22:40:16-0400",
+          "commit": "9c51c53393a88e79d013eaca8951368a2aad531f",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:medication_list": {
+      "id": "module:medication_list",
+      "category": "module",
+      "title": "Medication List",
+      "description": "medication_list module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/components/medication_list.rs",
+      "created": "2026-03-11T09:56:06-0400",
+      "created_by": "git",
+      "created_commit": "892f92573d7e36cb9d2e56e59e58441e3cc6047a",
+      "modifications": [
+        {
+          "date": "2026-03-13T10:32:15+0000",
+          "commit": "1807fdf254de1ba75ea96a601c8061786500ca5e",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:medications": {
+      "id": "module:medications",
+      "category": "module",
+      "title": "Medications",
+      "description": "medications module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/components/medications.rs",
+      "created": "2026-03-07T23:16:21+0000",
+      "created_by": "git",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "modifications": [
+        {
+          "date": "2026-03-18T22:40:16-0400",
+          "commit": "9c51c53393a88e79d013eaca8951368a2aad531f",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:patient_setup": {
+      "id": "module:patient_setup",
+      "category": "module",
+      "title": "Patient Setup",
+      "description": "patient_setup module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/components/patient_setup.rs",
+      "created": "2026-03-07T23:16:21+0000",
+      "created_by": "git",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "modifications": [
+        {
+          "date": "2026-03-18T22:40:16-0400",
+          "commit": "9c51c53393a88e79d013eaca8951368a2aad531f",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:protocols": {
+      "id": "module:protocols",
+      "category": "module",
+      "title": "Protocols",
+      "description": "protocols module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/components/protocols.rs",
+      "created": "2026-03-07T23:16:21+0000",
+      "created_by": "git",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "modifications": [
+        {
+          "date": "2026-03-18T22:40:16-0400",
+          "commit": "9c51c53393a88e79d013eaca8951368a2aad531f",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:reference": {
+      "id": "module:reference",
+      "category": "module",
+      "title": "Reference",
+      "description": "reference module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/components/reference.rs",
+      "created": "2026-03-07T23:16:21+0000",
+      "created_by": "git",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:scoring": {
+      "id": "module:scoring",
+      "category": "module",
+      "title": "Scoring",
+      "description": "scoring module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/components/scoring.rs",
+      "created": "2026-03-07T23:16:21+0000",
+      "created_by": "git",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "modifications": [
+        {
+          "date": "2026-03-18T22:40:16-0400",
+          "commit": "9c51c53393a88e79d013eaca8951368a2aad531f",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:textbook": {
+      "id": "module:textbook",
+      "category": "module",
+      "title": "Textbook",
+      "description": "textbook module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/components/textbook.rs",
+      "created": "2026-03-07T23:16:21+0000",
+      "created_by": "git",
+      "created_commit": "9aa05fd5a2add31b47ba855d2eff38ab7e873c75",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:models": {
+      "id": "module:models",
+      "category": "module",
+      "title": "Models",
+      "description": "models module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/content/models.rs",
+      "created": "2026-03-03T22:00:36+0000",
+      "created_by": "git",
+      "created_commit": "f54e5fdcf40f3fe13495caab759d0490d4b4518f",
+      "modifications": [
+        {
+          "date": "2026-03-03T19:20:23-0500",
+          "commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:cardiology_calc": {
+      "id": "module:cardiology_calc",
+      "category": "module",
+      "title": "Cardiology Calc",
+      "description": "Cardiology calculations: MAP, cardiac output, QTc, defibrillation energy, ECG references",
+      "path": "src/protocols/cardiology_calc.rs",
+      "created": "2026-03-04T12:19:21-0500",
+      "created_by": "git",
+      "created_commit": "09b1332b3cfc4309fcb9760ac445c0b9b9430ffb",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:drowning": {
+      "id": "module:drowning",
+      "category": "module",
+      "title": "Drowning",
+      "description": "Drowning/submersion injury protocol",
+      "path": "src/protocols/drowning.rs",
+      "created": "2026-03-03T19:20:23-0500",
+      "created_by": "git",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "modifications": [
+        {
+          "date": "2026-03-18T23:14:17-0400",
+          "commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:environmental": {
+      "id": "module:environmental",
+      "category": "module",
+      "title": "Environmental",
+      "description": "Environmental emergencies: heat stroke, hypothermia, envenomation",
+      "path": "src/protocols/environmental.rs",
+      "created": "2026-03-03T19:20:23-0500",
+      "created_by": "git",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "modifications": [
+        {
+          "date": "2026-03-18T23:14:17-0400",
+          "commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [
+        "module_source/Pediatric_Emergency_Medicine_Rural_ED_Guide_Volume_II.docx"
+      ],
+      "tags": [],
+      "status": "active"
+    },
+    "module:fluid_electrolyte_acidbase": {
+      "id": "module:fluid_electrolyte_acidbase",
+      "category": "module",
+      "title": "Fluid Electrolyte Acidbase",
+      "description": "Comprehensive fluid, electrolyte, and acid-base management module",
+      "path": "src/protocols/fluid_electrolyte_acidbase.rs",
+      "created": "2026-03-06T22:47:39-0500",
+      "created_by": "git",
+      "created_commit": "0934e83ba43ab4441f788bbd53247a8aee003d2a",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:hematology": {
+      "id": "module:hematology",
+      "category": "module",
+      "title": "Hematology",
+      "description": "Hematology protocol: anemia, bleeding, transfusion guidance",
+      "path": "src/protocols/hematology.rs",
+      "created": "2026-03-03T19:20:23-0500",
+      "created_by": "git",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "modifications": [
+        {
+          "date": "2026-03-03T19:32:00-0500",
+          "commit": "e39fa1822777ae1fc2ead18bd5a179cc53bf1d49",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:hematology_calc": {
+      "id": "module:hematology_calc",
+      "category": "module",
+      "title": "Hematology Calc",
+      "description": "Hematology calculations: CBC indices, reticulocyte, MABL, transfusion volumes, coagulation",
+      "path": "src/protocols/hematology_calc.rs",
+      "created": "2026-03-04T12:19:21-0500",
+      "created_by": "git",
+      "created_commit": "09b1332b3cfc4309fcb9760ac445c0b9b9430ffb",
+      "modifications": [
+        {
+          "date": "2026-03-18T23:14:17-0400",
+          "commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:metabolic": {
+      "id": "module:metabolic",
+      "category": "module",
+      "title": "Metabolic",
+      "description": "DKA and metabolic emergency protocol",
+      "path": "src/protocols/metabolic.rs",
+      "created": "2026-03-03T00:31:13+0000",
+      "created_by": "git",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "modifications": [
+        {
+          "date": "2026-03-03T19:20:23-0500",
+          "commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:musculoskeletal": {
+      "id": "module:musculoskeletal",
+      "category": "module",
+      "title": "Musculoskeletal",
+      "description": "Musculoskeletal emergencies: fractures, compartment syndrome, septic arthritis",
+      "path": "src/protocols/musculoskeletal.rs",
+      "created": "2026-03-03T19:20:23-0500",
+      "created_by": "git",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "modifications": [
+        {
+          "date": "2026-03-18T23:14:17-0400",
+          "commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:neonatal": {
+      "id": "module:neonatal",
+      "category": "module",
+      "title": "Neonatal",
+      "description": "neonatal module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/protocols/neonatal.rs",
+      "created": "2026-03-03T19:20:23-0500",
+      "created_by": "git",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "modifications": [
+        {
+          "date": "2026-03-13T03:38:33+0000",
+          "commit": "162212a3ed04d86c78356d7a6050386a4ff5a901",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:neonatal_ivf": {
+      "id": "module:neonatal_ivf",
+      "category": "module",
+      "title": "Neonatal Ivf",
+      "description": "neonatal_ivf module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/protocols/neonatal_ivf.rs",
+      "created": "2026-03-11T09:56:06-0400",
+      "created_by": "git",
+      "created_commit": "892f92573d7e36cb9d2e56e59e58441e3cc6047a",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:neuro": {
+      "id": "module:neuro",
+      "category": "module",
+      "title": "Neuro",
+      "description": "Neurological emergencies: status epilepticus protocol",
+      "path": "src/protocols/neuro.rs",
+      "created": "2026-03-03T00:31:13+0000",
+      "created_by": "git",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "modifications": [
+        {
+          "date": "2026-03-03T19:20:23-0500",
+          "commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:pediatric_cardiology": {
+      "id": "module:pediatric_cardiology",
+      "category": "module",
+      "title": "Pediatric Cardiology",
+      "description": "Comprehensive pediatric cardiology: hemodynamics, echocardiography, ECG analysis",
+      "path": "src/protocols/pediatric_cardiology.rs",
+      "created": "2026-03-06T22:47:39-0500",
+      "created_by": "git",
+      "created_commit": "0934e83ba43ab4441f788bbd53247a8aee003d2a",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:procedures": {
+      "id": "module:procedures",
+      "category": "module",
+      "title": "Procedures",
+      "description": "Procedural guidance: IO access, chest tube, LP, central line",
+      "path": "src/protocols/procedures.rs",
+      "created": "2026-03-03T19:20:23-0500",
+      "created_by": "git",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "modifications": [
+        {
+          "date": "2026-03-03T19:32:00-0500",
+          "commit": "e39fa1822777ae1fc2ead18bd5a179cc53bf1d49",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:psychiatric": {
+      "id": "module:psychiatric",
+      "category": "module",
+      "title": "Psychiatric",
+      "description": "Psychiatric emergencies: agitation, safety assessment",
+      "path": "src/protocols/psychiatric.rs",
+      "created": "2026-03-03T19:20:23-0500",
+      "created_by": "git",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "modifications": [
+        {
+          "date": "2026-03-18T23:14:17-0400",
+          "commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:renal": {
+      "id": "module:renal",
+      "category": "module",
+      "title": "Renal",
+      "description": "Renal emergencies: AKI, UTI, nephritis protocol",
+      "path": "src/protocols/renal.rs",
+      "created": "2026-03-03T19:20:23-0500",
+      "created_by": "git",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "modifications": [
+        {
+          "date": "2026-03-18T23:14:17-0400",
+          "commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:renal_calc": {
+      "id": "module:renal_calc",
+      "category": "module",
+      "title": "Renal Calc",
+      "description": "Renal calculations: eGFR, FENa, UPCR, urine output assessment",
+      "path": "src/protocols/renal_calc.rs",
+      "created": "2026-03-04T12:19:21-0500",
+      "created_by": "git",
+      "created_commit": "09b1332b3cfc4309fcb9760ac445c0b9b9430ffb",
+      "modifications": [
+        {
+          "date": "2026-03-13T09:55:04+0000",
+          "commit": "70c431a162d1009a1a77ec8021157f0f7d41818b",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:respiratory": {
+      "id": "module:respiratory",
+      "category": "module",
+      "title": "Respiratory",
+      "description": "Respiratory emergency protocol: bronchiolitis, asthma, croup",
+      "path": "src/protocols/respiratory.rs",
+      "created": "2026-03-03T00:31:13+0000",
+      "created_by": "git",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "modifications": [
+        {
+          "date": "2026-03-03T19:20:23-0500",
+          "commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [
+        "module_source/Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx",
+        "module_source/respiratory_scores_ventilation.docx"
+      ],
+      "tags": [],
+      "status": "active"
+    },
+    "module:respiratory_scoring": {
+      "id": "module:respiratory_scoring",
+      "category": "module",
+      "title": "Respiratory Scoring",
+      "description": "Respiratory scoring systems: PEWS, RADS, Westley croup score, RDAI, asthma severity",
+      "path": "src/protocols/respiratory_scoring.rs",
+      "created": "2026-03-03T20:27:11-0500",
+      "created_by": "git",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "modifications": [],
+      "source_documents": [
+        "module_source/respiratory_scoring_systems.docx",
+        "module_source/respiratory_scoring_systems_2.docx",
+        "module_source/respiratory_scores_ventilation.docx"
+      ],
+      "tags": [],
+      "status": "active"
+    },
+    "module:rsi": {
+      "id": "module:rsi",
+      "category": "module",
+      "title": "Rsi",
+      "description": "Rapid sequence intubation protocol: drug dosing, equipment sizing",
+      "path": "src/protocols/rsi.rs",
+      "created": "2026-03-03T00:31:13+0000",
+      "created_by": "git",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "modifications": [
+        {
+          "date": "2026-03-03T19:20:23-0500",
+          "commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:skin_infections": {
+      "id": "module:skin_infections",
+      "category": "module",
+      "title": "Skin Infections",
+      "description": "Skin and soft tissue infections protocol: cellulitis, abscess, necrotizing fasciitis",
+      "path": "src/protocols/skin_infections.rs",
+      "created": "2026-03-03T19:20:23-0500",
+      "created_by": "git",
+      "created_commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+      "modifications": [
+        {
+          "date": "2026-03-18T23:14:17-0400",
+          "commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:toxicology": {
+      "id": "module:toxicology",
+      "category": "module",
+      "title": "Toxicology",
+      "description": "Toxicology and antidotes: weight-based antidote dosing",
+      "path": "src/protocols/toxicology.rs",
+      "created": "2026-03-03T00:31:13+0000",
+      "created_by": "git",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "modifications": [
+        {
+          "date": "2026-03-03T19:20:23-0500",
+          "commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:trauma": {
+      "id": "module:trauma",
+      "category": "module",
+      "title": "Trauma",
+      "description": "Trauma protocol: primary survey, hemorrhage control, TBI management",
+      "path": "src/protocols/trauma.rs",
+      "created": "2026-03-03T00:31:13+0000",
+      "created_by": "git",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "modifications": [
+        {
+          "date": "2026-03-03T19:20:23-0500",
+          "commit": "4f510c449baa3eabdf70ccec60472188215beaec",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:bipap": {
+      "id": "module:bipap",
+      "category": "module",
+      "title": "Bipap",
+      "description": "BiPAP settings and management",
+      "path": "src/respiratory_cds/bipap.rs",
+      "created": "2026-03-03T20:27:11-0500",
+      "created_by": "git",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "modifications": [],
+      "source_documents": [
+        "module_source/Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx"
+      ],
+      "tags": [],
+      "status": "active"
+    },
+    "module:calculations": {
+      "id": "module:calculations",
+      "category": "module",
+      "title": "Calculations",
+      "description": "Respiratory calculations: OI, OSI, tidal volumes, lung compliance",
+      "path": "src/respiratory_cds/calculations.rs",
+      "created": "2026-03-03T20:27:11-0500",
+      "created_by": "git",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "modifications": [
+        {
+          "date": "2026-03-13T09:55:04+0000",
+          "commit": "70c431a162d1009a1a77ec8021157f0f7d41818b",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [
+        "module_source/Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx"
+      ],
+      "tags": [],
+      "status": "active"
+    },
+    "module:cpap": {
+      "id": "module:cpap",
+      "category": "module",
+      "title": "Cpap",
+      "description": "CPAP settings and management",
+      "path": "src/respiratory_cds/cpap.rs",
+      "created": "2026-03-03T20:27:11-0500",
+      "created_by": "git",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "modifications": [],
+      "source_documents": [
+        "module_source/Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx"
+      ],
+      "tags": [],
+      "status": "active"
+    },
+    "module:hfnc": {
+      "id": "module:hfnc",
+      "category": "module",
+      "title": "Hfnc",
+      "description": "High-flow nasal cannula (HFNC) settings and management",
+      "path": "src/respiratory_cds/hfnc.rs",
+      "created": "2026-03-03T20:27:11-0500",
+      "created_by": "git",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "modifications": [],
+      "source_documents": [
+        "module_source/Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx"
+      ],
+      "tags": [],
+      "status": "active"
+    },
+    "module:monitoring": {
+      "id": "module:monitoring",
+      "category": "module",
+      "title": "Monitoring",
+      "description": "monitoring module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/respiratory_cds/monitoring.rs",
+      "created": "2026-03-03T20:27:11-0500",
+      "created_by": "git",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:nippv": {
+      "id": "module:nippv",
+      "category": "module",
+      "title": "Nippv",
+      "description": "Non-invasive positive pressure ventilation (NIPPV)",
+      "path": "src/respiratory_cds/nippv.rs",
+      "created": "2026-03-03T20:27:11-0500",
+      "created_by": "git",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "modifications": [],
+      "source_documents": [
+        "module_source/Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx"
+      ],
+      "tags": [],
+      "status": "active"
+    },
+    "module:ventilator": {
+      "id": "module:ventilator",
+      "category": "module",
+      "title": "Ventilator",
+      "description": "Mechanical ventilation: initial settings, modes, monitoring",
+      "path": "src/respiratory_cds/ventilator.rs",
+      "created": "2026-03-03T20:27:11-0500",
+      "created_by": "git",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "modifications": [],
+      "source_documents": [
+        "module_source/Pediatric_Respiratory_Support_Ventilation_Education_Guide.docx",
+        "module_source/respiratory_scores_ventilation.docx"
+      ],
+      "tags": [],
+      "status": "active"
+    },
+    "module:vitals": {
+      "id": "module:vitals",
+      "category": "module",
+      "title": "Vitals",
+      "description": "vitals module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/respiratory_cds/vitals.rs",
+      "created": "2026-03-03T20:27:11-0500",
+      "created_by": "git",
+      "created_commit": "13fa839aba7d2c402cb989b9aae9124289881720",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:bedside": {
+      "id": "module:bedside",
+      "category": "module",
+      "title": "Bedside",
+      "description": "bedside module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/scoring/bedside.rs",
+      "created": "2026-03-12T14:49:22+0000",
+      "created_by": "git",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:fluid_balance": {
+      "id": "module:fluid_balance",
+      "category": "module",
+      "title": "Fluid Balance",
+      "description": "fluid_balance module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/scoring/fluid_balance.rs",
+      "created": "2026-03-13T09:55:04+0000",
+      "created_by": "git",
+      "created_commit": "70c431a162d1009a1a77ec8021157f0f7d41818b",
+      "modifications": [
+        {
+          "date": "2026-03-18T23:26:02-0400",
+          "commit": "9a67db941d6f28286c65f09637d8c09c3f7c4bb4",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:ivf_calc": {
+      "id": "module:ivf_calc",
+      "category": "module",
+      "title": "Ivf Calc",
+      "description": "ivf_calc module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/scoring/ivf_calc.rs",
+      "created": "2026-03-13T09:55:04+0000",
+      "created_by": "git",
+      "created_commit": "70c431a162d1009a1a77ec8021157f0f7d41818b",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:neonatal_fluids": {
+      "id": "module:neonatal_fluids",
+      "category": "module",
+      "title": "Neonatal Fluids",
+      "description": "neonatal_fluids module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/scoring/neonatal_fluids.rs",
+      "created": "2026-03-12T16:13:26+0000",
+      "created_by": "git",
+      "created_commit": "6001624a194e4f037848634d505e5bb39521d598",
+      "modifications": [
+        {
+          "date": "2026-03-18T23:14:17-0400",
+          "commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:nutritional_safety": {
+      "id": "module:nutritional_safety",
+      "category": "module",
+      "title": "Nutritional Safety",
+      "description": "nutritional_safety module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/scoring/nutritional_safety.rs",
+      "created": "2026-03-12T14:49:22+0000",
+      "created_by": "git",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:pain_sedation": {
+      "id": "module:pain_sedation",
+      "category": "module",
+      "title": "Pain Sedation",
+      "description": "pain_sedation module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/scoring/pain_sedation.rs",
+      "created": "2026-03-12T14:49:22+0000",
+      "created_by": "git",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:pews": {
+      "id": "module:pews",
+      "category": "module",
+      "title": "Pews",
+      "description": "pews module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/scoring/pews.rs",
+      "created": "2026-03-12T14:49:22+0000",
+      "created_by": "git",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:renal_scores": {
+      "id": "module:renal_scores",
+      "category": "module",
+      "title": "Renal Scores",
+      "description": "renal_scores module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/scoring/renal_scores.rs",
+      "created": "2026-03-12T14:49:22+0000",
+      "created_by": "git",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:respiratory_cardiac": {
+      "id": "module:respiratory_cardiac",
+      "category": "module",
+      "title": "Respiratory Cardiac",
+      "description": "respiratory_cardiac module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/scoring/respiratory_cardiac.rs",
+      "created": "2026-03-12T14:49:22+0000",
+      "created_by": "git",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:sepsis_scores": {
+      "id": "module:sepsis_scores",
+      "category": "module",
+      "title": "Sepsis Scores",
+      "description": "sepsis_scores module (description not yet set \u2014 run register_module.sh to update)",
+      "path": "src/scoring/sepsis_scores.rs",
+      "created": "2026-03-12T14:49:22+0000",
+      "created_by": "git",
+      "created_commit": "95b1c822e5020e3b62fec6bc94d57e6163889235",
+      "modifications": [
+        {
+          "date": "2026-03-18T23:14:17-0400",
+          "commit": "562d715e0fe64514c8e1124585cf3376483d3d84",
+          "author": "git",
+          "summary": "Module modification tracked by git post-commit hook"
+        }
+      ],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "module:weight": {
+      "id": "module:weight",
+      "category": "module",
+      "title": "Weight",
+      "description": "Weight estimation algorithms (Broselow, Age-based)",
+      "path": "src/weight.rs",
+      "created": "2026-03-03T00:31:13+00:00",
+      "created_by": "git",
+      "created_commit": "a3998df366f1b9bcc56a266d60951c4da3754e39",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [],
+      "status": "active"
+    },
+    "decision_tree:neonatal_cardiac_pda": {
+      "id": "decision_tree:neonatal_cardiac_pda",
+      "category": "decision_tree",
+      "title": "Neonatal Cardiac / PDA Decision Tree",
+      "description": "Neonatal Cardiac / PDA Decision Tree",
+      "path": "apps/web/static/decision-trees/neonatal_cardiac_pda_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "PDA",
+        "cardiac",
+        "ibuprofen",
+        "indomethacin",
+        "echocardiogram"
+      ],
+      "education_links": {
+        "education_guides": [
+          "20"
+        ],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:neonatal_endocrine": {
+      "id": "decision_tree:neonatal_endocrine",
+      "category": "decision_tree",
+      "title": "Neonatal Endocrine Abnormalities Decision Tree",
+      "description": "Neonatal Endocrine Abnormalities Decision Tree",
+      "path": "apps/web/static/decision-trees/neonatal_endocrine_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "endocrine",
+        "hypoglycemia",
+        "hyperinsulinism",
+        "thyroid",
+        "adrenal"
+      ],
+      "education_links": {
+        "education_guides": [
+          "01b"
+        ],
+        "textbooks": [
+          "neonatal_endocrine_abnormalities"
+        ],
+        "audio_textbooks": [
+          "neonatal_endocrine_abnormalities"
+        ],
+        "cheat_sheets": [
+          "neonatal_endocrine_abnormalities"
+        ]
+      },
+      "status": "active"
+    },
+    "decision_tree:neonatal_fen": {
+      "id": "decision_tree:neonatal_fen",
+      "category": "decision_tree",
+      "title": "Neonatal Fluid, Electrolyte & Nutrition Decision Tree",
+      "description": "Neonatal Fluid, Electrolyte & Nutrition Decision Tree",
+      "path": "apps/web/static/decision-trees/neonatal_fen_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "fluids",
+        "electrolytes",
+        "nutrition",
+        "TPN",
+        "GIR"
+      ],
+      "education_links": {
+        "education_guides": [
+          "11"
+        ],
+        "textbooks": [
+          "neonatal_fen"
+        ],
+        "audio_textbooks": [
+          "neonatal_fen"
+        ],
+        "cheat_sheets": [
+          "neonatal_fen"
+        ]
+      },
+      "status": "active"
+    },
+    "decision_tree:neonatal_gi_liver": {
+      "id": "decision_tree:neonatal_gi_liver",
+      "category": "decision_tree",
+      "title": "Neonatal GI & Liver Disorders Decision Tree",
+      "description": "Neonatal GI & Liver Disorders Decision Tree",
+      "path": "apps/web/static/decision-trees/neonatal_gi_liver_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "GI",
+        "liver",
+        "NEC",
+        "bilious",
+        "meconium"
+      ],
+      "education_links": {
+        "education_guides": [
+          "13"
+        ],
+        "textbooks": [
+          "neonatal_gi_liver"
+        ],
+        "audio_textbooks": [
+          "neonatal_gi_liver"
+        ],
+        "cheat_sheets": [
+          "neonatal_gi_liver"
+        ]
+      },
+      "status": "active"
+    },
+    "decision_tree:neonatal_hematology": {
+      "id": "decision_tree:neonatal_hematology",
+      "category": "decision_tree",
+      "title": "Neonatal Hematology Clinical Decision Tree",
+      "description": "Neonatal Hematology Clinical Decision Tree",
+      "path": "apps/web/static/decision-trees/neonatal_hematology_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "anemia",
+        "polycythemia",
+        "thrombocytopenia",
+        "transfusion",
+        "DIC"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [
+          "neonatal_hematology"
+        ],
+        "audio_textbooks": [
+          "neonatal_hematology"
+        ],
+        "cheat_sheets": [
+          "neonatal_hematology"
+        ]
+      },
+      "status": "active"
+    },
+    "decision_tree:neonatal_infectious_diseases": {
+      "id": "decision_tree:neonatal_infectious_diseases",
+      "category": "decision_tree",
+      "title": "Neonatal Infectious Diseases Decision Tree",
+      "description": "Neonatal Infectious Diseases Decision Tree",
+      "path": "apps/web/static/decision-trees/neonatal_infectious_diseases_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "sepsis",
+        "EOS",
+        "LOS",
+        "meningitis",
+        "antibiotics"
+      ],
+      "education_links": {
+        "education_guides": [
+          "17"
+        ],
+        "textbooks": [
+          "neonatal_infectious_diseases"
+        ],
+        "audio_textbooks": [
+          "neonatal_infectious_diseases"
+        ],
+        "cheat_sheets": [
+          "neonatal_infectious_diseases"
+        ]
+      },
+      "status": "active"
+    },
+    "decision_tree:neonatal_neurology": {
+      "id": "decision_tree:neonatal_neurology",
+      "category": "decision_tree",
+      "title": "Neonatal Neurology Decision Tree",
+      "description": "Neonatal Neurology Decision Tree",
+      "path": "apps/web/static/decision-trees/neonatal_neurology_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "seizures",
+        "IVH",
+        "HIE",
+        "cooling",
+        "EEG"
+      ],
+      "education_links": {
+        "education_guides": [
+          "14",
+          "19"
+        ],
+        "textbooks": [
+          "neonatal_neurology"
+        ],
+        "audio_textbooks": [
+          "neonatal_neurology"
+        ],
+        "cheat_sheets": [
+          "neonatal_neurology"
+        ]
+      },
+      "status": "active"
+    },
+    "decision_tree:neonatal_nows_nas": {
+      "id": "decision_tree:neonatal_nows_nas",
+      "category": "decision_tree",
+      "title": "NOWS / NAS Decision Tree",
+      "description": "NOWS / NAS Decision Tree",
+      "path": "apps/web/static/decision-trees/neonatal_nows_nas_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "NAS",
+        "NOWS",
+        "opioid",
+        "withdrawal",
+        "Finnegan",
+        "ESC"
+      ],
+      "education_links": {
+        "education_guides": [
+          "22"
+        ],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:neonatal_pulmonary": {
+      "id": "decision_tree:neonatal_pulmonary",
+      "category": "decision_tree",
+      "title": "Neonatal Pulmonary Disorders Decision Tree",
+      "description": "Neonatal Pulmonary Disorders Decision Tree",
+      "path": "apps/web/static/decision-trees/neonatal_pulmonary_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "RDS",
+        "TTN",
+        "pneumothorax",
+        "PPHN",
+        "surfactant",
+        "BPD"
+      ],
+      "education_links": {
+        "education_guides": [
+          "09",
+          "10",
+          "13",
+          "15",
+          "21"
+        ],
+        "textbooks": [
+          "neonatal_pulmonary_disorders"
+        ],
+        "audio_textbooks": [
+          "neonatal_pulmonary_disorders"
+        ],
+        "cheat_sheets": [
+          "neonatal_pulmonary_disorders"
+        ]
+      },
+      "status": "active"
+    },
+    "decision_tree:neonatal_renal": {
+      "id": "decision_tree:neonatal_renal",
+      "category": "decision_tree",
+      "title": "Neonatal Renal Disorders Decision Tree",
+      "description": "Neonatal Renal Disorders Decision Tree",
+      "path": "apps/web/static/decision-trees/neonatal_renal_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "AKI",
+        "oliguria",
+        "hydronephrosis",
+        "renal"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [
+          "neonatal_renal"
+        ],
+        "audio_textbooks": [
+          "neonatal_renal"
+        ],
+        "cheat_sheets": [
+          "neonatal_renal"
+        ]
+      },
+      "status": "active"
+    },
+    "decision_tree:neonatal_skin": {
+      "id": "decision_tree:neonatal_skin",
+      "category": "decision_tree",
+      "title": "Neonatal Skin Disorders Decision Tree",
+      "description": "Neonatal Skin Disorders Decision Tree",
+      "path": "apps/web/static/decision-trees/neonatal_skin_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "skin",
+        "rash",
+        "birthmarks",
+        "dermatology"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [
+          "neonatal_skin"
+        ],
+        "audio_textbooks": [
+          "neonatal_skin"
+        ],
+        "cheat_sheets": [
+          "neonatal_skin"
+        ]
+      },
+      "status": "active"
+    },
+    "decision_tree:neonatal_surgical_emergencies": {
+      "id": "decision_tree:neonatal_surgical_emergencies",
+      "category": "decision_tree",
+      "title": "Neonatal Surgical Emergencies Decision Tree",
+      "description": "Neonatal Surgical Emergencies Decision Tree",
+      "path": "apps/web/static/decision-trees/neonatal_surgical_emergencies_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "surgical",
+        "volvulus",
+        "atresia",
+        "omphalocele",
+        "gastroschisis"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [
+          "neonatal_surgical_emergencies"
+        ],
+        "audio_textbooks": [
+          "neonatal_surgical_emergencies"
+        ],
+        "cheat_sheets": [
+          "neonatal_surgical_emergencies"
+        ]
+      },
+      "status": "active"
+    },
+    "decision_tree:neonatal_transport": {
+      "id": "decision_tree:neonatal_transport",
+      "category": "decision_tree",
+      "title": "Neonatal Transport Stabilization Decision Tree",
+      "description": "Neonatal Transport Stabilization Decision Tree",
+      "path": "apps/web/static/decision-trees/neonatal_transport_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "transport",
+        "stabilization",
+        "S.T.A.B.L.E.",
+        "transfer"
+      ],
+      "education_links": {
+        "education_guides": [
+          "08"
+        ],
+        "textbooks": [
+          "critical_care_stabilization"
+        ],
+        "audio_textbooks": [
+          "critical_care_stabilization"
+        ],
+        "cheat_sheets": [
+          "critical_care_stabilization"
+        ]
+      },
+      "status": "active"
+    },
+    "decision_tree:neonatal_urological": {
+      "id": "decision_tree:neonatal_urological",
+      "category": "decision_tree",
+      "title": "Neonatal Urological Disorders Decision Tree",
+      "description": "Neonatal Urological Disorders Decision Tree",
+      "path": "apps/web/static/decision-trees/neonatal_urological_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "urology",
+        "hydronephrosis",
+        "UTI",
+        "undescended"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [
+          "neonatal_urology"
+        ],
+        "audio_textbooks": [
+          "neonatal_urology"
+        ],
+        "cheat_sheets": [
+          "neonatal_urology"
+        ]
+      },
+      "status": "active"
+    },
+    "decision_tree:neonatal_ophthalmology": {
+      "id": "decision_tree:neonatal_ophthalmology",
+      "category": "decision_tree",
+      "title": "Neonatal Ophthalmology Decision Tree",
+      "description": "Neonatal Ophthalmology Decision Tree",
+      "path": "apps/web/static/decision-trees/neonatal_ophthalmology_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "ROP",
+        "ophthalmology",
+        "retinopathy"
+      ],
+      "education_links": {
+        "education_guides": [
+          "16"
+        ],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:neonatal_pain_sedation": {
+      "id": "decision_tree:neonatal_pain_sedation",
+      "category": "decision_tree",
+      "title": "Neonatal Pain & Sedation Decision Tree",
+      "description": "Neonatal Pain & Sedation Decision Tree",
+      "path": "apps/web/static/decision-trees/neonatal_pain_sedation_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "pain",
+        "sedation",
+        "NPASS",
+        "morphine",
+        "fentanyl"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:newborn_discharge_readiness": {
+      "id": "decision_tree:newborn_discharge_readiness",
+      "category": "decision_tree",
+      "title": "Newborn Discharge Readiness Decision Tree",
+      "description": "Newborn Discharge Readiness Decision Tree",
+      "path": "apps/web/static/decision-trees/newborn_discharge_readiness_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "discharge",
+        "readiness",
+        "criteria",
+        "car seat"
+      ],
+      "education_links": {
+        "education_guides": [
+          "01",
+          "05"
+        ],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:newborn_screening_followup": {
+      "id": "decision_tree:newborn_screening_followup",
+      "category": "decision_tree",
+      "title": "Newborn Screening Follow-Up Decision Tree",
+      "description": "Newborn Screening Follow-Up Decision Tree",
+      "path": "apps/web/static/decision-trees/newborn_screening_followup_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "newborn screening",
+        "metabolic",
+        "PKU",
+        "CF",
+        "sickle cell"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:nrp_resuscitation": {
+      "id": "decision_tree:nrp_resuscitation",
+      "category": "decision_tree",
+      "title": "Neonatal Resuscitation (NRP) Decision Tree",
+      "description": "Neonatal Resuscitation (NRP) Decision Tree",
+      "path": "apps/web/static/decision-trees/nrp_resuscitation_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "NRP",
+        "resuscitation",
+        "delivery room",
+        "intubation"
+      ],
+      "education_links": {
+        "education_guides": [
+          "02",
+          "04",
+          "08"
+        ],
+        "textbooks": [
+          "critical_care_stabilization"
+        ],
+        "audio_textbooks": [
+          "critical_care_stabilization"
+        ],
+        "cheat_sheets": [
+          "critical_care_stabilization"
+        ]
+      },
+      "status": "active"
+    },
+    "decision_tree:obstetric_emergencies": {
+      "id": "decision_tree:obstetric_emergencies",
+      "category": "decision_tree",
+      "title": "Obstetric Emergencies Decision Tree",
+      "description": "Obstetric Emergencies Decision Tree",
+      "path": "apps/web/static/decision-trees/obstetric_emergencies_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "abruption",
+        "eclampsia",
+        "cord prolapse",
+        "uterine rupture"
+      ],
+      "education_links": {
+        "education_guides": [
+          "15"
+        ],
+        "textbooks": [
+          "maternal_infections"
+        ],
+        "audio_textbooks": [
+          "maternal_infections"
+        ],
+        "cheat_sheets": [
+          "maternal_infections"
+        ]
+      },
+      "status": "active"
+    },
+    "decision_tree:shoulder_dystocia": {
+      "id": "decision_tree:shoulder_dystocia",
+      "category": "decision_tree",
+      "title": "Shoulder Dystocia Decision Tree",
+      "description": "Shoulder Dystocia Decision Tree",
+      "path": "apps/web/static/decision-trees/shoulder_dystocia_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "shoulder dystocia",
+        "McRoberts",
+        "Rubin",
+        "delivery"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:pediatric_abdominal_pain": {
+      "id": "decision_tree:pediatric_abdominal_pain",
+      "category": "decision_tree",
+      "title": "Pediatric Abdominal Pain Decision Tree",
+      "description": "Pediatric Abdominal Pain Decision Tree",
+      "path": "apps/web/static/decision-trees/pediatric_abdominal_pain_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "abdominal pain",
+        "appendicitis",
+        "intussusception"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:pediatric_anaphylaxis": {
+      "id": "decision_tree:pediatric_anaphylaxis",
+      "category": "decision_tree",
+      "title": "Pediatric Anaphylaxis Decision Tree",
+      "description": "Pediatric Anaphylaxis Decision Tree",
+      "path": "apps/web/static/decision-trees/pediatric_anaphylaxis_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "anaphylaxis",
+        "epinephrine",
+        "allergy"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:pediatric_burns": {
+      "id": "decision_tree:pediatric_burns",
+      "category": "decision_tree",
+      "title": "Pediatric Burns Decision Tree",
+      "description": "Pediatric Burns Decision Tree",
+      "path": "apps/web/static/decision-trees/pediatric_burns_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "burns",
+        "BSA",
+        "Parkland",
+        "wound care"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:pediatric_cardiac_emergencies": {
+      "id": "decision_tree:pediatric_cardiac_emergencies",
+      "category": "decision_tree",
+      "title": "Pediatric Cardiac Emergencies Decision Tree",
+      "description": "Pediatric Cardiac Emergencies Decision Tree",
+      "path": "apps/web/static/decision-trees/pediatric_cardiac_emergencies_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "SVT",
+        "VT",
+        "CHD",
+        "prostaglandin"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:pediatric_dka": {
+      "id": "decision_tree:pediatric_dka",
+      "category": "decision_tree",
+      "title": "Pediatric DKA Management Decision Tree",
+      "description": "Pediatric DKA Management Decision Tree",
+      "path": "apps/web/static/decision-trees/pediatric_dka_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "DKA",
+        "diabetes",
+        "insulin",
+        "ketoacidosis"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:pediatric_orthopedic": {
+      "id": "decision_tree:pediatric_orthopedic",
+      "category": "decision_tree",
+      "title": "Pediatric Orthopedic Emergencies Decision Tree",
+      "description": "Pediatric Orthopedic Emergencies Decision Tree",
+      "path": "apps/web/static/decision-trees/pediatric_orthopedic_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "fracture",
+        "Salter-Harris",
+        "dislocation",
+        "compartment syndrome"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:pediatric_psychiatric_emergencies": {
+      "id": "decision_tree:pediatric_psychiatric_emergencies",
+      "category": "decision_tree",
+      "title": "Pediatric Psychiatric Emergencies Decision Tree",
+      "description": "Pediatric Psychiatric Emergencies Decision Tree",
+      "path": "apps/web/static/decision-trees/pediatric_psychiatric_emergencies_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "psychiatric",
+        "suicidal",
+        "agitation",
+        "restraint"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:pediatric_respiratory_emergencies": {
+      "id": "decision_tree:pediatric_respiratory_emergencies",
+      "category": "decision_tree",
+      "title": "Pediatric Respiratory Emergencies Decision Tree",
+      "description": "Pediatric Respiratory Emergencies Decision Tree",
+      "path": "apps/web/static/decision-trees/pediatric_respiratory_emergencies_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "croup",
+        "asthma",
+        "bronchiolitis",
+        "foreign body",
+        "epiglottitis"
+      ],
+      "education_links": {
+        "education_guides": [
+          "09",
+          "10"
+        ],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:pediatric_seizures": {
+      "id": "decision_tree:pediatric_seizures",
+      "category": "decision_tree",
+      "title": "Pediatric Seizures & Status Epilepticus Decision Tree",
+      "description": "Pediatric Seizures & Status Epilepticus Decision Tree",
+      "path": "apps/web/static/decision-trees/pediatric_seizures_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "seizures",
+        "status epilepticus",
+        "benzodiazepines",
+        "febrile"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:pediatric_sepsis_shock": {
+      "id": "decision_tree:pediatric_sepsis_shock",
+      "category": "decision_tree",
+      "title": "Pediatric Sepsis & Shock Decision Tree",
+      "description": "Pediatric Sepsis & Shock Decision Tree",
+      "path": "apps/web/static/decision-trees/pediatric_sepsis_shock_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "sepsis",
+        "shock",
+        "fluid resuscitation",
+        "vasopressors"
+      ],
+      "education_links": {
+        "education_guides": [
+          "17"
+        ],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:pediatric_siadh_csw": {
+      "id": "decision_tree:pediatric_siadh_csw",
+      "category": "decision_tree",
+      "title": "SIADH vs Cerebral Salt Wasting Decision Tree",
+      "description": "SIADH vs Cerebral Salt Wasting Decision Tree",
+      "path": "apps/web/static/decision-trees/pediatric_siadh_csw_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "SIADH",
+        "CSW",
+        "hyponatremia",
+        "sodium"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:pediatric_toxicology": {
+      "id": "decision_tree:pediatric_toxicology",
+      "category": "decision_tree",
+      "title": "Pediatric Toxicology Decision Tree",
+      "description": "Pediatric Toxicology Decision Tree",
+      "path": "apps/web/static/decision-trees/pediatric_toxicology_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "poisoning",
+        "overdose",
+        "antidotes",
+        "decontamination"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "decision_tree:pediatric_trauma": {
+      "id": "decision_tree:pediatric_trauma",
+      "category": "decision_tree",
+      "title": "Pediatric Trauma Decision Tree",
+      "description": "Pediatric Trauma Decision Tree",
+      "path": "apps/web/static/decision-trees/pediatric_trauma_decision_tree.html",
+      "created": "2026-03-24T00:00:00Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "trauma",
+        "ATLS",
+        "head injury",
+        "spleen",
+        "liver"
+      ],
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [],
+        "audio_textbooks": [],
+        "cheat_sheets": []
+      },
+      "status": "active"
+    },
+    "source_document:knowledge_system": {
+      "id": "source_document:knowledge_system",
+      "category": "source_document",
+      "title": "Knowledge Management System",
+      "description": "Unified knowledge registry, CLI management script, Claude skill, and documentation",
+      "path": "knowledge/",
+      "created": "2026-03-26T08:21:28Z",
+      "created_by": "claude",
+      "created_commit": "d73c0dfa69d6826731dc0982ce5b2503ce0593a6",
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "knowledge",
+        "registry",
+        "management",
+        "documentation"
+      ],
+      "status": "active"
+    },
+    "education_guide:01_newborn_nursery_care_guide": {
+      "id": "education_guide:01_newborn_nursery_care_guide",
+      "category": "education_guide",
+      "title": "01. Newborn Nursery Care Guide",
+      "description": "Neonatal nursing education guide: Newborn Nursery Care Guide",
+      "path": "content/education-guides/01_newborn_nursery_care_guide.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "newborn",
+        "nursery",
+        "care",
+        "guide"
+      ],
+      "status": "active"
+    },
+    "education_guide:01b_newborn_nursery_care_guide_vol_ii": {
+      "id": "education_guide:01b_newborn_nursery_care_guide_vol_ii",
+      "category": "education_guide",
+      "title": "Newborn Nursery Care Guide Vol Ii",
+      "description": "Neonatal nursing education guide: Newborn Nursery Care Guide Vol Ii",
+      "path": "content/education-guides/01b_newborn_nursery_care_guide_vol_ii.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "newborn",
+        "nursery",
+        "care",
+        "guide",
+        "vol",
+        "ii"
+      ],
+      "status": "active"
+    },
+    "education_guide:02_well_baby_to_critical_care": {
+      "id": "education_guide:02_well_baby_to_critical_care",
+      "category": "education_guide",
+      "title": "02. Well Baby To Critical Care",
+      "description": "Neonatal nursing education guide: Well Baby To Critical Care",
+      "path": "content/education-guides/02_well_baby_to_critical_care.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "well",
+        "baby",
+        "to",
+        "critical",
+        "care"
+      ],
+      "status": "active"
+    },
+    "education_guide:02b_advanced_procedures_vol_ii": {
+      "id": "education_guide:02b_advanced_procedures_vol_ii",
+      "category": "education_guide",
+      "title": "Advanced Procedures Vol Ii",
+      "description": "Neonatal nursing education guide: Advanced Procedures Vol Ii",
+      "path": "content/education-guides/02b_advanced_procedures_vol_ii.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "advanced",
+        "procedures",
+        "vol",
+        "ii"
+      ],
+      "status": "active"
+    },
+    "education_guide:03_level_ii_nursing_skills": {
+      "id": "education_guide:03_level_ii_nursing_skills",
+      "category": "education_guide",
+      "title": "03. Level Ii Nursing Skills",
+      "description": "Neonatal nursing education guide: Level Ii Nursing Skills",
+      "path": "content/education-guides/03_level_ii_nursing_skills.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "level",
+        "ii",
+        "nursing",
+        "skills"
+      ],
+      "status": "active"
+    },
+    "education_guide:04_advanced_critical_care": {
+      "id": "education_guide:04_advanced_critical_care",
+      "category": "education_guide",
+      "title": "04. Advanced Critical Care",
+      "description": "Neonatal nursing education guide: Advanced Critical Care",
+      "path": "content/education-guides/04_advanced_critical_care.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "advanced",
+        "critical",
+        "care"
+      ],
+      "status": "active"
+    },
+    "education_guide:05_level_i_ii_care_pathway": {
+      "id": "education_guide:05_level_i_ii_care_pathway",
+      "category": "education_guide",
+      "title": "05. Level I Ii Care Pathway",
+      "description": "Neonatal nursing education guide: Level I Ii Care Pathway",
+      "path": "content/education-guides/05_level_i_ii_care_pathway.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "level",
+        "i",
+        "ii",
+        "care",
+        "pathway"
+      ],
+      "status": "active"
+    },
+    "education_guide:06_nicu_care_pathways_comparative": {
+      "id": "education_guide:06_nicu_care_pathways_comparative",
+      "category": "education_guide",
+      "title": "06. Nicu Care Pathways Comparative",
+      "description": "Neonatal nursing education guide: Nicu Care Pathways Comparative",
+      "path": "content/education-guides/06_nicu_care_pathways_comparative.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "nicu",
+        "care",
+        "pathways",
+        "comparative"
+      ],
+      "status": "active"
+    },
+    "education_guide:07_rural_care_pathways_vol_ii": {
+      "id": "education_guide:07_rural_care_pathways_vol_ii",
+      "category": "education_guide",
+      "title": "07. Rural Care Pathways Vol Ii",
+      "description": "Neonatal nursing education guide: Rural Care Pathways Vol Ii",
+      "path": "content/education-guides/07_rural_care_pathways_vol_ii.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "rural",
+        "care",
+        "pathways",
+        "vol",
+        "ii"
+      ],
+      "status": "active"
+    },
+    "education_guide:08_rural_stabilization_flowsheet": {
+      "id": "education_guide:08_rural_stabilization_flowsheet",
+      "category": "education_guide",
+      "title": "08. Rural Stabilization Flowsheet",
+      "description": "Neonatal nursing education guide: Rural Stabilization Flowsheet",
+      "path": "content/education-guides/08_rural_stabilization_flowsheet.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "rural",
+        "stabilization",
+        "flowsheet"
+      ],
+      "status": "active"
+    },
+    "education_guide:08b_ga_stabilization_cheat_sheets": {
+      "id": "education_guide:08b_ga_stabilization_cheat_sheets",
+      "category": "education_guide",
+      "title": "Ga Stabilization Cheat Sheets",
+      "description": "Neonatal nursing education guide: Ga Stabilization Cheat Sheets",
+      "path": "content/education-guides/08b_ga_stabilization_cheat_sheets.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "ga",
+        "stabilization",
+        "cheat",
+        "sheets"
+      ],
+      "status": "active"
+    },
+    "education_guide:09_nicu_niv_guide": {
+      "id": "education_guide:09_nicu_niv_guide",
+      "category": "education_guide",
+      "title": "09. Nicu Niv Guide",
+      "description": "Neonatal nursing education guide: Nicu Niv Guide",
+      "path": "content/education-guides/09_nicu_niv_guide.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "nicu",
+        "niv",
+        "guide"
+      ],
+      "status": "active"
+    },
+    "education_guide:10_pb980_ventilation_guide": {
+      "id": "education_guide:10_pb980_ventilation_guide",
+      "category": "education_guide",
+      "title": "10. Pb980 Ventilation Guide",
+      "description": "Neonatal nursing education guide: Pb980 Ventilation Guide",
+      "path": "content/education-guides/10_pb980_ventilation_guide.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "pb980",
+        "ventilation",
+        "guide"
+      ],
+      "status": "active"
+    },
+    "education_guide:11_feeding_growth_nutrition_30_35wk": {
+      "id": "education_guide:11_feeding_growth_nutrition_30_35wk",
+      "category": "education_guide",
+      "title": "11. Feeding Growth Nutrition 30 35Wk",
+      "description": "Neonatal nursing education guide: Feeding Growth Nutrition 30 35Wk",
+      "path": "content/education-guides/11_feeding_growth_nutrition_30_35wk.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "feeding",
+        "growth",
+        "nutrition",
+        "30",
+        "35wk"
+      ],
+      "status": "active"
+    },
+    "education_guide:12_quality_metrics_nursery": {
+      "id": "education_guide:12_quality_metrics_nursery",
+      "category": "education_guide",
+      "title": "12. Quality Metrics Nursery",
+      "description": "Neonatal nursing education guide: Quality Metrics Nursery",
+      "path": "content/education-guides/12_quality_metrics_nursery.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "quality",
+        "metrics",
+        "nursery"
+      ],
+      "status": "active"
+    },
+    "education_guide:13_nec_prevention_staging_management": {
+      "id": "education_guide:13_nec_prevention_staging_management",
+      "category": "education_guide",
+      "title": "13. Nec Prevention Staging Management",
+      "description": "Neonatal nursing education guide: Nec Prevention Staging Management",
+      "path": "content/education-guides/13_nec_prevention_staging_management.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "nec",
+        "prevention",
+        "staging",
+        "management"
+      ],
+      "status": "active"
+    },
+    "education_guide:14_critical_care_stabilization": {
+      "id": "education_guide:14_critical_care_stabilization",
+      "category": "education_guide",
+      "title": "14. Critical Care Stabilization",
+      "description": "Neonatal nursing education guide: Critical Care Stabilization",
+      "path": "content/education-guides/14_critical_care_stabilization.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "critical",
+        "care",
+        "stabilization"
+      ],
+      "status": "active"
+    },
+    "education_guide:14_ivh_prevention_classification_management": {
+      "id": "education_guide:14_ivh_prevention_classification_management",
+      "category": "education_guide",
+      "title": "14. Ivh Prevention Classification Management",
+      "description": "Neonatal nursing education guide: Ivh Prevention Classification Management",
+      "path": "content/education-guides/14_ivh_prevention_classification_management.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "ivh",
+        "prevention",
+        "classification",
+        "management"
+      ],
+      "status": "active"
+    },
+    "education_guide:15_bpd_definition_prevention_management": {
+      "id": "education_guide:15_bpd_definition_prevention_management",
+      "category": "education_guide",
+      "title": "15. Bpd Definition Prevention Management",
+      "description": "Neonatal nursing education guide: Bpd Definition Prevention Management",
+      "path": "content/education-guides/15_bpd_definition_prevention_management.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "bpd",
+        "definition",
+        "prevention",
+        "management"
+      ],
+      "status": "active"
+    },
+    "education_guide:15_maternal_infections": {
+      "id": "education_guide:15_maternal_infections",
+      "category": "education_guide",
+      "title": "15. Maternal Infections",
+      "description": "Neonatal nursing education guide: Maternal Infections",
+      "path": "content/education-guides/15_maternal_infections.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "maternal",
+        "infections"
+      ],
+      "status": "active"
+    },
+    "education_guide:16_neonatal_ventilation_decision_tree": {
+      "id": "education_guide:16_neonatal_ventilation_decision_tree",
+      "category": "education_guide",
+      "title": "16. Neonatal Ventilation Decision Tree",
+      "description": "Neonatal nursing education guide: Neonatal Ventilation Decision Tree",
+      "path": "content/education-guides/16_neonatal_ventilation_decision_tree.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "neonatal",
+        "ventilation",
+        "decision",
+        "tree"
+      ],
+      "status": "active"
+    },
+    "education_guide:16_rop_screening_classification_management": {
+      "id": "education_guide:16_rop_screening_classification_management",
+      "category": "education_guide",
+      "title": "16. Rop Screening Classification Management",
+      "description": "Neonatal nursing education guide: Rop Screening Classification Management",
+      "path": "content/education-guides/16_rop_screening_classification_management.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "rop",
+        "screening",
+        "classification",
+        "management"
+      ],
+      "status": "active"
+    },
+    "education_guide:17_sepsis_eos_los_fungal_comprehensive": {
+      "id": "education_guide:17_sepsis_eos_los_fungal_comprehensive",
+      "category": "education_guide",
+      "title": "17. Sepsis Eos Los Fungal Comprehensive",
+      "description": "Neonatal nursing education guide: Sepsis Eos Los Fungal Comprehensive",
+      "path": "content/education-guides/17_sepsis_eos_los_fungal_comprehensive.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "sepsis",
+        "eos",
+        "los",
+        "fungal",
+        "comprehensive"
+      ],
+      "status": "active"
+    },
+    "education_guide:18_jaundice_bilirubin_pathophysiology_management": {
+      "id": "education_guide:18_jaundice_bilirubin_pathophysiology_management",
+      "category": "education_guide",
+      "title": "18. Jaundice Bilirubin Pathophysiology Management",
+      "description": "Neonatal nursing education guide: Jaundice Bilirubin Pathophysiology Management",
+      "path": "content/education-guides/18_jaundice_bilirubin_pathophysiology_management.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "jaundice",
+        "bilirubin",
+        "pathophysiology",
+        "management"
+      ],
+      "status": "active"
+    },
+    "education_guide:19_hie_asphyxia_cooling_management": {
+      "id": "education_guide:19_hie_asphyxia_cooling_management",
+      "category": "education_guide",
+      "title": "19. Hie Asphyxia Cooling Management",
+      "description": "Neonatal nursing education guide: Hie Asphyxia Cooling Management",
+      "path": "content/education-guides/19_hie_asphyxia_cooling_management.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "hie",
+        "asphyxia",
+        "cooling",
+        "management"
+      ],
+      "status": "active"
+    },
+    "education_guide:20_pda_pathophysiology_screening_treatment": {
+      "id": "education_guide:20_pda_pathophysiology_screening_treatment",
+      "category": "education_guide",
+      "title": "20. Pda Pathophysiology Screening Treatment",
+      "description": "Neonatal nursing education guide: Pda Pathophysiology Screening Treatment",
+      "path": "content/education-guides/20_pda_pathophysiology_screening_treatment.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "pda",
+        "pathophysiology",
+        "screening",
+        "treatment"
+      ],
+      "status": "active"
+    },
+    "education_guide:21_pphn_pathophysiology_oxygenation_therapy": {
+      "id": "education_guide:21_pphn_pathophysiology_oxygenation_therapy",
+      "category": "education_guide",
+      "title": "21. Pphn Pathophysiology Oxygenation Therapy",
+      "description": "Neonatal nursing education guide: Pphn Pathophysiology Oxygenation Therapy",
+      "path": "content/education-guides/21_pphn_pathophysiology_oxygenation_therapy.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "pphn",
+        "pathophysiology",
+        "oxygenation",
+        "therapy"
+      ],
+      "status": "active"
+    },
+    "education_guide:22_nas_nows_assessment_scoring_management": {
+      "id": "education_guide:22_nas_nows_assessment_scoring_management",
+      "category": "education_guide",
+      "title": "22. Nas Nows Assessment Scoring Management",
+      "description": "Neonatal nursing education guide: Nas Nows Assessment Scoring Management",
+      "path": "content/education-guides/22_nas_nows_assessment_scoring_management.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "nas",
+        "nows",
+        "assessment",
+        "scoring",
+        "management"
+      ],
+      "status": "active"
+    },
+    "audio_textbook:critical_care_stabilization_audio_textbook": {
+      "id": "audio_textbook:critical_care_stabilization_audio_textbook",
+      "category": "audio_textbook",
+      "title": "Critical Care Stabilization (Audio)",
+      "description": "TTS-optimized audio textbook: Critical Care Stabilization",
+      "path": "content/textbooks/critical_care_stabilization_audio_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "critical",
+        "care",
+        "stabilization"
+      ],
+      "status": "active"
+    },
+    "textbook:critical_care_stabilization_textbook": {
+      "id": "textbook:critical_care_stabilization_textbook",
+      "category": "textbook",
+      "title": "Critical Care Stabilization",
+      "description": "Comprehensive clinical textbook: Critical Care Stabilization",
+      "path": "content/textbooks/critical_care_stabilization_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "critical",
+        "care",
+        "stabilization"
+      ],
+      "status": "active"
+    },
+    "audio_textbook:maternal_infections_audio_textbook": {
+      "id": "audio_textbook:maternal_infections_audio_textbook",
+      "category": "audio_textbook",
+      "title": "Maternal Infections (Audio)",
+      "description": "TTS-optimized audio textbook: Maternal Infections",
+      "path": "content/textbooks/maternal_infections_audio_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "maternal",
+        "infections"
+      ],
+      "status": "active"
+    },
+    "textbook:maternal_infections_textbook": {
+      "id": "textbook:maternal_infections_textbook",
+      "category": "textbook",
+      "title": "Maternal Infections",
+      "description": "Comprehensive clinical textbook: Maternal Infections",
+      "path": "content/textbooks/maternal_infections_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "maternal",
+        "infections"
+      ],
+      "status": "active"
+    },
+    "textbook:neonatal_endocrine_abnormalities_textbook": {
+      "id": "textbook:neonatal_endocrine_abnormalities_textbook",
+      "category": "textbook",
+      "title": "Neonatal Endocrine Abnormalities",
+      "description": "Comprehensive clinical textbook: Neonatal Endocrine Abnormalities",
+      "path": "content/textbooks/neonatal_endocrine_abnormalities_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "neonatal",
+        "endocrine",
+        "abnormalities"
+      ],
+      "status": "active"
+    },
+    "textbook:neonatal_fen_textbook": {
+      "id": "textbook:neonatal_fen_textbook",
+      "category": "textbook",
+      "title": "Neonatal Fen",
+      "description": "Comprehensive clinical textbook: Neonatal Fen",
+      "path": "content/textbooks/neonatal_fen_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "neonatal",
+        "fen"
+      ],
+      "status": "active"
+    },
+    "textbook:neonatal_gi_liver_textbook": {
+      "id": "textbook:neonatal_gi_liver_textbook",
+      "category": "textbook",
+      "title": "Neonatal Gi Liver",
+      "description": "Comprehensive clinical textbook: Neonatal Gi Liver",
+      "path": "content/textbooks/neonatal_gi_liver_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "neonatal",
+        "gi",
+        "liver"
+      ],
+      "status": "active"
+    },
+    "textbook:neonatal_hematology_textbook": {
+      "id": "textbook:neonatal_hematology_textbook",
+      "category": "textbook",
+      "title": "Neonatal Hematology",
+      "description": "Comprehensive clinical textbook: Neonatal Hematology",
+      "path": "content/textbooks/neonatal_hematology_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "neonatal",
+        "hematology"
+      ],
+      "status": "active"
+    },
+    "textbook:neonatal_infectious_diseases_textbook": {
+      "id": "textbook:neonatal_infectious_diseases_textbook",
+      "category": "textbook",
+      "title": "Neonatal Infectious Diseases",
+      "description": "Comprehensive clinical textbook: Neonatal Infectious Diseases",
+      "path": "content/textbooks/neonatal_infectious_diseases_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "neonatal",
+        "infectious",
+        "diseases"
+      ],
+      "status": "active"
+    },
+    "textbook:neonatal_neurology_textbook": {
+      "id": "textbook:neonatal_neurology_textbook",
+      "category": "textbook",
+      "title": "Neonatal Neurology",
+      "description": "Comprehensive clinical textbook: Neonatal Neurology",
+      "path": "content/textbooks/neonatal_neurology_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "neonatal",
+        "neurology"
+      ],
+      "status": "active"
+    },
+    "textbook:neonatal_pulmonary_disorders_textbook": {
+      "id": "textbook:neonatal_pulmonary_disorders_textbook",
+      "category": "textbook",
+      "title": "Neonatal Pulmonary Disorders",
+      "description": "Comprehensive clinical textbook: Neonatal Pulmonary Disorders",
+      "path": "content/textbooks/neonatal_pulmonary_disorders_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "neonatal",
+        "pulmonary",
+        "disorders"
+      ],
+      "status": "active"
+    },
+    "textbook:neonatal_renal_textbook": {
+      "id": "textbook:neonatal_renal_textbook",
+      "category": "textbook",
+      "title": "Neonatal Renal",
+      "description": "Comprehensive clinical textbook: Neonatal Renal",
+      "path": "content/textbooks/neonatal_renal_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "neonatal",
+        "renal"
+      ],
+      "status": "active"
+    },
+    "textbook:neonatal_skin_textbook": {
+      "id": "textbook:neonatal_skin_textbook",
+      "category": "textbook",
+      "title": "Neonatal Skin",
+      "description": "Comprehensive clinical textbook: Neonatal Skin",
+      "path": "content/textbooks/neonatal_skin_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "neonatal",
+        "skin"
+      ],
+      "status": "active"
+    },
+    "textbook:neonatal_surgical_emergencies_textbook": {
+      "id": "textbook:neonatal_surgical_emergencies_textbook",
+      "category": "textbook",
+      "title": "Neonatal Surgical Emergencies",
+      "description": "Comprehensive clinical textbook: Neonatal Surgical Emergencies",
+      "path": "content/textbooks/neonatal_surgical_emergencies_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "neonatal",
+        "surgical",
+        "emergencies"
+      ],
+      "status": "active"
+    },
+    "textbook:neonatal_urology_textbook": {
+      "id": "textbook:neonatal_urology_textbook",
+      "category": "textbook",
+      "title": "Neonatal Urology",
+      "description": "Comprehensive clinical textbook: Neonatal Urology",
+      "path": "content/textbooks/neonatal_urology_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "neonatal",
+        "urology"
+      ],
+      "status": "active"
+    },
+    "audio_textbook:neonatal_ventilation_decision_tree_audio_textbook": {
+      "id": "audio_textbook:neonatal_ventilation_decision_tree_audio_textbook",
+      "category": "audio_textbook",
+      "title": "Neonatal Ventilation Decision Tree (Audio)",
+      "description": "TTS-optimized audio textbook: Neonatal Ventilation Decision Tree",
+      "path": "content/textbooks/neonatal_ventilation_decision_tree_audio_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "neonatal",
+        "ventilation",
+        "decision",
+        "tree"
+      ],
+      "status": "active"
+    },
+    "textbook:neonatal_ventilation_decision_tree_textbook": {
+      "id": "textbook:neonatal_ventilation_decision_tree_textbook",
+      "category": "textbook",
+      "title": "Neonatal Ventilation Decision Tree",
+      "description": "Comprehensive clinical textbook: Neonatal Ventilation Decision Tree",
+      "path": "content/textbooks/neonatal_ventilation_decision_tree_textbook.docx",
+      "format": "docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "neonatal",
+        "ventilation",
+        "decision",
+        "tree"
+      ],
+      "status": "active"
+    },
+    "calculator:pediatric_electrolyte_calculator": {
+      "id": "calculator:pediatric_electrolyte_calculator",
+      "category": "calculator",
+      "title": "Pediatric Electrolyte Calculator",
+      "description": "Interactive clinical calculator: Pediatric Electrolyte Calculator",
+      "path": "apps/web/static/calculators/pediatric_electrolyte_calculator.html",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "pediatric",
+        "electrolyte",
+        "calculator"
+      ],
+      "status": "active"
+    },
+    "calculator:pediatric_ivf_calculator": {
+      "id": "calculator:pediatric_ivf_calculator",
+      "category": "calculator",
+      "title": "Pediatric Ivf Calculator",
+      "description": "Interactive clinical calculator: Pediatric Ivf Calculator",
+      "path": "apps/web/static/calculators/pediatric_ivf_calculator.html",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "pediatric",
+        "ivf",
+        "calculator"
+      ],
+      "status": "active"
+    },
+    "calculator:pediatric_ivf_educational": {
+      "id": "calculator:pediatric_ivf_educational",
+      "category": "calculator",
+      "title": "Pediatric Ivf Educational",
+      "description": "Interactive clinical calculator: Pediatric Ivf Educational",
+      "path": "apps/web/static/calculators/pediatric_ivf_educational.html",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "pediatric",
+        "ivf",
+        "educational"
+      ],
+      "status": "active"
+    },
+    "literature_review:glucose_management_32_35wk_literature_review": {
+      "id": "literature_review:glucose_management_32_35wk_literature_review",
+      "category": "literature_review",
+      "title": "Glucose Management 32 35Wk Literature Review",
+      "description": "PubMed-sourced literature review: Glucose Management 32 35Wk Literature Review",
+      "path": "content/literature-reviews/glucose_management_32_35wk_literature_review.docx",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "tags": [
+        "glucose",
+        "management",
+        "32",
+        "35wk",
+        "literature",
+        "review"
+      ],
+      "status": "active"
+    },
+    "calculator:neonatal_ivf_prescription_calculator": {
+      "id": "calculator:neonatal_ivf_prescription_calculator",
+      "category": "calculator",
+      "title": "Neonatal IVF Prescription Calculator",
+      "description": "Weight-based IVF calculator with fluid type, enteral offset, GIR, and calorie tracking",
+      "path": "apps/web/static/decision-trees/neonatal_ivf_prescription_calculator.html",
+      "created": "2026-03-26T09:37:35Z",
+      "created_by": "claude",
+      "created_commit": null,
+      "modifications": [],
+      "source_documents": [],
+      "rust_engine": "rust-sci-core/crates/sci-clinical/src/ivf/",
+      "config_files": [
+        "config/ivf_protocols.toml",
+        "config/ivf_conditions.toml",
+        "config/ivf_nutrition.toml"
+      ],
+      "tags": [
+        "ivf",
+        "fluid management",
+        "tpn",
+        "gir",
+        "ivfe",
+        "calorie",
+        "neonatal",
+        "weight-based"
+      ],
+      "status": "active"
+    }
+  }
+}

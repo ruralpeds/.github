@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Pediatric Psychiatric Emergencies Decision Tree</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -27,102 +27,22 @@
 <body>
 <div id="hdr"><div><h1>Pediatric Psychiatric Emergencies Decision Tree</h1><div class="sub">Enhanced Clinical Edition — ASQ suicide screening, safety planning, means restriction, acute agitation de-escalation, pharmacologic management, restraint</div></div>
 <div class="ctrls"><button onclick="resetZ()">⟲ Reset</button><button onclick="expAll()">⊞ Expand</button><button onclick="colAll()">⊟ Collapse</button></div></div>
-<svg id="tc"></svg>
-<div id="po" onclick="closeP(event)"><div id="pp" onclick="event.stopPropagation()"><div id="ph"><div id="picon"></div><div><div id="ptitle"></div><div id="ptype"></div></div><button id="pclose" onclick="closeP()">&times;</button></div><div id="pbody"></div></div></div>
-<div id="lg"><div class="li"><div class="ld" style="background:var(--red)"></div>Emergency</div><div class="li"><div class="ld" style="background:var(--orange)"></div>Urgent</div><div class="li"><div class="ld" style="background:var(--yellow)"></div>Decision</div><div class="li"><div class="ld" style="background:var(--green)"></div>Action</div><div class="li"><div class="ld" style="background:var(--blue)"></div>Assessment</div><div class="li"><div class="ld" style="background:var(--purple)"></div>Diagnosis</div></div>
+<div id="po" onclick="closeP(event)"><div id="pp" onclick="event.stopPropagation()"><div id="ph"><div id="picon"></div><div><div id="ptitle"></div><div id="ptype"></div></div>
+<svg id="tc">
+<div id="lg"><div class="li"><div class="ld" style="background:var(--red)"></div>
 <div id="bc">Scroll to zoom · Drag to pan · Click ⓘ for education</div>
-<script>
-const T={
-name:"Pediatric Psychiatric\nEmergencies",icon:"🧠",type:"assessment",sub:"Suicidal ideation screening, acute agitation, safety planning",edge:"",
-info:{tabs:["Approach","ASQ Screening","Medical Clearance"],
-t0:`<p>Pediatric psychiatric emergencies are increasing dramatically — ED visits for mental health crises have risen >30% since 2019. Key presentations: suicidal ideation/attempt, acute agitation/aggression, psychosis, and acute anxiety/panic. The rural ED must be prepared to assess safety, provide initial stabilization, and arrange appropriate disposition.</p>
-<p><strong>Key principle:</strong> Medical causes of psychiatric symptoms must be excluded FIRST (hypoglycemia, intoxication, head injury, infection, thyroid disease, autoimmune encephalitis).</p>`,
-t1:`<p><strong>ASQ (Ask Suicide-Screening Questions) — validated for ED use in youth ≥10 years:</strong></p>
-<ol class="sl">
-<li>"In the past few weeks, have you wished you were dead?"</li>
-<li>"In the past few weeks, have you felt that you or your family would be better off if you were dead?"</li>
-<li>"In the past week, have you been having thoughts about killing yourself?"</li>
-<li>"Have you ever tried to kill yourself?"</li>
-</ol>
-<p><strong>Scoring:</strong> YES to any question = positive screen → full safety assessment. NO to all = negative screen (but clinical judgment always applies).</p>
-<p>If positive on Q1–Q3: "Are you having thoughts of killing yourself right now?" → If YES = acute safety risk → 1:1 observation, remove all means, immediate psychiatric evaluation.</p>
-<div class="bx bg">✓ <strong>The ASQ is free, takes &lt;2 minutes, and has 97% sensitivity for identifying youth at risk.</strong> The Joint Commission recommends universal suicide screening in EDs. Available at: www.nimh.nih.gov/ASQ</div>`,
-t2:`<p><strong>Medical clearance for psychiatric patients:</strong></p>
-<ul><li>Vital signs (including glucose)</li>
-<li>Focused history: onset, medications, substances, medical conditions, recent head injury</li>
-<li>Physical exam: neurologic (especially mental status), signs of intoxication/withdrawal, signs of self-harm</li>
-<li><strong>Routine labs are NOT required for all psychiatric presentations.</strong> AAP and ACEP recommend targeted testing based on clinical findings, NOT reflexive lab panels.</li>
-<li>Consider labs when: altered mental status, first psychotic episode, ingestion concern, substance use, new-onset psychiatric symptoms without clear psychosocial precipitant, abnormal vital signs</li>
-<li>Urine drug screen: obtain if substance use suspected, but do NOT delay psychiatric evaluation waiting for UDS results</li></ul>`
-},children:[
-{name:"Suicidal Ideation\n& Attempt",icon:"🔴",type:"emergency",sub:"ASQ → Safety assessment → Means restriction → Disposition",edge:"SI or\nattempt",
-info:{tabs:["Safety Assessment","ED Management","Safety Planning"],
-t0:`<p><strong>Full safety assessment after positive ASQ:</strong></p>
-<ul><li><strong>Ideation:</strong> Passive ("wish I was dead") vs active ("thinking about killing myself"). If active: Is there a plan? Is there access to means? Is there intent to act?</li>
-<li><strong>Plan specificity:</strong> Vague ("I'd take pills") vs specific ("I have 50 Tylenol in my backpack and plan to take them tonight"). More specific = higher risk.</li>
-<li><strong>Access to means:</strong> Firearms in the home (strongest risk factor for completed suicide in youth), medications, sharps, bridges/heights</li>
-<li><strong>Protective factors:</strong> Reasons for living, supportive family, engaged in treatment, future-oriented thinking</li>
-<li><strong>Risk factors:</strong> Previous attempt (#1 risk factor), psychiatric diagnosis (depression, bipolar, psychosis), substance use, family conflict, bullying, LGBTQ+ identity (higher risk due to social stressors, not identity itself), recent loss/crisis, access to lethal means</li></ul>`,
-t1:`<ol class="sl">
-<li><strong>1:1 continuous observation</strong> (sitter) — patient should never be alone</li>
-<li><strong>Remove ALL potential means of self-harm</strong> from the room (cords, sharps, medications, personal belongings). Use a ligature-risk assessment of the room.</li>
-<li><strong>Patient in hospital gown</strong> (belongings secured). Search belongings for weapons/medications.</li>
-<li><strong>Medical evaluation:</strong> Treat any injuries from attempt (overdose → toxicology management, lacerations → wound care). Medical clearance.</li>
-<li><strong>Psychiatric consultation</strong> (in-person, telepsychiatry, or crisis line). If unavailable in rural ED: call 988 Suicide & Crisis Lifeline for professional guidance.</li>
-<li><strong>Disposition:</strong> Inpatient psychiatric admission for high-risk patients (active plan with intent, recent serious attempt, psychosis, unable to safety plan). Discharge with safety plan for lower-risk patients with strong outpatient support.</li>
-</ol>
-<div class="bx bb">ℹ️ <strong>988 Suicide & Crisis Lifeline</strong> (call or text 988) provides 24/7 free crisis counseling and can guide rural ED providers on risk assessment and disposition when on-site psychiatry is unavailable.</div>`,
-t2:`<p><strong>Stanley-Brown Safety Plan (evidence-based, recommended by VA/DOD and Joint Commission):</strong></p>
-<ol class="sl">
-<li><strong>Warning signs:</strong> "I know I'm in trouble when I feel/think/do ___"</li>
-<li><strong>Internal coping strategies:</strong> Things I can do BY MYSELF to take my mind off problems (exercise, music, journaling, breathing exercises)</li>
-<li><strong>People and social settings that provide distraction:</strong> Friends/family I can call or places I can go</li>
-<li><strong>People I can ask for help:</strong> Trusted adults, therapist, school counselor (with contact info)</li>
-<li><strong>Professionals and agencies:</strong> Therapist phone number, 988 Lifeline, Crisis Text Line (text HOME to 741741), local crisis center</li>
-<li><strong>Making the environment safe:</strong> Reduce access to lethal means. <strong>Means restriction counseling with parents is the single most impactful ED intervention.</strong> Secure or remove firearms, lock up medications, remove sharps.</li>
-</ol>
-<div class="bx br">🚨 <strong>Means restriction counseling:</strong> Directly ask parents about firearms in the home. If yes, recommend temporary off-site storage (friend, relative, gun shop, law enforcement) during the crisis period. Reducing access to firearms reduces suicide deaths — this is the strongest evidence-based ED intervention for suicide prevention.</div>`
-}},
-{name:"Acute Agitation\n& Aggression",icon:"⚡",type:"urgent",sub:"De-escalation first · Least restrictive · PRN medications",edge:"Aggressive\nor agitated\nbehavior",
-info:{tabs:["De-Escalation","Pharmacologic Management","Restraint"],
-t0:`<p><strong>Verbal de-escalation (FIRST-LINE for all agitated patients):</strong></p>
-<ul><li>Use a calm, low, slow voice. Introduce yourself by name.</li>
-<li>Validate emotions: "I can see you're really upset. I want to help."</li>
-<li>Offer choices: "Would you like to sit in this chair or that one?" (sense of control)</li>
-<li>Set clear, simple limits: "I need you to be safe. I can't let you hurt yourself or others."</li>
-<li>Remove audience/stimulation: dim lights, reduce noise, limit people in the room</li>
-<li>Offer comfort measures: food, drink, blanket, music, phone call to trusted person</li>
-<li>Allow personal space — do not corner, tower over, or touch without permission</li>
-<li><strong>Most agitation can be managed with skilled de-escalation alone.</strong></li></ul>`,
-t1:`<p><strong>When de-escalation fails and patient is at risk of harm:</strong></p>
-<table class="rt"><thead><tr><th>Medication</th><th>Dose</th><th>Route</th><th>Onset</th><th>Notes</th></tr></thead><tbody>
-<tr><td><strong>Olanzapine ODT</strong></td><td>2.5–5 mg (child); 5–10 mg (adolescent)</td><td>PO (dissolves on tongue)</td><td>15–30 min</td><td>First-line PO option. Do NOT combine IM olanzapine with IM benzodiazepines (respiratory depression risk).</td></tr>
-<tr><td><strong>Diphenhydramine</strong></td><td>1 mg/kg (max 50 mg)</td><td>PO or IM</td><td>15–30 min PO; 10–15 IM</td><td>Safe, sedating. Good for younger children. Anticholinergic effects.</td></tr>
-<tr><td><strong>Lorazepam</strong></td><td>0.05 mg/kg (max 2 mg)</td><td>PO, IM, or IV</td><td>5–15 min</td><td>Benzodiazepine. Risk of respiratory depression and paradoxical agitation in some children.</td></tr>
-<tr><td><strong>Haloperidol + Lorazepam + Diphenhydramine ("B-52")</strong></td><td>Haldol 0.05 mg/kg + Ativan 0.05 mg/kg + Benadryl 1 mg/kg</td><td>IM</td><td>10–20 min</td><td>For severe agitation unresponsive to other measures. Monitor ECG (QTc with haloperidol). Dystonia risk → diphenhydramine is the antidote.</td></tr>
-<tr><td><strong>Ketamine</strong></td><td>1–2 mg/kg IM; 0.5–1 mg/kg IV</td><td>IM or IV</td><td>3–5 min</td><td>For extreme agitation/violence when other agents fail. Dissociative dose. Airway management equipment at bedside.</td></tr>
-</tbody></table>
-<div class="bx bo">⚠️ <strong>Medication is a SUPPLEMENT to de-escalation, not a replacement.</strong> Always attempt verbal de-escalation first. Offer oral medication before IM. Use the least restrictive effective intervention.</div>`,
-t2:`<p><strong>Physical restraint — LAST RESORT only:</strong></p>
-<ul><li>Indicated ONLY when: patient is at imminent risk of harm to self or others AND all less restrictive measures have failed</li>
-<li>Use trained team (minimum 4–5 staff for safe application)</li>
-<li>Physician order required (face-to-face evaluation within 1 hour of initiation per CMS/TJC)</li>
-<li>Continuous monitoring: vitals q15 min, circulation checks, neurovascular status of restrained extremities</li>
-<li>Time-limited: reassess every 1 hour (children &lt;9 yr) or 2 hours (9–17 yr) for continued need. Remove restraints as soon as safe.</li>
-<li>Document: reason for restraint, less restrictive measures attempted, patient's behavior, checks performed, time of removal</li>
-<li><strong>Prone restraint is NEVER appropriate</strong> — risk of positional asphyxia</li></ul>`
-}}
-]};;
-const CM={assessment:{f:"#0f1d3a",s:"#60a5fa",t:"#60a5fa",b:"Assessment"},decision:{f:"#2a2006",s:"#fbbf24",t:"#fbbf24",b:"Decision Point"},emergency:{f:"#2a1215",s:"#f87171",t:"#f87171",b:"Emergency"},urgent:{f:"#2a1a0a",s:"#fb923c",t:"#fb923c",b:"Urgent"},action:{f:"#0a2a1a",s:"#4ade80",t:"#4ade80",b:"Action"},diagnosis:{f:"#1a0f2e",s:"#c084fc",t:"#c084fc",b:"Diagnosis"}};
+<script src="tree-data/pediatric_psychiatric_emergencies.js"></script>
+<script>const CM={assessment:{f:"#0f1d3a",s:"#60a5fa",t:"#60a5fa",b:"Assessment"},decision:{f:"#2a2006",s:"#fbbf24",t:"#fbbf24",b:"Decision Point"},emergency:{f:"#2a1215",s:"#f87171",t:"#f87171",b:"Emergency"},urgent:{f:"#2a1a0a",s:"#fb923c",t:"#fb923c",b:"Urgent"},action:{f:"#0a2a1a",s:"#4ade80",t:"#4ade80",b:"Action"},diagnosis:{f:"#1a0f2e",s:"#c084fc",t:"#c084fc",b:"Diagnosis"}};
 const svg=d3.select("#tc"),W=innerWidth,H=innerHeight;svg.attr("width",W).attr("height",H);const g=svg.append("g");const zm=d3.zoom().scaleExtent([0.2,3]).on("zoom",e=>g.attr("transform",e.transform));svg.call(zm);
-const nW=148,nH=62;const root=d3.hierarchy(T,d=>d.children);root.x0=H/2;root.y0=0;
+const nW=148,nH=62;const root=d3.hierarchy(TREE_DATA,d=>d.children);root.x0=H/2;root.y0=0;
 root.descendants().forEach(d=>{if(d.depth>1&&d.children){d._children=d.children;d.children=null;}});const tl=d3.tree().nodeSize([nH+32,nW+85]);
 function upd(src){const dur=420;tl(root);const nds=root.descendants(),lks=root.links();nds.forEach(d=>{d.y=d.depth*230;});const lk=g.selectAll(".lk").data(lks,d=>d.target.data.name);const le=lk.enter().append("path").attr("class","lk").attr("d",()=>{const o={x:src.x0,y:src.y0};return dg(o,o);});lk.merge(le).transition().duration(dur).attr("d",d=>dg(d.source,d.target));lk.exit().transition().duration(dur).attr("d",()=>{const o={x:src.x,y:src.y};return dg(o,o);}).remove();g.selectAll(".ll").remove();lks.forEach(d=>{if(d.target.data.edge){const ls=d.target.data.edge.split("\n"),mx=(d.source.x+d.target.x)/2,my=(d.source.y+d.target.y)/2;ls.forEach((l,i)=>{g.append("text").attr("class","ll").attr("x",my+12).attr("y",mx-4+i*11).text(l);});}});const nd=g.selectAll(".ng").data(nds,d=>d.data.name);const ne=nd.enter().append("g").attr("class","ng").attr("transform",`translate(${src.y0},${src.x0})`).on("click",(e,d)=>{if(d.children){d._children=d.children;d.children=null;}else if(d._children){d.children=d._children;d._children=null;}upd(d);});ne.append("rect").attr("class","nr").attr("x",-nW/2).attr("y",-nH/2).attr("width",nW).attr("height",nH).attr("fill",d=>CM[d.data.type]?.f||"#1e293b").attr("stroke",d=>CM[d.data.type]?.s||"#475569");ne.append("text").attr("class","ni").attr("y",-12).text(d=>d.data.icon);ne.each(function(d){const ls=d.data.name.split("\n"),el=d3.select(this);ls.forEach((l,i)=>{el.append("text").attr("class","nl").attr("y",4+i*13).text(l);});if(d.data.sub){el.append("text").attr("class","ns").attr("y",4+ls.length*13+5).text(d.data.sub.substring(0,32));}});ne.append("circle").attr("class","ib").attr("cx",nW/2-12).attr("cy",-nH/2+12).attr("r",10).attr("fill",d=>CM[d.data.type]?.s||"#60a5fa").attr("fill-opacity",.2).attr("stroke",d=>CM[d.data.type]?.s||"#60a5fa").attr("stroke-width",1.5).on("click",(e,d)=>{e.stopPropagation();showP(d.data);});ne.append("text").attr("x",nW/2-12).attr("y",-nH/2+16).attr("text-anchor","middle").attr("font-size","12px").attr("fill","#e2e8f0").attr("pointer-events","none").attr("font-weight","700").text("i");ne.append("text").attr("class","ei").attr("x",0).attr("y",nH/2+15).attr("text-anchor","middle").attr("font-size","10px").attr("fill","#475569");const nu=nd.merge(ne);nu.transition().duration(dur).attr("transform",d=>`translate(${d.y},${d.x})`);nu.select(".ei").text(d=>d._children?`▸ ${d._children.length} more`:"");nd.exit().transition().duration(dur).attr("transform",`translate(${src.y},${src.x})`).remove();nds.forEach(d=>{d.x0=d.x;d.y0=d.y;});}
 function dg(s,d){return`M${s.y} ${s.x}C${(s.y+d.y)/2} ${s.x},${(s.y+d.y)/2} ${d.x},${d.y} ${d.x}`;}upd(root);const iT=d3.zoomIdentity.translate(90,H/2-20).scale(0.82);svg.call(zm.transform,iT);
 function showP(data){const ov=document.getElementById("po"),c=CM[data.type]||CM.assessment;document.getElementById("picon").textContent=data.icon;document.getElementById("picon").style.background=c.f;document.getElementById("picon").style.border=`1.5px solid ${c.s}`;document.getElementById("ptitle").textContent=data.name.replace(/\n/g," ");const te=document.getElementById("ptype");te.textContent=c.b;te.style.background=c.f;te.style.color=c.t;te.style.border=`1px solid ${c.s}`;let h="";if(data.info.tabs){h+=`<div class="tabs">`;data.info.tabs.forEach((t,i)=>{h+=`<button class="tb${i===0?' active':''}" onclick="swT(${i})">${t}</button>`;});h+=`</div>`;data.info.tabs.forEach((t,i)=>{h+=`<div class="tc${i===0?' active':''}" data-t="${i}">${data.info['t'+i]||''}</div>`;});}if(data.sub){h+=`<div class="bx bb" style="margin-top:16px">ℹ️ <strong>Summary:</strong> ${data.sub}</div>`;}document.getElementById("pbody").innerHTML=h;ov.classList.add("active");document.getElementById("pp").scrollTop=0;}
 function swT(i){document.querySelectorAll('.tb').forEach((b,j)=>b.classList.toggle('active',j===i));document.querySelectorAll('.tc').forEach((c,j)=>c.classList.toggle('active',j===i));}function closeP(e){if(!e||e.target===document.getElementById("po"))document.getElementById("po").classList.remove("active");}document.addEventListener("keydown",e=>{if(e.key==="Escape")closeP();});
 function resetZ(){svg.transition().duration(500).call(zm.transform,iT);}function expAll(){root.descendants().forEach(d=>{if(d._children){d.children=d._children;d._children=null;}});upd(root);}function colAll(){root.descendants().forEach(d=>{if(d.depth>0&&d.children){d._children=d.children;d.children=null;}});upd(root);}addEventListener("resize",()=>{svg.attr("width",innerWidth).attr("height",innerHeight);});
-</script><script src="../theme-bridge.js"></script>
+</script>
+<script src="../theme-bridge.js"></script>
 <script src="../shell.js"></script>
 <script src="../edu-links.js"></script>
 </body></html>
