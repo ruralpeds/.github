@@ -12,16 +12,19 @@ on:
     paths:
       - 'apps/web/src/**'
       - 'apps/web/static/**'
+      - 'tests/e2e/**'
+      - 'playwright.config.ts'
   workflow_dispatch:
 
 jobs:
+  # ── Smoke & Functional Tests ─────────────────────────────────────────────
   e2e:
-    name: Playwright E2E — ${{ matrix.browser }}
+    name: E2E — ${{ matrix.browser }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        browser: [chromium, firefox]
+        browser: [chromium, firefox, webkit]
 
     steps:
       - uses: actions/checkout@v4
@@ -37,26 +40,125 @@ jobs:
 
       - name: Install Playwright browsers
         run: |
-          cd apps/web
           npm install -D @playwright/test
           npx playwright install --with-deps ${{ matrix.browser }}
 
       - name: Build SvelteKit app
         run: cd apps/web && npx vite build
 
-      - name: Run Playwright tests
+      - name: Run E2E tests
         run: |
-          cd apps/web
-          npx playwright test ../../tests/e2e/smoke.test.ts \
+          npx playwright test \
             --project=${{ matrix.browser }} \
-            --reporter=github
+            --reporter=github \
+            --reporter=html
         env:
           CI: true
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: playwright-report/
+          retention-days: 14
 
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-results-${{ matrix.browser }}
-          path: apps/web/playwright-report/
+          path: test-results/
+          retention-days: 14
+
+  # ── Visual Regression Tests ──────────────────────────────────────────────
+  visual-regression:
+    name: Visual Regression — chromium
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install SvelteKit dependencies
+        run: cd apps/web && npm ci
+
+      - name: Install Playwright browsers
+        run: |
+          npm install -D @playwright/test
+          npx playwright install --with-deps chromium
+
+      - name: Build SvelteKit app
+        run: cd apps/web && npx vite build
+
+      - name: Run visual regression tests
+        run: |
+          npx playwright test tests/e2e/visual-regression.test.ts \
+            --project=chromium \
+            --reporter=github \
+            --reporter=html
+        env:
+          CI: true
+
+      - name: Upload visual diff artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-diffs
+          path: test-results/
+          retention-days: 14
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-report
+          path: playwright-report/
+          retention-days: 14
+
+  # ── Accessibility Tests ──────────────────────────────────────────────────
+  accessibility:
+    name: Accessibility — chromium
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install SvelteKit dependencies
+        run: cd apps/web && npm ci
+
+      - name: Install Playwright browsers
+        run: |
+          npm install -D @playwright/test
+          npx playwright install --with-deps chromium
+
+      - name: Build SvelteKit app
+        run: cd apps/web && npx vite build
+
+      - name: Run accessibility tests
+        run: |
+          npx playwright test tests/e2e/accessibility.test.ts \
+            --project=chromium \
+            --reporter=github \
+            --reporter=html
+        env:
+          CI: true
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-report
+          path: playwright-report/
           retention-days: 14
