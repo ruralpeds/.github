@@ -103,6 +103,7 @@
 				{ label: 'Drug Formulary', href: '/reference/formulary' },
 				{ label: 'Normal Values', href: '/reference/normals' },
 				{ label: 'Equipment Sizing', href: '/reference/equipment' },
+				{ label: 'Knowledge Mgmt', href: '/reference/knowledge' },
 			]
 		},
 	];
