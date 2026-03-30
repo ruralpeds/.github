@@ -97,9 +97,11 @@
 			href: '/simulations',
 			modes: ['neonatal', 'pediatric'],
 			children: [
-				{ label: 'Vent Management', href: '/simulations#ventilator', modes: ['neonatal', 'pediatric'] },
-				{ label: 'Electrolytes', href: '/simulations#electrolytes', modes: ['neonatal', 'pediatric'] },
-				{ label: 'Acid-Base', href: '/simulations#acidbase', modes: ['pediatric'] },
+				{ label: 'Vent Management', href: '/simulations#ventilator',   modes: ['neonatal', 'pediatric'] },
+				{ label: 'Electrolytes',    href: '/simulations#electrolytes', modes: ['neonatal', 'pediatric'] },
+				{ label: 'Acid-Base',       href: '/simulations#acidbase',     modes: ['pediatric'] },
+				{ label: 'Fluids & Dosing', href: '/simulations#fluids',       modes: ['pediatric'] },
+				{ label: 'Neonatal Resp',   href: '/simulations#neonatal',     modes: ['neonatal'] },
 			]
 		},
 		{

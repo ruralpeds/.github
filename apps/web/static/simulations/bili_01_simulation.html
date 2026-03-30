@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>38-Week Newborn — Rising Bilirubin, Bhutani Curve, Phototherapy — MedSim</title><link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>:root{--bg:#0b1121;--bg2:#0f172a;--surface:#1e293b;--border:#334155;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--accent:#38bdf8;--accent2:#22d3ee;--red:#f87171;--rbg:#2a1215;--orange:#fb923c;--obg:#2a1a0a;--yellow:#fbbf24;--ybg:#2a2006;--green:#4ade80;--gbg:#0a2a1a;--blue:#60a5fa;--bbg:#0f1d3a;--purple:#c084fc;--pbg:#1a0f2e;--shadow:rgba(0,0,0,.35);--font-sans:'IBM Plex Sans',sans-serif;--font-serif:'DM Serif Display',serif;--font-mono:'IBM Plex Mono',monospace;--radius:10px;--transition:.2s ease;}*{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;overflow:hidden;}body{font-family:var(--font-sans);background:var(--bg);color:var(--text);display:flex;flex-direction:column;height:100vh;}h1,h2,h3{font-family:var(--font-serif);}button{cursor:pointer;font-family:var(--font-sans);}input,textarea,select{font-family:var(--font-sans);background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:13px;}input:focus,textarea:focus{outline:none;border-color:var(--accent);}::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}.badge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;}.badge-normal{background:var(--gbg);color:var(--green);border:1px solid rgba(74,222,128,.3);}.badge-mild{background:var(--ybg);color:var(--yellow);border:1px solid rgba(251,191,36,.3);}.badge-moderate{background:var(--obg);color:var(--orange);border:1px solid rgba(251,146,60,.3);}.badge-severe,.badge-critical{background:var(--rbg);color:var(--red);border:1px solid rgba(248,113,113,.3);}.alert{border-radius:10px;padding:12px 16px;font-size:13px;line-height:1.6;margin:8px 0;}.alert-red{background:var(--rbg);border:1px solid rgba(248,113,113,.25);color:var(--red);}.alert-green{background:var(--gbg);border:1px solid rgba(74,222,128,.25);color:var(--green);}.alert-blue{background:var(--bbg);border:1px solid rgba(96,165,250,.25);color:var(--blue);}.alert-yellow{background:var(--ybg);border:1px solid rgba(251,191,36,.25);color:var(--yellow);}.alert-orange{background:var(--obg);border:1px solid rgba(251,146,60,.25);color:var(--orange);}.btn{padding:8px 18px;border-radius:6px;font-size:13px;font-weight:600;border:1px solid var(--border);background:var(--surface);color:var(--text);transition:all .2s;}.btn:hover{border-color:var(--accent);color:var(--accent);}.btn-primary{background:var(--accent);color:var(--bg);border-color:var(--accent);}.btn-primary:hover{background:var(--accent2);border-color:var(--accent2);color:var(--bg);}.btn-danger{background:var(--rbg);color:var(--red);border-color:rgba(248,113,113,.4);}.mono{font-family:var(--font-mono);}.val-sm{font-family:var(--font-mono);font-size:15px;font-weight:500;}.val-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-top:2px;}.card-header{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;}.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:200;align-items:center;justify-content:center;}.overlay.active{display:flex;}.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:700px;width:94vw;max-height:88vh;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,0,.7);animation:popIn .28s cubic-bezier(.16,1,.3,1);}@keyframes popIn{from{transform:scale(.9) translateY(20px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}.sim-header{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;gap:12px;}.header-left{display:flex;align-items:center;gap:12px;min-width:0;}.header-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}.sim-title{font-size:16px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:480px;}.sim-meta{display:flex;align-items:center;gap:8px;margin-top:3px;}.module-badge{padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;letter-spacing:.3px;}.timer-display{text-align:center;min-width:52px;}.progress-strip{display:flex;gap:4px;padding:8px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}.progress-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .3s;}.progress-dot.done{background:var(--green);}.progress-dot.active{background:var(--yellow);}.vitals-strip{display:flex;flex-wrap:wrap;padding:6px 14px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;}.vital-item{display:flex;flex-direction:column;padding:4px 12px;border-right:1px solid var(--border);min-width:70px;}.vital-traj{display:flex;flex-direction:column;padding:4px 12px 4px 14px;margin-left:auto;}.sim-body{display:grid;grid-template-columns:255px 1fr 295px;flex:1;overflow:hidden;}.col-left{border-right:1px solid var(--border);overflow-y:auto;}.col-center{overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;}.col-right{border-left:1px solid var(--border);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;}.panel-section{padding:12px 14px;border-bottom:1px solid var(--border);}.abg-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px;}.abg-item{display:flex;flex-direction:column;}.abg-derived{display:flex;gap:12px;flex-wrap:wrap;padding-top:6px;border-top:1px solid var(--border);margin-top:6px;font-size:11px;color:var(--text2);}.vent-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:8px;}.vent-ctrl{display:flex;align-items:center;gap:8px;}.vent-slider{flex:1;height:4px;accent-color:var(--accent);cursor:pointer;}.vent-val{min-width:44px;text-align:right;font-size:13px;}.vent-indices{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:8px;border-top:1px solid var(--border);margin-top:4px;}#active-problems{font-size:11px;display:flex;flex-direction:column;gap:4px;}.problem-item{padding:3px 0;border-bottom:1px solid var(--border);line-height:1.4;color:var(--orange);}.dp-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;opacity:.4;transition:opacity .3s,border-color .3s;pointer-events:none;}.dp-card.active{opacity:1;pointer-events:auto;border-color:var(--yellow);}.dp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}.dp-time{font-size:11px;color:var(--text3);font-family:var(--font-mono);}.dp-question{font-size:14px;color:var(--text);margin-bottom:12px;line-height:1.6;}.dp-textarea{width:100%;resize:vertical;padding:10px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text);font-size:13px;line-height:1.6;min-height:90px;}.dp-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;align-items:center;}.hint-btn{font-size:11px;padding:5px 10px;}.dp-feedback{margin-top:12px;}.debrief-modal{max-width:760px;}.modal-header{padding:18px 22px 12px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;position:sticky;top:0;background:var(--bg2);border-radius:16px 16px 0 0;}.modal-body{padding:18px 22px;}.modal-footer{padding:12px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;}.score-display{text-align:center;padding:18px;margin-bottom:18px;border:1px solid var(--border);border-radius:10px;background:var(--surface);}.score-display .val{font-family:var(--font-mono);font-size:42px;font-weight:500;}.debrief-section{margin-bottom:18px;}.debrief-dp{background:var(--surface);border-radius:10px;padding:12px;margin-bottom:10px;}.debrief-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin:8px 0 4px;}.debrief-narrative{font-size:13px;line-height:1.7;color:var(--text2);white-space:pre-line;}.teaching-list{list-style:none;padding:0;}.teaching-list li{padding:6px 0 6px 20px;position:relative;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border);line-height:1.5;}.teaching-list li::before{content:'▸';position:absolute;left:0;color:var(--accent);font-weight:700;}.ref-list{list-style:none;padding:0;}.ref-list li{padding:4px 0;font-size:11px;color:var(--text3);}.drawer{position:fixed;right:-400px;top:0;width:370px;height:100vh;background:var(--bg2);border-left:1px solid var(--border);z-index:150;transition:right .3s;overflow-y:auto;}.drawer.open{right:0;}.drawer-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2);}.drawer-body{padding:14px;}</style></head><body>
+<header class="sim-header"><div class="header-left"><div class="module-badge" style="background:var(--orange)20;border:1px solid var(--orange)40;color:var(--orange)">👶 Neonatal Stabilization</div><div><h1 class="sim-title">38-Week Newborn — Rising Bilirubin, Bhutani Curve, Phototherapy</h1><div class="sim-meta"><span class="badge" style="background:#2a2006;color:#fbbf24;border:1px solid #fbbf2440">Intermediate</span></div></div></div><div class="header-right"><div class="timer-display"><span class="val-sm" id="sim-timer">00:00</span><span class="val-label">Sim Time</span></div><button class="btn" onclick="document.getElementById('obj-overlay').classList.add('active')">📋</button><button class="btn" onclick="document.getElementById('citation-drawer').classList.toggle('open')">📚</button><button class="btn btn-danger" onclick="if(confirm('Restart?'))location.reload()">↺</button></div></header>
+<div class="progress-strip"><div class="progress-dot  active" id="pd-0"></div><div class="progress-dot" id="pd-1"></div></div>
+<div class="vitals-strip"><div class="vital-item"><span class="val-sm badge-severe" id="v-hr">148</span><span class="val-label">HR bpm</span></div><div class="vital-item"><span class="val-sm" id="v-bp">68/42</span><span class="val-label">BP mmHg</span></div><div class="vital-item"><span class="val-sm" id="v-map">51</span><span class="val-label">MAP</span></div><div class="vital-item"><span class="val-sm " id="v-spo2">98%</span><span class="val-label">SpO₂</span></div><div class="vital-item"><span class="val-sm" id="v-rr">44</span><span class="val-label">RR /min</span></div><div class="vital-item"><span class="val-sm" id="v-temp">37.0°C</span><span class="val-label">Temp</span></div><div class="vital-traj" style="border-left:2px solid var(--orange)"><span style="color:var(--orange);font-size:11px;font-weight:700;">Deteriorating</span><span class="val-label">Trajectory</span></div></div>
+<div class="sim-body"><div class="col-left"><div class="panel-section"><div class="card-header">Arterial Blood Gas</div><div class="abg-grid"><div class="abg-item"><span class="val-sm " id="v-ph">7.38</span><span class="val-label">pH</span></div><div class="abg-item"><span class="val-sm" id="v-pao2">0</span><span class="val-label">PaO₂</span></div><div class="abg-item"><span class="val-sm" id="v-paco2">0</span><span class="val-label">PaCO₂</span></div><div class="abg-item"><span class="val-sm" id="v-hco3">22</span><span class="val-label">HCO₃</span></div><div class="abg-item"><span class="val-sm" id="v-lact">0</span><span class="val-label">Lactate</span></div><div class="abg-item"><span class="val-sm" id="v-be">0</span><span class="val-label">BE</span></div></div><div class="abg-derived"><span>P/F: <span class="mono" id="v-pf">—</span></span><span>AG: <span class="mono" id="v-ag">10</span></span></div></div><div class="panel-section"><div class="card-header">Electrolytes</div><div class="abg-grid"><div class="abg-item"><span class="val-sm " id="v-na">140</span><span class="val-label">Na</span></div><div class="abg-item"><span class="val-sm " id="v-k">4.8</span><span class="val-label">K</span></div><div class="abg-item"><span class="val-sm" id="v-cl">108</span><span class="val-label">Cl</span></div><div class="abg-item"><span class="val-sm" id="v-mg">2.1</span><span class="val-label">Mg</span></div><div class="abg-item"><span class="val-sm" id="v-ca">1.22</span><span class="val-label">iCa</span></div><div class="abg-item"><span class="val-sm" id="v-gluc">68</span><span class="val-label">Gluc</span></div></div></div></div>
+<div class="col-center"><div class="dp-card  active" id="dp-0"><div class="dp-header"><span class="badge badge-moderate">Decision Point 1</span><span class="dp-time">t = 0 min</span></div><div class="dp-question">38-week, 48h old, TSB 14.2 mg/dL, rising 0.45 mg/dL/hr. No risk factors. AAP 2022 nomogram says?</div><div class="dp-input-area"><textarea id="ans-0" class="dp-textarea" placeholder="Type your management decision here..." rows="4"></textarea><div class="dp-actions"><button class="btn hint-btn" onclick="toggleHint(0)">💡 Hint</button><div class="hint-box" id="hint-0" style="display:none"><div class="alert alert-blue">AAP 2022 threshold at 38wk, 48h, no risk ≈ 14 mg/dL. TSB 14.2 ≥ threshold → start phototherapy. Recheck in 4–6h.</div></div><button class="btn btn-primary" onclick="submitDecision(0)">Submit Decision →</button></div></div><div class="dp-feedback" id="fb-0" style="display:none"></div></div><div class="dp-card" id="dp-1"><div class="dp-header"><span class="badge badge-moderate">Decision Point 2</span><span class="dp-time">t = 240 min</span></div><div class="dp-question">4h phototherapy: TSB 12.8 (down 1.4 mg/dL in 4h). Good response. When stop and rebound plan?</div><div class="dp-input-area"><textarea id="ans-1" class="dp-textarea" placeholder="Type your management decision here..." rows="4"></textarea><div class="dp-actions"><button class="btn hint-btn" onclick="toggleHint(1)">💡 Hint</button><div class="hint-box" id="hint-1" style="display:none"><div class="alert alert-blue">Stop phototherapy: TSB ≥ 2 mg/dL below treatment threshold. Rebound risk: GA &lt; 38wk, age &lt; 72h, photo &lt; 24h.</div></div><button class="btn btn-primary" onclick="submitDecision(1)">Submit Decision →</button></div></div><div class="dp-feedback" id="fb-1" style="display:none"></div></div></div>
+<div class="col-right"><div class="panel-section"><div class="card-header">Ventilator</div><div class="alert alert-blue" style="font-size:12px">Patient not intubated</div></div><div class="panel-section"><div class="card-header">Active Problems</div><div id="active-problems"><div class="problem-item">▸ 38-week newborn, DOL 2 (48h), breastfed</div><div class="problem-item">▸ TSB 14.2 mg/dL — high-intermediate zone Bhutani</div><div class="problem-item">▸ Rising 0.45 mg/dL/hr</div><div class="problem-item">▸ No neurotoxicity risk factors, DAT negative</div></div></div></div></div>
+<div class="overlay" id="debrief-overlay"><div class="modal debrief-modal"><div class="modal-header"><div><div style="font-family:var(--font-serif);font-size:22px;">Scenario Debrief</div><div style="font-size:12px;color:var(--text2);margin-top:4px;">38-Week Newborn — Rising Bilirubin, Bhutani Curve, Phototherapy</div></div></div><div class="modal-body"><div class="score-display" id="debrief-score"><div class="val" id="score-val">—</div><div class="val-label">Score / 100</div></div><div class="debrief-section"><div class="card-header">Clinical Explanation</div><div class="debrief-narrative">AAP 2022 BILIRUBIN GUIDELINE:
+- Switched to gestational age-based nomogram
+- Phototherapy threshold 38wk, 48h, no risk ≈ 14 mg/dL
+- Exchange threshold ≈ 22 mg/dL
+- Stop phototherapy: TSB ≥ 2 mg/dL below threshold</div></div><div class="debrief-section"><div class="card-header">Decision Points</div><div class="debrief-dp"><div class="dp-header"><span class="badge badge-moderate">Decision Point 1</span></div><div class="debrief-label">✓ Correct Action:</div><div class="alert alert-green">AAP 2022: phototherapy threshold for 38-week, 48h, no risk factors ≈ 14 mg/dL. TSB 14.2 ≥ threshold → START PHOTOTHERAPY. Rate 0.45 mg/dL/hr is high — recheck in 4–6h. Continue breastfeeding. Exchange threshold at 48h, 38wk, no risk ≈ 22 mg/dL — not there yet.</div><div class="debrief-label">⚠ Wrong Action Consequence:</div><div class="alert alert-orange">Observation without phototherapy at TSB 14.2 at 48h risks progression to severe hyperbilirubinemia and kernicterus.</div></div><div class="debrief-dp"><div class="dp-header"><span class="badge badge-moderate">Decision Point 2</span></div><div class="debrief-label">✓ Correct Action:</div><div class="alert alert-green">Stop phototherapy when TSB ≥ 2 mg/dL below treatment threshold (target &lt; 12 = 14−2). Rebound risk MODERATE (&lt; 72h, phototherapy &lt; 24h). Recheck TSB 24h after discharge. Outpatient follow-up within 24h.</div><div class="debrief-label">⚠ Wrong Action Consequence:</div><div class="alert alert-orange">No rebound plan risks significant rebound requiring readmission.</div></div></div><div class="debrief-section"><div class="card-header">Key Teaching Points</div><ul class="teaching-list"><li>AAP 2022: use GA at birth (not corrected age) for threshold nomogram</li><li>Phototherapy threshold 38wk, 48h, no risk ≈ 14 mg/dL</li><li>Stop phototherapy when TSB ≥ 2 mg/dL below treatment threshold</li><li>Rebound risk: GA &lt; 38wk, age &lt; 72h, phototherapy &lt; 24h</li><li>Expected response: 1–2 mg/dL per 4–6h</li></ul></div><div class="debrief-section"><div class="card-header">References</div><ul class="ref-list"><li class='mono' style='font-size:11px'>AAP Clinical Practice Guideline. Pediatrics 2022;150(3):e2022058859.</li><li class='mono' style='font-size:11px'>Bhutani VK et al. Pediatrics 2004;114(1):297.</li></ul></div></div><div class="modal-footer"><button class="btn btn-primary" onclick="location.reload()">↺ Restart</button><button class="btn" onclick="document.getElementById('debrief-overlay').classList.remove('active')">Continue</button></div></div></div>
+<div class="overlay" id="obj-overlay" onclick="this.classList.remove('active')"><div class="modal" onclick="event.stopPropagation()" style="max-width:480px"><div class="modal-header"><span style="font-family:var(--font-serif)">Learning Objectives</span><button class="btn" onclick="document.getElementById('obj-overlay').classList.remove('active')">✕</button></div><div class="modal-body"><ul class="teaching-list"><li>Plot TSB on Bhutani nomogram</li><li>Apply AAP 2022 phototherapy thresholds</li><li>Identify neurotoxicity risk factors</li><li>Calculate intensive vs exchange threshold</li><li>Plan follow-up based on risk zone</li></ul></div></div></div>
+<div class="drawer" id="citation-drawer"><div class="drawer-header"><span style="font-family:var(--font-serif);font-size:15px;">📚 Formula Citations</span><button class="btn" onclick="document.getElementById('citation-drawer').classList.remove('open')">✕</button></div><div class="drawer-body"><div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><span class="mono" style="color:var(--accent)">phototherapy_threshold</span></div><div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><span class="mono" style="color:var(--accent)">bhutani_risk_zone</span></div><div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><span class="mono" style="color:var(--accent)">bilirubin_rebound_assessment</span></div><div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px"><span class="mono" style="color:var(--accent)">phototherapy_response_rate</span></div></div></div>
+<script>const SCENARIO_DATA = {"id": "bili_01", "title": "38-Week Newborn \u2014 Rising Bilirubin, Bhutani Curve, Phototherapy", "module": "neonatal", "decision_points": [{"time_min": 0, "description": "38-week, 48h old, TSB 14.2 mg/dL, rising 0.45 mg/dL/hr. No risk factors. AAP 2022 nomogram says?", "correct_action": "AAP 2022: phototherapy threshold for 38-week, 48h, no risk factors \u2248 14 mg/dL. TSB 14.2 \u2265 threshold \u2192 START PHOTOTHERAPY. Rate 0.45 mg/dL/hr is high \u2014 recheck in 4\u20136h. Continue breastfeeding. Exchange threshold at 48h, 38wk, no risk \u2248 22 mg/dL \u2014 not there yet.", "wrong_action_consequence": "Observation without phototherapy at TSB 14.2 at 48h risks progression to severe hyperbilirubinemia and kernicterus.", "hint": "AAP 2022 threshold at 38wk, 48h, no risk \u2248 14 mg/dL. TSB 14.2 \u2265 threshold \u2192 start phototherapy. Recheck in 4\u20136h."}, {"time_min": 240, "description": "4h phototherapy: TSB 12.8 (down 1.4 mg/dL in 4h). Good response. When stop and rebound plan?", "correct_action": "Stop phototherapy when TSB \u2265 2 mg/dL below treatment threshold (target < 12 = 14\u22122). Rebound risk MODERATE (< 72h, phototherapy < 24h). Recheck TSB 24h after discharge. Outpatient follow-up within 24h.", "wrong_action_consequence": "No rebound plan risks significant rebound requiring readmission.", "hint": "Stop phototherapy: TSB \u2265 2 mg/dL below treatment threshold. Rebound risk: GA < 38wk, age < 72h, photo < 24h."}], "initial_state": {"time_min": 0, "trajectory": "deteriorating", "active_problems": ["38-week newborn, DOL 2 (48h), breastfed", "TSB 14.2 mg/dL \u2014 high-intermediate zone Bhutani", "Rising 0.45 mg/dL/hr", "No neurotoxicity risk factors, DAT negative"], "vitals": {"hr": 148, "sbp": 68, "dbp": 42, "spo2": 98, "rr": 44, "temp_c": 37.0}, "abg": {"ph": 7.38, "pao2": 0, "paco2": 0, "hco3": 22, "be": 0, "lactate": 0}, "labs": {"na": 140, "k": 4.8, "cl": 108, "bicarb": 22, "ca_ionized": 1.22, "mg": 2.1, "phos": 5.8, "glucose": 68, "albumin": 3.6}, "ventilator": {"intubated": false, "fio2": 0.21, "peep": 0, "pip": 0, "plateau_pressure": 0, "tv_set_ml": 0, "tv_measured_ml": 0, "rr_set": 0, "ti_sec": 1.0}, "derived": {"pf_ratio": 0.0, "anion_gap": 10.0, "driving_pressure": 0.0}}};</script>
+<script>
+// ─── Simulation Engine v1.0 ──────────────────────────────────────────────────
+// Loaded after SCENARIO_DATA is defined in the HTML.
+// All clinical calculations use pre-computed tables from Julia.
+
+let state = JSON.parse(JSON.stringify(SCENARIO_DATA.initial_state));
+let simTimerSecs = 0;
+let timerInterval = null;
+let dpIndex = 0;
+let scores = [];
+let ventChangePending = {};
+let ventApplyTimer = null;
+
+// ── Timer ──────────────────────────────────────────────────────────────────
+function startTimer() {
+  timerInterval = setInterval(() => {
+    simTimerSecs++;
+    const m = String(Math.floor(simTimerSecs/60)).padStart(2,'0');
+    const s = String(simTimerSecs%60).padStart(2,'0');
+    document.getElementById('sim-timer').textContent = m+':'+s;
+    // Advance simulation time every 60 real seconds = 5 sim minutes
+    if (simTimerSecs % 60 === 0) advanceSimTime(5);
+  }, 1000);
+}
+
+// ── Patient state update ───────────────────────────────────────────────────
+function updateUI() {
+  // Vitals
+  setVal('v-hr',   fmt(state.vitals.hr, 0));
+  setVal('v-bp',   fmt(state.vitals.sbp,0)+'/'+fmt(state.vitals.dbp,0));
+  setVal('v-spo2', fmt(state.vitals.spo2,0)+'%');
+  setVal('v-rr',   fmt(state.vitals.rr, 0));
+  setVal('v-temp', fmt(state.vitals.temp_c,1)+'°C');
+  const map = state.vitals.sbp*0.333 + state.vitals.dbp*0.667;
+  setVal('v-map', fmt(map, 0));
+
+  // ABG
+  setVal('v-ph',   fmt(state.abg.ph,   2));
+  setVal('v-pao2', fmt(state.abg.pao2, 0));
+  setVal('v-paco2',fmt(state.abg.paco2,0));
+  setVal('v-hco3', fmt(state.abg.hco3, 0));
+  setVal('v-lact', fmt(state.abg.lactate,1));
+  setVal('v-be',   fmt(state.abg.be, 1));
+
+  // Electrolytes
+  setVal('v-na',   fmt(state.labs.na,  0));
+  setVal('v-k',    fmt(state.labs.k,   1));
+  setVal('v-cl',   fmt(state.labs.cl,  0));
+  setVal('v-mg',   fmt(state.labs.mg,  1));
+  setVal('v-ca',   fmt(state.labs.ca_ionized, 2));
+  setVal('v-gluc', fmt(state.labs.glucose,    0));
+
+  // Ventilator
+  if (state.ventilator.intubated) {
+    setVal('vd-fio2', Math.round(state.ventilator.fio2*100)+'%');
+    setVal('vd-peep', fmt(state.ventilator.peep, 0));
+    setVal('vd-tv',   fmt(state.ventilator.tv_set_ml, 0));
+    setVal('vd-rr',   fmt(state.ventilator.rr_set,    0));
+  }
+
+  // Derived
+  const d = state.derived || {};
+  setVal('v-pf',  d.pf_ratio ? fmt(d.pf_ratio, 0) : '—');
+  setVal('v-ag',  d.anion_gap ? fmt(d.anion_gap, 1) : '—');
+  setVal('v-dp',  d.driving_pressure ? fmt(d.driving_pressure, 0)+' cmH₂O' : '—');
+  setVal('v-dp2', d.driving_pressure ? fmt(d.driving_pressure, 0) : '—');
+  setVal('v-oi',  d.oi   ? fmt(d.oi, 1) : '—');
+  setVal('v-osi', d.osi  ? fmt(d.osi, 1) : '—');
+  setVal('v-cstat', d.compliance_static ? fmt(d.compliance_static, 1) : '—');
+  setVal('v-mp',  d.mechanical_power   ? fmt(d.mechanical_power, 1) : '—');
+
+  // Update severity badge colors
+  updateSeverityBadges();
+  updateActiveProblems();
+}
+
+function setVal(id, v) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = v;
+}
+
+function fmt(v, decimals) {
+  if (v === null || v === undefined) return '—';
+  return Number(v).toFixed(decimals);
+}
+
+// ── Severity badge updates ─────────────────────────────────────────────────
+function updateSeverityBadges() {
+  applySeverity('v-hr',   hrSeverity(state.vitals.hr));
+  applySeverity('v-spo2', spo2Severity(state.vitals.spo2));
+  applySeverity('v-ph',   phSeverity(state.abg.ph));
+  applySeverity('v-k',    kSeverity(state.labs.k));
+  applySeverity('v-na',   naSeverity(state.labs.na));
+
+  if (state.derived && state.derived.driving_pressure) {
+    applySeverity('v-dp2', dpSeverity(state.derived.driving_pressure));
+  }
+}
+
+function applySeverity(id, cls) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = el.className.replace(/badge-\\S+/g, '');
+  if (cls) el.classList.add(cls);
+}
+
+function hrSeverity(hr) {
+  if (hr > 150 || hr < 50) return 'badge-critical';
+  if (hr > 130 || hr < 60) return 'badge-severe';
+  if (hr > 110)            return 'badge-moderate';
+  return '';
+}
+
+function spo2Severity(s) {
+  if (s < 85) return 'badge-critical';
+  if (s < 90) return 'badge-severe';
+  if (s < 94) return 'badge-moderate';
+  return '';
+}
+
+function phSeverity(ph) {
+  if (ph < 7.10 || ph > 7.65) return 'badge-critical';
+  if (ph < 7.20 || ph > 7.60) return 'badge-severe';
+  if (ph < 7.30 || ph > 7.55) return 'badge-moderate';
+  if (ph < 7.35 || ph > 7.50) return 'badge-mild';
+  return '';
+}
+
+function kSeverity(k) {
+  if (k < 2.0 || k > 7.0) return 'badge-critical';
+  if (k < 2.5 || k > 6.5) return 'badge-severe';
+  if (k < 3.0 || k > 6.0) return 'badge-moderate';
+  if (k < 3.5 || k > 5.5) return 'badge-mild';
+  return '';
+}
+
+function naSeverity(na) {
+  if (na < 115 || na > 165) return 'badge-critical';
+  if (na < 120 || na > 160) return 'badge-severe';
+  if (na < 125 || na > 150) return 'badge-moderate';
+  return '';
+}
+
+function dpSeverity(dp) {
+  if (dp >= 20) return 'badge-critical';
+  if (dp >= 15) return 'badge-severe';
+  if (dp >= 13) return 'badge-moderate';
+  return '';
+}
+
+// ── Active problems panel ──────────────────────────────────────────────────
+function updateActiveProblems() {
+  const el = document.getElementById('active-problems');
+  if (!el || !state.active_problems) return;
+  el.innerHTML = state.active_problems.map(p =>
+    `<div class="problem-item">▸ ${p}</div>`).join('');
+}
+
+// ── Ventilator parameter changes ───────────────────────────────────────────
+function updateVent(param, value) {
+  // Update display immediately
+  const displayMap = {fio2:'vd-fio2', peep:'vd-peep', tv_set_ml:'vd-tv', rr_set:'vd-rr'};
+  const el = document.getElementById(displayMap[param]);
+  if (el) {
+    if (param === 'fio2') el.textContent = Math.round(value*100)+'%';
+    else el.textContent = Math.round(value);
+  }
+  // Debounce actual simulation update — wait 800ms after last change
+  ventChangePending[param] = value;
+  clearTimeout(ventApplyTimer);
+  ventApplyTimer = setTimeout(() => applyVentChanges(), 800);
+}
+
+function applyVentChanges() {
+  Object.entries(ventChangePending).forEach(([param, value]) => {
+    applyInterventionJS({type: 'vent', param, value});
+  });
+  ventChangePending = {};
+  updateUI();
+}
+
+// ── Lightweight physiologic response model ────────────────────────────────
+// This replicates the key formulas from Julia's physiology_model.jl
+// using the pre-computed formula tables embedded in SCENARIO_DATA.
+
+function applyInterventionJS(intervention) {
+  if (intervention.type === 'vent') {
+    applyVentChange(intervention.param, intervention.value);
+  }
+  recomputeDerived();
+}
+
+function applyVentChange(param, value) {
+  state.ventilator[param] = value;
+
+  if (param === 'fio2' || param === 'peep') {
+    // Estimate new PaO₂ from P/F history and PEEP change
+    const tables = SCENARIO_DATA.formula_tables;
+    if (state.derived.pf_ratio && param === 'fio2') {
+      const newPao2 = Math.min(value * state.derived.pf_ratio,
+                               value * (760 - 47) - state.abg.paco2 / 0.8 - 5);
+      state.abg.pao2 = Math.max(newPao2, 30);
+      state.vitals.spo2 = pao2ToSpo2(state.abg.pao2);
+    }
+    if (param === 'peep' && state.derived.pf_ratio < 300) {
+      const prevPeep = state.ventilator.peep;
+      const deltaPeep = value - (prevPeep || value);
+      const deltaPao2 = deltaPeep * (state.derived.pf_ratio < 200 ? 3.5 : 2.0);
+      state.abg.pao2 = Math.min(state.abg.pao2 + deltaPao2, 250);
+      state.vitals.spo2 = pao2ToSpo2(state.abg.pao2);
+      state.ventilator.peep = value;
+    }
+    if (param === 'tv_set_ml') {
+      state.ventilator.tv_measured_ml = value * 0.95;
+      // PaCO₂ response to TV change
+      const oldVE = (state.ventilator.rr_set || 16) * state.ventilator.tv_measured_ml;
+      const newVE = (state.ventilator.rr_set || 16) * value * 0.95;
+      if (oldVE > 0 && newVE > 0) {
+        state.abg.paco2 = Math.max(20, Math.min(120, state.abg.paco2 * (oldVE / newVE)));
+        state.abg.ph = Math.min(7.7, Math.max(6.8,
+          6.1 + Math.log10(state.abg.hco3 / (0.0307 * state.abg.paco2))));
+      }
+    }
+  }
+}
+
+// Simplified oxyhemoglobin dissociation curve
+function pao2ToSpo2(pao2) {
+  const n = 2.8, p50 = 27.0;
+  return Math.min(100, Math.max(50,
+    (Math.pow(pao2, n) / (Math.pow(pao2, n) + Math.pow(p50, n))) * 100));
+}
+
+// Recompute derived values (mirrors update_derived! in Julia)
+function recomputeDerived() {
+  const v = state.ventilator, a = state.abg, l = state.labs;
+  state.derived = state.derived || {};
+
+  // P/F ratio
+  if (a.pao2 > 0 && v.fio2 > 0)
+    state.derived.pf_ratio = a.pao2 / v.fio2;
+
+  // S/F ratio
+  if (state.vitals.spo2 > 0 && v.fio2 > 0)
+    state.derived.sf_ratio = state.vitals.spo2 / v.fio2;
+
+  // Mean airway pressure
+  if (v.intubated && v.pip > 0 && v.rr_set > 0) {
+    const ttot = 60 / v.rr_set;
+    const ti = v.ti_sec || 1.0;
+    const map = 0.5 * (v.pip - v.peep) * (ti/ttot) + v.peep;
+    state.derived.map_airway = map;
+    if (map > 0 && a.pao2 > 0)
+      state.derived.oi  = (map * v.fio2 * 100) / a.pao2;
+    if (map > 0 && state.vitals.spo2 > 0)
+      state.derived.osi = (map * v.fio2 * 100) / state.vitals.spo2;
+  }
+
+  // Static compliance
+  if (v.intubated && v.plateau_pressure > v.peep && v.tv_measured_ml > 0)
+    state.derived.compliance_static = v.tv_measured_ml / (v.plateau_pressure - v.peep);
+
+  // Driving pressure
+  if (v.intubated && v.plateau_pressure > 0)
+    state.derived.driving_pressure = v.plateau_pressure - v.peep;
+
+  // RSBI
+  if (state.vitals.rr > 0 && v.tv_measured_ml > 0)
+    state.derived.rsbi = state.vitals.rr / (v.tv_measured_ml / 1000);
+
+  // Mechanical power
+  if (v.intubated && v.rr_set > 0 && v.tv_measured_ml > 0 && v.pip > 0)
+    state.derived.mechanical_power = 0.098 * v.rr_set * (v.tv_measured_ml/1000) * (v.pip - v.peep);
+
+  // Anion gap
+  state.derived.anion_gap = l.na - (l.cl + a.hco3);
+  state.derived.corrected_anion_gap = state.derived.anion_gap
+    + 2.5 * (4.0 - l.albumin);
+}
+
+// ── Simulation time advancement ────────────────────────────────────────────
+function advanceSimTime(minutes) {
+  state.time_min = (state.time_min || 0) + minutes;
+  // Passive deterioration if trajectory is 'deteriorating'
+  if (state.trajectory === 'deteriorating') {
+    const f = minutes / 15.0;
+    state.abg.pao2  = Math.max(30, state.abg.pao2  - 3.0 * f);
+    state.vitals.hr = Math.min(180, state.vitals.hr + 5.0 * f);
+    state.vitals.sbp = Math.max(60, state.vitals.sbp - 3.0 * f);
+    state.abg.lactate = Math.min(15, state.abg.lactate + 0.5 * f);
+    state.vitals.spo2 = pao2ToSpo2(state.abg.pao2);
+  } else if (state.trajectory === 'improving') {
+    const f = minutes / 30.0;
+    state.abg.pao2 = Math.min(150, state.abg.pao2 + 2.0 * f);
+    state.vitals.spo2 = pao2ToSpo2(state.abg.pao2);
+  }
+  checkDecisionPointTiming();
+  recomputeDerived();
+  updateUI();
+}
+
+// ── Decision point management ──────────────────────────────────────────────
+function checkDecisionPointTiming() {
+  const dps = SCENARIO_DATA.decision_points;
+  if (dpIndex >= dps.length) return;
+  const dp = dps[dpIndex];
+  if ((state.time_min || 0) >= dp.time_min) {
+    activateDecisionPoint(dpIndex);
+  }
+}
+
+function activateDecisionPoint(i) {
+  const el = document.getElementById('dp-'+i);
+  if (el) {
+    el.classList.add('active');
+    el.scrollIntoView({behavior:'smooth', block:'center'});
+    // Flash attention indicator
+    el.style.borderColor = 'var(--yellow)';
+    setTimeout(() => el.style.borderColor = '', 2000);
+  }
+}
+
+function submitDecision(i) {
+  const ans = document.getElementById('ans-'+i)?.value?.trim();
+  if (!ans) return;
+
+  const dp = SCENARIO_DATA.decision_points[i];
+  const fb = document.getElementById('fb-'+i);
+  if (!fb) return;
+
+  // Keyword-based scoring (simple heuristic — full scoring is in Julia export)
+  const keywords = extractKeywords(dp.correct_action);
+  const ansLower = ans.toLowerCase();
+  const matched = keywords.filter(k => ansLower.includes(k.toLowerCase()));
+  const score = Math.round((matched.length / Math.max(keywords.length, 1)) * 100);
+  scores.push(score);
+
+  // Show feedback
+  const scoreClass = score >= 70 ? 'alert-green' : score >= 40 ? 'alert-yellow' : 'alert-red';
+  fb.innerHTML = `
+    <div class="alert ${scoreClass}" style="margin-bottom:8px">
+      <strong>Score: ${score}% — ${score >= 70 ? '✓ Good' : score >= 40 ? '~ Partial' : '✗ Review needed'}</strong>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:6px">
+      <strong style="color:var(--text)">Correct Action:</strong><br>
+      ${dp.correct_action}
+    </div>
+    <div style="font-size:12px;color:var(--orange)">
+      <strong>If wrong:</strong> ${dp.wrong_action_consequence}
+    </div>
+  `;
+  fb.style.display = 'block';
+
+  // Advance simulation time
+  state.time_min = (state.time_min || 0) + 60;
+  state.trajectory = score >= 70 ? 'improving' : 'deteriorating';
+  recomputeDerived();
+  updateUI();
+
+  dpIndex = i + 1;
+
+  if (dpIndex < SCENARIO_DATA.decision_points.length) {
+    setTimeout(() => {
+      checkDecisionPointTiming();
+      activateDecisionPoint(dpIndex);
+    }, 1500);
+  } else {
+    setTimeout(() => showDebrief(), 2000);
+  }
+}
+
+function extractKeywords(text) {
+  // Extract meaningful clinical keywords for scoring
+  const stopWords = new Set(['the','a','an','and','or','to','in','for','of',
+    'with','if','is','are','at','by','not','as','this','it','be','on','from']);
+  return text.split(/\\s+/)
+    .map(w => w.replace(/[^a-zA-Z0-9]/g,'').toLowerCase())
+    .filter(w => w.length > 3 && !stopWords.has(w))
+    .slice(0, 20);
+}
+
+// ── Debrief ────────────────────────────────────────────────────────────────
+function showDebrief() {
+  clearInterval(timerInterval);
+  const total = scores.reduce((a,b)=>a+b, 0);
+  const avg = scores.length > 0 ? Math.round(total / scores.length) : 0;
+  const el = document.getElementById('score-val');
+  if (el) el.textContent = avg + ' / 100';
+  const el2 = document.getElementById('debrief-score');
+  if (el2) {
+    const cls = avg >= 70 ? 'var(--green)' : avg >= 40 ? 'var(--yellow)' : 'var(--red)';
+    el2.style.color = cls;
+  }
+  document.getElementById('debrief-overlay')?.classList.add('active');
+}
+
+// ── UI helpers ─────────────────────────────────────────────────────────────
+function showObjectives() {
+  document.getElementById('obj-overlay')?.classList.add('active');
+}
+
+function toggleHint(i) {
+  const el = document.getElementById('hint-'+i);
+  if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleDrawer() {
+  const d = document.getElementById('citation-drawer');
+  const b = document.getElementById('drawer-bd');
+  if (!d) return;
+  const open = d.classList.toggle('open');
+  if (b) b.style.display = open ? 'block' : 'none';
+}
+
+function confirmRestart() {
+  if (confirm('Restart scenario? All progress will be lost.')) restartScenario();
+}
+
+function restartScenario() {
+  location.reload();
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  recomputeDerived();
+  updateUI();
+  startTimer();
+  // Activate first decision point immediately (time = 0)
+  if (SCENARIO_DATA.decision_points.length > 0 &&
+      SCENARIO_DATA.decision_points[0].time_min === 0) {
+    setTimeout(() => activateDecisionPoint(0), 500);
+  }
+});
+</script>
+<script src="../theme-bridge.js" onerror="void 0"></script>
+</body></html>
