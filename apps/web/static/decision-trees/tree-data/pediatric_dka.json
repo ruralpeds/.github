@@ -1,0 +1,146 @@
+{
+  "id": "pediatric-dka",
+  "title": "Pediatric DKA Management",
+  "subtitle": "Two-bag method · Cerebral edema protocol · Insulin drip",
+  "version": "1.0",
+  "source": "",
+  "mode": "pediatric",
+  "root": {
+    "id": "pediatric_dka-pediatric-dka-management-1",
+    "label": "Pediatric DKA Management",
+    "type": "assessment",
+    "description": "Two-bag method · Cerebral edema protocol · Insulin drip",
+    "panels": [
+      {
+        "label": "Diagnosis",
+        "type": "html",
+        "content": {
+          "html": "<p><strong>DKA diagnostic criteria:</strong></p>\n<ul><li>Blood glucose >200 mg/dL (or known diabetes)</li>\n<li>Venous pH &lt;7.30 or bicarbonate &lt;15 mEq/L</li>\n<li>Ketonemia (β-hydroxybutyrate >3 mmol/L) or ketonuria</li></ul>"
+        }
+      },
+      {
+        "label": "Severity Classification",
+        "type": "html",
+        "content": {
+          "html": "<table class=\"rt\"><thead><tr><th>Severity</th><th>pH</th><th>Bicarb</th><th>Clinical</th></tr></thead><tbody>\n<tr><td>Mild</td><td>7.20–7.30</td><td>10–15</td><td>Alert, mild dehydration</td></tr>\n<tr><td>Moderate</td><td>7.10–7.20</td><td>5–10</td><td>Lethargic, moderate dehydration</td></tr>\n<tr><td>Severe</td><td>&lt;7.10</td><td>&lt;5</td><td>Obtunded, severe dehydration, Kussmaul breathing</td></tr>\n</tbody></table>"
+        }
+      },
+      {
+        "label": "Cerebral Edema Risk",
+        "type": "html",
+        "content": {
+          "html": "<div class=\"bx br\">🚨 <strong>Cerebral edema:</strong> #1 cause of DKA mortality in children (0.5–1% of episodes; 21–24% mortality). Risk factors: younger age (&lt;5 yr), new-onset diabetes, severe acidosis, higher BUN, failure of Na to rise with treatment, excessive fluid boluses, rapid glucose decline, early insulin.</div>"
+        }
+      }
+    ],
+    "children": [
+      {
+        "label": "Dehydration\nassessment",
+        "node": {
+          "id": "pediatric_dka-fluid-resuscitation-2",
+          "label": "Fluid Resuscitation",
+          "type": "action",
+          "description": "NS 10–20 mL/kg bolus · 2-bag method · Slow correction",
+          "panels": [
+            {
+              "label": "Initial Bolus",
+              "type": "html",
+              "content": {
+                "html": "<ol class=\"sl\">\n<li><strong>Initial bolus:</strong> NS 10–20 mL/kg over 1–2 hours. Repeat 10 mL/kg if still in shock. Total initial bolus should NOT exceed 40 mL/kg in first 4 hours (cerebral edema risk).</li>\n<li><strong>Estimate dehydration:</strong> Mild DKA 5%, Moderate 7%, Severe 10%. Replace deficit over 24–48 hours (NOT rapidly).</li>\n<li><strong>Maintenance + deficit replacement:</strong> Calculate total 24–48h fluid needs. Subtract bolus given. Deliver remainder evenly over 24–48 hours.</li>\n</ol>\n<div class=\"bx bo\">⚠️ <strong>SLOW rehydration.</strong> Rapid fluid administration is the #1 modifiable risk factor for cerebral edema in pediatric DKA. Do NOT try to fully correct dehydration in the first 8–12 hours.</div>"
+              }
+            },
+            {
+              "label": "Two-Bag Method",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Two-Bag Method (simplifies glucose management):</strong></p>\n<ul><li><strong>Bag 1:</strong> NS (0.9% NaCl) + 20 mEq/L KCl + 20 mEq/L KPhos — NO dextrose</li>\n<li><strong>Bag 2:</strong> D10 in NS + 20 mEq/L KCl + 20 mEq/L KPhos — WITH dextrose</li>\n<li>Run both bags. Total rate = maintenance + deficit rate (calculated). Adjust the RATIO of Bag 1 to Bag 2 to maintain glucose 150–300 mg/dL without changing insulin rate.</li>\n<li>Glucose falling too fast → increase Bag 2 proportion. Glucose too high → increase Bag 1.</li>\n<li>Goal: glucose decline no faster than 50–100 mg/dL/hr</li></ul>"
+              }
+            },
+            {
+              "label": "Monitoring",
+              "type": "html",
+              "content": {
+                "html": "<ul><li>BMP (Na, K, Cl, CO₂, BUN, Cr, glucose) q1–2h initially, then q2–4h</li>\n<li>Venous blood gas q2–4h (follow pH and bicarb trend)</li>\n<li>Point-of-care glucose q1h</li>\n<li>Neurologic checks q1h (GCS, pupils, headache, vomiting, altered mental status)</li>\n<li><strong>Corrected sodium:</strong> Na should RISE as glucose falls. If Na is falling while glucose is falling → excess free water → cerebral edema risk. Na correction: add 1.6 mEq/L to measured Na for every 100 mg/dL glucose above 100.</li>\n<li>Strict I&O with Foley if obtunded</li></ul>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "After initial\nbolus",
+        "node": {
+          "id": "pediatric_dka-insulin-drip-3",
+          "label": "Insulin Drip",
+          "type": "action",
+          "description": "0.05–0.1 U/kg/hr · Start 1–2h AFTER fluids",
+          "panels": [
+            {
+              "label": "Protocol",
+              "type": "html",
+              "content": {
+                "html": "<ol class=\"sl\">\n<li><strong>Do NOT bolus insulin.</strong> No IV insulin bolus in pediatric DKA (increases cerebral edema risk).</li>\n<li><strong>Start insulin infusion 1–2 hours AFTER initial fluid bolus</strong> (NOT simultaneously).</li>\n<li><strong>Rate:</strong> 0.05–0.1 units/kg/hour (start 0.1 for severe; 0.05 acceptable for mild-moderate and may reduce cerebral edema risk — PECARN DKA FLUID trial 2018).</li>\n<li><strong>Do NOT stop insulin until acidosis resolves</strong> (pH >7.30, bicarb >15, anion gap closed). Add dextrose to IV fluids (two-bag method) to maintain glucose 150–300 while continuing insulin.</li>\n<li><strong>Goal:</strong> Glucose decline 50–100 mg/dL/hr. If dropping faster → reduce insulin rate to 0.05 U/kg/hr and increase dextrose.</li>\n</ol>"
+              }
+            },
+            {
+              "label": "When to Transition",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Transition to subcutaneous insulin when:</strong></p>\n<ul><li>pH >7.30 and bicarb >15 (acidosis resolved)</li>\n<li>Anion gap closed (&lt;12)</li>\n<li>Patient tolerating oral fluids</li>\n<li>Mentally alert</li>\n<li><strong>Give first SQ insulin dose 30–60 minutes BEFORE stopping IV drip</strong> (overlap to prevent rebound DKA from insulin gap)</li>\n<li>If new-onset diabetes: endocrinology consult for insulin regimen + education before discharge</li></ul>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Headache,\nvomiting,\nAMS during\nDKA Rx",
+        "node": {
+          "id": "pediatric_dka-cerebral-edema-protocol-4",
+          "label": "Cerebral Edema Protocol",
+          "type": "emergency",
+          "description": "Mannitol or hypertonic saline · Elevate head · Intubate",
+          "panels": [
+            {
+              "label": "Recognition",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Suspect cerebral edema when (during DKA treatment):</strong></p>\n<ul><li>Headache (new or worsening)</li>\n<li>Altered mental status (lethargy, confusion, irritability) after initial improvement</li>\n<li>Vomiting (especially if wasn't vomiting before)</li>\n<li>Decorticate or decerebrate posturing</li>\n<li>Cushing triad (hypertension, bradycardia, irregular respirations)</li>\n<li>Papilledema, unequal or fixed pupils</li>\n<li>Decrease in GCS ≥2 points</li></ul>\n<div class=\"bx br\">🚨 <strong>Cerebral edema can progress to brain herniation within MINUTES.</strong> Treat empirically based on clinical suspicion. Do NOT wait for CT confirmation.</div>"
+              }
+            },
+            {
+              "label": "Emergency Treatment",
+              "type": "html",
+              "content": {
+                "html": "<ol class=\"sl\">\n<li><strong>Elevate head of bed 30°</strong></li>\n<li><strong>Reduce IV fluid rate by one-third</strong></li>\n<li><strong>Mannitol 0.5–1 g/kg IV over 15–20 min</strong> (first-line) OR <strong>Hypertonic saline (3%) 2.5–5 mL/kg IV over 15–30 min</strong> (equally effective; may be preferred if hypotensive)</li>\n<li>May repeat hyperosmolar therapy in 15–30 min if no improvement</li>\n<li><strong>Intubate if GCS &lt;8</strong> (but avoid hyperventilation — only mild hyperventilation to PaCO₂ 30–35 if herniation signs; excessive hyperventilation worsens cerebral ischemia)</li>\n<li><strong>CT head</strong> when stabilized</li>\n<li><strong>Neurosurgery consult</strong> if evidence of herniation</li>\n</ol>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Electrolyte\nmanagement",
+        "node": {
+          "id": "pediatric_dka-potassium-management-5",
+          "label": "Potassium Management",
+          "type": "urgent",
+          "description": "K falls with insulin · Replace early · ECG monitor",
+          "panels": [
+            {
+              "label": "Protocol",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Potassium management in DKA:</strong></p>\n<ul><li>Total body K is ALWAYS depleted in DKA (even if serum K appears normal or high)</li>\n<li>Insulin drives K into cells → serum K drops rapidly after insulin is started</li>\n<li><strong>Start K replacement with the FIRST liter of IV fluids</strong> (after initial bolus) as long as patient is voiding and K is not >5.5</li></ul>\n<table class=\"rt\"><thead><tr><th>Serum K</th><th>Action</th></tr></thead><tbody>\n<tr><td>>6.0 mEq/L</td><td>HOLD K replacement. Recheck in 1h. ECG monitoring.</td></tr>\n<tr><td>5.0–6.0</td><td>Start 20 mEq/L K in fluids</td></tr>\n<tr><td>4.0–5.0</td><td>40 mEq/L K in fluids (20 KCl + 20 KPhos)</td></tr>\n<tr><td>3.0–4.0</td><td>40–60 mEq/L K in fluids. Consider holding insulin until K >3.5.</td></tr>\n<tr><td>&lt;3.0</td><td>60–80 mEq/L K + HOLD insulin until K >3.5. Cardiac monitoring. Consider central line for concentrated K.</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Dangers",
+              "type": "html",
+              "content": {
+                "html": "<div class=\"bx br\">🚨 <strong>Do NOT start insulin if K &lt;3.5 mEq/L.</strong> Insulin will drive K further down → fatal cardiac arrhythmia. Replace K first, then start insulin once K >3.5.</div>\n<p><strong>Phosphate:</strong> Give half of K replacement as KPhos (prevents hypophosphatemia, which can cause respiratory muscle weakness, hemolytic anemia, rhabdomyolysis). Other half as KCl.</p>"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

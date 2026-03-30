@@ -1,0 +1,940 @@
+{
+  "id": "neonatal-hematology",
+  "title": "Newborn CBC Evaluation",
+  "subtitle": "Initial hematologic assessment",
+  "version": "1.0",
+  "source": "",
+  "mode": "neonatal",
+  "root": {
+    "id": "neonatal_hematology-newborn-cbc-evaluation-1",
+    "label": "Newborn CBC Evaluation",
+    "type": "assessment",
+    "description": "Initial hematologic assessment",
+    "panels": [
+      {
+        "label": "Overview",
+        "type": "html",
+        "content": {
+          "html": "<p>The complete blood count (CBC) is the foundational hematologic test in neonatal care. It includes hemoglobin (Hb), hematocrit (Hct), red blood cell indices (MCV, MCH, MCHC, RDW), white blood cell count with automated and manual differential, platelet count, and reticulocyte count.</p>\n<p><strong>When to obtain a neonatal CBC:</strong></p>\n<ul><li>Risk factors for sepsis (maternal fever, PROM >18h, GBS positive/unknown)</li>\n<li>Clinical signs: pallor, plethora, jaundice, petechiae, bleeding</li>\n<li>Maternal history: diabetes, preeclampsia, TORCH, alloimmunization</li>\n<li>Abnormal prenatal findings (hydrops, IUGR, TTTS)</li>\n<li>Traumatic delivery (vacuum, forceps) — evaluate for hemorrhage</li>\n<li>Temperature instability, poor feeding, lethargy, respiratory distress</li></ul>"
+        }
+      },
+      {
+        "label": "Reference Values",
+        "type": "html",
+        "content": {
+          "html": "<table class=\"rt\"><thead><tr><th>Parameter</th><th>Term (37–42 wk)</th><th>Preterm (28–36 wk)</th><th>Notes</th></tr></thead><tbody>\n<tr><td>Hemoglobin</td><td>14–20 g/dL</td><td>12–18 g/dL</td><td>Cord Hb; peaks at 6–12h</td></tr>\n<tr><td>Hematocrit</td><td>42–65%</td><td>36–60%</td><td>Venous required; cap overestimates 5–15%</td></tr>\n<tr><td>MCV</td><td>100–110 fL</td><td>105–125 fL</td><td>Macrocytic is NORMAL in neonates</td></tr>\n<tr><td>Reticulocyte count</td><td>3–7%</td><td>6–10%</td><td>Higher in preterm; active erythropoiesis</td></tr>\n<tr><td>WBC</td><td>9,000–30,000/µL</td><td>5,000–21,000/µL</td><td>Peaks at 12–24h then declines</td></tr>\n<tr><td>ANC</td><td>6,000–26,000/µL</td><td>1,000–12,000/µL</td><td>Use Schmutz/Manroe charts by GA</td></tr>\n<tr><td>Platelets</td><td>150,000–400,000/µL</td><td>150,000–400,000/µL</td><td>Same regardless of GA</td></tr>\n<tr><td>HbF</td><td>60–80%</td><td>80–95%</td><td>Higher O₂ affinity; declines over months</td></tr>\n<tr><td>PT</td><td>12–18 sec</td><td>14–22 sec</td><td>Physiologically prolonged (low Vit K factors)</td></tr>\n<tr><td>aPTT</td><td>25–70 sec</td><td>25–100 sec</td><td>Wide range; highly variable in preterm</td></tr>\n<tr><td>Fibrinogen</td><td>150–400 mg/dL</td><td>120–300 mg/dL</td><td>Slightly lower in preterm</td></tr>\n</tbody></table>"
+        }
+      },
+      {
+        "label": "Interpretation",
+        "type": "html",
+        "content": {
+          "html": "<p><strong>Five-Step CBC Interpretation Framework:</strong></p>\n<ol class=\"sl\">\n<li><strong>Hb/Hct normal for GA and postnatal age?</strong> Low → anemia pathway. High → polycythemia. Always use age-appropriate references.</li>\n<li><strong>Reticulocyte count?</strong> High retic (>6–8%) = hemorrhage or hemolysis (marrow responding). Low retic (&lt;2%) = hypoproliferative (marrow failing).</li>\n<li><strong>Direct Coombs (DAT) positive?</strong> Positive = immune hemolysis (Rh, ABO, minor antigens). Negative = non-immune or hemorrhage.</li>\n<li><strong>Platelet count?</strong> Low = thrombocytopenia pathway. Timing matters: early (&lt;72h) vs late (>72h) determines differential.</li>\n<li><strong>Coagulopathy?</strong> Prolonged PT/aPTT = assess for DIC, VKDB, liver disease, or inherited factor deficiency.</li>\n</ol>\n<div class=\"bx bo\">⚠️ <strong>Critical Pitfall:</strong> Capillary (heel-stick) Hct overestimates venous Hct by 5–15%. ALWAYS confirm with a venous sample before making treatment decisions.</div>"
+        }
+      },
+      {
+        "label": "Workup",
+        "type": "html",
+        "content": {
+          "html": "<p><strong>Systematic Workup by Finding:</strong></p>\n<table class=\"dt\"><thead><tr><th>Finding</th><th>Immediate Workup</th><th>Second-Line</th></tr></thead><tbody>\n<tr><td>Low Hb/Hct</td><td>Retic, DAT, smear, T&S, total/direct bili</td><td>KB test (maternal blood), Hb electrophoresis, G6PD screen</td></tr>\n<tr><td>High Hb/Hct</td><td>Confirm VENOUS Hct, glucose, calcium, bili</td><td>Blood gas, renal function, cranial US if symptomatic</td></tr>\n<tr><td>Low platelets</td><td>Smear, maternal plt count, TORCH, blood cx</td><td>HPA typing (NAIT), cranial US, DIC panel</td></tr>\n<tr><td>Prolonged PT/aPTT</td><td>Fibrinogen, D-dimer, plt count, smear</td><td>Factor levels (VIII, IX), mixing studies, LFTs</td></tr>\n<tr><td>Abnormal WBC</td><td>Blood cx, CRP/procalcitonin, I:T ratio</td><td>CSF if sepsis suspected, serial CBC q12–24h</td></tr>\n</tbody></table>"
+        }
+      }
+    ],
+    "children": [
+      {
+        "label": "Low Hb/Hct",
+        "node": {
+          "id": "neonatal_hematology-anemia-2",
+          "label": "ANEMIA",
+          "type": "decision",
+          "description": "Hb below GA/age norms",
+          "panels": [
+            {
+              "label": "Classification",
+              "type": "html",
+              "content": {
+                "html": "<p>Neonatal anemia = Hb below normal for gestational and postnatal age. Term at birth: Hb &lt; 14 g/dL. The reticulocyte count classifies the mechanism.</p>\n<table class=\"rt\"><thead><tr><th>GA / Age</th><th>Anemia Threshold</th><th>Notes</th></tr></thead><tbody>\n<tr><td>Term at birth</td><td>&lt; 14 g/dL</td><td>Venous sample</td></tr>\n<tr><td>Preterm 28–32 wk</td><td>&lt; 13 g/dL</td><td>Lower normal</td></tr>\n<tr><td>Preterm &lt; 28 wk</td><td>&lt; 12 g/dL</td><td>Wide variability</td></tr>\n<tr><td>Term physiologic nadir</td><td>9–11 g/dL at 6–12 wk</td><td>Normal; no treatment</td></tr>\n<tr><td>Preterm nadir</td><td>7–9 g/dL at 4–8 wk</td><td>Anemia of prematurity</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Differential",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"dt\"><thead><tr><th>Mechanism</th><th>Retic</th><th>DAT</th><th>Bili</th><th>Common Causes</th><th>Key Clues</th></tr></thead><tbody>\n<tr><td><strong>Hemorrhage</strong></td><td>↑</td><td>−</td><td>Normal</td><td>FMH, TTTS, abruption, subgaleal, IVH, hepatic</td><td>Pallor ± shock; normal smear morphology; KB test</td></tr>\n<tr><td><strong>Hemolysis (immune)</strong></td><td>↑</td><td><strong>+</strong></td><td>↑ indirect</td><td>Rh, ABO, anti-Kell, anti-c, anti-E</td><td>Jaundice; spherocytes; TSB rise >0.5/hr</td></tr>\n<tr><td><strong>Hemolysis (non-immune)</strong></td><td>↑</td><td>−</td><td>↑ indirect</td><td>G6PD, hereditary spherocytosis, PK def, α-thal</td><td>Bite cells (G6PD), spherocytes+↑MCHC (HS)</td></tr>\n<tr><td><strong>Hypoproliferative</strong></td><td>↓/normal</td><td>−</td><td>Normal</td><td>Anemia of prematurity, DBA, Fanconi, parvovirus</td><td>Low retic; anomalies (DBA/Fanconi); blasts (TAM)</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Workup Steps",
+              "type": "html",
+              "content": {
+                "html": "<ol class=\"sl\">\n<li><strong>CBC with reticulocyte count and peripheral smear</strong> — severity and morphology</li>\n<li><strong>Direct Coombs test (DAT)</strong> — positive = immune hemolysis</li>\n<li><strong>Blood type and Rh</strong> — maternal AND infant</li>\n<li><strong>Total and direct bilirubin</strong> — indirect ↑ supports hemolysis</li>\n<li><strong>Kleihauer-Betke on MATERNAL blood</strong> — if hemorrhage suspected</li>\n<li><strong>Based on DAT result:</strong><br>\nDAT+ → antibody ID panel<br>\nDAT− + high retic → G6PD screen, EMA test, Hb electrophoresis<br>\nDAT− + low retic → parvovirus B19 PCR, bone marrow if persistent</li>\n</ol>\n<div class=\"bx bo\">⚠️ <strong>Anti-Kell pitfall:</strong> Suppresses erythropoiesis AND causes hemolysis. Retic may be LOW despite immune hemolysis. Don't be reassured by low bilirubin in anti-Kell disease — anemia can be severe.</div>"
+              }
+            },
+            {
+              "label": "2024 Transfusion CPG",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>2024 Neonatal Transfusion Network CPG</strong> (Deschmann et al., JAMA Network Open 2024). Based on ETTNO + TOP trials — NO benefit of liberal thresholds.</p>\n<table class=\"rt\"><thead><tr><th>Postnatal Week</th><th>On Resp Support</th><th>No/Minimal Support</th></tr></thead><tbody>\n<tr><td>Week 1</td><td>Hb &lt; 11 g/dL</td><td>Hb &lt; 10 g/dL</td></tr>\n<tr><td>Week 2</td><td>Hb &lt; 10 g/dL</td><td>Hb &lt; 8.5 g/dL</td></tr>\n<tr><td>Week 3+</td><td>Hb &lt; 9 g/dL</td><td>Hb &lt; 7 g/dL</td></tr>\n</tbody></table>\n<p><strong>Protocol:</strong> 10–20 mL/kg pRBC (Hct ~60%) over 2–4 hr. Irradiated, leukoreduced, CMV-safe, O Rh-compatible. Assigned-unit system to limit donor exposures.</p>\n<p><strong>Prevention:</strong></p>\n<ul><li>DCC 30–60 sec → 27% fewer transfusions (Cochrane 2019)</li>\n<li>Minimize phlebotomy — micro-sampling, POC testing</li>\n<li>Iron 2–4 mg/kg/day starting 2–4 weeks in preterm</li>\n<li>EPO: modest benefit, no NDI benefit (PENUT, NEJM 2020); NOT recommended routinely</li></ul>\n<div class=\"bx bg\">✓ <strong>Continue enteral feeds during RBC transfusion.</strong> Transfusion-associated NEC not consistently demonstrated (TOP subanalysis 2022).</div>"
+              }
+            }
+          ],
+          "children": [
+            {
+              "label": "Retic ↑\nDAT −",
+              "node": {
+                "id": "neonatal_hematology-hemorrhagic-anemia-3",
+                "label": "Hemorrhagic Anemia",
+                "type": "emergency",
+                "description": "Blood loss · Retic ↑ · DAT −",
+                "panels": [
+                  {
+                    "label": "Definition",
+                    "type": "html",
+                    "content": {
+                      "html": "<p>Hemorrhagic anemia = blood loss, acute or chronic. DAT negative, normal smear morphology, initially normal bilirubin (acute). Reticulocyte count elevated.</p>\n<ul><li><strong>Acute:</strong> pallor, tachycardia, hypotension, poor perfusion, normal bili</li>\n<li><strong>Chronic:</strong> compensated, hepatosplenomegaly (extramedullary hematopoiesis), elevated retics</li>\n<li>Bilirubin initially NORMAL (no RBC destruction releasing bilirubin)</li>\n<li>MCV may be elevated from reticulocytosis (reticulocytes are large cells)</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "Causes",
+                    "type": "html",
+                    "content": {
+                      "html": "<table class=\"dt\"><thead><tr><th>Cause</th><th>Incidence</th><th>Presentation</th><th>Diagnosis</th><th>Urgency</th></tr></thead><tbody>\n<tr><td><strong>FMH</strong></td><td>Large: 1/1,000–5,000</td><td>Acute: pallor+shock. Chronic: compensated</td><td>KB test on MATERNAL blood</td><td>🔴</td></tr>\n<tr><td><strong>TTTS</strong></td><td>10% MC twins</td><td>Donor: anemic. Recipient: polycythemic</td><td>Hb difference >5 g/dL between twins</td><td>🟠</td></tr>\n<tr><td><strong>Subgaleal hemorrhage</strong></td><td>1/160 vacuum</td><td>Boggy swelling crossing sutures, ↑ HC</td><td>Clinical; HC q30min</td><td>🔴🔴</td></tr>\n<tr><td><strong>Placental abruption</strong></td><td>1% pregnancies</td><td>Acute hemorrhage at delivery</td><td>Clinical + placental exam</td><td>🔴</td></tr>\n<tr><td><strong>IVH</strong></td><td>25–30% &lt;1500g</td><td>Apnea, bulging fontanelle, seizures</td><td>Cranial US (all &lt;32 wk at 7–14 d)</td><td>🟡</td></tr>\n<tr><td><strong>Hepatic rupture</strong></td><td>Rare</td><td>Distension, falling Hb, shock</td><td>Abdominal US</td><td>🔴</td></tr>\n<tr><td><strong>Adrenal hemorrhage</strong></td><td>Uncommon</td><td>Flank mass, adrenal insufficiency</td><td>US; may calcify</td><td>🟠</td></tr>\n<tr><td><strong>Cephalhematoma</strong></td><td>1–2%</td><td>Firm, limited to ONE bone</td><td>Does NOT cross sutures</td><td>🟢</td></tr>\n</tbody></table>"
+                    }
+                  },
+                  {
+                    "label": "Emergency Protocol",
+                    "type": "html",
+                    "content": {
+                      "html": "<ol class=\"sl\">\n<li><strong>ABCs:</strong> Airway/breathing secured. IV access ×2.</li>\n<li><strong>Volume:</strong> NS 10–20 mL/kg bolus. Repeat for HR >180, CRT >3s, hypotension.</li>\n<li><strong>Emergency blood:</strong> Uncrossmatched O-neg pRBCs 10–15 mL/kg.</li>\n<li><strong>Crossmatched pRBC:</strong> 10–20 mL/kg over 2–4 hr (faster if shock).</li>\n<li><strong>Coagulopathy:</strong> Vitamin K 1 mg IV. FFP 10–15 mL/kg. Cryo 5–10 mL/kg if fib &lt;100.</li>\n<li><strong>Identify source:</strong> KB test, cranial US, abdominal US, serial HC.</li>\n<li><strong>Monitor:</strong> Serial Hb q4–6h. HC q30min if subgaleal. Strict I&O.</li>\n<li><strong>Transfer Level III/IV</strong> if ongoing hemorrhage or hemodynamic instability.</li>\n</ol>"
+                    }
+                  },
+                  {
+                    "label": "Subgaleal Hemorrhage",
+                    "type": "html",
+                    "content": {
+                      "html": "<div class=\"bx br\">🚨 <strong>Subgaleal hemorrhage is LIFE-THREATENING.</strong> The space can hold the entire blood volume (~80 mL/kg = 240–320 mL in a term neonate).</div>\n<p><strong>Subgaleal Hemorrhage Protocol:</strong></p>\n<ol class=\"sl\">\n<li><strong>Recognize:</strong> Boggy, fluctuant swelling that CROSSES suture lines. Often shifts with gravity.</li>\n<li><strong>Measure HC immediately and every 30 minutes.</strong> Increase >1 cm = concerning.</li>\n<li><strong>Establish IV ×2.</strong> STAT CBC, T&S, PT/aPTT/fibrinogen.</li>\n<li><strong>Volume resuscitation:</strong> NS 10–20 mL/kg. Repeat PRN.</li>\n<li><strong>pRBC 10–15 mL/kg.</strong> Use O-neg uncrossmatched if emergent.</li>\n<li><strong>Correct coagulopathy:</strong> Vit K 1 mg IV. FFP 10–15 mL/kg. Cryo if fib &lt;100.</li>\n<li><strong>Pressure wrap</strong> (ACE around head) — may slow hemorrhage.</li>\n<li><strong>Transfer Level III/IV NICU</strong> immediately.</li>\n</ol>\n<p><strong>IVH Papile Classification:</strong></p>\n<table class=\"rt\"><thead><tr><th>Grade</th><th>Description</th><th>Prognosis</th></tr></thead><tbody>\n<tr><td>I</td><td>Germinal matrix hemorrhage only</td><td>Excellent; resolves</td></tr>\n<tr><td>II</td><td>IVH without dilation (&lt;50%)</td><td>Generally favorable</td></tr>\n<tr><td>III</td><td>IVH WITH dilation (>50%)</td><td>Risk hydrocephalus/NDI</td></tr>\n<tr><td>IV*</td><td>PVHI (periventricular hemorrhagic infarction)</td><td>High risk CP/NDI</td></tr>\n</tbody></table>\n<p><em>*Grade IV now termed PVHI — venous infarction, not IVH extension.</em></p>"
+                    }
+                  }
+                ],
+                "children": [
+                  {
+                    "label": "Maternal\nblood test",
+                    "node": {
+                      "id": "neonatal_hematology-fmh-ttts-4",
+                      "label": "FMH / TTTS",
+                      "type": "diagnosis",
+                      "description": "Kleihauer-Betke on maternal blood",
+                      "panels": [
+                        {
+                          "label": "FMH",
+                          "type": "html",
+                          "content": {
+                            "html": "<p><strong>Fetomaternal Hemorrhage (FMH):</strong> Fetal blood crosses placenta into maternal circulation. Small FMH (&lt;1 mL) in 50–75% of pregnancies (insignificant). Large FMH (>30 mL) = severe neonatal anemia or hydrops.</p>\n<ul><li>Acute: pallor, shock, normal bilirubin</li>\n<li>Chronic: compensated anemia, high retics, hepatosplenomegaly, possible hydrops</li>\n<li>RhoGAM dose adjustment needed for Rh-neg mothers if large FMH (>30 mL = additional vials)</li></ul>"
+                          }
+                        },
+                        {
+                          "label": "TTTS/TAPS",
+                          "type": "html",
+                          "content": {
+                            "html": "<p><strong>TTTS:</strong> Unbalanced flow through vascular anastomoses in monochorionic placentas.</p>\n<ul><li>Donor twin: anemic (Hb often &lt;8), growth-restricted</li>\n<li>Recipient twin: polycythemic (Hct often >65%), may develop hydrops from volume overload</li></ul>\n<p><strong>TAPS (Twin Anemia-Polycythemia Sequence):</strong> Chronic slow TTTS causing large inter-twin Hb difference (>8 g/dL) WITHOUT amniotic fluid discordance.</p>"
+                          }
+                        },
+                        {
+                          "label": "KB Test Details",
+                          "type": "html",
+                          "content": {
+                            "html": "<p><strong>Kleihauer-Betke Test:</strong></p>\n<ul><li>Performed on <strong>MATERNAL blood</strong> (not infant)</li>\n<li>Acid elution: adult Hb eluted by acid; HbF resists → fetal cells visible as dark \"ghost cells\"</li>\n<li>% fetal cells × maternal blood volume (~5,000 mL) = FMH volume</li>\n<li>Detects FMH >5 mL; may miss smaller hemorrhages</li>\n<li><strong>False positives:</strong> maternal sickle trait, hereditary persistence of fetal Hb</li>\n<li>Flow cytometry: more accurate alternative using anti-HbF antibodies</li></ul>\n<div class=\"bx bo\">⚠️ <strong>When to send KB test:</strong> Any unexplained neonatal anemia with elevated retics, normal bilirubin, and negative DAT. Order on the MOTHER, not the infant.</div>"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "label": "Imaging\nrequired",
+                    "node": {
+                      "id": "neonatal_hematology-internal-hemorrhage-5",
+                      "label": "Internal Hemorrhage",
+                      "type": "emergency",
+                      "description": "IVH, subgaleal, hepatic, adrenal",
+                      "panels": [
+                        {
+                          "label": "Types",
+                          "type": "html",
+                          "content": {
+                            "html": "<table class=\"dt\"><thead><tr><th>Site</th><th>Risk Factors</th><th>Presentation</th><th>Diagnosis</th></tr></thead><tbody>\n<tr><td><strong>Subgaleal</strong></td><td>Vacuum (#1)</td><td>Boggy crossing sutures, ↑HC, shock</td><td>Clinical; serial HC q30min</td></tr>\n<tr><td><strong>IVH</strong></td><td>&lt;32 wk, &lt;1500g</td><td>Apnea, bradycardia, bulging fontanelle</td><td>Cranial US at 7–14 days</td></tr>\n<tr><td><strong>Hepatic</strong></td><td>LGA, breech, difficult delivery</td><td>Distension, falling Hb, shock</td><td>Abdominal US</td></tr>\n<tr><td><strong>Adrenal</strong></td><td>LGA, traumatic, asphyxia</td><td>Flank mass, adrenal insufficiency</td><td>US; calcification later</td></tr>\n<tr><td><strong>Cephalhematoma</strong></td><td>Instrumented delivery</td><td>Firm, limited to one bone, NOT crossing sutures</td><td>Clinical; benign</td></tr>\n</tbody></table>"
+                          }
+                        },
+                        {
+                          "label": "Screening",
+                          "type": "html",
+                          "content": {
+                            "html": "<p><strong>IVH Screening Protocol:</strong></p>\n<ul><li>Cranial US for ALL infants &lt;32 weeks at 7–14 days of life</li>\n<li>Repeat at 36–40 weeks PMA (evaluate for PVL)</li>\n<li>Earlier US if acute neurologic deterioration</li></ul>"
+                          }
+                        },
+                        {
+                          "label": "Prevention",
+                          "type": "html",
+                          "content": {
+                            "html": "<p><strong>IVH Prevention Strategies:</strong></p>\n<ul><li>Antenatal steroids (most effective single intervention)</li>\n<li>Delayed cord clamping 30–60 sec</li>\n<li>Gentle handling in first 72 hours</li>\n<li>Head midline positioning</li>\n<li>Avoid wide blood pressure swings</li>\n<li>Correct coagulopathy promptly</li>\n<li>Avoid rapid volume expansion</li></ul>"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "Retic ↑\nIndirect bili ↑",
+              "node": {
+                "id": "neonatal_hematology-hemolytic-anemia-6",
+                "label": "Hemolytic Anemia",
+                "type": "urgent",
+                "description": "RBC destruction · Retic ↑ · Jaundice",
+                "panels": [
+                  {
+                    "label": "Definition",
+                    "type": "html",
+                    "content": {
+                      "html": "<p>Hemolytic anemia = premature RBC destruction. Hallmarks: anemia with elevated retic, indirect hyperbilirubinemia, elevated LDH, low haptoglobin (unreliable in neonates).</p>\n<p>The <strong>DAT (Coombs test)</strong> is the critical branch point: positive = immune; negative = non-immune.</p>"
+                    }
+                  },
+                  {
+                    "label": "Immune vs Non-Immune",
+                    "type": "html",
+                    "content": {
+                      "html": "<table class=\"dt\"><thead><tr><th>Feature</th><th>Immune (DAT+)</th><th>Non-Immune (DAT−)</th></tr></thead><tbody>\n<tr><td>Mechanism</td><td>Maternal IgG crosses placenta, destroys fetal RBCs</td><td>Intrinsic RBC defect (membrane, enzyme, Hb)</td></tr>\n<tr><td>DAT</td><td>Positive</td><td>Negative</td></tr>\n<tr><td>Common causes</td><td>Rh (anti-D), ABO, Kell, c, E</td><td>G6PD, HS, PK def, α-thalassemia</td></tr>\n<tr><td>Smear</td><td>Spherocytes (ABO), nRBCs (Rh)</td><td>Spherocytes (HS), bite cells (G6PD), targets (thal)</td></tr>\n<tr><td>Severity</td><td>Rh: can be severe/hydrops. ABO: usually mild</td><td>G6PD: episodic severe. HS: variable. α-thal major: lethal</td></tr>\n</tbody></table>"
+                    }
+                  },
+                  {
+                    "label": "DAT+ Workup",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>DAT-Positive Workup:</strong></p>\n<ol class=\"sl\">\n<li><strong>Antibody identification</strong> — anti-D, anti-A/B, anti-Kell, anti-c, anti-E</li>\n<li><strong>Maternal + infant blood type/Rh</strong></li>\n<li><strong>Serial TSB</strong> — plot on 2022 AAP nomogram. Rise >0.5 mg/dL/hr = accelerated hemolysis</li>\n<li><strong>Reticulocyte count</strong> — elevated in ABO/Rh; may be LOW in anti-Kell (erythropoiesis suppression)</li>\n<li><strong>CBC</strong> — anemia severity, nucleated RBC count</li>\n</ol>\n<p><strong>Management:</strong></p>\n<ul><li><strong>Phototherapy</strong> per 2022 AAP guidelines</li>\n<li><strong>IVIG 0.5–1 g/kg</strong> — may reduce exchange transfusion need in Rh disease</li>\n<li><strong>Exchange transfusion</strong> — double volume (160–180 mL/kg), removes ~85% circulating bilirubin</li>\n<li><strong>pRBC transfusion</strong> for significant anemia</li></ul>\n<div class=\"bx br\">🚨 <strong>Anti-Kell:</strong> Suppresses erythropoiesis + causes hemolysis. Retic may be LOW. Anemia more severe than bilirubin suggests. Absence of jaundice does NOT exclude severe anemia.</div>"
+                    }
+                  },
+                  {
+                    "label": "DAT− Workup",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>DAT-Negative Workup Algorithm:</strong></p>\n<ol class=\"sl\">\n<li><strong>Peripheral smear:</strong> Spherocytes → HS or ABO; Bite cells/Heinz bodies → G6PD; Target cells → hemoglobinopathy; Schistocytes → DIC/microangiopathy</li>\n<li><strong>G6PD quantitative assay</strong> — screen all unexplained DAT-neg jaundice. PITFALL: levels falsely NORMAL during hemolysis (reticulocytes have more G6PD). Repeat in 2–3 months.</li>\n<li><strong>EMA binding test</strong> — decreased = hereditary spherocytosis. More reliable than osmotic fragility in neonates.</li>\n<li><strong>Hb electrophoresis</strong> — HbF predominates in neonates. α-thal major shows Hb Bart's (γ4 tetramers).</li>\n<li><strong>PK assay</strong> — if smear/other tests non-diagnostic; 2nd most common RBC enzymopathy.</li>\n</ol>\n<div class=\"bx bo\">⚠️ <strong>G6PD is the #1 risk factor for kernicterus worldwide.</strong> Now on the RUSP for newborn screening in many US states. Jaundice can be rapid and severe.</div>"
+                    }
+                  }
+                ],
+                "children": [
+                  {
+                    "label": "DAT +",
+                    "node": {
+                      "id": "neonatal_hematology-rh-abo-minor-antigens-7",
+                      "label": "Rh / ABO / Minor Antigens",
+                      "type": "diagnosis",
+                      "description": "DAT+ · Immune hemolysis",
+                      "panels": [
+                        {
+                          "label": "Rh Disease",
+                          "type": "html",
+                          "content": {
+                            "html": "<p><strong>Rh HDFN:</strong></p>\n<ul><li>Rh-neg mother sensitized to D antigen → anti-D IgG crosses placenta → destroys Rh-pos fetal RBCs</li>\n<li>Spectrum: mild jaundice → severe anemia + jaundice → hydrops fetalis</li>\n<li><strong>Prevention:</strong> RhoGAM 300 µg IM at 28 wk + within 72h of delivery. Reduced incidence >95%.</li>\n<li>DAT strongly positive (3–4+). Smear: nucleated RBCs, polychromasia</li></ul>"
+                          }
+                        },
+                        {
+                          "label": "ABO Incompatibility",
+                          "type": "html",
+                          "content": {
+                            "html": "<p><strong>ABO Incompatibility:</strong></p>\n<ul><li>Mother O, baby A or B. Natural anti-A/B are IgG in group O mothers</li>\n<li>Can occur in FIRST pregnancy (no prior sensitization needed)</li>\n<li>Usually MILDER than Rh. DAT may be weakly positive or even negative</li>\n<li>Rarely causes hydrops; primarily jaundice requiring phototherapy</li>\n<li>Smear: spherocytes (mimic HS; context + DAT distinguish them)</li></ul>"
+                          }
+                        },
+                        {
+                          "label": "Minor Antigens",
+                          "type": "html",
+                          "content": {
+                            "html": "<table class=\"rt\"><thead><tr><th>Antibody</th><th>Frequency</th><th>Severity</th><th>Special Notes</th></tr></thead><tbody>\n<tr><td>Anti-Kell</td><td>3rd most common</td><td>Can be SEVERE</td><td>Suppresses erythropoiesis → low retic is a PITFALL</td></tr>\n<tr><td>Anti-c</td><td>Increasingly recognized</td><td>Moderate–severe</td><td>Can cause hydrops</td></tr>\n<tr><td>Anti-E</td><td>Common</td><td>Usually mild</td><td>Rarely needs exchange</td></tr>\n<tr><td>Anti-Duffy</td><td>Uncommon</td><td>Mild–moderate</td><td>Duffy-neg common in Black individuals</td></tr>\n</tbody></table>"
+                          }
+                        },
+                        {
+                          "label": "Exchange Transfusion",
+                          "type": "html",
+                          "content": {
+                            "html": "<p><strong>Exchange Transfusion Protocol:</strong></p>\n<ul><li><strong>Indication:</strong> TSB at/above exchange threshold on 2022 AAP nomogram, OR rising >0.5/hr despite intensive phototherapy + IVIG</li>\n<li><strong>Volume:</strong> Double blood volume = 160–180 mL/kg</li>\n<li><strong>Blood:</strong> O Rh-neg, irradiated, CMV-safe, crossmatched against maternal + infant serum, Hct 40–50%</li>\n<li><strong>Access:</strong> UVC with tip in IVC (preferred). Alternative: UVC + UAC isovolumetric</li>\n<li><strong>Technique:</strong> Push-pull 5–10 mL/kg aliquots alternating</li>\n<li><strong>Monitoring:</strong> Continuous cardiac. Glucose/Ca/K/bili after every 50–100 mL. CaGluconate 10% 1 mL per 100 mL blood exchanged (citrate chelates Ca)</li>\n<li><strong>Removes:</strong> ~85% bilirubin, ~70% antibody-coated RBCs</li></ul>\n<div class=\"bx br\">🚨 <strong>Complications:</strong> Hypocalcemia, hyperkalemia, thrombocytopenia, infection, NEC, PVT, arrhythmia, air embolism. Mortality ~0.3–1%. Only at experienced centers.</div>"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "label": "DAT −",
+                    "node": {
+                      "id": "neonatal_hematology-g6pd-hs-enzymopathies-8",
+                      "label": "G6PD / HS / Enzymopathies",
+                      "type": "diagnosis",
+                      "description": "DAT− · Non-immune hemolysis",
+                      "panels": [
+                        {
+                          "label": "G6PD Deficiency",
+                          "type": "html",
+                          "content": {
+                            "html": "<p><strong>G6PD Deficiency:</strong></p>\n<ul><li>X-linked recessive; ~400 million affected worldwide. Males of African, Mediterranean, Asian descent.</li>\n<li>G6PD maintains glutathione → protects RBCs from oxidative damage</li>\n<li><strong>Neonatal presentation:</strong> severe jaundice days 2–5, often disproportionate to anemia</li>\n<li><strong>Triggers:</strong> infection, naphthalene (mothballs), sulfonamides, primaquine, fava beans</li>\n<li>Smear: bite cells, blister cells, Heinz bodies (require supravital stain)</li>\n<li><strong>Diagnosis:</strong> G6PD quantitative assay. Levels falsely normal during hemolysis — repeat 2–3 months later</li></ul>"
+                          }
+                        },
+                        {
+                          "label": "Hereditary Spherocytosis",
+                          "type": "html",
+                          "content": {
+                            "html": "<p><strong>Hereditary Spherocytosis (HS):</strong></p>\n<ul><li>AD in ~75% (ankyrin, spectrin, band 3). 25% de novo/AR.</li>\n<li>Membrane cytoskeleton defects → spherical RBCs → splenic trapping/destruction</li>\n<li>Neonatal: jaundice, anemia (may need transfusion), splenomegaly (may be absent)</li>\n<li><strong>Diagnosis:</strong> Spherocytes + elevated MCHC >36 g/dL (most sensitive parameter). EMA binding test = preferred in neonates.</li>\n<li>Family history positive in 75% — check parents' CBC and smear</li>\n<li>Splenectomy reserved for severe disease, deferred until >5–6 years</li></ul>"
+                          }
+                        },
+                        {
+                          "label": "Other Conditions",
+                          "type": "html",
+                          "content": {
+                            "html": "<table class=\"dt\"><thead><tr><th>Condition</th><th>Inheritance</th><th>Key Features</th><th>Diagnosis</th></tr></thead><tbody>\n<tr><td>PK deficiency</td><td>AR</td><td>Chronic hemolysis, jaundice, splenomegaly</td><td>PK enzyme assay; PKLR gene</td></tr>\n<tr><td>α-Thal major (Hb Bart's)</td><td>AR</td><td>All 4 α genes deleted → hydrops, usually lethal</td><td>Hb electrophoresis (Hb Bart's = γ4)</td></tr>\n<tr><td>α-Thal HbH (3 gene)</td><td>AR</td><td>Mild-mod microcytic anemia, neonatal hemolysis possible</td><td>Hb electrophoresis</td></tr>\n<tr><td>Hereditary elliptocytosis</td><td>AD</td><td>Usually mild; neonatal poikilocytosis</td><td>Smear: elliptocytes</td></tr>\n</tbody></table>"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "Retic ↓\nor normal",
+              "node": {
+                "id": "neonatal_hematology-hypoproliferative-anemia-9",
+                "label": "Hypoproliferative Anemia",
+                "type": "diagnosis",
+                "description": "Low reticulocyte count",
+                "panels": [
+                  {
+                    "label": "Definition",
+                    "type": "html",
+                    "content": {
+                      "html": "<p>Hypoproliferative anemia = reticulocyte count LOW or inappropriately normal for degree of anemia — bone marrow not responding. Most commonly = anemia of prematurity. Rare: DBA, Fanconi, parvovirus, TAM.</p>"
+                    }
+                  },
+                  {
+                    "label": "Differential",
+                    "type": "html",
+                    "content": {
+                      "html": "<table class=\"dt\"><thead><tr><th>Condition</th><th>Frequency</th><th>Key Features</th><th>Diagnosis</th></tr></thead><tbody>\n<tr><td><strong>Anemia of prematurity</strong></td><td>Very common</td><td>EPO suppression + short RBC lifespan + growth + phlebotomy</td><td>Clinical context; low retics in preterm at 4–8 wk</td></tr>\n<tr><td><strong>DBA</strong></td><td>~7/million</td><td>Pure red cell aplasia, macrocytic, elevated HbF/eADA, anomalies 50%</td><td>Elevated eADA; RPS19 most common gene</td></tr>\n<tr><td><strong>Parvovirus B19</strong></td><td>Rare neonatal</td><td>Transient aplastic crisis; absent retics; hydrops if in utero</td><td>IgM/PCR</td></tr>\n<tr><td><strong>Fanconi anemia</strong></td><td>~1/160,000</td><td>Progressive pancytopenia + anomalies (thumbs, café-au-lait, short stature)</td><td>Chromosome breakage (DEB/MMC)</td></tr>\n<tr><td><strong>TAM</strong></td><td>~10% of T21</td><td>Circulating blasts, hepatosplenomegaly, GATA1 mutation</td><td>Smear + flow cytometry</td></tr>\n</tbody></table>"
+                    }
+                  },
+                  {
+                    "label": "Anemia of Prematurity",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Anemia of Prematurity — Management:</strong></p>\n<ul><li><strong>Pathophysiology:</strong> (1) EPO suppression, (2) short RBC lifespan (60–70d vs 90–120d), (3) rapid growth dilution, (4) iatrogenic phlebotomy (VLBW lose 10–20% blood volume/week)</li>\n<li><strong>Nadir:</strong> 7–9 g/dL at 4–8 weeks</li>\n<li><strong>Prevention:</strong> DCC (27% reduction), minimize draws, iron 2–4 mg/kg/day</li>\n<li><strong>Transfusion:</strong> Per 2024 restrictive thresholds</li></ul>\n<table class=\"rt\"><thead><tr><th>Strategy</th><th>Evidence</th><th>Recommendation</th></tr></thead><tbody>\n<tr><td>DCC 30–60 sec</td><td>+1.2 g/dL Hb, 27% fewer transfusions</td><td>✅ Strongly recommended</td></tr>\n<tr><td>UCM</td><td>May = DCC; concern IVH &lt;28 wk</td><td>⚠️ Not recommended &lt;28 wk</td></tr>\n<tr><td>Minimize phlebotomy</td><td>VLBW lose 10–20% BV/week</td><td>✅ Micro-sampling, POC</td></tr>\n<tr><td>EPO</td><td>Modest; no NDI benefit (PENUT)</td><td>❌ Not routinely recommended</td></tr>\n<tr><td>Iron supplementation</td><td>Supports erythropoiesis</td><td>✅ 2–4 mg/kg/day at 2–4 wk</td></tr>\n</tbody></table>"
+                    }
+                  },
+                  {
+                    "label": "Rare Congenital",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Suspect rare congenital cause when:</strong></p>\n<ul><li>Low retics in a TERM infant (AOP is a preterm diagnosis)</li>\n<li>Macrocytic anemia (MCV >110 fL) without obvious cause</li>\n<li>Physical anomalies + anemia = DBA or Fanconi</li>\n<li>Pancytopenia = bone marrow failure syndrome</li>\n<li>Circulating blasts + trisomy 21 = TAM</li>\n<li>Anemia not responding to iron/EPO after weeks</li></ul>\n<div class=\"bx bp\">🔬 <strong>Refer to hematology for:</strong> unexplained term anemia, anomalies + anemia, persistent anemia, circulating blasts, pancytopenia.</div>"
+                    }
+                  }
+                ],
+                "children": [
+                  {
+                    "label": "Preterm\nnadir",
+                    "node": {
+                      "id": "neonatal_hematology-anemia-of-prematurity-10",
+                      "label": "Anemia of Prematurity",
+                      "type": "action",
+                      "description": "Physiologic · 2024 CPG thresholds",
+                      "panels": [
+                        {
+                          "label": "Transfusion Thresholds",
+                          "type": "html",
+                          "content": {
+                            "html": "<p><strong>2024 Neonatal Transfusion Network CPG</strong></p>\n<table class=\"rt\"><thead><tr><th>Week</th><th>On Resp Support (Hb)</th><th>No/Minimal Support (Hb)</th></tr></thead><tbody>\n<tr><td>Week 1</td><td>&lt; 11</td><td>&lt; 10</td></tr>\n<tr><td>Week 2</td><td>&lt; 10</td><td>&lt; 8.5</td></tr>\n<tr><td>Week 3+</td><td>&lt; 9</td><td>&lt; 7</td></tr>\n</tbody></table>\n<p><em>Respiratory support = any invasive/non-invasive ventilation, CPAP, HFNC, or O₂ >21%.</em></p>"
+                          }
+                        },
+                        {
+                          "label": "Protocol",
+                          "type": "html",
+                          "content": {
+                            "html": "<ul><li><strong>Volume:</strong> 10–20 mL/kg (15 mL/kg most common)</li>\n<li><strong>Rate:</strong> Over 2–4 hours via pump</li>\n<li><strong>Product:</strong> pRBCs Hct ~60%, irradiated, leukoreduced, CMV-safe</li>\n<li><strong>Type:</strong> Group O, Rh-compatible. Assigned-unit system (single donor for multiple transfusions)</li>\n<li><strong>Expected rise:</strong> ~3 g/dL per 15 mL/kg</li>\n<li><strong>Post-transfusion:</strong> Recheck Hb 4–6 hours</li>\n<li><strong>Feeds:</strong> Continue at pre-transfusion rates</li></ul>"
+                          }
+                        },
+                        {
+                          "label": "Prevention",
+                          "type": "html",
+                          "content": {
+                            "html": "<p>See Anemia of Prematurity tab in parent node for complete prevention strategies including DCC, phlebotomy minimization, iron supplementation, and EPO evidence.</p>"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "label": "Term +\nlow retic",
+                    "node": {
+                      "id": "neonatal_hematology-dba-fanconi-infection-tam-11",
+                      "label": "DBA / Fanconi / Infection / TAM",
+                      "type": "diagnosis",
+                      "description": "Rare congenital or infectious",
+                      "panels": [
+                        {
+                          "label": "DBA",
+                          "type": "html",
+                          "content": {
+                            "html": "<ul><li>Pure red cell aplasia; presents typically 2–6 months</li>\n<li>Macrocytic anemia, elevated HbF, elevated eADA, low retics</li>\n<li>Anomalies in 50%: triphalangeal/absent thumbs, cardiac (VSD/ASD), craniofacial (Pierre Robin)</li>\n<li>~70% have ribosomal protein gene mutations (RPS19 = 25%)</li>\n<li>Treatment: corticosteroids (70% respond), chronic transfusions, HSCT for severe</li>\n<li>Elevated cancer risk: MDS, AML, osteosarcoma</li></ul>"
+                          }
+                        },
+                        {
+                          "label": "Fanconi",
+                          "type": "html",
+                          "content": {
+                            "html": "<ul><li>Inherited bone marrow failure; progressive pancytopenia (may not manifest until age 5–10)</li>\n<li>Neonatal clues: absent/hypoplastic thumbs (40%), café-au-lait spots (40%), short stature, renal anomalies (30%), cardiac (15%)</li>\n<li><strong>Diagnosis:</strong> chromosome breakage test (DEB/MMC)</li>\n<li>>20 FANC genes (AR except FANCB = X-linked)</li>\n<li>Treatment: androgens, HSCT (only cure), cancer surveillance</li></ul>"
+                          }
+                        },
+                        {
+                          "label": "Parvovirus B19",
+                          "type": "html",
+                          "content": {
+                            "html": "<ul><li>Tropism for erythroid precursors; halts red cell production</li>\n<li>Fetus: severe anemia → hydrops → fetal death (greatest risk 13–20 wk)</li>\n<li>Neonate: transient aplastic crisis with retic near 0%, resolves 1–2 weeks</li>\n<li>Diagnosis: B19 IgM (may be neg in neonates); PCR more reliable</li>\n<li>Treatment: supportive; pRBC transfusion. In utero: intrauterine transfusion.</li></ul>"
+                          }
+                        },
+                        {
+                          "label": "TAM",
+                          "type": "html",
+                          "content": {
+                            "html": "<ul><li>~10% of trisomy 21 neonates. Circulating megakaryoblasts, leukocytosis (WBC can be >100K), hepatosplenomegaly</li>\n<li>GATA1 mutations on chromosome X</li>\n<li>Self-resolving in 80% within 1–3 months</li>\n<li><strong>BUT 20–30% develop AMKL within 1–4 years</strong></li>\n<li>Diagnosis: smear (blasts), flow cytometry (CD41+/CD61+), GATA1 testing</li>\n<li>Low-dose cytarabine for severe cases (hepatic failure, DIC)</li></ul>\n<div class=\"bx bp\">🔬 <strong>Any T21 neonate with blasts:</strong> hematology consult. Even if TAM resolves, serial CBC q3 months for 4 years to detect AMKL.</div>"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "High Hb/Hct",
+        "node": {
+          "id": "neonatal_hematology-polycythemia-12",
+          "label": "POLYCYTHEMIA",
+          "type": "urgent",
+          "description": "Venous Hct > 65%",
+          "panels": [
+            {
+              "label": "Definition",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Neonatal polycythemia:</strong> venous Hct > 65% or Hb > 22 g/dL. Prevalence 1–5% of term neonates. Venous Hct peaks at 6–12 hours. Viscosity increases exponentially above Hct 65%.</p>\n<div class=\"bx bo\">⚠️ <strong>NEVER diagnose or treat based on capillary Hct.</strong> Overestimates by 5–15%. Always confirm with VENOUS sample.</div>"
+              }
+            },
+            {
+              "label": "Causes",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"dt\"><thead><tr><th>Type</th><th>Mechanism</th><th>Causes</th></tr></thead><tbody>\n<tr><td><strong>Active (↑ erythropoiesis)</strong></td><td>Chronic fetal hypoxia → ↑ EPO</td><td>IUGR/SGA, maternal DM, smoking, high altitude, T21/T18/T13, Beckwith-Wiedemann, CAH</td></tr>\n<tr><td><strong>Passive (RBC transfusion)</strong></td><td>Extra RBC volume transferred</td><td>Prolonged DCC (>3 min), TTTS recipient, maternal-fetal transfusion, cord milking (if excessive)</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Symptoms",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"dt\"><thead><tr><th>System</th><th>Symptoms</th><th>Incidence</th></tr></thead><tbody>\n<tr><td><strong>CNS</strong></td><td>Jitteriness, irritability, lethargy, poor feeding, seizures (rare)</td><td>Most common presenting symptoms</td></tr>\n<tr><td><strong>Metabolic</strong></td><td>Hypoglycemia (↑ glucose consumption by excess RBCs)</td><td>12–40% — MOST COMMON</td></tr>\n<tr><td><strong>Metabolic</strong></td><td>Hypocalcemia</td><td>1–11%</td></tr>\n<tr><td><strong>GI</strong></td><td>Feeding intolerance, NEC (controversial)</td><td>Variable</td></tr>\n<tr><td><strong>Renal</strong></td><td>Oliguria, hematuria, RVT</td><td>Uncommon</td></tr>\n<tr><td><strong>Cardiopulmonary</strong></td><td>Cyanosis, tachypnea, cardiomegaly</td><td>Variable</td></tr>\n<tr><td><strong>Hematologic</strong></td><td>Thrombocytopenia, hyperbilirubinemia</td><td>Common</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Management Algorithm",
+              "type": "html",
+              "content": {
+                "html": "<ol class=\"sl\">\n<li><strong>Confirm VENOUS Hct</strong></li>\n<li><strong>Assess symptoms</strong> (CNS, GI, metabolic, respiratory)</li>\n<li><strong>Check glucose and calcium</strong></li>\n<li><strong>Decision:</strong><br>\n• Hct 65–70% + asymptomatic → ↑ PO fluids 10–20%; recheck 12–24h; glucose q2–4h<br>\n• Hct 65–70% + symptomatic → PET<br>\n• Hct ≥ 70% regardless → PET</li>\n</ol>\n<p><strong>PET Protocol:</strong></p>\n<ul><li><strong>Formula:</strong> Vol = BV × (Obs Hct − 55) / Obs Hct. BV = 80–100 mL/kg.</li>\n<li><strong>Example:</strong> 3.5 kg, Hct 72%: (85×3.5) × (72−55)/72 = <strong>70 mL</strong></li>\n<li><strong>Fluid:</strong> Normal saline (preferred over albumin/plasma)</li>\n<li><strong>Access:</strong> UVC push-pull in 5 mL/kg aliquots</li>\n<li><strong>Post-PET:</strong> Recheck Hct 4–6h. Glucose q2h for 12–24h.</li></ul>\n<div class=\"bx bb\">ℹ️ <strong>PET improves short-term symptoms but has NOT improved long-term neurodevelopmental outcomes</strong> (Cochrane review, Dempsey & Barrington).</div>"
+              }
+            }
+          ],
+          "children": [
+            {
+              "label": "No symptoms",
+              "node": {
+                "id": "neonatal_hematology-asymptomatic-hct-65-70-13",
+                "label": "Asymptomatic Hct 65–70%",
+                "type": "action",
+                "description": "↑ PO fluids · Monitor glucose",
+                "panels": [
+                  {
+                    "label": "Management",
+                    "type": "html",
+                    "content": {
+                      "html": "<ul><li>Increase oral fluids 10–20%</li>\n<li>Monitor glucose q2–4h (hypoglycemia in 12–40%)</li>\n<li>Recheck venous Hct in 12–24h</li>\n<li>Assess for new symptoms each nursing assessment</li>\n<li>If symptoms develop or Hct rises ≥70% → proceed to PET</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "Monitoring",
+                    "type": "html",
+                    "content": {
+                      "html": "<table class=\"rt\"><thead><tr><th>Test</th><th>Frequency</th><th>Action Trigger</th></tr></thead><tbody>\n<tr><td>Glucose</td><td>q2–4h</td><td>&lt;45 → IV D10W; &lt;25 → D10W 2 mL/kg bolus</td></tr>\n<tr><td>Venous Hct</td><td>12h and 24h</td><td>Rising or ≥70% → PET</td></tr>\n<tr><td>Ionized Ca</td><td>Baseline</td><td>&lt;1.0 mmol/L → IV Ca gluconate</td></tr>\n<tr><td>Clinical</td><td>q4h</td><td>New symptoms → reassess for PET</td></tr>\n<tr><td>Bilirubin</td><td>Per jaundice protocol</td><td>Higher risk in polycythemia</td></tr>\n</tbody></table>"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "Symptoms\nor Hct ≥70%",
+              "node": {
+                "id": "neonatal_hematology-symptomatic-or-hct-70-14",
+                "label": "Symptomatic or Hct ≥ 70%",
+                "type": "emergency",
+                "description": "Partial Exchange Transfusion (PET)",
+                "panels": [
+                  {
+                    "label": "Indications",
+                    "type": "html",
+                    "content": {
+                      "html": "<ul><li>Venous Hct ≥ 70% regardless of symptoms</li>\n<li>Venous Hct 65–70% WITH significant symptoms (seizures, respiratory distress, severe feeding intolerance, cyanosis)</li>\n<li>Refractory hypoglycemia in setting of polycythemia</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "Step-by-Step PET",
+                    "type": "html",
+                    "content": {
+                      "html": "<ol class=\"sl\">\n<li>Confirm venous Hct. Calculate: Vol = BV × (Obs Hct − 55) / Obs Hct</li>\n<li>Obtain informed consent (risks: NEC, infection, thrombosis)</li>\n<li>Place UVC — confirm tip on X-ray (IVC above diaphragm)</li>\n<li>Pre-PET labs: CBC, glucose, Ca, bili</li>\n<li>Withdraw 5 mL/kg over 2–3 min → infuse equal NS → repeat until total volume exchanged</li>\n<li>Monitor: HR, RR, BP, SpO₂ continuously during procedure</li>\n<li>Post-PET: Hct (target 50–55%), glucose, Ca at 1h and 4–6h</li>\n</ol>"
+                    }
+                  },
+                  {
+                    "label": "Complications",
+                    "type": "html",
+                    "content": {
+                      "html": "<ul><li>NEC (lower risk with NS vs colloid replacement)</li>\n<li>Infection (procedural)</li>\n<li>Thrombocytopenia (dilutional, usually mild/transient)</li>\n<li>Air embolism, vessel perforation, thrombosis (UVC-related)</li>\n<li>Rebound polycythemia (recheck 4–6h and 24h)</li></ul>\n<div class=\"bx bb\">ℹ️ <strong>NS is the recommended replacement fluid</strong> (Cochrane: equivalent efficacy to albumin/plasma, lower cost, no infection risk, no NEC association).</div>"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Low\nplatelets",
+        "node": {
+          "id": "neonatal_hematology-thrombo-cytopenia-15",
+          "label": "THROMBO- CYTOPENIA",
+          "type": "decision",
+          "description": "Platelets < 150,000/µL",
+          "panels": [
+            {
+              "label": "Definition",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Neonatal thrombocytopenia:</strong> plt &lt; 150K/µL. Affects up to 25% of NICU admissions. Severity: mild 100–149K, moderate 50–99K, severe &lt; 50K.</p>\n<p>Neonatal platelets are hyporesponsive in vitro but have adequate hemostasis in vivo (higher VWF, larger VWF multimers). Neonates tolerate lower plt counts before clinical bleeding.</p>"
+              }
+            },
+            {
+              "label": "Timing-Based Differential",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"dt\"><thead><tr><th>Timing</th><th>Cause</th><th>Typical Count</th><th>Key Features</th></tr></thead><tbody>\n<tr><td rowspan=\"4\"><strong>Early &lt;72h</strong></td><td>Placental insufficiency</td><td>50–100K</td><td>~75% of early cases; self-resolves day 7–10</td></tr>\n<tr><td>NAIT</td><td>Often &lt;20K</td><td>Normal maternal plts; ICH risk 10–20%; FIRST pregnancy</td></tr>\n<tr><td>TORCH</td><td>Variable</td><td>Hepatosplenomegaly, SGA, rash</td></tr>\n<tr><td>Maternal ITP</td><td>Usually >50K</td><td>LOW maternal plts (distinguishes from NAIT)</td></tr>\n<tr><td rowspan=\"3\"><strong>Late >72h</strong></td><td>Sepsis/NEC</td><td>Variable</td><td>#1 late cause; falling plts may precede clinical NEC by 24–48h</td></tr>\n<tr><td>Fungal (Candida)</td><td>Variable</td><td>VLBW + central lines + prolonged Abx</td></tr>\n<tr><td>DIC</td><td>&lt;50K</td><td>↑PT + ↑aPTT + ↓Fib + ↑D-dimer</td></tr>\n</tbody></table>\n<div class=\"bx br\">🚨 <strong>Precipitous drop from >150K to &lt;50K in 24h = SEPSIS until proven otherwise.</strong> Cultures and antibiotics immediately. Falling plts may be EARLIEST sign of NEC.</div>"
+              }
+            },
+            {
+              "label": "PlaNet-2 Trial",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>PlaNet-2 (Curley et al., NEJM 2019; n=660 preterm &lt;34 wk with plt &lt;50K):</strong></p>\n<p><strong>Liberal (transfuse &lt;50K) was WORSE than restrictive (&lt;25K):</strong></p>\n<table class=\"rt\"><thead><tr><th>Outcome</th><th>Restrictive (&lt;25K)</th><th>Liberal (&lt;50K)</th><th>p</th></tr></thead><tbody>\n<tr><td>Death or major bleeding</td><td>19%</td><td>26%</td><td>0.02</td></tr>\n<tr><td>Death alone</td><td>10%</td><td>14%</td><td>NS (trend)</td></tr>\n</tbody></table>\n<div class=\"bx bg\">✓ <strong>Practice-changing:</strong> For stable preterm neonates without bleeding, transfuse only at plt &lt; 25,000/µL.</div>"
+              }
+            },
+            {
+              "label": "Transfusion Thresholds",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"rt\"><thead><tr><th>Scenario</th><th>Threshold</th><th>Rationale</th></tr></thead><tbody>\n<tr><td>Stable preterm, no bleeding</td><td>&lt; 25,000</td><td>PlaNet-2: restrictive safer</td></tr>\n<tr><td>Unstable / minor bleeding</td><td>&lt; 50,000</td><td>Higher bleeding risk</td></tr>\n<tr><td>Pre/post major surgery or LP</td><td>&lt; 50,000</td><td>Procedural risk</td></tr>\n<tr><td>Active major hemorrhage / DIC</td><td>&lt; 100,000</td><td>Active consumption</td></tr>\n<tr><td>NAIT with ICH risk</td><td>&lt; 30,000</td><td>HPA-matched + IVIG</td></tr>\n<tr><td>Pre/post neurosurgery</td><td>&lt; 100,000</td><td>Intracranial risk</td></tr>\n</tbody></table>\n<p><strong>Dose:</strong> 10–15 mL/kg over 15–30 min (NOT slowly). Expected rise: 50–100K. Irradiated, leukoreduced. ABO-compatible preferred.</p>"
+              }
+            }
+          ],
+          "children": [
+            {
+              "label": "< 72h",
+              "node": {
+                "id": "neonatal_hematology-early-onset-72h-16",
+                "label": "Early-Onset (< 72h)",
+                "type": "decision",
+                "description": "Placental insufficiency, NAIT, TORCH",
+                "panels": [
+                  {
+                    "label": "Differential",
+                    "type": "html",
+                    "content": {
+                      "html": "<table class=\"dt\"><thead><tr><th>Consider</th><th>If Context Shows</th><th>Count</th><th>Next Step</th></tr></thead><tbody>\n<tr><td>Placental insufficiency</td><td>IUGR, SGA, preeclampsia</td><td>50–100K</td><td>Monitor; resolves day 7–10</td></tr>\n<tr><td>NAIT</td><td>Term, well, severe, NORMAL maternal plts</td><td>&lt;20K</td><td>Cranial US; HPA typing; IVIG</td></tr>\n<tr><td>Maternal ITP</td><td>Known ITP; LOW maternal plts</td><td>>50K usually</td><td>Monitor; IVIG if &lt;20K</td></tr>\n<tr><td>TORCH</td><td>HSM, SGA, rash, abnormal LFTs</td><td>Variable</td><td>TORCH screen; CMV urine PCR</td></tr>\n<tr><td>Chromosomal</td><td>Dysmorphic features</td><td>Variable</td><td>Karyotype/microarray</td></tr>\n</tbody></table>"
+                    }
+                  },
+                  {
+                    "label": "NAIT vs ITP",
+                    "type": "html",
+                    "content": {
+                      "html": "<table class=\"dt\"><thead><tr><th>Feature</th><th>NAIT</th><th>Maternal ITP</th></tr></thead><tbody>\n<tr><td>Mechanism</td><td>Anti-HPA antibodies (anti-HPA-1a 80%)</td><td>Autoantibodies against BOTH maternal + fetal plts</td></tr>\n<tr><td>Maternal plts</td><td><strong>NORMAL</strong></td><td><strong>LOW</strong></td></tr>\n<tr><td>Severity</td><td>Often SEVERE (&lt;20K)</td><td>Usually mild (>50K)</td></tr>\n<tr><td>First pregnancy</td><td><strong>YES</strong></td><td>Yes (if active ITP)</td></tr>\n<tr><td>ICH risk</td><td><strong>10–20%</strong></td><td>&lt;1%</td></tr>\n<tr><td>Treatment</td><td>HPA-matched plts + IVIG 1 g/kg</td><td>IVIG if &lt;20K; steroids for mother</td></tr>\n</tbody></table>\n<div class=\"bx br\">🚨 <strong>KEY:</strong> Maternal plts NORMAL + baby severely thrombocytopenic = NAIT until proven otherwise.</div>"
+                    }
+                  },
+                  {
+                    "label": "Workup Algorithm",
+                    "type": "html",
+                    "content": {
+                      "html": "<ol class=\"sl\">\n<li><strong>Check maternal platelet count</strong> (most important first step)</li>\n<li>Maternal plts NORMAL + neonatal &lt;50K → suspect NAIT → urgent cranial US → HPA typing → IVIG 1 g/kg</li>\n<li>Maternal plts LOW → suspect ITP → monitor → IVIG if &lt;20K</li>\n<li>IUGR/SGA + preeclampsia → likely placental insufficiency → resolves 7–10d</li>\n<li>HSM + SGA + rash → TORCH screen → CMV urine PCR within 21 days</li>\n<li>Dysmorphic → chromosomal studies</li>\n</ol>"
+                    }
+                  }
+                ],
+                "children": [
+                  {
+                    "label": "Maternal\nplts NORMAL",
+                    "node": {
+                      "id": "neonatal_hematology-nait-17",
+                      "label": "NAIT",
+                      "type": "emergency",
+                      "description": "Plt <20K · Normal maternal plts · ICH 10–20%",
+                      "panels": [
+                        {
+                          "label": "Emergency Protocol",
+                          "type": "html",
+                          "content": {
+                            "html": "<ol class=\"sl\">\n<li><strong>URGENT cranial US</strong> — ICH in 10–20%</li>\n<li><strong>Contact blood bank</strong> for HPA-1a-neg plts. If unavailable (24–48h), transfuse random donor plts as bridge.</li>\n<li><strong>IVIG 1 g/kg IV</strong> over 4–6h. May repeat in 24h.</li>\n<li><strong>Recheck plts q12h</strong> until stable and rising.</li>\n<li><strong>HPA genotyping:</strong> maternal, paternal, infant blood + maternal anti-HPA antibodies.</li>\n<li><strong>Hematology consult</strong></li>\n<li>If ICH: neurosurgery, target plt >100K, neuroprotection.</li>\n</ol>"
+                          }
+                        },
+                        {
+                          "label": "HPA System",
+                          "type": "html",
+                          "content": {
+                            "html": "<table class=\"rt\"><thead><tr><th>Antigen</th><th>Frequency</th><th>Severity</th></tr></thead><tbody>\n<tr><td>HPA-1a</td><td>~80% Caucasian NAIT</td><td>Often severe; high ICH risk</td></tr>\n<tr><td>HPA-5b</td><td>~10–15%</td><td>Usually milder</td></tr>\n<tr><td>HPA-1b</td><td>~5%</td><td>Variable</td></tr>\n</tbody></table>\n<p>~2% of Caucasians are HPA-1a negative. When HPA-1a-neg mother carries HPA-1a-pos fetus, ~10% chance of sensitization; ~30% of sensitized have affected infant.</p>"
+                          }
+                        },
+                        {
+                          "label": "Future Pregnancies",
+                          "type": "html",
+                          "content": {
+                            "html": "<ul><li>Recurrence: 80–90% if father homozygous; 50% if heterozygous</li>\n<li>Severity equal or WORSE in subsequent pregnancies</li>\n<li>Prenatal: maternal IVIG ± steroids from 20–28 wk; serial monitoring; planned delivery 36–37 wk; HPA-1a-neg plts at delivery</li>\n<li>Paternal HPA genotyping guides risk</li>\n<li>MFM + hematology referral for planning</li></ul>"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "label": "IUGR /\npreeclampsia",
+                    "node": {
+                      "id": "neonatal_hematology-placental-insufficiency-18",
+                      "label": "Placental Insufficiency",
+                      "type": "action",
+                      "description": "IUGR/preeclampsia · Resolves day 7–10",
+                      "panels": [
+                        {
+                          "label": "Management",
+                          "type": "html",
+                          "content": {
+                            "html": "<ul><li>Most common cause (~75% of early cases)</li>\n<li>Mechanism: reduced placental thrombopoietin + ↓ megakaryocyte production</li>\n<li>Typical nadir: 50–100K; rarely &lt;50K</li>\n<li>Spontaneous recovery by day 7–10</li>\n<li>Transfusion rarely needed (plts usually stay >25K)</li></ul>"
+                          }
+                        },
+                        {
+                          "label": "Course",
+                          "type": "html",
+                          "content": {
+                            "html": "<ul><li>Daily plt count until trending up (usually day 5–7)</li>\n<li>If drops &lt;50K unexpectedly → reconsider diagnosis (NAIT? Infection?)</li>\n<li>If drops &lt;25K stable → transfuse per PlaNet-2</li>\n<li>Full recovery: plt normalizes day 10–14</li></ul>"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "> 72h",
+              "node": {
+                "id": "neonatal_hematology-late-onset-72h-19",
+                "label": "Late-Onset (> 72h)",
+                "type": "urgent",
+                "description": "Sepsis/NEC most common cause",
+                "panels": [
+                  {
+                    "label": "Differential",
+                    "type": "html",
+                    "content": {
+                      "html": "<ul><li><strong>Bacterial sepsis:</strong> #1 cause. Both Gram-pos and Gram-neg. Consumption + marrow suppression + DIC.</li>\n<li><strong>NEC:</strong> Falling plts may PRECEDE clinical NEC by 24–48h.</li>\n<li><strong>Fungal:</strong> Candida. Prolonged Abx + central lines + TPN + extreme prematurity.</li>\n<li><strong>DIC:</strong> ↑PT + ↑aPTT + ↓fib + ↑D-dimer.</li>\n<li><strong>Drug-induced:</strong> Heparin (HIT rare), indomethacin, vancomycin.</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "Sepsis Workup",
+                    "type": "html",
+                    "content": {
+                      "html": "<ol class=\"sl\">\n<li><strong>Blood culture</strong> (peripheral ± central line)</li>\n<li><strong>CBC with diff</strong> — I:T ratio, ANC</li>\n<li><strong>CRP and/or procalcitonin</strong> (PCT rises earlier: 2–4h vs CRP 6–12h)</li>\n<li><strong>UA + UCx</strong> (catheterized)</li>\n<li><strong>CSF</strong> if warranted and infant stable</li>\n<li><strong>DIC panel:</strong> PT, aPTT, fibrinogen, D-dimer</li>\n<li><strong>Start empiric Abx:</strong> vancomycin + aminoglycoside (or pip-tazo/meropenem per local antibiogram)</li>\n<li>Consider empiric antifungal if risk factors present</li>\n</ol>"
+                    }
+                  },
+                  {
+                    "label": "NEC Warning",
+                    "type": "html",
+                    "content": {
+                      "html": "<div class=\"bx bo\">⚠️ <strong>Falling plts + abdominal distension + metabolic acidosis in preterm = NEC until proven otherwise.</strong> Stat abdominal radiograph. NPO, OG to suction, IV antibiotics.</div>\n<p>Bell Stage II+ NEC is almost always accompanied by thrombocytopenia. Platelet trajectory can guide clinical decision-making: a suddenly dropping plt count is an early warning sign.</p>"
+                    }
+                  }
+                ],
+                "children": [
+                  {
+                    "label": "Evaluate",
+                    "node": {
+                      "id": "neonatal_hematology-sepsis-nec-workup-treat-20",
+                      "label": "Sepsis / NEC Workup & Treat",
+                      "type": "action",
+                      "description": "Cultures · Antibiotics · Serial plts",
+                      "panels": [
+                        {
+                          "label": "Antibiotics",
+                          "type": "html",
+                          "content": {
+                            "html": "<table class=\"rt\"><thead><tr><th>Regimen</th><th>Coverage</th><th>When</th></tr></thead><tbody>\n<tr><td>Vanc + Gent</td><td>MRSA, CoNS + Gram-neg</td><td>Standard first-line late-onset</td></tr>\n<tr><td>Vanc + Cefepime</td><td>+ Pseudomonas</td><td>Resistant Gram-neg concern</td></tr>\n<tr><td>Meropenem ± Vanc</td><td>Broadest + ESBL</td><td>Fulminant sepsis</td></tr>\n<tr><td>+ Fluconazole/AmphoB</td><td>Candida</td><td>Extreme preterm + lines + Abx</td></tr>\n</tbody></table>"
+                          }
+                        },
+                        {
+                          "label": "Platelet Mgmt",
+                          "type": "html",
+                          "content": {
+                            "html": "<ul><li>Transfuse per PlaNet-2: &lt;25K stable, &lt;50K bleeding/critical</li>\n<li>Serial plts q12–24h until trending up</li>\n<li>Falling despite Abx → wrong coverage? Abscess? Fungal? Drug-induced? DIC?</li>\n<li>Rising plt count = one of earliest signs of clinical improvement</li></ul>"
+                          }
+                        },
+                        {
+                          "label": "DIC Evaluation",
+                          "type": "html",
+                          "content": {
+                            "html": "<ul><li>Plts + ↑PT/aPTT + bleeding from multiple sites → evaluate for DIC</li>\n<li>DIC = ↑PT + ↑aPTT + ↓fib (&lt;100) + ↑D-dimer + ↓plts + schistocytes</li>\n<li><strong>#1 TREAT THE CAUSE.</strong> Replace: FFP 10–15 mL/kg, cryo 5–10 mL/kg (fib &lt;100), plts</li></ul>"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Abnormal\ncoag",
+        "node": {
+          "id": "neonatal_hematology-coagulo-pathy-21",
+          "label": "COAGULO- PATHY",
+          "type": "decision",
+          "description": "Prolonged PT/aPTT or bleeding",
+          "panels": [
+            {
+              "label": "Normal Neonatal Coag",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"rt\"><thead><tr><th>Parameter</th><th>Term Neonate</th><th>Adult</th><th>Implication</th></tr></thead><tbody>\n<tr><td>Vit K factors (II,VII,IX,X)</td><td>~50% adult</td><td>100%</td><td>PT/aPTT physiologically prolonged</td></tr>\n<tr><td>Contact factors (XI,XII)</td><td>~30–50%</td><td>100%</td><td>aPTT can be very prolonged without bleeding</td></tr>\n<tr><td>Protein C</td><td>~30–40%</td><td>100%</td><td>Natural anticoagulant; low = prothrombotic</td></tr>\n<tr><td>VWF</td><td>150–200%</td><td>100%</td><td>Compensates for plt hyporesponsiveness</td></tr>\n<tr><td>Fibrinogen</td><td>150–400 mg/dL</td><td>200–400</td><td>Slightly lower; fetal fibrinogen = dysfunctional</td></tr>\n</tbody></table>\n<div class=\"bx bb\">ℹ️ Mild prolongation of PT (12–18s) and aPTT (25–70s) is NORMAL in neonates. Does NOT indicate a bleeding disorder.</div>"
+              }
+            },
+            {
+              "label": "Pattern Recognition",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"dt\"><thead><tr><th>PT</th><th>aPTT</th><th>Plts</th><th>Fib</th><th>Most Likely</th></tr></thead><tbody>\n<tr><td>↑</td><td>↑</td><td>↓</td><td>↓</td><td><strong>DIC</strong></td></tr>\n<tr><td>↑</td><td>↑</td><td>N</td><td>N</td><td><strong>VKDB</strong> or liver disease</td></tr>\n<tr><td>N</td><td>↑</td><td>N</td><td>N</td><td><strong>Hemophilia A or B</strong></td></tr>\n<tr><td>N</td><td>N</td><td>N</td><td>N</td><td><strong>Factor XIII def</strong> (normal screening!) or plt function disorder</td></tr>\n<tr><td>N</td><td>↑↑</td><td>N</td><td>N</td><td>Contact factor def (XII) — no bleeding risk</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Workup",
+              "type": "html",
+              "content": {
+                "html": "<ol class=\"sl\">\n<li><strong>Was vitamin K given?</strong> NO → presume VKDB → Vit K 1–2 mg IV + FFP if bleeding</li>\n<li><strong>Infant sick?</strong> (Sepsis, asphyxia, NEC) → DIC most likely → treat underlying cause</li>\n<li><strong>Use pattern table</strong> to narrow differential</li>\n<li><strong>Isolated ↑aPTT + bleeding after circumcision</strong> → factor VIII and IX levels → hemophilia</li>\n<li><strong>All tests normal but delayed umbilical stump bleeding (day 7–10)</strong> → factor XIII level</li>\n<li><strong>Mixing study:</strong> Prolonged aPTT corrects with normal plasma = factor deficiency; does NOT correct = inhibitor</li>\n</ol>"
+              }
+            },
+            {
+              "label": "Factor Replacement",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"rt\"><thead><tr><th>Product</th><th>Dose</th><th>Contains</th><th>Indication</th></tr></thead><tbody>\n<tr><td>FFP</td><td>10–15 mL/kg</td><td>All factors</td><td>↑PT/aPTT with bleeding; DIC</td></tr>\n<tr><td>Cryoprecipitate</td><td>5–10 mL/kg</td><td>Fibrinogen, VIII, XIII, VWF</td><td>Fib &lt;100; DIC</td></tr>\n<tr><td>Vitamin K1</td><td>1–2 mg IV/IM</td><td>Vit K (promotes II,VII,IX,X)</td><td>VKDB; takes 4–6h for effect</td></tr>\n<tr><td>Factor VIII conc</td><td>50 U/kg</td><td>Factor VIII</td><td>Hemophilia A</td></tr>\n<tr><td>Factor IX conc</td><td>100 U/kg</td><td>Factor IX</td><td>Hemophilia B</td></tr>\n<tr><td>Platelets</td><td>10–15 mL/kg</td><td>Platelets + plasma</td><td>Severe thrombocytopenia</td></tr>\n</tbody></table>"
+              }
+            }
+          ],
+          "children": [
+            {
+              "label": "No Vit K\nat birth",
+              "node": {
+                "id": "neonatal_hematology-vkdb-22",
+                "label": "VKDB",
+                "type": "emergency",
+                "description": "No vitamin K given · Bleeding",
+                "panels": [
+                  {
+                    "label": "Three Forms",
+                    "type": "html",
+                    "content": {
+                      "html": "<table class=\"dt\"><thead><tr><th>Type</th><th>Timing</th><th>Incidence</th><th>Presentation</th><th>Mortality</th></tr></thead><tbody>\n<tr><td><strong>Early</strong></td><td>0–24h</td><td>Rare</td><td>ICH, intrathoracic</td><td>Severe; maternal drugs</td></tr>\n<tr><td><strong>Classic</strong></td><td>Day 2–7</td><td>0.25–1.7%</td><td>Umbilical, GI, circumcision</td><td>Rarely fatal if treated</td></tr>\n<tr><td><strong>Late</strong></td><td>2–12 wk</td><td>4–7/100K</td><td><strong>50% present with ICH</strong></td><td><strong>20% mortality</strong></td></tr>\n</tbody></table>"
+                    }
+                  },
+                  {
+                    "label": "Emergency Treatment",
+                    "type": "html",
+                    "content": {
+                      "html": "<ol class=\"sl\">\n<li><strong>Vitamin K1 1–2 mg IV STAT</strong> (effect in 2–4h; full correction 12–24h)</li>\n<li><strong>FFP 10–15 mL/kg</strong> for active significant bleeding (immediate factor replacement)</li>\n<li>If ICH: emergent neurosurgery. Consider PCC (prothrombin complex concentrate) if available.</li>\n<li>Recheck PT/aPTT at 4–6 hours</li>\n<li>Supportive: monitor Hb (transfuse if anemic), neuro status, NPO if GI bleeding</li>\n</ol>"
+                    }
+                  },
+                  {
+                    "label": "Prevention",
+                    "type": "html",
+                    "content": {
+                      "html": "<div class=\"bx bg\">✓ <strong>IM vitamin K1 0.5–1 mg within 6 hours of birth for ALL newborns.</strong> Single injection prevents all three forms. AAP does NOT recommend oral vitamin K.</div>\n<p><strong>When parents refuse:</strong></p>\n<ul><li>Counsel clearly: late VKDB = 50% ICH, 20% mortality</li>\n<li>If still refuse IM: offer oral (2 mg PO at birth, 1 wk, 4 wk) — LESS effective</li>\n<li>Document discussion and refusal</li>\n<li>Flag chart for close follow-up</li></ul>"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "↑PT ↑aPTT\n↓Fib ↓Plts",
+              "node": {
+                "id": "neonatal_hematology-dic-23",
+                "label": "DIC",
+                "type": "emergency",
+                "description": "Sepsis/asphyxia/NEC trigger",
+                "panels": [
+                  {
+                    "label": "Pathophysiology",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>DIC paradox:</strong> Simultaneous THROMBOSIS (microthrombi → organ ischemia) AND HEMORRHAGE (factor/plt depletion → diffuse bleeding).</p>\n<p><strong>Triggers:</strong> Sepsis (#1), perinatal asphyxia/HIE, NEC, severe hemolytic disease, Kasabach-Merritt, hypothermia, MAS/PPHN.</p>\n<div class=\"bx br\">🚨 <strong>DIC is NEVER a primary diagnosis.</strong> Always identify and treat the trigger. Factor replacement without treating the cause is futile.</div>"
+                    }
+                  },
+                  {
+                    "label": "Diagnosis",
+                    "type": "html",
+                    "content": {
+                      "html": "<table class=\"rt\"><thead><tr><th>Test</th><th>DIC</th><th>Normal Neonate</th></tr></thead><tbody>\n<tr><td>PT</td><td>Prolonged (>18–20s)</td><td>12–18s</td></tr>\n<tr><td>aPTT</td><td>Prolonged (>70–80s)</td><td>25–70s</td></tr>\n<tr><td>Fibrinogen</td><td>&lt;100 mg/dL</td><td>150–400</td></tr>\n<tr><td>D-dimer</td><td>Markedly ↑</td><td>Elevated at birth (trend more useful)</td></tr>\n<tr><td>Platelets</td><td>Low and FALLING</td><td>150–400K</td></tr>\n<tr><td>Smear</td><td>Schistocytes</td><td>Occasional normal</td></tr>\n</tbody></table>"
+                    }
+                  },
+                  {
+                    "label": "Treatment",
+                    "type": "html",
+                    "content": {
+                      "html": "<ol class=\"sl\">\n<li><strong>#1 TREAT THE CAUSE:</strong> Sepsis → Abx. NEC → NPO/Abx/surgery. Asphyxia → supportive/TH.</li>\n<li><strong>Replace factors:</strong> FFP 10–15 mL/kg. Cryo 5–10 mL/kg (fib &lt;100). Plts 10–15 mL/kg.</li>\n<li><strong>Maintain perfusion:</strong> Volume, inotropes, adequate ventilation.</li>\n<li><strong>Monitor q4–6h:</strong> PT, aPTT, fib, plts, D-dimer.</li>\n<li><strong>Heparin:</strong> Generally NOT used in neonatal DIC. Exception: purpura fulminans (protein C/S deficiency).</li>\n</ol>"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "Isolated ↑aPTT\nor liver dz",
+              "node": {
+                "id": "neonatal_hematology-hemophilia-liver-factor-xiii-24",
+                "label": "Hemophilia / Liver / Factor XIII",
+                "type": "diagnosis",
+                "description": "Isolated factor deficiency or hepatic",
+                "panels": [
+                  {
+                    "label": "Hemophilia A & B",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Hemophilia A (factor VIII def):</strong> X-linked; 1/5,000 males. Presents with circumcision/heel stick bleeding. Isolated ↑aPTT, normal PT. Severe &lt;1%, moderate 1–5%, mild 5–40%. Treat: factor VIII concentrate 50 U/kg.</p>\n<p><strong>Hemophilia B (factor IX def):</strong> X-linked; 1/25,000. Clinically identical to A. Factor IX is vit K-dependent and normally low in neonates — confirm diagnosis at 3–6 months.</p>\n<div class=\"bx bo\">⚠️ Factor VIII reaches adult levels by 6 months gestation → hemophilia A CAN be diagnosed at birth. Factor IX is low normally → hemophilia B diagnosis unreliable until 3–6 months.</div>"
+                    }
+                  },
+                  {
+                    "label": "Factor XIII Deficiency",
+                    "type": "html",
+                    "content": {
+                      "html": "<ul><li>Normal PT AND aPTT — NOT measured by standard screening tests</li>\n<li>Classic: <strong>delayed umbilical stump bleeding</strong> (day 7–10)</li>\n<li>ICH in 30%</li>\n<li>Diagnosis: factor XIII activity level</li>\n<li>Treatment: factor XIII concentrate; prophylaxis q4–6 weeks</li></ul>\n<div class=\"bx bp\">🔬 <strong>All screening tests normal + bleeding = think factor XIII.</strong> The one factor NOT measured by PT or aPTT.</div>"
+                    }
+                  },
+                  {
+                    "label": "Liver Disease",
+                    "type": "html",
+                    "content": {
+                      "html": "<ul><li>Liver synthesizes virtually all clotting factors except VIII and VWF</li>\n<li>Causes: neonatal hemochromatosis, herpes hepatitis, metabolic (galactosemia, tyrosinemia), biliary atresia, hepatic ischemia</li>\n<li>Pattern: BOTH PT and aPTT prolonged + low albumin + elevated direct bili + elevated transaminases</li>\n<li>Distinguished from DIC by less prominent D-dimer/schistocytes (unless concurrent DIC)</li>\n<li>Management: vitamin K 1 mg IV, FFP for active bleeding, treat underlying liver disease</li></ul>"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "WBC\ndifferential",
+        "node": {
+          "id": "neonatal_hematology-neutrophil-abnormalities-25",
+          "label": "NEUTROPHIL ABNORMALITIES",
+          "type": "decision",
+          "description": "ANC abnormal on differential",
+          "panels": [
+            {
+              "label": "Normal Neonatal WBC",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"rt\"><thead><tr><th>Parameter</th><th>Birth (term)</th><th>12–24h</th><th>1 week</th></tr></thead><tbody>\n<tr><td>Total WBC</td><td>9–30K</td><td>Peaks (30K+)</td><td>5–15K</td></tr>\n<tr><td>ANC</td><td>6–26K</td><td>Peaks 12–24h</td><td>1–5K</td></tr>\n<tr><td>I:T ratio</td><td>&lt;0.2</td><td>&lt;0.2</td><td>&lt;0.12</td></tr>\n<tr><td>Lymphocytes</td><td>2–11K</td><td>—</td><td>Predominant by day 5–7</td></tr>\n</tbody></table>\n<p><em>Normal ranges are WIDE and vary by GA and postnatal age. Use Schmutz/Manroe reference charts.</em></p>"
+              }
+            },
+            {
+              "label": "Neutropenia",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"dt\"><thead><tr><th>Status</th><th>Most Likely</th><th>Mechanism</th><th>Action</th></tr></thead><tbody>\n<tr><td><strong>SICK</strong></td><td>Sepsis</td><td>Marrow exhaustion</td><td>Cultures + Abx IMMEDIATELY</td></tr>\n<tr><td><strong>WELL preterm</strong></td><td>Maternal HTN</td><td>↓ placental G-CSF</td><td>Monitor; resolves 3–5 days</td></tr>\n<tr><td><strong>WELL term</strong></td><td>Alloimmune</td><td>Maternal anti-neutrophil Ab</td><td>Self-limited (weeks)</td></tr>\n<tr><td><strong>Persistent</strong></td><td>Congenital (Kostmann, cyclic)</td><td>Genetic</td><td>G-CSF; hematology</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Neutrophilia/Left Shift",
+              "type": "html",
+              "content": {
+                "html": "<ul><li><strong>Physiologic neutrophilia:</strong> Normal in first 24–48h (labor stress, maternal steroids). NOT infection.</li>\n<li><strong>I:T ratio >0.2:</strong> Sensitivity ~80% but specificity only ~30%. Many false positives.</li>\n<li><strong>Best approach:</strong> Combine WBC/ANC/I:T with clinical signs + CRP/PCT + blood culture</li>\n<li><strong>Leukemoid reaction (WBC >50K):</strong> Severe infection, TAM (T21), or congenital leukemia → smear for blasts</li></ul>"
+              }
+            },
+            {
+              "label": "Workup",
+              "type": "html",
+              "content": {
+                "html": "<ol class=\"sl\">\n<li><strong>Correlate with clinical status:</strong> Sick + neutropenic = sepsis. Well + neutropenic = benign cause.</li>\n<li><strong>Blood culture</strong></li>\n<li><strong>CRP</strong> (serial at 24–48h; sensitivity improves with repeat). <strong>PCT</strong> (rises earlier; physiologic peak at 24h limits day-1 utility)</li>\n<li><strong>Serial CBC q12–24h</strong> — trend more informative than single value</li>\n<li>If blasts on smear → urgent hematology → flow cytometry</li>\n<li>If persistent neutropenia in well infant → anti-neutrophil Ab, maternal HTN history, genetics if >2 weeks</li>\n</ol>"
+              }
+            }
+          ],
+          "children": [
+            {
+              "label": "ANC < 1K",
+              "node": {
+                "id": "neonatal_hematology-neutropenia-anc-1-000-26",
+                "label": "Neutropenia (ANC < 1,000)",
+                "type": "urgent",
+                "description": "Sepsis vs maternal HTN vs alloimmune",
+                "panels": [
+                  {
+                    "label": "Sick vs Well Algorithm",
+                    "type": "html",
+                    "content": {
+                      "html": "<ol class=\"sl\">\n<li><strong>SICK?</strong> → Presume sepsis. Blood cx + empiric Abx immediately.</li>\n<li><strong>WELL preterm + maternal preeclampsia/HTN?</strong> → Placental insufficiency. Monitor ANC daily. Resolves 3–5 days.</li>\n<li><strong>WELL term + isolated neutropenia?</strong> → Consider alloimmune (maternal anti-neutrophil Ab). Self-limited.</li>\n<li><strong>Persistent >2 wk or ANC &lt;200?</strong> → Congenital (Kostmann, cyclic, Shwachman-Diamond). Hematology referral.</li>\n</ol>"
+                    }
+                  },
+                  {
+                    "label": "G-CSF",
+                    "type": "html",
+                    "content": {
+                      "html": "<ul><li>G-CSF did NOT consistently reduce mortality in sepsis-associated neutropenia (Cochrane review)</li>\n<li>NOT routinely recommended for sepsis</li>\n<li>IS indicated for congenital neutropenia (chronic ANC &lt;200)</li>\n<li>Dose: 5–10 µg/kg/day SC or IV</li></ul>"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "ANC >20K\nor left shift",
+              "node": {
+                "id": "neonatal_hematology-neutrophilia-left-shift-27",
+                "label": "Neutrophilia / Left Shift",
+                "type": "action",
+                "description": "ANC >20K or I:T >0.2",
+                "panels": [
+                  {
+                    "label": "Interpretation",
+                    "type": "html",
+                    "content": {
+                      "html": "<ul><li>Elevated WBC alone does NOT diagnose infection</li>\n<li>I:T >0.2: sensitive (~80%) but poor specificity (~30%); many false positives</li>\n<li>Combine with clinical assessment + CRP/PCT + blood culture</li>\n<li>WBC >50K with blasts → leukemoid reaction vs TAM (T21) vs congenital leukemia → urgent smear/hematology</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "Benign Causes",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Common benign causes:</strong></p>\n<ul><li>Physiologic leukocytosis of birth (peaks 12–24h)</li>\n<li>Maternal betamethasone/dexamethasone (24–48h effect)</li>\n<li>Crying, stress, cold exposure (demargination)</li>\n<li>Post-seizure (transient)</li></ul>\n<p><strong>When NOT to treat:</strong> Well-appearing, afebrile neonate with elevated WBC at 12–24h, no risk factors, normal CRP → observe, do NOT start antibiotics based on WBC alone.</p>"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

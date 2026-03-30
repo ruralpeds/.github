@@ -1,0 +1,160 @@
+{
+  "id": "neonatal-cardiac-pda",
+  "title": "Neonatal Cardiac Assessment",
+  "subtitle": "CHD screening, PDA, ductal-dependent lesions, prostaglandin",
+  "version": "1.0",
+  "source": "",
+  "mode": "neonatal",
+  "root": {
+    "id": "neonatal_cardiac_pda-neonatal-cardiac-assessment-1",
+    "label": "Neonatal Cardiac Assessment",
+    "type": "assessment",
+    "description": "CHD screening, PDA, ductal-dependent lesions, prostaglandin",
+    "panels": [
+      {
+        "label": "Overview",
+        "type": "html",
+        "content": {
+          "html": "<p>Congenital heart disease (CHD) affects ~1% of live births (~40,000/year in US). Critical CHD (requiring surgery or catheter intervention in the first year) affects ~25% of those. Newborn screening with pulse oximetry detects many critical CHDs before clinical deterioration.</p>\n<p><strong>Key neonatal cardiac presentations:</strong></p>\n<ul><li>Cyanosis (central, not improving with O₂ = right-to-left shunt)</li>\n<li>Heart failure (tachypnea, hepatomegaly, poor feeding, failure to thrive)</li>\n<li>Shock / cardiovascular collapse (ductal-dependent lesion as PDA closes)</li>\n<li>Murmur (may or may not indicate significant disease)</li>\n<li>Pre/post-ductal SpO₂ difference</li></ul>"
+        }
+      },
+      {
+        "label": "Critical Pulse Ox Screening",
+        "type": "html",
+        "content": {
+          "html": "<p><strong>Critical Congenital Heart Disease (CCHD) Pulse Oximetry Screening:</strong></p>\n<ol class=\"sl\">\n<li><strong>Timing:</strong> After 24 hours of age (or before discharge if earlier). Both right hand (pre-ductal) AND either foot (post-ductal).</li>\n<li><strong>PASS:</strong> SpO₂ ≥95% in BOTH extremities AND ≤3% difference between them</li>\n<li><strong>FAIL:</strong> SpO₂ &lt;90% in either extremity → immediate evaluation</li>\n<li><strong>REPEAT:</strong> SpO₂ 90–94% in either, OR >3% difference → repeat in 1 hour × up to 3 attempts. If still failing → evaluate.</li>\n</ol>\n<p><strong>CCHD targets detected:</strong> HLHS, pulmonary atresia, TOF, TAPVR, TGA, tricuspid atresia, truncus arteriosus. Sensitivity ~75–80%. Does NOT reliably detect coarctation, ASD, VSD.</p>\n<div class=\"bx bo\">⚠️ <strong>Pulse ox screening does NOT detect ALL CHD.</strong> Normal screening does NOT rule out significant heart disease. Clinical assessment remains essential. Coarctation is the most commonly missed critical CHD by pulse ox.</div>"
+        }
+      },
+      {
+        "label": "When to Suspect CHD",
+        "type": "html",
+        "content": {
+          "html": "<p><strong>Clinical signs suggesting CHD in a neonate:</strong></p>\n<ul><li>Central cyanosis NOT improving with supplemental O₂ (hyperoxia test: PaO₂ remains &lt;150 mmHg on 100% FiO₂ = intracardiac shunt)</li>\n<li>Shock or cardiovascular collapse at 2–7 days of life (as PDA closes → ductal-dependent lesion unmasked)</li>\n<li>Tachypnea WITHOUT significant respiratory distress (\"happy tachypnea\" = left-to-right shunt or TAPVR)</li>\n<li>Absent or weak femoral pulses (coarctation)</li>\n<li>Hepatomegaly (right heart failure)</li>\n<li>Single loud S2 (suggests univentricular physiology or pulmonary hypertension)</li>\n<li>Pre/post-ductal SpO₂ gradient >3% (right-to-left ductal shunting)</li></ul>"
+        }
+      }
+    ],
+    "children": [
+      {
+        "label": "Preterm +\necho-confirmed\nPDA",
+        "node": {
+          "id": "neonatal_cardiac_pda-pda-management-2",
+          "label": "PDA Management",
+          "type": "decision",
+          "description": "Ibuprofen vs acetaminophen vs conservative",
+          "panels": [
+            {
+              "label": "Hemodynamic Significance",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Hemodynamically significant PDA (hsPDA) criteria:</strong></p>\n<ul><li>PDA diameter >1.5 mm/kg on echo</li>\n<li>LA:Ao ratio >1.5 (left atrial enlargement from volume overload)</li>\n<li>Diastolic flow reversal in descending aorta</li>\n<li>Clinical signs: widened pulse pressure, bounding pulses, hypotension (low diastolic), increased ventilatory support, pulmonary edema, feeding intolerance</li></ul>\n<div class=\"bx bb\">ℹ️ <strong>Not all PDAs need treatment.</strong> There is growing evidence that many PDAs in preterm infants close spontaneously. The trend is toward conservative management with selective treatment of hsPDA causing clinical deterioration.</div>"
+              }
+            },
+            {
+              "label": "Treatment Options",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"rt\"><thead><tr><th>Agent</th><th>Dose</th><th>Efficacy</th><th>Side Effects</th></tr></thead><tbody>\n<tr><td><strong>Ibuprofen (IV)</strong></td><td>10 mg/kg, then 5 mg/kg × 2 doses q24h</td><td>~70–80% closure</td><td>Renal impairment, GI perforation (especially with steroids), platelet dysfunction</td></tr>\n<tr><td><strong>Ibuprofen (PO)</strong></td><td>10 mg/kg, then 5 mg/kg × 2 doses q24h</td><td>Equal or superior to IV</td><td>Same but possibly less renal toxicity</td></tr>\n<tr><td><strong>Acetaminophen (IV/PO)</strong></td><td>15 mg/kg q6h × 3–7 days</td><td>~60–70% closure</td><td>Fewer renal/GI effects. Hepatotoxicity rare at standard doses. Growing evidence base.</td></tr>\n<tr><td><strong>Indomethacin (IV)</strong></td><td>0.2 mg/kg, then 0.1–0.25 mg/kg × 2 q12–24h</td><td>~70% closure</td><td>More renal toxicity than ibuprofen. Reduced cerebral blood flow. Less used now.</td></tr>\n</tbody></table>\n<p><strong>Surgical/catheter ligation:</strong> Reserved for medical treatment failure with persistent hemodynamic compromise. Transcatheter closure increasingly available for larger preterm infants.</p>"
+              }
+            },
+            {
+              "label": "Conservative Approach",
+              "type": "html",
+              "content": {
+                "html": ""
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Cyanosis or\nshock at\n2–7 days",
+        "node": {
+          "id": "neonatal_cardiac_pda-ductal-dependent-lesions-3",
+          "label": "Ductal-Dependent Lesions",
+          "type": "emergency",
+          "description": "Prostaglandin E1 · Do NOT let PDA close",
+          "panels": [
+            {
+              "label": "Types",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Ductal-dependent lesions:</strong> CHDs that require an open PDA to maintain either pulmonary blood flow (cyanotic) or systemic blood flow.</p>\n<table class=\"dt\"><thead><tr><th>Type</th><th>Depends on PDA For</th><th>Examples</th><th>Presentation</th></tr></thead><tbody>\n<tr><td><strong>Ductal-dependent pulmonary</strong></td><td>Pulmonary blood flow (R→L through PDA to lungs)</td><td>Critical PS, pulmonary atresia, severe TOF, tricuspid atresia</td><td>Cyanosis, low SpO₂ that WORSENS as PDA closes (day 2–7)</td></tr>\n<tr><td><strong>Ductal-dependent systemic</strong></td><td>Systemic blood flow (L→R through PDA to aorta)</td><td>HLHS, critical coarctation, interrupted aortic arch, critical AS</td><td>Shock, absent femoral pulses, metabolic acidosis, gray/mottled as PDA closes</td></tr>\n<tr><td><strong>Ductal-dependent mixing</strong></td><td>Mixing of oxygenated and deoxygenated blood</td><td>TGA (d-TGA without VSD)</td><td>Severe cyanosis; may need balloon atrial septostomy (Rashkind)</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Prostaglandin Protocol",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Prostaglandin E1 (Alprostadil) Protocol:</strong></p>\n<table class=\"rt\"><thead><tr><th>Parameter</th><th>Protocol</th></tr></thead><tbody>\n<tr><td>Starting dose</td><td>0.05–0.1 µg/kg/min IV continuous infusion</td></tr>\n<tr><td>Maintenance (once PDA open)</td><td>Wean to 0.01–0.03 µg/kg/min (lowest effective dose)</td></tr>\n<tr><td>Response time</td><td>Minutes to hours for cyanotic lesions; may take longer for coarctation</td></tr>\n<tr><td>Route</td><td>Peripheral IV acceptable initially; central line preferred for transport</td></tr>\n</tbody></table>\n<div class=\"bx br\">🚨 <strong>PGE1 side effect: APNEA.</strong> Occurs in 10–20% of neonates, especially &lt;2 kg. Have intubation equipment at bedside. Many centers electively intubate before transport on PGE1.</div>\n<p><strong>Other side effects:</strong> Fever (common, not necessarily infection), hypotension (vasodilation), flushing, jitteriness, diarrhea. Long-term: cortical hyperostosis (>4 weeks of use).</p>"
+              }
+            },
+            {
+              "label": "Stabilization",
+              "type": "html",
+              "content": {
+                "html": "<ol class=\"sl\">\n<li><strong>START PGE1 immediately</strong> if ductal-dependent lesion suspected (do NOT wait for echo confirmation if clinical picture is suggestive)</li>\n<li><strong>Intubation equipment at bedside</strong> (apnea risk). Consider elective intubation for transport.</li>\n<li><strong>IV access ×2</strong> — one dedicated for PGE1 infusion</li>\n<li><strong>Avoid supplemental O₂ in excess</strong> — high FiO₂ promotes PDA closure (the opposite of what you want)</li>\n<li><strong>Echocardiogram</strong> — confirm anatomy. If not available locally, describe findings to pediatric cardiology by phone.</li>\n<li><strong>EMERGENT transfer to pediatric cardiac center</strong></li>\n<li><strong>Monitor:</strong> SpO₂ (pre and post-ductal), BP (4-limb if coarctation suspected), blood gas, lactate</li>\n</ol>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Routine\nnewborn\nscreening",
+        "node": {
+          "id": "neonatal_cardiac_pda-cchd-pulse-ox-screening-4",
+          "label": "CCHD Pulse Ox Screening",
+          "type": "action",
+          "description": "≥24h age · Right hand + foot · ≥95%",
+          "panels": [
+            {
+              "label": "Protocol",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>CCHD Screening Protocol (AAP/AHA):</strong></p>\n<ol class=\"sl\">\n<li>Perform at ≥24 hours of age (or before discharge if earlier)</li>\n<li>Measure SpO₂ on right hand (pre-ductal) AND either foot (post-ductal) simultaneously or sequentially</li>\n<li>Use motion-tolerant pulse oximeter with neonatal probe</li>\n<li>Record both values and calculate difference</li>\n</ol>\n<table class=\"rt\"><thead><tr><th>Result</th><th>Criteria</th><th>Action</th></tr></thead><tbody>\n<tr><td>✅ PASS</td><td>≥95% in both AND ≤3% difference</td><td>Routine care. Screen complete.</td></tr>\n<tr><td>🔄 REPEAT</td><td>90–94% in either OR >3% difference</td><td>Repeat in 1 hour. Up to 3 total attempts.</td></tr>\n<tr><td>❌ FAIL</td><td>&lt;90% in either extremity at any time, OR 3 consecutive repeats in 90–94% range / >3% difference</td><td>Immediate evaluation (see below)</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Failed Screen Algorithm",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Failed CCHD screen evaluation:</strong></p>\n<ol class=\"sl\">\n<li><strong>Clinical assessment:</strong> Respiratory distress? Murmur? Femoral pulses? Color? Perfusion?</li>\n<li><strong>Echocardiogram</strong> — urgent</li>\n<li><strong>CXR</strong> — heart size, pulmonary vascularity, lung fields</li>\n<li><strong>4-extremity BP</strong> — gradient >20 mmHg upper vs lower = coarctation</li>\n<li><strong>Hyperoxia test:</strong> Place on 100% FiO₂ for 10 min → obtain ABG. PaO₂ &lt;150 mmHg = likely intracardiac shunt (CHD). PaO₂ >200 mmHg = likely pulmonary disease.</li>\n<li><strong>If CHD confirmed:</strong> pediatric cardiology consultation, PGE1 if ductal-dependent lesion, transfer to cardiac center</li>\n</ol>\n<div class=\"bx bb\">ℹ️ <strong>Most common cause of failed CCHD screen = transition physiology or pulmonary disease, NOT CHD.</strong> But EVERY failed screen requires evaluation. Do not dismiss based on \"the baby looks fine.\"</div>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Abnormal\nheart rate\nor rhythm",
+        "node": {
+          "id": "neonatal_cardiac_pda-neonatal-arrhythmias-5",
+          "label": "Neonatal Arrhythmias",
+          "type": "urgent",
+          "description": "SVT most common · Adenosine · Vagal maneuvers",
+          "panels": [
+            {
+              "label": "SVT",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Supraventricular Tachycardia (SVT):</strong> Most common neonatal arrhythmia. HR typically 220–300 bpm (regular, narrow complex). May present as heart failure if sustained.</p>\n<p><strong>Treatment:</strong></p>\n<ol class=\"sl\">\n<li><strong>Vagal maneuvers:</strong> Ice bag to face (diving reflex) × 15–20 sec. Do NOT use carotid massage or ocular pressure in neonates.</li>\n<li><strong>Adenosine:</strong> 0.1 mg/kg rapid IV push (followed by rapid NS flush). Increase by 0.05 mg/kg increments to max 0.3 mg/kg. Use the most proximal IV site. Record rhythm strip during administration.</li>\n<li><strong>If unstable (shock/heart failure):</strong> Synchronized cardioversion 0.5–1 J/kg → 2 J/kg if first attempt fails.</li>\n<li><strong>Maintenance:</strong> Propranolol 1–2 mg/kg/day PO divided TID, or flecainide, or amiodarone for recurrent SVT.</li>\n</ol>"
+              }
+            },
+            {
+              "label": "Bradycardia",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Neonatal bradycardia:</strong></p>\n<ul><li>Sinus bradycardia: HR &lt;80–100 bpm. Causes: hypothermia, hypoxia, vagal (suctioning, NG placement), medications (maternal β-blockers), raised ICP, hypothyroidism.</li>\n<li>Treatment: treat the underlying cause. Atropine 0.02 mg/kg IV for symptomatic bradycardia. Epinephrine if unstable.</li></ul>"
+              }
+            },
+            {
+              "label": "Heart Block",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Congenital Complete Heart Block (CCHB):</strong></p>\n<ul><li>Ventricular rate 40–80 bpm with AV dissociation</li>\n<li><strong>Causes:</strong> Maternal anti-SSA/Ro or anti-SSB/La antibodies (neonatal lupus) in ~60%. Structural CHD (L-TGA, AV canal defects) in ~40%.</li>\n<li>Neonatal lupus: may also have characteristic annular skin rash, hepatitis, cytopenias. Heart block is permanent; other manifestations are transient.</li>\n<li><strong>Management:</strong> If hemodynamically stable: monitor, may tolerate. If symptomatic (HR &lt;55, heart failure, hydrops): isoproterenol infusion → temporary pacing → permanent pacemaker (epicardial).</li>\n<li><strong>All pregnant women with anti-SSA/Ro antibodies:</strong> serial fetal echo starting at 16 weeks for early detection.</li></ul>"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

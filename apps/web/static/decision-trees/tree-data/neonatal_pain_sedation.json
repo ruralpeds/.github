@@ -1,0 +1,121 @@
+{
+  "id": "neonatal-pain-sedation",
+  "title": "Neonatal Pain & Sedation",
+  "subtitle": "NPASS scoring, non-pharm first, opioid/sedation protocols",
+  "version": "1.0",
+  "source": "",
+  "mode": "neonatal",
+  "root": {
+    "id": "neonatal_pain_sedation-neonatal-pain-sedation-1",
+    "label": "Neonatal Pain & Sedation",
+    "type": "assessment",
+    "description": "NPASS scoring, non-pharm first, opioid/sedation protocols",
+    "panels": [
+      {
+        "label": "Pain Assessment",
+        "type": "html",
+        "content": {
+          "html": "<p>Neonates DO experience pain — their neurologic pathways for pain transmission are functional by 20 weeks gestation. Untreated pain causes physiologic stress (↑ HR, ↑ BP, ↑ cortisol, ↑ catecholamines), altered brain development, and increased mortality in critically ill neonates.</p>\n<p><strong>Pain assessment tools:</strong></p>\n<table class=\"dt\"><thead><tr><th>Tool</th><th>Population</th><th>Measures</th></tr></thead><tbody>\n<tr><td><strong>NPASS</strong> (Neonatal Pain, Agitation & Sedation Scale)</td><td>All neonates including preterm</td><td>Crying/irritability, behavior/state, facial expression, extremity tone, vital signs. Score 0–10 for pain, 0 to -10 for sedation.</td></tr>\n<tr><td><strong>PIPP-R</strong> (Premature Infant Pain Profile-Revised)</td><td>Preterm and term</td><td>GA correction, behavioral state, HR, SpO₂, brow bulge, eye squeeze, nasolabial furrow</td></tr>\n<tr><td><strong>NIPS</strong> (Neonatal Infant Pain Scale)</td><td>Preterm and term</td><td>Facial expression, cry, breathing pattern, arms, legs, state of arousal</td></tr>\n<tr><td><strong>CRIES</strong></td><td>Postoperative neonates</td><td>Crying, Requires O₂, Increased vitals, Expression, Sleeplessness</td></tr>\n</tbody></table>"
+        }
+      },
+      {
+        "label": "Non-Pharmacologic",
+        "type": "html",
+        "content": {
+          "html": "<p><strong>Non-pharmacologic interventions (ALWAYS first-line):</strong></p>\n<ul><li><strong>Sucrose/glucose 24%:</strong> 0.1–0.5 mL on anterior tongue 2 min before painful procedure. Most studied non-pharm intervention. Reduces pain scores for heel sticks, venipuncture, IV insertion. Less effective for prolonged pain.</li>\n<li><strong>Non-nutritive sucking:</strong> Pacifier during/after procedure. Synergistic with sucrose.</li>\n<li><strong>Skin-to-skin (kangaroo care):</strong> Reduces pain response to heel sticks. Begin 15 min before procedure.</li>\n<li><strong>Swaddling / facilitated tucking:</strong> Containment reduces physiologic stress response.</li>\n<li><strong>Breastfeeding:</strong> During minor procedures — combines sucrose, sucking, skin-to-skin, and maternal comfort.</li></ul>\n<div class=\"bx bg\">✓ <strong>Sucrose 24% + non-nutritive sucking + swaddling</strong> is the evidence-based standard for minor procedural pain in all NICUs. Use for EVERY heel stick, venipuncture, and line placement.</div>"
+        }
+      },
+      {
+        "label": "Pharmacologic Overview",
+        "type": "html",
+        "content": {
+          "html": "<table class=\"rt\"><thead><tr><th>Agent</th><th>Indication</th><th>Dose</th><th>Key Considerations</th></tr></thead><tbody>\n<tr><td><strong>Morphine</strong></td><td>Moderate-severe pain, post-op, ventilated</td><td>0.05–0.1 mg/kg IV q4h PRN or 10–20 µg/kg/hr infusion</td><td>Respiratory depression, hypotension, ileus, urinary retention. Slow onset (5–10 min).</td></tr>\n<tr><td><strong>Fentanyl</strong></td><td>Severe pain, intubation, rapid onset needed</td><td>1–2 µg/kg IV q2–4h PRN or 1–3 µg/kg/hr infusion</td><td>Chest wall rigidity at high doses/rapid push. Faster onset than morphine. Less hypotension.</td></tr>\n<tr><td><strong>Acetaminophen</strong></td><td>Mild-moderate pain, post-op adjunct</td><td>10–15 mg/kg PO/PR q6–8h (max 60 mg/kg/day term)</td><td>No respiratory depression. Good adjunct to reduce opioid need. IV available (Ofirmev).</td></tr>\n<tr><td><strong>Midazolam</strong></td><td>Sedation, NOT analgesia (no pain relief)</td><td>0.05–0.1 mg/kg IV; 0.02–0.06 mg/kg/hr infusion</td><td>Anxiolysis/amnesia only. Hypotension. DOES NOT treat pain. Controversial in preterm (IVH concern from NOPAIN trial).</td></tr>\n<tr><td><strong>Dexmedetomidine</strong></td><td>Sedation + mild analgesia</td><td>0.2–0.5 µg/kg/hr infusion</td><td>α₂-agonist. Less respiratory depression. Bradycardia is main side effect. Increasingly used in NICU.</td></tr>\n</tbody></table>"
+        }
+      }
+    ],
+    "children": [
+      {
+        "label": "Heel stick,\nIV, LP, etc.",
+        "node": {
+          "id": "neonatal_pain_sedation-procedural-pain-management-2",
+          "label": "Procedural Pain Management",
+          "type": "action",
+          "description": "Sucrose + swaddling + NNS for minor procedures",
+          "panels": [
+            {
+              "label": "Minor Procedures",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Minor procedures (heel stick, venipuncture, IV start, NG/OG placement):</strong></p>\n<ol class=\"sl\">\n<li>Sucrose 24% 0.1–0.5 mL on tongue 2 min before procedure</li>\n<li>Non-nutritive sucking (pacifier)</li>\n<li>Swaddling or facilitated tucking</li>\n<li>Skin-to-skin if possible and practical</li>\n<li>Breastfeeding during procedure (if available and appropriate)</li>\n</ol>"
+              }
+            },
+            {
+              "label": "Major Procedures",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Major procedures (chest tube, central line, circumcision, lumbar puncture):</strong></p>\n<ul><li>All non-pharm interventions PLUS:</li>\n<li><strong>Chest tube:</strong> Fentanyl 1–2 µg/kg IV + local lidocaine 1% (0.5 mL max) infiltration</li>\n<li><strong>Central line (PICC/UVC):</strong> Sucrose + swaddling minimum; consider fentanyl for PICC in awake infants</li>\n<li><strong>Circumcision:</strong> Dorsal penile nerve block (DPNB) with lidocaine 1% without epi (0.8 mL per side) OR ring block + sucrose + pacifier. DPNB is the most effective intervention.</li>\n<li><strong>LP:</strong> Sucrose + local EMLA cream (applied 60 min before) or lidocaine infiltration + facilitated tucking</li></ul>"
+              }
+            },
+            {
+              "label": "Intubation",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Premedication for non-emergent intubation:</strong></p>\n<ul><li><strong>AAP recommends premedication for ALL non-emergent intubations.</strong> Awake intubation without premedication causes pain, physiologic instability, IVH risk, and vocal cord injury.</li>\n<li><strong>Recommended regimen:</strong> Atropine 0.02 mg/kg IV (prevents vagal bradycardia) + Fentanyl 2 µg/kg IV (analgesia) ± Succinylcholine 2 mg/kg IV or Rocuronium 1 mg/kg IV (paralysis)</li>\n<li>Alternative: morphine 0.1 mg/kg IV (slower onset; give 5 min before attempt)</li>\n<li><strong>Exception:</strong> Emergency intubation in the delivery room or acute deterioration — premedication not feasible, proceed immediately</li></ul>\n<div class=\"bx bo\">⚠️ <strong>Chest wall rigidity</strong> can occur with rapid fentanyl push — give slowly over 2–3 minutes. If rigidity occurs: naloxone 0.1 mg/kg IV or muscle relaxant (rocuronium).</div>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "After\nsurgery",
+        "node": {
+          "id": "neonatal_pain_sedation-postoperative-pain-protocol-3",
+          "label": "Postoperative Pain Protocol",
+          "type": "action",
+          "description": "Multimodal · Opioid + acetaminophen · Wean plan",
+          "panels": [
+            {
+              "label": "Multimodal Approach",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Multimodal postoperative pain management:</strong></p>\n<ul><li><strong>Scheduled acetaminophen</strong> (10–15 mg/kg PO/PR q6h) — reduces opioid requirements by 20–30%</li>\n<li><strong>Morphine or fentanyl</strong> for moderate-severe pain — titrate to NPASS score &lt;3</li>\n<li><strong>Continuous infusion</strong> for first 24–48h for major surgery, then transition to PRN</li>\n<li><strong>Non-pharm:</strong> Swaddling, positioning, skin-to-skin when safe, sucrose for procedures</li>\n<li><strong>Regional anesthesia:</strong> Caudal block or wound infiltration when appropriate (reduces systemic opioid need)</li></ul>"
+              }
+            },
+            {
+              "label": "Opioid Weaning",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Opioid weaning (after >5 days continuous use):</strong></p>\n<ul><li>Wean 10–20% of total daily dose every 24–48 hours</li>\n<li>Monitor for withdrawal signs (NPASS sedation/agitation scores, WAT-1 if available)</li>\n<li>If withdrawal signs appear → increase back to last tolerated dose and slow the wean</li>\n<li>Consider methadone conversion for prolonged opioid use (>7 days) — longer half-life allows smoother wean</li>\n<li>Adjuncts for iatrogenic withdrawal: clonidine 0.5–1 µg/kg q4–6h, dexmedetomidine taper</li></ul>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Goals of care\ndiscussion",
+        "node": {
+          "id": "neonatal_pain_sedation-palliative-care-comfort-4",
+          "label": "Palliative Care & Comfort",
+          "type": "action",
+          "description": "Comfort measures · Family support · Symptom management",
+          "panels": [
+            {
+              "label": "When to Involve",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Indications for neonatal palliative care consultation:</strong></p>\n<ul><li>Lethal congenital anomalies (bilateral renal agenesis, anencephaly, trisomy 13/18 per family wishes)</li>\n<li>Extreme prematurity at the border of viability (22–23 weeks) when family chooses comfort</li>\n<li>Severe HIE with poor prognosis (Sarnat 3, devastating MRI findings)</li>\n<li>Any infant where curative treatment is not achieving goals or causing suffering disproportionate to benefit</li>\n<li>Palliative care is NOT \"giving up\" — it focuses on quality of life and can be concurrent with curative treatment</li></ul>"
+              }
+            },
+            {
+              "label": "Symptom Management",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Comfort care symptom management:</strong></p>\n<ul><li><strong>Pain/distress:</strong> Morphine 0.05–0.1 mg/kg IV/SQ q2–4h PRN. Goal = comfort, not sedation. No ceiling dose for comfort care.</li>\n<li><strong>Dyspnea/air hunger:</strong> Morphine (reduces air hunger perception). Gentle O₂ by nasal cannula for comfort. Fan to face. Positioning.</li>\n<li><strong>Secretions:</strong> Glycopyrrolate 5–10 µg/kg IV/SQ q4–6h. Gentle suctioning PRN.</li>\n<li><strong>Seizures:</strong> Phenobarbital 20 mg/kg loading. Midazolam for refractory.</li>\n<li><strong>Family support:</strong> Unlimited family presence, skin-to-skin, memory-making (photos, hand/footprints, naming ceremony, chaplain/spiritual care), bereavement support</li></ul>"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

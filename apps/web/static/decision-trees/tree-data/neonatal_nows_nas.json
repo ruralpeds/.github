@@ -1,0 +1,282 @@
+{
+  "id": "neonatal-nows-nas",
+  "title": "Opioid-Exposed Neonate",
+  "subtitle": "Born to mother with OUD/prenatal opioid exposure",
+  "version": "1.0",
+  "source": "",
+  "mode": "neonatal",
+  "root": {
+    "id": "neonatal_nows_nas-opioid-exposed-neonate-1",
+    "label": "Opioid-Exposed Neonate",
+    "type": "assess",
+    "description": "Born to mother with OUD/prenatal opioid exposure",
+    "children": [
+      {
+        "label": "",
+        "node": {
+          "id": "neonatal_nows_nas-begin-non-pharmacologic-care-bundle-2",
+          "label": "Begin Non-Pharmacologic Care Bundle",
+          "type": "treat",
+          "description": "First-line for ALL opioid-exposed neonates",
+          "children": [
+            {
+              "label": "",
+              "node": {
+                "id": "neonatal_nows_nas-esc-assessment-preferred-3",
+                "label": "ESC Assessment (Preferred)",
+                "type": "assess",
+                "description": "Evaluate at every feeding/care time",
+                "children": [
+                  {
+                    "label": "",
+                    "node": {
+                      "id": "neonatal_nows_nas-all-3-esc-criteria-met-4",
+                      "label": "All 3 ESC Criteria Met?",
+                      "type": "decide",
+                      "description": "Eat ≥1oz, Sleep ≥1hr, Console ≤10min",
+                      "children": [
+                        {
+                          "label": "",
+                          "node": {
+                            "id": "neonatal_nows_nas-yes-continue-non-pharm-care-5",
+                            "label": "YES — Continue Non-Pharm Care",
+                            "type": "wean",
+                            "description": "Reassess at each feeding; observe ≥4–7 days",
+                            "children": [
+                              {
+                                "label": "",
+                                "node": {
+                                  "id": "neonatal_nows_nas-discharge-criteria-met-6",
+                                  "label": "Discharge Criteria Met",
+                                  "type": "stop",
+                                  "description": "Safe discharge with follow-up plan"
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "label": "",
+                          "node": {
+                            "id": "neonatal_nows_nas-no-initiate-pharmacotherapy-7",
+                            "label": "NO — Initiate Pharmacotherapy",
+                            "type": "decide",
+                            "description": "Team huddle: select first-line agent",
+                            "children": [
+                              {
+                                "label": "",
+                                "node": {
+                                  "id": "neonatal_nows_nas-morphine-standard-8",
+                                  "label": "Morphine (Standard)",
+                                  "type": "treat",
+                                  "description": "0.04–0.1 mg/kg PO q3–4h",
+                                  "children": [
+                                    {
+                                      "label": "",
+                                      "node": {
+                                        "id": "neonatal_nows_nas-stabilized-on-morphine-9",
+                                        "label": "Stabilized on Morphine?",
+                                        "type": "decide",
+                                        "description": "ESC met × 24–48h at current dose",
+                                        "children": [
+                                          {
+                                            "label": "",
+                                            "node": {
+                                              "id": "neonatal_nows_nas-not-stable-escalate-10",
+                                              "label": "NOT Stable → Escalate",
+                                              "type": "escalate",
+                                              "description": "Increase 0.01–0.04 mg/kg/dose q12–24h",
+                                              "children": [
+                                                {
+                                                  "label": "",
+                                                  "node": {
+                                                    "id": "neonatal_nows_nas-max-dose-reached-still-unstable-11",
+                                                    "label": "Max Dose Reached, Still Unstable?",
+                                                    "type": "decide",
+                                                    "description": "≥0.8 mg/kg/day morphine, ESC still failing",
+                                                    "children": [
+                                                      {
+                                                        "label": "",
+                                                        "node": {
+                                                          "id": "neonatal_nows_nas-add-clonidine-12",
+                                                          "label": "Add Clonidine",
+                                                          "type": "adjunct",
+                                                          "description": "1 mcg/kg PO q4h — for autonomic symptoms"
+                                                        }
+                                                      },
+                                                      {
+                                                        "label": "",
+                                                        "node": {
+                                                          "id": "neonatal_nows_nas-add-phenobarbital-13",
+                                                          "label": "Add Phenobarbital",
+                                                          "type": "adjunct",
+                                                          "description": "Load 10–20 mg/kg → 2–8 mg/kg/day"
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "label": "",
+                                            "node": {
+                                              "id": "neonatal_nows_nas-stable-begin-wean-14",
+                                              "label": "Stable → Begin Wean",
+                                              "type": "wean",
+                                              "description": "Decrease 10% of stabilizing dose q24–48h",
+                                              "children": [
+                                                {
+                                                  "label": "",
+                                                  "node": {
+                                                    "id": "neonatal_nows_nas-wean-tolerated-15",
+                                                    "label": "Wean Tolerated?",
+                                                    "type": "decide",
+                                                    "description": "ESC criteria maintained during dose reduction",
+                                                    "children": [
+                                                      {
+                                                        "label": "",
+                                                        "node": {
+                                                          "id": "neonatal_nows_nas-yes-continue-wean-to-discontinuation-16",
+                                                          "label": "YES → Continue Wean to Discontinuation",
+                                                          "type": "wean",
+                                                          "description": "Continue 10% reductions → DC at ≤0.02 mg/kg",
+                                                          "children": [
+                                                            {
+                                                              "label": "",
+                                                              "node": {
+                                                                "id": "neonatal_nows_nas-discharge-assessment-17",
+                                                                "label": "Discharge Assessment",
+                                                                "type": "stop",
+                                                                "description": "24–48h post last dose, all criteria met"
+                                                              }
+                                                            }
+                                                          ]
+                                                        }
+                                                      },
+                                                      {
+                                                        "label": "",
+                                                        "node": {
+                                                          "id": "neonatal_nows_nas-no-return-to-last-effective-dose-18",
+                                                          "label": "NO → Return to Last Effective Dose",
+                                                          "type": "escalate",
+                                                          "description": "Re-stabilize 24–48h, then slower wean"
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "label": "",
+                                "node": {
+                                  "id": "neonatal_nows_nas-methadone-alternative-19",
+                                  "label": "Methadone (Alternative)",
+                                  "type": "treat",
+                                  "description": "0.05–0.1 mg/kg PO q8–12h",
+                                  "children": [
+                                    {
+                                      "label": "",
+                                      "node": {
+                                        "id": "neonatal_nows_nas-methadone-escalation-wean-20",
+                                        "label": "Methadone Escalation / Wean",
+                                        "type": "decide",
+                                        "description": "Same stabilize → escalate → wean logic"
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "label": "",
+                                "node": {
+                                  "id": "neonatal_nows_nas-buprenorphine-sl-emerging-21",
+                                  "label": "Buprenorphine SL (Emerging)",
+                                  "type": "treat",
+                                  "description": "4.4–5.3 mcg/kg SL q8h",
+                                  "children": [
+                                    {
+                                      "label": "",
+                                      "node": {
+                                        "id": "neonatal_nows_nas-buprenorphine-escalation-wean-22",
+                                        "label": "Buprenorphine Escalation / Wean",
+                                        "type": "decide",
+                                        "description": "Same logic; escalate to 60 mcg/kg/day max"
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "",
+              "node": {
+                "id": "neonatal_nows_nas-finnegan-scoring-alternative-23",
+                "label": "Finnegan Scoring (Alternative)",
+                "type": "assess",
+                "description": "21-item tool scored q2–4h",
+                "children": [
+                  {
+                    "label": "",
+                    "node": {
+                      "id": "neonatal_nows_nas-score-8-3-or-12-2-24",
+                      "label": "Score ≥8 × 3 or ≥12 × 2?",
+                      "type": "decide",
+                      "description": "Pharmacotherapy threshold reached"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "",
+              "node": {
+                "id": "neonatal_nows_nas-polysubstance-atypical-presentation-25",
+                "label": "Polysubstance? Atypical Presentation?",
+                "type": "decide",
+                "description": "Consider co-exposures if atypical symptoms",
+                "children": [
+                  {
+                    "label": "",
+                    "node": {
+                      "id": "neonatal_nows_nas-gabapentin-exposure-26",
+                      "label": "Gabapentin Exposure",
+                      "type": "adjunct",
+                      "description": "Gabapentin 5 mg/kg PO q12h"
+                    }
+                  },
+                  {
+                    "label": "",
+                    "node": {
+                      "id": "neonatal_nows_nas-benzodiazepine-co-exposure-27",
+                      "label": "Benzodiazepine Co-Exposure",
+                      "type": "adjunct",
+                      "description": "Phenobarbital: Load 20 mg/kg → 5 mg/kg/day"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

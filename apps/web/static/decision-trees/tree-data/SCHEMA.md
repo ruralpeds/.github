@@ -74,3 +74,12 @@ fetch('tree-data/my_tree.json').then(r => r.json()).then(data => PedsCDSTree.ini
 { "label": "Dosing", "type": "dosing",
   "content": { "drugs": ["Epinephrine 0.01 mg/kg IV/IO"], "notes": "Repeat q3–5 min" } }
 ```
+
+### html (legacy / rich content)
+```json
+{ "label": "Tab name", "type": "html",
+  "content": { "html": "<p>Raw HTML content rendered directly in popup.</p>" } }
+```
+Used for migrated legacy tree data with rich tabbed education panels.
+Supports CSS classes: `.rt` (reference table), `.dt` (data table), `.bx` (info box),
+`.br/.bg/.bb/.bo/.bp` (colored boxes), `.sl` (step list).

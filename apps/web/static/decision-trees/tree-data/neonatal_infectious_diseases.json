@@ -1,0 +1,617 @@
+{
+  "id": "neonatal-infectious-diseases",
+  "title": "Neonatal Infection Suspected",
+  "subtitle": "Clinical signs or risk factors for infection",
+  "version": "1.0",
+  "source": "",
+  "mode": "neonatal",
+  "root": {
+    "id": "neonatal_infectious_diseases-neonatal-infection-suspected-1",
+    "label": "Neonatal Infection Suspected",
+    "type": "assessment",
+    "description": "Clinical signs or risk factors for infection",
+    "panels": [
+      {
+        "label": "When to Evaluate",
+        "type": "html",
+        "content": {
+          "html": "<p>Neonatal infection evaluation is triggered by clinical signs, maternal risk factors, or both. Neonatal sepsis remains a leading cause of morbidity and mortality, especially in preterm infants.</p>\n<p><strong>Clinical signs prompting evaluation:</strong></p>\n<ul><li>Temperature instability (fever >38°C OR hypothermia <36.5°C — hypothermia is MORE common in neonates than fever)</li>\n<li>Respiratory distress: tachypnea, grunting, retractions, oxygen requirement</li>\n<li>Hemodynamic instability: tachycardia, bradycardia, hypotension, poor perfusion, CRT >3 sec</li>\n<li>Feeding intolerance: poor feeding, vomiting, abdominal distension, ileus</li>\n<li>Neurologic: lethargy, irritability, hypotonia, seizures, bulging fontanelle</li>\n<li>Skin: pallor, mottling, cyanosis, petechiae, jaundice</li>\n<li>Metabolic: hypoglycemia, hyperglycemia, metabolic acidosis</li></ul>\n<div class=\"bx bo\">⚠️ <strong>Neonatal sepsis can present with subtle, nonspecific signs.</strong> \"The baby just doesn't look right\" from an experienced nurse is a legitimate reason to evaluate. Have a low threshold for sepsis workup in preterm infants.</div>"
+        }
+      },
+      {
+        "label": "Risk Factors",
+        "type": "html",
+        "content": {
+          "html": "<p><strong>Maternal/Perinatal Risk Factors for EOS:</strong></p>\n<ul><li>GBS colonization (positive or unknown status)</li>\n<li>Prolonged rupture of membranes (PROM >18 hours)</li>\n<li>Maternal intrapartum fever (>38.0°C / 100.4°F)</li>\n<li>Chorioamnionitis (clinical or histologic)</li>\n<li>Preterm delivery (&lt;37 weeks — strongest risk factor)</li>\n<li>Inadequate intrapartum antibiotic prophylaxis (IAP)</li>\n<li>Prior infant with invasive GBS disease</li>\n<li>GBS bacteriuria during current pregnancy</li>\n<li>Maternal UTI or other infection</li></ul>\n<p><strong>Risk Factors for LOS:</strong></p>\n<ul><li>Prematurity / VLBW (&lt;1500g)</li>\n<li>Central venous catheters (PICC, UVC)</li>\n<li>Prolonged TPN</li>\n<li>Prolonged broad-spectrum antibiotics</li>\n<li>Mechanical ventilation</li>\n<li>Surgical NEC or other GI pathology</li>\n<li>Prolonged NICU stay</li></ul>"
+        }
+      },
+      {
+        "label": "Key Lab Values",
+        "type": "html",
+        "content": {
+          "html": "<table class=\"rt\"><thead><tr><th>Lab</th><th>Normal Neonatal</th><th>Interpretation</th></tr></thead><tbody>\n<tr><td>WBC</td><td>9,000–30,000/µL (term)</td><td>Both leukocytosis AND leukopenia concerning; leukopenia (&lt;5,000) is more specific for sepsis</td></tr>\n<tr><td>ANC</td><td>Varies by GA/age (Schmutz)</td><td>Neutropenia (marrow exhaustion) is a BAD sign; more specific than neutrophilia</td></tr>\n<tr><td>I:T ratio</td><td>&lt;0.2</td><td>>0.2 sensitive (~80%) but NOT specific (~30%) for sepsis</td></tr>\n<tr><td>CRP</td><td>&lt;1.0 mg/dL</td><td>Rises 6–12h after infection onset. Serial CRP at 24–48h more useful. Negative predictive value excellent at 24–48h.</td></tr>\n<tr><td>Procalcitonin</td><td>&lt;0.5 ng/mL (after 24h)</td><td>Rises 2–4h (faster than CRP). Physiologic peak at 24h of life limits day-1 utility. Best at 24–48h.</td></tr>\n<tr><td>Blood culture</td><td>No growth</td><td>Gold standard. Minimum 1 mL from peripheral site. Most EOS pathogens positive within 24–36h.</td></tr>\n<tr><td>CSF</td><td>WBC &lt;20–30/µL (term); protein &lt;150 mg/dL; glucose >50% serum</td><td>Neonatal CSF norms are different from older children. Traumatic tap complicates interpretation.</td></tr>\n</tbody></table>"
+        }
+      },
+      {
+        "label": "Blood Culture Principles",
+        "type": "html",
+        "content": {
+          "html": "<p><strong>Blood Culture Best Practices:</strong></p>\n<ol class=\"sl\">\n<li><strong>Volume matters:</strong> Minimum 1 mL (ideally 2 mL). Inadequate volume is the #1 reason for false-negative cultures. Low inocula in neonatal bacteremia means more volume = higher sensitivity.</li>\n<li><strong>Timing:</strong> Ideally BEFORE antibiotics, but do NOT delay antibiotics for culture if infant is critically ill.</li>\n<li><strong>Site:</strong> Peripheral venipuncture preferred. If central line in place, obtain both a peripheral AND a central line culture (differential time-to-positivity helps diagnose CLABSI).</li>\n<li><strong>Incubation:</strong> Most significant neonatal pathogens (GBS, E. coli, S. aureus) are positive within 24–36 hours of incubation. By 48 hours, the vast majority of true pathogens are detected.</li>\n<li><strong>Interpretation:</strong> CoNS in a single culture is often a contaminant but can be a true pathogen in VLBW with central lines. Two positive cultures from separate sites increases confidence.</li>\n</ol>\n<div class=\"bx bg\">✓ <strong>The Kaiser EOS Calculator (neonatalsepsiscalculator.kaiserpermanente.org)</strong> can help estimate EOS risk and guide workup decisions for late-preterm/term infants ≥34 weeks. AAP 2023 supports its use as an alternative approach.</div>"
+        }
+      }
+    ],
+    "children": [
+      {
+        "label": "< 72h\nof age",
+        "node": {
+          "id": "neonatal_infectious_diseases-early-onset-sepsis-eos-2",
+          "label": "Early-Onset Sepsis (EOS)",
+          "type": "urgent",
+          "description": "< 72 hours of life",
+          "panels": [
+            {
+              "label": "Definition",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Early-onset sepsis (EOS)</strong> = systemic infection occurring within the first 72 hours of life (some define as &lt;7 days). Incidence: ~0.5/1,000 live births (term); up to 10–20/1,000 in VLBW. Acquired vertically from maternal genital tract flora during labor and delivery.</p>\n<p><strong>Mortality:</strong> Overall ~3% in term infants; up to 25–50% in preterm/VLBW. GBS EOS mortality ~2–3%; E. coli EOS mortality ~10–15%, higher with meningitis.</p>"
+              }
+            },
+            {
+              "label": "Pathogens",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"dt\"><thead><tr><th>Pathogen</th><th>% of EOS</th><th>Key Features</th></tr></thead><tbody>\n<tr><td><strong>Group B Streptococcus (GBS)</strong></td><td>~40%</td><td>#1 cause overall. Prevented by IAP. Presents as sepsis, pneumonia, or meningitis.</td></tr>\n<tr><td><strong>E. coli</strong></td><td>~25–30%</td><td>#1 cause in VLBW. K1 capsule = meningitis. Increasing ampicillin resistance (~50%).</td></tr>\n<tr><td><strong>Listeria monocytogenes</strong></td><td>~5%</td><td>Maternal exposure (unpasteurized dairy, deli meats). Presents like GBS. Treat with ampicillin (NOT cephalosporins).</td></tr>\n<tr><td><strong>Other Gram-negatives</strong></td><td>~10%</td><td>Klebsiella, Enterobacter, H. influenzae (non-typeable)</td></tr>\n<tr><td><strong>Other Gram-positives</strong></td><td>~5–10%</td><td>Enterococcus, S. pneumoniae, viridans strep</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "AAP 2023 Approaches",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>AAP 2023 Clinical Report — Three Acceptable Approaches for EOS Risk Assessment in Infants ≥34 Weeks:</strong></p>\n<table class=\"dt\"><thead><tr><th>Approach</th><th>Method</th><th>Pros</th><th>Cons</th></tr></thead><tbody>\n<tr><td><strong>1. Categorical Risk Factor</strong></td><td>Evaluate/treat based on presence of specific risk factors (chorioamnionitis, inadequate IAP, etc.)</td><td>Simple, familiar, widely used</td><td>Overtreats many well-appearing infants; up to 5–15% of births evaluated</td></tr>\n<tr><td><strong>2. Multivariate Risk Calculator (Kaiser EOS Calc)</strong></td><td>Uses GA, maternal temp, GBS status, ROM duration, type of IAP → calculates individual EOS risk</td><td>More precise; reduces unnecessary evaluations by 40–60%</td><td>Requires serial clinical exams at 6, 12, 24h; cannot be used if antibiotics already given</td></tr>\n<tr><td><strong>3. Clinical Condition at Birth</strong></td><td>Observe ALL infants; intervene only for clinical illness</td><td>Most conservative; least intervention in well-appearing infants</td><td>Requires robust serial examination infrastructure; may delay treatment in subtle presentations</td></tr>\n</tbody></table>\n<div class=\"bx bb\">ℹ️ <strong>All three approaches are acceptable per AAP 2023.</strong> The Kaiser EOS Calculator and enhanced clinical observation reduce antibiotic exposure compared to the traditional categorical approach.</div>"
+              }
+            },
+            {
+              "label": "Empiric Antibiotics",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>EOS Empiric Antibiotic Regimen:</strong></p>\n<table class=\"rt\"><thead><tr><th>Regimen</th><th>Coverage</th><th>Dosing</th></tr></thead><tbody>\n<tr><td><strong>Ampicillin + Gentamicin</strong></td><td>GBS, Listeria, most E. coli, Enterococcus</td><td>Amp: 50 mg/kg q12h (sepsis) or 100 mg/kg q8h (meningitis). Gent: 4–5 mg/kg q24–36h (check levels).</td></tr>\n</tbody></table>\n<p><strong>Key principles:</strong></p>\n<ul><li>Ampicillin + gentamicin is the STANDARD first-line for EOS in all guidelines</li>\n<li>Ampicillin covers GBS AND Listeria (cephalosporins do NOT cover Listeria)</li>\n<li>Gentamicin provides synergy with ampicillin for GBS and covers most Gram-negatives</li>\n<li>If meningitis suspected or confirmed: add cefotaxime (or ceftriaxone in term infants >7 days) for enhanced CNS penetration against Gram-negatives</li>\n<li><strong>Duration if culture-negative at 36–48h + clinically well:</strong> STOP antibiotics. No benefit from prolonged empiric therapy. Prolonged antibiotics in culture-negative infants increase NEC, late-onset sepsis, and mortality risk.</li></ul>\n<div class=\"bx br\">🚨 <strong>Do NOT use ceftriaxone in neonates &lt;28 days or with hyperbilirubinemia.</strong> Ceftriaxone displaces bilirubin from albumin and can cause fatal kernicterus. Also forms precipitates with calcium-containing solutions.</div>"
+              }
+            }
+          ],
+          "children": [
+            {
+              "label": "GBS+\nor unknown",
+              "node": {
+                "id": "neonatal_infectious_diseases-gbs-sepsis-pneumonia-3",
+                "label": "GBS Sepsis / Pneumonia",
+                "type": "diagnosis",
+                "description": "#1 EOS pathogen · IAP preventable",
+                "panels": [
+                  {
+                    "label": "GBS Disease",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>GBS Early-Onset Disease:</strong></p>\n<ul><li>Presents within first 24–48h (often within 6–12h)</li>\n<li>Acquired from maternal GBS colonization during labor/delivery</li>\n<li>Presentations: bacteremia without focus (~65%), pneumonia (~25%), meningitis (~10%)</li>\n<li>GBS pneumonia: indistinguishable from RDS on chest X-ray (bilateral ground-glass opacities)</li>\n<li>Mortality: ~2–3% overall; higher in preterm</li>\n<li>Prevention: IAP with penicillin G or ampicillin ≥4h before delivery reduces EOS by ~80%</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "IAP Guidelines",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Intrapartum Antibiotic Prophylaxis (IAP) — 2019 ACOG/AAP Guidelines:</strong></p>\n<p><strong>Indications for IAP:</strong></p>\n<ul><li>Positive GBS screen (vaginal-rectal swab at 36–37 weeks)</li>\n<li>GBS bacteriuria during current pregnancy</li>\n<li>Previous infant with invasive GBS disease</li>\n<li>Unknown GBS status AND any of: preterm labor &lt;37 wk, PROM ≥18h, intrapartum fever ≥38.0°C</li></ul>\n<p><strong>Adequate IAP:</strong> Penicillin G 5M units IV then 2.5–3M q4h, OR Ampicillin 2g IV then 1g q4h, given ≥4 hours before delivery. Inadequate IAP = &lt;4 hours or no IAP given when indicated.</p>\n<table class=\"rt\"><thead><tr><th>Penicillin Allergy</th><th>Risk</th><th>Agent</th></tr></thead><tbody>\n<tr><td>Low risk (rash only)</td><td>Low anaphylaxis</td><td>Cefazolin 2g IV then 1g q8h</td></tr>\n<tr><td>High risk (anaphylaxis, angioedema)</td><td>High</td><td>Clindamycin 900mg IV q8h (if GBS susceptible) or Vancomycin 20mg/kg IV q8h</td></tr>\n</tbody></table>"
+                    }
+                  },
+                  {
+                    "label": "GBS Meningitis",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>GBS Meningitis:</strong></p>\n<ul><li>~10% of GBS EOS; higher proportion in LOS GBS</li>\n<li>CSF: ↑ WBC (often >100/µL, neutrophil predominance), ↑ protein, ↓ glucose</li>\n<li>Treatment: Ampicillin (100 mg/kg q8h for meningitis dosing) + Gentamicin × ≥14–21 days</li>\n<li>Repeat LP at 24–48h to document CSF sterilization (especially for GBS meningitis)</li>\n<li>Complications: cerebral abscess, ventriculitis, subdural empyema, hydrocephalus</li>\n<li>Neuroimaging: MRI at 7–10 days and before discharge</li>\n<li>Hearing screen before discharge (aminoglycoside exposure + meningitis risk)</li></ul>"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "Gram-neg\non culture",
+              "node": {
+                "id": "neonatal_infectious_diseases-e-coli-gram-negative-sepsis-4",
+                "label": "E. coli / Gram- Negative Sepsis",
+                "type": "emergency",
+                "description": "#1 in VLBW · K1 capsule = meningitis",
+                "panels": [
+                  {
+                    "label": "E. coli EOS",
+                    "type": "html",
+                    "content": {
+                      "html": "<ul><li>#1 cause of EOS in VLBW infants; #2 overall after GBS</li>\n<li>E. coli K1 capsular polysaccharide = meningitis-associated virulence factor</li>\n<li>Mortality: 10–15% overall; up to 30–40% with meningitis</li>\n<li>Increasing ampicillin resistance (~50% in many US centers)</li>\n<li>Clinical presentation: often fulminant with rapid deterioration, shock, DIC</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "Ampicillin Resistance",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Ampicillin-Resistant E. coli:</strong></p>\n<ul><li>~50% of neonatal E. coli isolates are ampicillin-resistant in US NICUs</li>\n<li>This does NOT change empiric therapy — ampicillin + gentamicin remains first-line because gentamicin covers most resistant E. coli, and ampicillin is needed for GBS/Listeria</li>\n<li>Once E. coli is identified and sensitivities are available, narrow to most appropriate agent</li>\n<li>ESBL-producing E. coli: increasing concern; may require meropenem</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "Gram-Neg Meningitis",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Gram-Negative Meningitis Protocol:</strong></p>\n<ol class=\"sl\">\n<li>Ampicillin + Cefotaxime (preferred over gentamicin for CNS penetration)</li>\n<li>Repeat LP at 24–48h to document sterilization</li>\n<li>If CSF NOT sterile at 48h → consider broadening coverage, evaluate for abscess/ventriculitis</li>\n<li>Duration: minimum 21 days (or 21 days from first sterile CSF, whichever longer)</li>\n<li>MRI brain at 7–10 days and before discharge</li>\n<li>Monitor for complications: abscess (10–15%), ventriculitis, hydrocephalus, subdural collection</li>\n</ol>\n<div class=\"bx br\">🚨 <strong>Gram-negative meningitis carries 20–30% mortality and >50% long-term neurologic morbidity.</strong> Early, aggressive therapy with CSF-penetrating antibiotics and serial LP monitoring is critical.</div>"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "> 72h\nof age",
+        "node": {
+          "id": "neonatal_infectious_diseases-late-onset-sepsis-los-5",
+          "label": "Late-Onset Sepsis (LOS)",
+          "type": "urgent",
+          "description": "> 72 hours of life",
+          "panels": [
+            {
+              "label": "Definition",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Late-onset sepsis (LOS):</strong> systemic infection after 72 hours of life (some define >7 days). Incidence: 10–20% of VLBW NICU patients. Acquired nosocomially (NICU environment, central lines, GI tract translocation) or from the community.</p>\n<p>LOS has different microbiology than EOS — Gram-positive organisms (especially CoNS) predominate in nosocomial LOS, while community-acquired LOS may be caused by GBS (late-late disease), E. coli, or other pathogens.</p>"
+              }
+            },
+            {
+              "label": "Pathogens",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"dt\"><thead><tr><th>Pathogen</th><th>% of LOS</th><th>Source</th><th>Key Features</th></tr></thead><tbody>\n<tr><td><strong>CoNS (S. epidermidis)</strong></td><td>~40–50%</td><td>Skin/central lines</td><td>#1 overall. Often indolent. Can be contaminant — need 2 positive cultures or 1 culture + clinical signs. Low mortality (~2%) but high morbidity.</td></tr>\n<tr><td><strong>S. aureus (MSSA/MRSA)</strong></td><td>~10–15%</td><td>Skin/lines/nares</td><td>More virulent than CoNS. Skin abscesses, osteomyelitis, endocarditis possible. MRSA requires vancomycin.</td></tr>\n<tr><td><strong>E. coli / Klebsiella / Pseudomonas</strong></td><td>~15–20%</td><td>GI translocation/lines</td><td>Higher mortality (~15–20%). Often associated with NEC. MDR organisms increasing.</td></tr>\n<tr><td><strong>Candida species</strong></td><td>~5–10%</td><td>GI/skin/lines</td><td>Highest mortality (~20–30%). Risk factors: extreme prematurity, prolonged Abx, TPN, central lines. Thrombocytopenia often precedes positive culture.</td></tr>\n<tr><td><strong>Enterococcus</strong></td><td>~5%</td><td>GI tract</td><td>E. faecalis (ampicillin sensitive) and E. faecium (often VRE). Intrinsically resistant to cephalosporins.</td></tr>\n<tr><td><strong>GBS (late-late)</strong></td><td>~5%</td><td>Mucosal colonization</td><td>Late GBS disease (7–89 days). Meningitis more common than in EOS. Not prevented by IAP.</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Empiric Antibiotics",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>LOS Empiric Antibiotic Regimen:</strong></p>\n<table class=\"rt\"><thead><tr><th>Regimen</th><th>Coverage</th><th>When</th></tr></thead><tbody>\n<tr><td><strong>Vancomycin + Gentamicin</strong></td><td>MRSA, CoNS, Gram-negatives</td><td>Standard first-line for nosocomial LOS</td></tr>\n<tr><td>Vancomycin + Cefepime</td><td>Above + Pseudomonas</td><td>If Pseudomonas concern (GI pathology, prior colonization)</td></tr>\n<tr><td>Meropenem ± Vancomycin</td><td>Broadest (ESBL, Pseudomonas)</td><td>Fulminant sepsis, MDR organisms</td></tr>\n<tr><td>+ Fluconazole or Amphotericin B</td><td>Candida</td><td>Extreme prematurity + lines + prolonged Abx + TPN</td></tr>\n</tbody></table>\n<p><strong>Duration:</strong></p>\n<ul><li>Culture-negative at 36–48h + clinically well → STOP antibiotics</li>\n<li>Bacteremia: 7–10 days from first negative culture</li>\n<li>Meningitis: 14–21 days (Gram-pos) or 21+ days (Gram-neg)</li>\n<li>Osteomyelitis/endocarditis: 4–6 weeks</li></ul>"
+              }
+            },
+            {
+              "label": "Prevention",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>LOS Prevention Bundle:</strong></p>\n<ul><li><strong>Central line bundle:</strong> Hand hygiene, maximal barrier precautions at insertion, chlorhexidine skin prep (caution &lt;26 wk — skin injury), optimal site selection, daily reassessment of line necessity, prompt removal when no longer needed</li>\n<li><strong>Antibiotic stewardship:</strong> Stop empiric antibiotics at 36–48h if culture-negative. Avoid prolonged empiric courses. Narrow spectrum based on culture data.</li>\n<li><strong>Fluconazole prophylaxis:</strong> Consider for infants &lt;1000g birth weight in NICUs with high Candida rates (>5% invasive candidiasis incidence). 3–6 mg/kg twice weekly.</li>\n<li><strong>Breast milk:</strong> Human milk reduces NEC and LOS risk. Prioritize maternal breast milk. Donor milk if unavailable.</li>\n<li><strong>Skin-to-skin care:</strong> Kangaroo care reduces LOS risk</li>\n<li><strong>Probiotics:</strong> Evidence supports reduction in NEC and possibly LOS in VLBW; not universally adopted in US</li></ul>"
+              }
+            }
+          ],
+          "children": [
+            {
+              "label": "Gram-pos\ncocci",
+              "node": {
+                "id": "neonatal_infectious_diseases-cons-s-aureus-6",
+                "label": "CoNS / S. aureus",
+                "type": "diagnosis",
+                "description": "Gram-positive · Central line associated",
+                "panels": [
+                  {
+                    "label": "CoNS vs Contaminant",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>CoNS: pathogen or contaminant?</strong></p>\n<table class=\"dt\"><thead><tr><th>Feature</th><th>True Pathogen</th><th>Likely Contaminant</th></tr></thead><tbody>\n<tr><td>Number of positive cultures</td><td>≥2 from separate sites or times</td><td>1 single culture</td></tr>\n<tr><td>Clinical signs</td><td>Fever, feeding intolerance, apnea, bradycardia, metabolic instability</td><td>Well-appearing infant</td></tr>\n<tr><td>Central line present</td><td>Yes (supports true infection)</td><td>May or may not have line</td></tr>\n<tr><td>Time to positivity</td><td>&lt;24–36 hours</td><td>Often >36 hours</td></tr>\n<tr><td>Inflammatory markers</td><td>CRP elevated, WBC changes</td><td>Normal CRP/WBC</td></tr>\n</tbody></table>\n<div class=\"bx bb\">ℹ️ <strong>If in doubt, treat as real and reassess.</strong> A sick preterm infant with a CoNS-positive culture and central line should be treated as a true CLABSI until proven otherwise.</div>"
+                    }
+                  },
+                  {
+                    "label": "MRSA Management",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>MRSA Neonatal Sepsis:</strong></p>\n<ul><li>Vancomycin is first-line for MRSA. Target trough 10–15 µg/mL (non-CNS) or 15–20 µg/mL (CNS).</li>\n<li>AUC/MIC monitoring increasingly preferred over trough-based dosing</li>\n<li>Evaluate for metastatic foci: skin abscesses, osteomyelitis, endocarditis (echocardiogram), deep-tissue abscess</li>\n<li>Duration: minimum 14 days for S. aureus bacteremia. Longer if metastatic disease.</li>\n<li>Consider linezolid if vancomycin failure or VISA/VRSA (extremely rare in neonates)</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "CLABSI Evaluation",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>CLABSI Workup:</strong></p>\n<ol class=\"sl\">\n<li>Blood cultures: both peripheral AND central line (calculate differential time-to-positivity: central >2h before peripheral = likely CLABSI)</li>\n<li>CRP/PCT, CBC with differential</li>\n<li>Evaluate line site for erythema, drainage, tenderness</li>\n<li>If CLABSI confirmed: can attempt antibiotic lock therapy for CoNS with salvageable line. For S. aureus, Candida, or Gram-negatives: REMOVE THE LINE.</li>\n<li>Repeat cultures 48–72h after antibiotics to document clearance</li>\n</ol>"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "Yeast on\nsmear/culture",
+              "node": {
+                "id": "neonatal_infectious_diseases-candida-fungal-sepsis-7",
+                "label": "Candida / Fungal Sepsis",
+                "type": "emergency",
+                "description": "Highest mortality · Extreme preterm",
+                "panels": [
+                  {
+                    "label": "Risk Factors",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Invasive candidiasis risk factors (nearly all required):</strong></p>\n<ul><li>Extreme prematurity (&lt;28 weeks or &lt;1000g)</li>\n<li>Central venous catheter in place</li>\n<li>Prolonged broad-spectrum antibiotics (&gt;5–7 days)</li>\n<li>TPN (glucose is a Candida growth substrate)</li>\n<li>Postnatal corticosteroids</li>\n<li>Abdominal surgery / NEC</li></ul>\n<p><strong>Mortality: 20–30%.</strong> Neurodevelopmental impairment in 50%+ of survivors.</p>"
+                    }
+                  },
+                  {
+                    "label": "Diagnosis",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Diagnostic workup when Candida suspected:</strong></p>\n<ol class=\"sl\">\n<li><strong>Blood culture</strong> (may take 48–72h to grow; sensitivity only ~50%)</li>\n<li><strong>Urine culture</strong> (catheterized) — renal candidiasis in 5–10%</li>\n<li><strong>Thrombocytopenia</strong> (often the earliest lab finding — falling plts precede positive culture)</li>\n<li><strong>CSF</strong> — LP recommended for ALL neonates with candidemia (CNS involvement in ~15%)</li>\n<li><strong>Ophthalmologic exam</strong> — Candida endophthalmitis</li>\n<li><strong>Renal US</strong> — fungal balls in collecting system</li>\n<li><strong>Echocardiogram</strong> — fungal endocarditis (especially with central lines)</li>\n</ol>"
+                    }
+                  },
+                  {
+                    "label": "Treatment",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Treatment:</strong></p>\n<ul><li><strong>First-line: Amphotericin B deoxycholate 1 mg/kg/day IV</strong> (preferred in neonates over lipid formulations for most infections)</li>\n<li><strong>Alternative: Fluconazole 12 mg/kg/day IV</strong> (if isolate is susceptible; NOT for C. krusei or C. glabrata)</li>\n<li><strong>Duration:</strong> Minimum 14 days after last positive blood culture AND resolution of all signs/symptoms</li>\n<li><strong>REMOVE ALL CENTRAL LINES</strong> — essential for clearance. Do NOT attempt salvage.</li>\n<li>Repeat cultures q48–72h until negative</li>\n<li>End-organ evaluation: eye exam, renal US, echo, CSF</li></ul>\n<div class=\"bx br\">🚨 <strong>LINE REMOVAL IS NON-NEGOTIABLE.</strong> Candida forms biofilm on catheters. Antifungal therapy alone without line removal has significantly higher mortality and treatment failure.</div>"
+                    }
+                  },
+                  {
+                    "label": "Prophylaxis",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Fluconazole Prophylaxis:</strong></p>\n<ul><li>Consider for infants &lt;1000g in NICUs with invasive candidiasis incidence >5%</li>\n<li>Dose: 3–6 mg/kg IV/PO twice weekly during central line use or until 6 weeks of age</li>\n<li>Evidence: multiple RCTs show 80–90% reduction in invasive candidiasis; NNT ~10</li>\n<li>Concern: emergence of fluconazole-resistant Candida (C. parapsilosis resistance rising)</li>\n<li>Monitor LFTs periodically</li></ul>"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "Gram-neg\nrods",
+              "node": {
+                "id": "neonatal_infectious_diseases-gram-negative-los-8",
+                "label": "Gram-Negative LOS",
+                "type": "urgent",
+                "description": "E. coli, Klebsiella, Pseudomonas · NEC-associated",
+                "panels": [
+                  {
+                    "label": "Common Organisms",
+                    "type": "html",
+                    "content": {
+                      "html": "<table class=\"dt\"><thead><tr><th>Organism</th><th>Source</th><th>Mortality</th><th>Notes</th></tr></thead><tbody>\n<tr><td>E. coli</td><td>GI translocation, UTI</td><td>15–20%</td><td>K1 capsule = meningitis. ESBL increasingly common.</td></tr>\n<tr><td>Klebsiella</td><td>GI tract, NICU environment</td><td>15–25%</td><td>High ESBL rates in many NICUs. Can cause outbreaks.</td></tr>\n<tr><td>Pseudomonas</td><td>Environment, water, GI</td><td>30–50%</td><td>Highest Gram-neg mortality. Needs anti-pseudomonal coverage.</td></tr>\n<tr><td>Enterobacter</td><td>GI tract</td><td>15–20%</td><td>Intrinsically resistant to cephalothin/cefazolin. Inducible AmpC β-lactamase.</td></tr>\n<tr><td>Serratia</td><td>NICU environment</td><td>15–25%</td><td>Associated with outbreaks. Intrinsic AmpC resistance.</td></tr>\n</tbody></table>"
+                    }
+                  },
+                  {
+                    "label": "MDR Concerns",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Multi-Drug Resistant (MDR) Gram-Negatives:</strong></p>\n<ul><li><strong>ESBL producers (E. coli, Klebsiella):</strong> Resistant to 3rd-gen cephalosporins. Treat with meropenem.</li>\n<li><strong>AmpC producers (Enterobacter, Serratia, Citrobacter):</strong> May develop resistance to 3rd-gen cephalosporins during therapy (\"inducible AmpC\"). Use 4th-gen cephalosporin (cefepime) or meropenem.</li>\n<li><strong>CRE (carbapenem-resistant Enterobacteriaceae):</strong> Rare in neonates but increasing. May require novel agents (ceftazidime-avibactam, colistin).</li></ul>\n<div class=\"bx bo\">⚠️ <strong>Know your NICU's local antibiogram.</strong> Empiric regimens should be tailored to local resistance patterns. What works at one center may be inadequate at another.</div>"
+                    }
+                  },
+                  {
+                    "label": "NEC-Associated Sepsis",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>NEC-Associated Sepsis:</strong></p>\n<ul><li>NEC is a major cause of late-onset Gram-negative sepsis in VLBW infants</li>\n<li>Organisms: polymicrobial (E. coli, Klebsiella, Enterobacter, Enterococcus, anaerobes)</li>\n<li>Falling platelets + abdominal distension + metabolic acidosis = NEC until proven otherwise</li>\n<li>Empiric: vancomycin + meropenem (or pip-tazo) ± metronidazole (anaerobic coverage)</li>\n<li>Surgical NEC (perforation): even broader coverage, surgical consultation</li></ul>"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Vesicles or\nHSV concern",
+        "node": {
+          "id": "neonatal_infectious_diseases-neonatal-hsv-9",
+          "label": "Neonatal HSV",
+          "type": "emergency",
+          "description": "EMERGENCY — acyclovir within 1 hour",
+          "panels": [
+            {
+              "label": "Classification",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Neonatal herpes simplex virus (HSV)</strong> = potentially devastating infection. Incidence: ~1/3,200 deliveries. Highest risk: primary maternal genital HSV near delivery (30–50% neonatal transmission vs &lt;2% with recurrent HSV).</p>\n<p><strong>Three clinical presentations:</strong></p>\n<table class=\"dt\"><thead><tr><th>Type</th><th>% of Cases</th><th>Timing</th><th>Features</th><th>Mortality (untreated)</th></tr></thead><tbody>\n<tr><td><strong>SEM</strong> (skin, eye, mouth)</td><td>~45%</td><td>5–14 days</td><td>Vesicular skin lesions, keratoconjunctivitis, oral ulcers</td><td>Low if treated; risk of dissemination if delayed</td></tr>\n<tr><td><strong>CNS</strong></td><td>~30%</td><td>8–17 days</td><td>Seizures, lethargy, poor feeding, CSF pleocytosis, temporal lobe on MRI</td><td>~50% untreated; ~6% with acyclovir</td></tr>\n<tr><td><strong>Disseminated</strong></td><td>~25%</td><td>5–12 days</td><td>Multi-organ failure: hepatitis (↑ ALT/AST), DIC, pneumonitis, shock. May or may NOT have skin vesicles.</td><td>~85% untreated; ~30% with acyclovir</td></tr>\n</tbody></table>\n<div class=\"bx br\">🚨 <strong>39% of disseminated HSV have NO skin lesions at presentation.</strong> Absence of vesicles does NOT rule out neonatal HSV. Consider in any sepsis-like illness unresponsive to antibiotics.</div>"
+              }
+            },
+            {
+              "label": "Diagnosis",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Diagnostic workup:</strong></p>\n<ol class=\"sl\">\n<li><strong>HSV PCR</strong> (blood) — for disseminated disease</li>\n<li><strong>HSV PCR</strong> (CSF) — for CNS disease. May be negative early; repeat at 3–5 days if initially negative but suspicion remains.</li>\n<li><strong>Surface cultures/PCR</strong> — swabs from mouth, nasopharynx, conjunctivae, rectum, and any vesicle/skin lesion (viral culture or PCR)</li>\n<li><strong>LFTs</strong> (ALT, AST) — markedly elevated in disseminated (can be >1000 U/L)</li>\n<li><strong>Coagulation studies</strong> — DIC in disseminated</li>\n<li><strong>CSF</strong> — pleocytosis (WBC >20, lymphocyte predominant), elevated protein, normal glucose, HSV PCR</li>\n<li><strong>MRI brain</strong> — temporal lobe involvement classic for HSV encephalitis</li>\n<li><strong>Ophthalmologic exam</strong> — HSV keratoconjunctivitis</li>\n</ol>"
+              }
+            },
+            {
+              "label": "Treatment",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Treatment — START IMMEDIATELY, do NOT wait for results:</strong></p>\n<table class=\"rt\"><thead><tr><th>Parameter</th><th>Protocol</th></tr></thead><tbody>\n<tr><td>Drug</td><td><strong>Acyclovir 20 mg/kg IV q8h</strong></td></tr>\n<tr><td>SEM disease duration</td><td>14 days</td></tr>\n<tr><td>CNS disease duration</td><td>21 days (repeat CSF HSV PCR near end; if still positive, continue until negative)</td></tr>\n<tr><td>Disseminated duration</td><td>21 days (same as CNS)</td></tr>\n<tr><td>Suppressive therapy</td><td>Oral acyclovir 300 mg/m²/dose TID × 6 months after IV course (for CNS and SEM disease — HERPET trial, Kimberlin et al., NEJM 2011)</td></tr>\n</tbody></table>\n<div class=\"bx bg\">✓ <strong>Suppressive oral acyclovir for 6 months</strong> after IV treatment improved neurodevelopmental outcomes in CNS disease and reduced skin recurrences in SEM disease (HERPET trial). Monitor ANC — neutropenia is the main side effect.</div>"
+              }
+            },
+            {
+              "label": "When to Suspect",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>When to suspect neonatal HSV (even without vesicles):</strong></p>\n<ul><li>Sepsis-like illness unresponsive to antibiotics at 24–48h</li>\n<li>Unexplained liver failure / markedly elevated transaminases in a neonate</li>\n<li>DIC + hepatitis + shock in first 2 weeks of life</li>\n<li>CSF pleocytosis (especially lymphocytic) with negative bacterial cultures</li>\n<li>Seizures in a term infant without an obvious cause</li>\n<li>Vesicular skin lesions at ANY time in the first month</li>\n<li>Maternal history of genital herpes (but often no history — 60–80% of mothers of HSV-infected neonates have NO known HSV history)</li></ul>\n<div class=\"bx br\">🚨 <strong>START ACYCLOVIR EMPIRICALLY.</strong> Do not wait for PCR results. If HSV is on the differential, start acyclovir 20 mg/kg IV q8h immediately. The cost of missing neonatal HSV is catastrophic.</div>"
+              }
+            }
+          ],
+          "children": [
+            {
+              "label": "Vesicles\nonly",
+              "node": {
+                "id": "neonatal_infectious_diseases-sem-disease-10",
+                "label": "SEM Disease",
+                "type": "action",
+                "description": "Skin/eye/mouth · Acyclovir 14 days",
+                "panels": [
+                  {
+                    "label": "Management",
+                    "type": "html",
+                    "content": {
+                      "html": "<ul><li>Vesicular skin lesions (clusters or scattered), keratoconjunctivitis, oral ulcers</li>\n<li>Acyclovir 20 mg/kg IV q8h × 14 days</li>\n<li>Followed by oral acyclovir 300 mg/m² TID × 6 months</li>\n<li>Ophthalmology consult for eye involvement (topical trifluridine or ganciclovir gel)</li>\n<li>Monitor ANC during oral suppressive therapy</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "Progression Risk",
+                    "type": "html",
+                    "content": {
+                      "html": "<div class=\"bx bo\">⚠️ <strong>SEM disease can progress to CNS or disseminated disease if treatment is delayed.</strong> 70% of SEM will progress without acyclovir. Early treatment has dramatically reduced mortality and progression.</div>"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "Seizures, hepatitis,\nshock, or DIC",
+              "node": {
+                "id": "neonatal_infectious_diseases-cns-disseminated-11",
+                "label": "CNS /  Disseminated",
+                "type": "emergency",
+                "description": "Acyclovir 21 days · High mortality",
+                "panels": [
+                  {
+                    "label": "CNS Disease",
+                    "type": "html",
+                    "content": {
+                      "html": "<ul><li>Seizures (focal or generalized), lethargy, poor feeding, irritability, bulging fontanelle</li>\n<li>CSF: pleocytosis, elevated protein, HSV PCR positive (may be negative early — repeat at 3–5 days)</li>\n<li>MRI: temporal lobe involvement classic; may also show diffuse cerebral edema</li>\n<li>Acyclovir 20 mg/kg IV q8h × 21 days</li>\n<li>Repeat CSF HSV PCR near end of therapy — if still positive, continue IV acyclovir until negative</li>\n<li>Oral suppressive acyclovir × 6 months after IV course</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "Disseminated Disease",
+                    "type": "html",
+                    "content": {
+                      "html": "<ul><li><strong>Multi-organ failure:</strong> hepatitis (ALT/AST >1000), DIC, pneumonitis, adrenal hemorrhage, shock</li>\n<li>Skin vesicles present in only ~60% — <strong>absence does NOT exclude disseminated HSV</strong></li>\n<li>Acyclovir 20 mg/kg IV q8h × 21 days</li>\n<li>Aggressive supportive care: mechanical ventilation, pressors, blood products for DIC</li>\n<li>Mortality: ~30% even with acyclovir; >85% without treatment</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "Monitoring",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Monitoring during and after treatment:</strong></p>\n<ul><li>Renal function (Cr, BUN) — acyclovir can cause crystalline nephropathy; ensure adequate hydration</li>\n<li>ANC — monitor weekly during IV, then monthly during oral suppression. Hold if ANC &lt;500.</li>\n<li>Repeat CSF HSV PCR at end of 21-day IV course (for CNS/disseminated)</li>\n<li>Ophthalmologic exam at diagnosis and follow-up</li>\n<li>Hearing screen</li>\n<li>Neurodevelopmental follow-up for CNS disease</li></ul>"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Congenital\ninfection\nconcern",
+        "node": {
+          "id": "neonatal_infectious_diseases-torch-congenital-infections-12",
+          "label": "TORCH / Congenital Infections",
+          "type": "decision",
+          "description": "In utero acquired infections",
+          "panels": [
+            {
+              "label": "Overview",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>TORCH</strong> = Toxoplasmosis, Other (syphilis, varicella, parvovirus B19, Zika), Rubella, Cytomegalovirus, Herpes simplex. These infections are acquired in utero (transplacentally) and can cause a spectrum of congenital anomalies, growth restriction, and chronic disease.</p>\n<p><strong>Common clinical features across TORCH infections:</strong> SGA/IUGR, hepatosplenomegaly, jaundice (direct hyperbilirubinemia), thrombocytopenia, petechiae/purpura (\"blueberry muffin\" rash), microcephaly, intracranial calcifications, chorioretinitis, sensorineural hearing loss.</p>"
+              }
+            },
+            {
+              "label": "When to Evaluate",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Evaluate for congenital infection when:</strong></p>\n<ul><li>SGA/IUGR without other explanation (especially symmetric IUGR)</li>\n<li>Hepatosplenomegaly at birth</li>\n<li>Direct (conjugated) hyperbilirubinemia</li>\n<li>Thrombocytopenia ± petechiae/purpura at birth</li>\n<li>Microcephaly or intracranial calcifications on prenatal US</li>\n<li>Hydrops fetalis</li>\n<li>Maternal seroconversion or known exposure during pregnancy</li>\n<li>Abnormal ophthalmologic exam (chorioretinitis)</li>\n<li>\"Blueberry muffin\" rash (dermal extramedullary hematopoiesis)</li></ul>"
+              }
+            },
+            {
+              "label": "TORCH Workup",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Standard TORCH Workup:</strong></p>\n<ol class=\"sl\">\n<li><strong>CMV urine PCR</strong> (within 21 days of birth — after 21 days, cannot distinguish congenital from postnatal acquisition)</li>\n<li><strong>RPR/VDRL</strong> (maternal AND infant) + <strong>treponemal test</strong> (FTA-ABS IgM if available)</li>\n<li><strong>Toxoplasma IgM and IgG</strong> (infant serum) + PCR if available</li>\n<li><strong>Rubella IgM</strong> (infant serum)</li>\n<li><strong>HSV PCR</strong> (blood and surface swabs) if clinical concern</li>\n<li><strong>Parvovirus B19 PCR</strong> if hydrops or severe anemia</li>\n<li><strong>Head CT or MRI</strong> — intracranial calcifications, ventriculomegaly, structural anomalies</li>\n<li><strong>Ophthalmologic exam</strong> — chorioretinitis</li>\n<li><strong>Hearing screen</strong> (ABR preferred over OAE for congenital infections)</li>\n<li><strong>LFTs, CBC with diff, total/direct bilirubin</strong></li>\n</ol>"
+              }
+            },
+            {
+              "label": "Key Differences",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"dt\"><thead><tr><th>Infection</th><th>Calcifications</th><th>Hearing Loss</th><th>Eye Findings</th><th>Unique Features</th></tr></thead><tbody>\n<tr><td><strong>CMV</strong></td><td>Periventricular</td><td>YES (progressive)</td><td>Chorioretinitis</td><td>#1 congenital infection; microcephaly; petechiae</td></tr>\n<tr><td><strong>Toxo</strong></td><td>Diffuse/scattered</td><td>Rare</td><td>Chorioretinitis (macular)</td><td>Classic triad: hydrocephalus, chorioretinitis, calcifications</td></tr>\n<tr><td><strong>Rubella</strong></td><td>Rare</td><td>YES</td><td>Cataracts, glaucoma</td><td>Cardiac (PDA, PS), \"blueberry muffin\"</td></tr>\n<tr><td><strong>Syphilis</strong></td><td>No</td><td>YES (late)</td><td>Rare neonatal</td><td>Rhinitis (snuffles), hepatitis, osteochondritis, rash</td></tr>\n<tr><td><strong>HSV</strong></td><td>Rare (temporal)</td><td>Possible</td><td>Keratoconjunctivitis</td><td>Vesicles, hepatitis, DIC (see HSV branch)</td></tr>\n<tr><td><strong>Zika</strong></td><td>Subcortical</td><td>Possible</td><td>Macular scarring</td><td>Severe microcephaly, arthrogryposis</td></tr>\n</tbody></table>"
+              }
+            }
+          ],
+          "children": [
+            {
+              "label": "CMV urine\nPCR +",
+              "node": {
+                "id": "neonatal_infectious_diseases-congenital-cmv-13",
+                "label": "Congenital CMV",
+                "type": "diagnosis",
+                "description": "#1 congenital infection · Urine PCR <21 days",
+                "panels": [
+                  {
+                    "label": "Epidemiology",
+                    "type": "html",
+                    "content": {
+                      "html": "<ul><li><strong>#1 congenital infection worldwide:</strong> ~0.5–1% of all live births (30,000–40,000/year in US)</li>\n<li>~10–15% symptomatic at birth; ~85–90% asymptomatic at birth</li>\n<li>Of asymptomatic: ~10–15% will develop SNHL by age 5 years</li>\n<li>CMV is the #1 non-genetic cause of sensorineural hearing loss in children</li>\n<li><strong>Diagnosis must be made within 21 days of birth</strong> (CMV urine or saliva PCR). After 21 days, cannot distinguish congenital from postnatal acquisition.</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "Symptomatic vs Asymptomatic",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Symptomatic (~10–15% at birth):</strong> petechiae, hepatosplenomegaly, jaundice (direct), thrombocytopenia, microcephaly, periventricular calcifications, IUGR/SGA, chorioretinitis, SNHL.</p>\n<p><strong>Asymptomatic (~85–90%):</strong> Normal exam at birth but at risk for late-onset SNHL (10–15%) and developmental delays. Identified by universal CMV screening (increasingly adopted in US states) or triggered by failed hearing screen.</p>"
+                    }
+                  },
+                  {
+                    "label": "Treatment",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Treatment (for symptomatic congenital CMV):</strong></p>\n<ul><li><strong>Valganciclovir 16 mg/kg PO BID × 6 months</strong> (CASG trial, Kimberlin et al., NEJM 2015)</li>\n<li>Start within first month of life for best outcomes</li>\n<li>Improved hearing and neurodevelopmental outcomes at 12 and 24 months vs placebo</li>\n<li><strong>Monitor:</strong> CBC (neutropenia is the main toxicity — occurs in ~20%; hold if ANC &lt;500), LFTs monthly, CMV viral load</li>\n<li>Treatment for asymptomatic CMV with isolated SNHL: increasingly considered but evidence is evolving. Discuss with ID.</li></ul>\n<div class=\"bx bg\">✓ <strong>Multiple US states now mandate universal CMV screening</strong> (Minnesota, Utah, Connecticut, others). Positive newborn hearing screen should trigger CMV testing within 21 days of birth.</div>"
+                    }
+                  },
+                  {
+                    "label": "Hearing",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Hearing surveillance:</strong></p>\n<ul><li>ABR at birth (preferred over OAE — higher sensitivity for neural hearing loss)</li>\n<li>Audiologic follow-up every 3–6 months until age 3, then annually until age 6</li>\n<li>Congenital CMV hearing loss can be PROGRESSIVE and LATE-ONSET (appear months to years after birth)</li>\n<li>Even asymptomatic congenital CMV carries 10–15% risk of SNHL</li></ul>"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "RPR/VDRL +\nor maternal hx",
+              "node": {
+                "id": "neonatal_infectious_diseases-congenital-syphilis-14",
+                "label": "Congenital Syphilis",
+                "type": "emergency",
+                "description": "Rising incidence · CDC 2024 guidelines",
+                "panels": [
+                  {
+                    "label": "Epidemiology",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Congenital syphilis is SURGING in the US:</strong></p>\n<ul><li>CDC 2023 data: ~3,882 cases, a >900% increase since 2012</li>\n<li>Driven by: inadequate prenatal care, maternal substance use disorder, lack of timely testing and treatment</li>\n<li>Preventable with maternal screening and penicillin treatment during pregnancy</li>\n<li><strong>All pregnant women should be screened at first prenatal visit.</strong> Re-screen at 28 weeks and delivery in high-risk populations.</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "Clinical Features",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Early congenital syphilis (first 2 years):</strong></p>\n<ul><li>Rhinitis (\"snuffles\") — earliest sign, often bloody/purulent nasal discharge</li>\n<li>Maculopapular rash (palms and soles), condylomata lata</li>\n<li>Hepatosplenomegaly, hepatitis (↑ direct bili, ↑ transaminases)</li>\n<li>Thrombocytopenia, anemia (Coombs-negative hemolysis)</li>\n<li>Osteochondritis/periostitis on long bone X-rays (metaphyseal changes)</li>\n<li>Generalized lymphadenopathy</li>\n<li>Nephrotic syndrome</li>\n<li>Pseudoparalysis (Parrot paralysis — painful limb movement from periostitis)</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "CDC Evaluation",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>CDC 2024 Evaluation Scenarios:</strong></p>\n<table class=\"dt\"><thead><tr><th>Scenario</th><th>Infant Evaluation</th><th>Treatment</th></tr></thead><tbody>\n<tr><td>Mother adequately treated >30 days before delivery + infant well + nontreponemal titer &lt;4× maternal</td><td>Physical exam; RPR/VDRL</td><td>Benzathine penicillin G 50,000 U/kg IM × 1 dose</td></tr>\n<tr><td>Mother inadequately treated or treated &lt;30 days before delivery</td><td>Full evaluation: RPR, CBC, LFTs, CSF-VDRL, long bone X-rays</td><td>Aqueous crystalline penicillin G 50,000 U/kg IV q12h (≤7 days) or q8h (>7 days) × 10 days</td></tr>\n<tr><td>Mother untreated or treatment unknown</td><td>Full evaluation (same as above)</td><td>Aqueous crystalline penicillin G 50,000 U/kg IV × 10 days</td></tr>\n<tr><td>Infant with clinical/lab/radiographic evidence of disease</td><td>Full evaluation + any additional as indicated</td><td>Aqueous crystalline penicillin G 50,000 U/kg IV × 10 days</td></tr>\n</tbody></table>"
+                    }
+                  },
+                  {
+                    "label": "Treatment",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Treatment details:</strong></p>\n<ul><li><strong>Aqueous crystalline penicillin G:</strong> 50,000 units/kg IV q12h (age ≤7 days) or q8h (age >7 days) × 10 days</li>\n<li><strong>Alternative:</strong> Procaine penicillin G 50,000 units/kg IM daily × 10 days (if adherence to IV regimen cannot be ensured)</li>\n<li><strong>Follow-up:</strong> Nontreponemal titers (RPR/VDRL) at 2, 4, 6, and 12 months. Titers should decline and become nonreactive by 6–12 months. If not declining → re-evaluate and re-treat.</li>\n<li>If CSF abnormalities: repeat LP at 6 months. Reactive CSF-VDRL or persistent pleocytosis → re-treat.</li></ul>\n<div class=\"bx br\">🚨 <strong>Congenital syphilis is 100% preventable</strong> with prenatal screening and maternal treatment. Every missed case represents a healthcare system failure. Screen early, screen often in high-risk populations.</div>"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "Other TORCH\nserologies",
+              "node": {
+                "id": "neonatal_infectious_diseases-toxoplasmosis-rubella-other-15",
+                "label": "Toxoplasmosis / Rubella / Other",
+                "type": "diagnosis",
+                "description": "Toxo triad · Rubella cardiac · Zika microcephaly",
+                "panels": [
+                  {
+                    "label": "Toxoplasmosis",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Congenital Toxoplasmosis:</strong></p>\n<ul><li>Caused by Toxoplasma gondii (cat feces, undercooked meat, contaminated soil)</li>\n<li><strong>Classic triad:</strong> hydrocephalus, chorioretinitis, diffuse intracranial calcifications</li>\n<li>Most infants (70–90%) are asymptomatic at birth but develop sequelae later (chorioretinitis, developmental delay, hearing loss)</li>\n<li><strong>Diagnosis:</strong> Toxoplasma IgM and IgA (infant); IgG avidity; PCR (blood, CSF)</li>\n<li><strong>Treatment:</strong> Pyrimethamine + sulfadiazine + leucovorin × 12 months (even if asymptomatic at birth). Improves outcomes significantly.</li>\n<li>Add folinic acid (leucovorin) to prevent marrow suppression from pyrimethamine</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "Rubella",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Congenital Rubella Syndrome (CRS):</strong></p>\n<ul><li>Rare in US due to vaccination, but occurs in unvaccinated populations</li>\n<li><strong>Classic triad:</strong> sensorineural deafness, cardiac defects (PDA, peripheral PS), cataracts/glaucoma</li>\n<li>Other: \"blueberry muffin\" rash, hepatosplenomegaly, thrombocytopenia, microcephaly, meningoencephalitis</li>\n<li>Highest risk: maternal infection in first trimester (>80% fetal infection rate with >85% risk of defects)</li>\n<li>Diagnosis: rubella IgM (infant), viral culture (nasopharynx, urine)</li>\n<li>Treatment: supportive (no antiviral). Infants can shed virus for months — isolation precautions.</li>\n<li><strong>Prevention:</strong> MMR vaccination (contraindicated in pregnancy; women should wait 4 weeks after vaccination before conceiving)</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "Zika",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Congenital Zika Syndrome:</strong></p>\n<ul><li>Severe microcephaly with partially collapsed skull</li>\n<li>Thin cerebral cortex, subcortical calcifications</li>\n<li>Macular scarring, focal pigmentary changes</li>\n<li>Congenital contractures (arthrogryposis)</li>\n<li>Marked neurologic impairment</li>\n<li>Diagnosis: Zika virus PCR (infant blood/urine), IgM serology</li>\n<li>Treatment: supportive. No antiviral available.</li></ul>"
+                    }
+                  },
+                  {
+                    "label": "Parvovirus B19",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Congenital Parvovirus B19:</strong></p>\n<ul><li>Tropism for erythroid precursors → severe fetal anemia → hydrops fetalis</li>\n<li>Greatest risk: maternal infection at 13–20 weeks gestation</li>\n<li>Fetal loss rate: ~5–9% with maternal infection</li>\n<li>Hydrops: diagnosed prenatally on US (ascites, pleural effusions, skin edema)</li>\n<li>Treatment: intrauterine transfusion for fetal hydrops. Neonatal: supportive + pRBC transfusion if anemic.</li>\n<li>Most survivors do well with appropriate management</li></ul>"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Meningitis\nsuspected",
+        "node": {
+          "id": "neonatal_infectious_diseases-neonatal-meningitis-16",
+          "label": "Neonatal Meningitis",
+          "type": "emergency",
+          "description": "LP for all confirmed bacteremia",
+          "panels": [
+            {
+              "label": "When to LP",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Indications for lumbar puncture in neonates:</strong></p>\n<ul><li>All infants with confirmed bacteremia (positive blood culture) — meningitis coexists in ~15–25%</li>\n<li>Clinical signs of meningitis: seizures, bulging fontanelle, altered mental status, irritability/lethargy disproportionate to systemic illness</li>\n<li>Critically ill infants with suspected sepsis (if stable enough for LP)</li>\n<li>Abnormal inflammatory markers with clinical concern</li></ul>\n<p><strong>When to DEFER LP:</strong></p>\n<ul><li>Hemodynamically unstable — stabilize first, then LP ASAP</li>\n<li>Thrombocytopenia &lt;50K or coagulopathy — correct first if possible</li>\n<li>Start empiric meningitis-dose antibiotics WITHOUT LP if LP must be deferred. Do NOT delay antibiotics waiting for LP.</li></ul>"
+              }
+            },
+            {
+              "label": "CSF Interpretation",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"rt\"><thead><tr><th>CSF Parameter</th><th>Normal Term</th><th>Normal Preterm</th><th>Bacterial Meningitis</th></tr></thead><tbody>\n<tr><td>WBC</td><td>&lt;20–30/µL</td><td>&lt;30/µL</td><td>Usually >100/µL (neutrophil predominant)</td></tr>\n<tr><td>Protein</td><td>&lt;150 mg/dL</td><td>&lt;200 mg/dL</td><td>Usually >200 mg/dL</td></tr>\n<tr><td>Glucose</td><td>>50% of serum</td><td>>50% of serum</td><td>&lt;50% of serum (often &lt;30 mg/dL)</td></tr>\n<tr><td>Gram stain</td><td>No organisms</td><td>No organisms</td><td>Positive in ~60–80%</td></tr>\n<tr><td>Culture</td><td>No growth</td><td>No growth</td><td>Positive in 80–90%</td></tr>\n</tbody></table>\n<div class=\"bx bo\">⚠️ <strong>Traumatic LP (bloody tap) complicates interpretation.</strong> Correction formula: subtract 1 WBC for every 500–1000 RBCs. Send CSF for culture regardless — a bloody CSF can still grow organisms. Also send HSV PCR and enteroviral PCR when indicated.</div>"
+              }
+            },
+            {
+              "label": "Treatment by Organism",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"dt\"><thead><tr><th>Organism</th><th>Antibiotic</th><th>Duration</th><th>Special Notes</th></tr></thead><tbody>\n<tr><td><strong>GBS</strong></td><td>Amp 100mg/kg q8h + Gent (synergy)</td><td>14–21 days</td><td>Repeat LP at 24–48h for sterilization</td></tr>\n<tr><td><strong>E. coli / Gram-neg</strong></td><td>Cefotaxime + Amp (or Gent)</td><td>≥21 days (or 21d from first sterile CSF)</td><td>Repeat LP at 48h. If not sterile → broaden. MRI at 7–10d.</td></tr>\n<tr><td><strong>Listeria</strong></td><td>Amp + Gent</td><td>≥21 days</td><td>Listeria is NOT covered by cephalosporins</td></tr>\n<tr><td><strong>S. aureus</strong></td><td>Nafcillin or Vanc (if MRSA)</td><td>21–28 days</td><td>Evaluate for endocarditis, osteomyelitis</td></tr>\n<tr><td><strong>Candida</strong></td><td>Amphotericin B + flucytosine</td><td>≥21 days after CSF sterilization</td><td>Remove ALL central lines</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Complications",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Complications of neonatal meningitis:</strong></p>\n<ul><li><strong>Brain abscess:</strong> 10–15% of Gram-neg meningitis. Suspect if CSF not sterilizing or clinical deterioration. Diagnosis: MRI with contrast. May require neurosurgical drainage.</li>\n<li><strong>Ventriculitis:</strong> Infection of the ventricular system. Suspect if poor clinical response. May need intraventricular antibiotics.</li>\n<li><strong>Subdural effusion/empyema:</strong> Suspect if enlarging head circumference, bulging fontanelle, or persistent fever.</li>\n<li><strong>Hydrocephalus:</strong> From inflammatory obstruction. Serial HC measurements and cranial US.</li>\n<li><strong>SNHL:</strong> Hearing screen before discharge and at follow-up.</li>\n<li><strong>Neurodevelopmental impairment:</strong> 20–50% of survivors of bacterial meningitis. Long-term developmental follow-up essential.</li></ul>\n<div class=\"bx bp\">🔬 <strong>ALL neonates with bacterial meningitis need:</strong> repeat LP at 24–48h, neuroimaging (MRI preferred), hearing evaluation, and long-term neurodevelopmental follow-up.</div>"
+              }
+            }
+          ],
+          "children": [
+            {
+              "label": "CSF\nobtained",
+              "node": {
+                "id": "neonatal_infectious_diseases-lp-interpretation-management-17",
+                "label": "LP Interpretation & Management",
+                "type": "action",
+                "description": "Repeat LP at 24–48h · MRI at 7–10d",
+                "panels": [
+                  {
+                    "label": "Interpreting Results",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>CSF Result Interpretation:</strong></p>\n<ul><li>WBC >30 with neutrophil predominance + low glucose + high protein = strongly suggestive of bacterial meningitis</li>\n<li>Lymphocytic pleocytosis with normal glucose = consider viral (enterovirus, HSV) or partially treated bacterial</li>\n<li>Xanthochromia or elevated RBCs = traumatic tap vs subarachnoid hemorrhage</li>\n<li>Normal CSF does NOT completely exclude meningitis if LP was performed early or infant was pretreated with antibiotics</li></ul>\n<div class=\"bx bb\">ℹ️ <strong>Send CSF for:</strong> cell count/diff, protein, glucose, Gram stain, bacterial culture, AND HSV PCR if any clinical concern for HSV. Also consider enteroviral PCR if viral meningitis is in the differential.</div>"
+                    }
+                  },
+                  {
+                    "label": "Serial LP Protocol",
+                    "type": "html",
+                    "content": {
+                      "html": "<ol class=\"sl\">\n<li>Initial LP at time of sepsis evaluation</li>\n<li>Repeat LP at 24–48h after starting antibiotics to document CSF sterilization</li>\n<li>If CSF NOT sterile at 48h: broaden antibiotic coverage, obtain MRI brain with contrast (evaluate for abscess, ventriculitis, empyema)</li>\n<li>End-of-treatment LP: consider for Gram-negative meningitis to confirm sterilization before stopping antibiotics</li>\n<li>MRI brain at 7–10 days of treatment and before discharge</li>\n</ol>"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

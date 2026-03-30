@@ -1,0 +1,114 @@
+{
+  "id": "newborn-discharge-readiness",
+  "title": "Newborn Discharge Readiness",
+  "subtitle": "Car seat, NBS, hearing, bilirubin, safe sleep, follow-up",
+  "version": "1.0",
+  "source": "",
+  "mode": "neonatal",
+  "root": {
+    "id": "newborn_discharge_readiness-newborn-discharge-readiness-1",
+    "label": "Newborn Discharge Readiness",
+    "type": "assessment",
+    "description": "Car seat, NBS, hearing, bilirubin, safe sleep, follow-up",
+    "panels": [
+      {
+        "label": "AAP Discharge Criteria",
+        "type": "html",
+        "content": {
+          "html": "<p><strong>AAP Recommended Discharge Criteria for Healthy Term Newborns:</strong></p>\n<ul><li>Physiologic stability ≥12 hours (temp, HR, RR normal in open crib)</li>\n<li>Successful feeding established (at least 2 successful feeds; weight loss &lt;7%)</li>\n<li>At least one stool and one void documented</li>\n<li>No significant jaundice (or bilirubin in low-risk zone with follow-up plan)</li>\n<li>Newborn screening specimen collected (ideally ≥24h of age)</li>\n<li>Hearing screen completed and documented</li>\n<li>CCHD pulse oximetry screen passed</li>\n<li>Hepatitis B vaccine administered (or plan documented if parent declines)</li>\n<li>Vitamin K administered</li>\n<li>Circumcision site stable (if applicable)</li>\n<li>Car seat available and properly installed</li>\n<li>Follow-up appointment scheduled within 24–48 hours of discharge</li>\n<li>Parent education completed (see tab 3)</li></ul>"
+        }
+      },
+      {
+        "label": "Screening Checklist",
+        "type": "html",
+        "content": {
+          "html": "<table class=\"rt\"><thead><tr><th>Screen</th><th>Timing</th><th>Status</th><th>Action if Abnormal</th></tr></thead><tbody>\n<tr><td>Newborn metabolic screen (NBS)</td><td>24–48h of age</td><td>☐ Collected</td><td>Repeat per state protocol if &lt;24h. Abnormal → state lab contacts PCP.</td></tr>\n<tr><td>Hearing screen (OAE or ABR)</td><td>Before discharge</td><td>☐ Pass / ☐ Refer</td><td>Refer → outpatient audiology by 1 month; diagnosis by 3 months; intervention by 6 months (JCIH 1-3-6 goals).</td></tr>\n<tr><td>CCHD pulse ox</td><td>≥24h or before DC</td><td>☐ Pass / ☐ Fail</td><td>Fail → echo, evaluation (see cardiac tree)</td></tr>\n<tr><td>Bilirubin risk assessment</td><td>Before discharge</td><td>☐ Low risk / ☐ Follow-up</td><td>Plot on Bhutani hour-specific nomogram. High-intermediate or high risk zone → follow-up TSB within 24h.</td></tr>\n<tr><td>Hepatitis B vaccine</td><td>&lt;24h of age</td><td>☐ Given / ☐ Declined</td><td>If mother HBsAg+ → HBIG + HepB within 12h. If unknown → HepB within 12h + expedite maternal testing.</td></tr>\n<tr><td>Vitamin K</td><td>Within 6h of birth</td><td>☐ Given / ☐ Refused</td><td>If refused: document counseling, offer oral vitamin K as alternative, flag chart.</td></tr>\n</tbody></table>"
+        }
+      },
+      {
+        "label": "Parent Education",
+        "type": "html",
+        "content": {
+          "html": "<p><strong>Essential parent education before discharge:</strong></p>\n<ul><li><strong>Safe sleep:</strong> Back to sleep, firm flat surface, no soft bedding/pillows/bumpers/toys, room-share (not bed-share) × 6 months minimum, pacifier at sleep</li>\n<li><strong>Feeding:</strong> Breastfeed q2–3h (8–12×/day); adequate output (by day 4: ≥6 wet + 3–4 stools/day); signs of adequate intake (satisfied after feeds, gaining weight)</li>\n<li><strong>Jaundice:</strong> When to call (yellowing of chest/abdomen/limbs, poor feeding, lethargy, dark urine, pale stools)</li>\n<li><strong>When to seek care:</strong> Fever ≥100.4°F (38°C), poor feeding, excessive sleepiness, breathing difficulty, persistent vomiting, fewer wet diapers</li>\n<li><strong>Car seat safety:</strong> Rear-facing in back seat. Harness snug at chest clip level. No bulky coats under harness.</li>\n<li><strong>Follow-up:</strong> PCP visit within 24–48h of discharge (sooner if high-risk for jaundice or feeding issues)</li></ul>\n<div class=\"bx bo\">⚠️ <strong>Fever ≥100.4°F (38°C) in the first 30 days of life = ED evaluation and full sepsis workup.</strong> Parents must understand this is an EMERGENCY — do not give Tylenol and wait.</div>"
+        }
+      }
+    ],
+    "children": [
+      {
+        "label": "Pre-discharge\nbili check",
+        "node": {
+          "id": "newborn_discharge_readiness-bilirubin-risk-assessment-2",
+          "label": "Bilirubin Risk Assessment",
+          "type": "decision",
+          "description": "Bhutani nomogram · Follow-up timing",
+          "panels": [
+            {
+              "label": "Bhutani Zones",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Bhutani hour-specific bilirubin nomogram:</strong> Plot pre-discharge TSB or TcB against infant's age in hours. Four risk zones determine follow-up timing.</p>\n<table class=\"rt\"><thead><tr><th>Zone</th><th>Risk</th><th>Follow-up TSB</th></tr></thead><tbody>\n<tr><td>Low risk (below 40th percentile)</td><td>~0% develop significant hyperbili</td><td>Routine PCP visit (48–72h)</td></tr>\n<tr><td>Low-intermediate (40th–75th)</td><td>~2%</td><td>Within 48h</td></tr>\n<tr><td>High-intermediate (75th–95th)</td><td>~13%</td><td>Within 24h</td></tr>\n<tr><td>High risk (>95th percentile)</td><td>~40%</td><td>Within 12–24h; consider delaying discharge</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Follow-Up Schedule",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Discharge timing and bilirubin follow-up:</strong></p>\n<table class=\"dt\"><thead><tr><th>Discharge Age</th><th>Follow-up TSB/TcB</th></tr></thead><tbody>\n<tr><td>&lt;24 hours</td><td>By 72 hours of age</td></tr>\n<tr><td>24–48 hours</td><td>By 96 hours (within 2 days)</td></tr>\n<tr><td>48–72 hours</td><td>By 120 hours (within 2 days)</td></tr>\n</tbody></table>\n<p><em>Adjust earlier if risk factors: DAT+, preterm 35–37 wk, sibling with phototherapy, exclusive breastfeeding with difficulty, East Asian ethnicity, significant bruising/cephalhematoma.</em></p>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Preterm or\nlow birth wt",
+        "node": {
+          "id": "newborn_discharge_readiness-car-seat-testing-3",
+          "label": "Car Seat Testing",
+          "type": "action",
+          "description": "Required for <37 wk · 90-min observation",
+          "panels": [
+            {
+              "label": "Who Needs Testing",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>AAP recommends pre-discharge car seat tolerance screening for:</strong></p>\n<ul><li>All infants born &lt;37 weeks gestational age</li>\n<li>Infants with history of apnea, bradycardia, or desaturation</li>\n<li>Low birth weight infants (&lt;2500g)</li>\n<li>Infants with conditions affecting airway/breathing (Pierre Robin, laryngomalacia, hypotonia)</li></ul>"
+              }
+            },
+            {
+              "label": "Protocol",
+              "type": "html",
+              "content": {
+                "html": "<ol class=\"sl\">\n<li>Place infant in their own car seat (semi-reclined at ~45°)</li>\n<li>Monitor SpO₂, HR, and respiratory effort continuously for 90–120 minutes (or the duration of the planned first car ride home, whichever is longer)</li>\n<li><strong>PASS:</strong> No desaturation &lt;90%, no bradycardia &lt;80, no apnea for 90 min</li>\n<li><strong>FAIL:</strong> Any of above events → try repositioning → retest. If still failing → car bed (supine) as alternative. Retest before discharge.</li>\n<li>Document pass/fail and car seat/bed type used</li>\n</ol>\n<div class=\"bx bb\">ℹ️ <strong>A car bed (flat-lying position) is an acceptable alternative</strong> for infants who fail car seat testing. Some car bed models are FAA-approved for airplane travel as well.</div>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Every\ndischarge",
+        "node": {
+          "id": "newborn_discharge_readiness-safe-sleep-counseling-4",
+          "label": "Safe Sleep Counseling",
+          "type": "action",
+          "description": "ABCs of safe sleep · SIDS prevention",
+          "panels": [
+            {
+              "label": "ABCs",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>ABCs of Safe Sleep (AAP 2022 Updated Guidelines):</strong></p>\n<ul><li><strong>A</strong>lone — baby sleeps alone in their own sleep space (no bed-sharing, no other children/pets/adults in sleep surface)</li>\n<li><strong>B</strong>ack — always on their back for every sleep (supine). Not side, not prone.</li>\n<li><strong>C</strong>rib — firm, flat surface (crib, bassinet, play yard) that meets CPSC safety standards. No inclined sleepers (recalled). No soft bedding, pillows, bumper pads, stuffed animals, loose blankets.</li></ul>\n<p><strong>Additional AAP 2022 recommendations:</strong></p>\n<ul><li>Room-sharing (same room, separate surface) for at least first 6 months</li>\n<li>Offer pacifier at sleep once breastfeeding is established</li>\n<li>Avoid overheating (room 68–72°F; dress in one more layer than adult)</li>\n<li>No commercial devices claiming to reduce SIDS (monitors, positioners, wedges)</li>\n<li>Tummy time when AWAKE and supervised to prevent plagiocephaly and promote development</li></ul>"
+              }
+            },
+            {
+              "label": "Modeling in Hospital",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Model safe sleep in the hospital:</strong></p>\n<ul><li>Place infant supine in bassinet for every sleep — this is what parents will replicate at home</li>\n<li>Remove all extra blankets, hats, and positioning devices from the bassinet after initial assessment</li>\n<li>Use a sleep sack instead of loose blankets</li>\n<li>If a parent is found bed-sharing or placing infant prone → educate without judgment, reposition, document counseling</li>\n<li>Capture \"teachable moments\" — the hospital stay is the single best opportunity to establish safe sleep habits</li></ul>\n<div class=\"bx br\">🚨 <strong>SIDS remains the leading cause of postneonatal infant death in the US.</strong> Safe sleep counseling at every discharge saves lives. Model it. Teach it. Document it.</div>"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
