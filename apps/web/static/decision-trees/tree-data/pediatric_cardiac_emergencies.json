@@ -1,0 +1,160 @@
+{
+  "id": "pediatric-cardiac-emergencies",
+  "title": "Pediatric Cardiac Emergencies",
+  "subtitle": "SVT, myocarditis, Kawasaki, syncope evaluation",
+  "version": "1.0",
+  "source": "",
+  "mode": "pediatric",
+  "root": {
+    "id": "pediatric_cardiac_emergencies-pediatric-cardiac-emergencies-1",
+    "label": "Pediatric Cardiac Emergencies",
+    "type": "assessment",
+    "description": "SVT, myocarditis, Kawasaki, syncope evaluation",
+    "panels": [
+      {
+        "label": "Approach",
+        "type": "html",
+        "content": {
+          "html": "<p>Pediatric cardiac emergencies range from rhythm disturbances (SVT, VT) to inflammatory conditions (myocarditis, Kawasaki) to structural crises (decompensated CHD). Key is recognizing cardiac vs non-cardiac causes of symptoms.</p>"
+        }
+      },
+      {
+        "label": "ECG Interpretation Basics",
+        "type": "html",
+        "content": {
+          "html": "<p><strong>Pediatric ECG — key differences from adult:</strong></p>\n<table class=\"rt\"><thead><tr><th>Parameter</th><th>Neonate/Infant</th><th>Child (1–12 yr)</th><th>Significance</th></tr></thead><tbody>\n<tr><td>Heart rate</td><td>100–160</td><td>70–120</td><td>Tachycardia thresholds are age-dependent</td></tr>\n<tr><td>Axis</td><td>+90 to +180° (right axis)</td><td>+0 to +90° (normalizes)</td><td>Right axis is NORMAL in neonates (RV dominance)</td></tr>\n<tr><td>QRS duration</td><td>&lt;80 ms</td><td>&lt;100 ms</td><td>Narrow QRS; prolonged = bundle branch block or toxicity</td></tr>\n<tr><td>QTc</td><td>&lt;460 ms</td><td>&lt;440 ms</td><td>>470 ms concerning for Long QT syndrome</td></tr>\n<tr><td>T waves V1</td><td>Upright first 48h, then inverted</td><td>Inverted until adolescence</td><td>Upright T in V1 after 48h in child = RVH until proven otherwise</td></tr>\n</tbody></table>"
+        }
+      },
+      {
+        "label": "When to Get an Echo",
+        "type": "html",
+        "content": {
+          "html": "<p><strong>Indications for urgent echocardiogram:</strong></p>\n<ul><li>Suspected myocarditis (new heart failure, troponin elevated, arrhythmia)</li>\n<li>Kawasaki disease (coronary artery evaluation)</li>\n<li>Decompensated/newly diagnosed CHD</li>\n<li>Pericardial effusion suspected (muffled heart sounds, JVD, low voltages on ECG)</li>\n<li>Cardiomegaly on CXR</li>\n<li>Unexplained shock not responding to fluids (cardiogenic shock)</li>\n<li>New murmur in a symptomatic child</li></ul>"
+        }
+      }
+    ],
+    "children": [
+      {
+        "label": "Narrow complex\ntachycardia\nregular",
+        "node": {
+          "id": "pediatric_cardiac_emergencies-svt-management-2",
+          "label": "SVT Management",
+          "type": "emergency",
+          "description": "Narrow complex >220 (infant) >180 (child) · Adenosine",
+          "panels": [
+            {
+              "label": "Diagnosis",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>SVT:</strong> Most common pathologic tachyarrhythmia in children. HR typically 220–300 in infants, 180–250 in older children. Regular, narrow complex (QRS &lt;0.09 sec). Absent P waves or retrograde P waves.</p>\n<p><strong>Distinguish from sinus tachycardia:</strong></p>\n<table class=\"dt\"><thead><tr><th>Feature</th><th>SVT</th><th>Sinus Tachycardia</th></tr></thead><tbody>\n<tr><td>Rate</td><td>>220 infant, >180 child (fixed)</td><td>Usually &lt;220 infant, &lt;180 child (variable)</td></tr>\n<tr><td>P waves</td><td>Absent or abnormal</td><td>Normal, upright in II</td></tr>\n<tr><td>Rate variability</td><td>Fixed rate, abrupt onset/offset</td><td>Varies with activity/fever/crying</td></tr>\n<tr><td>History</td><td>Often no preceding illness</td><td>Fever, dehydration, pain, anemia</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Treatment Algorithm",
+              "type": "html",
+              "content": {
+                "html": "<ol class=\"sl\">\n<li><strong>Stable patient → vagal maneuvers:</strong> Ice bag to face × 15–20 sec (elicits diving reflex). Older children: bear down/Valsalva. Do NOT use carotid massage or eyeball pressure.</li>\n<li><strong>If vagal fails → Adenosine:</strong> 0.1 mg/kg IV rapid push (max 6 mg) → if no conversion, 0.2 mg/kg (max 12 mg). Use MOST PROXIMAL IV. Rapid push followed immediately by 5–10 mL NS flush. Record rhythm strip during administration.</li>\n<li><strong>If adenosine fails or no IV → consider:</strong> Synchronized cardioversion 0.5–1 J/kg → 2 J/kg</li>\n<li><strong>Unstable (hypotension, poor perfusion, AMS) → immediate synchronized cardioversion:</strong> 0.5–1 J/kg → 2 J/kg. Sedate if time allows (ketamine 1–2 mg/kg IV).</li>\n<li><strong>Maintenance therapy (after conversion):</strong> Cardiology consult. Propranolol 1–2 mg/kg/day PO TID (infants). Older children: flecainide, sotalol, or ablation referral.</li>\n</ol>\n<div class=\"bx bb\">ℹ️ <strong>Adenosine has a 6–10 second half-life.</strong> It MUST be given as a rapid push through the most proximal IV possible, followed immediately by a large NS flush. The \"2-syringe technique\" with a stopcock is recommended.</div>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "New HF +\narrhythmia +\ntroponin ↑",
+        "node": {
+          "id": "pediatric_cardiac_emergencies-myocarditis-3",
+          "label": "Myocarditis",
+          "type": "emergency",
+          "description": "Viral · New heart failure · Troponin ↑ · Cardiogenic shock",
+          "panels": [
+            {
+              "label": "Diagnosis",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Myocarditis:</strong> Inflammation of the myocardium, most commonly viral (coxsackievirus B, adenovirus, parvovirus B19, SARS-CoV-2). Can present from subtle to fulminant cardiogenic shock.</p>\n<p><strong>Presentation spectrum:</strong></p>\n<ul><li>Viral prodrome (fever, URI, GI illness) days to weeks before cardiac symptoms</li>\n<li>Heart failure: tachycardia, tachypnea, hepatomegaly, poor feeding (infants), exercise intolerance (older)</li>\n<li>Chest pain (older children)</li>\n<li>Arrhythmias (VT, heart block, SVT)</li>\n<li>Sudden cardiac arrest (rare but devastating first presentation)</li></ul>\n<p><strong>Workup:</strong> Troponin (elevated), BNP/NT-proBNP (elevated), CXR (cardiomegaly), ECG (low voltages, ST changes, arrhythmias), Echo (decreased LV function, +/- pericardial effusion), cardiac MRI (gold standard — late gadolinium enhancement).</p>"
+              }
+            },
+            {
+              "label": "Management",
+              "type": "html",
+              "content": {
+                "html": "<ul><li><strong>Supportive:</strong> PICU monitoring. Restrict fluids (NOT fluid resuscitation — this is CARDIOGENIC shock, not distributive). Diuretics (furosemide). Inotropes (milrinone preferred — inotropy + vasodilation; avoid high-dose catecholamines which increase myocardial O₂ demand).</li>\n<li><strong>Arrhythmia management:</strong> Amiodarone for VT. Temporary pacing for heart block.</li>\n<li><strong>IVIG:</strong> 2 g/kg — modest evidence for benefit; widely used.</li>\n<li><strong>Mechanical support:</strong> ECMO for fulminant myocarditis with refractory cardiogenic shock (bridge to recovery or transplant). Pediatric myocarditis has HIGHER ECMO survival than adult (~60–80%).</li>\n<li><strong>Heart transplant:</strong> If no recovery of function after weeks of support.</li></ul>\n<div class=\"bx bg\">✓ <strong>Fulminant myocarditis (rapid-onset severe HF) paradoxically has BETTER long-term prognosis than acute myocarditis</strong> — if the patient survives the acute phase (with ECMO support if needed), the majority have complete LV recovery. Aggressive early mechanical support is justified.</div>"
+              }
+            },
+            {
+              "label": "Prognosis",
+              "type": "html",
+              "content": {
+                "html": "<ul><li>~60% of pediatric myocarditis patients recover completely</li>\n<li>~20% develop chronic dilated cardiomyopathy</li>\n<li>~10–15% require transplant</li>\n<li>~5–10% mortality (higher in fulminant without ECMO support)</li>\n<li>Exercise restriction: minimum 3–6 months after diagnosis, with serial echo and stress testing before return to sports</li></ul>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Prolonged\nfever +\nmucocutaneous\nfindings",
+        "node": {
+          "id": "pediatric_cardiac_emergencies-kawasaki-disease-4",
+          "label": "Kawasaki Disease",
+          "type": "urgent",
+          "description": "5 days fever + 4/5 criteria · IVIG before day 10 · Echo",
+          "panels": [
+            {
+              "label": "Diagnostic Criteria",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Kawasaki Disease diagnostic criteria — fever ≥5 days PLUS ≥4 of 5:</strong></p>\n<ol class=\"sl\">\n<li><strong>Bilateral bulbar conjunctival injection</strong> (non-exudative, limbal sparing)</li>\n<li><strong>Oral mucous membrane changes:</strong> strawberry tongue, red cracked lips, oropharyngeal erythema</li>\n<li><strong>Polymorphous rash</strong> (NOT vesicular — maculopapular, erythema multiforme-like, or diffuse erythroderma)</li>\n<li><strong>Extremity changes:</strong> Acute: erythema/edema of hands/feet. Subacute: periungual desquamation (peeling around nails at weeks 2–3)</li>\n<li><strong>Cervical lymphadenopathy</strong> (≥1.5 cm, usually unilateral, least common criterion)</li>\n</ol>\n<p><strong>Incomplete Kawasaki:</strong> Fever ≥5 days + 2–3 criteria + elevated inflammatory markers (CRP ≥3.0 mg/dL or ESR ≥40) + supporting labs (albumin &lt;3.0, anemia, elevated ALT, plts >450K after day 7, WBC >15K, urine WBC >10/hpf). Treat the same as complete KD.</p>\n<div class=\"bx br\">🚨 <strong>Kawasaki is the #1 cause of acquired heart disease in children in developed countries.</strong> Untreated, 25% develop coronary artery aneurysms. With timely IVIG, this drops to &lt;5%.</div>"
+              }
+            },
+            {
+              "label": "Treatment",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Treatment:</strong></p>\n<ul><li><strong>IVIG 2 g/kg IV</strong> as a SINGLE infusion over 10–12 hours. Give BEFORE day 10 of illness for maximum benefit (but give even after day 10 if still febrile or with ongoing inflammation).</li>\n<li><strong>Aspirin:</strong> High-dose 80–100 mg/kg/day divided QID until afebrile × 48–72h, then low-dose 3–5 mg/kg/day (antiplatelet) for 6–8 weeks (or longer if coronary abnormalities).</li>\n<li><strong>Refractory KD (persistent/recurrent fever 36h after IVIG):</strong> Second dose IVIG 2 g/kg, OR IV methylprednisolone 2 mg/kg/day × 3 days, OR infliximab 5 mg/kg IV.</li></ul>"
+              }
+            },
+            {
+              "label": "Coronary Artery Follow-up",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Echocardiogram schedule:</strong></p>\n<table class=\"rt\"><thead><tr><th>Timing</th><th>Purpose</th></tr></thead><tbody>\n<tr><td>At diagnosis (baseline)</td><td>Coronary artery dimensions, LV function, valvular regurgitation, pericardial effusion</td></tr>\n<tr><td>2 weeks after onset</td><td>Coronary artery changes may first appear</td></tr>\n<tr><td>6–8 weeks</td><td>Maximum coronary dilation typically occurs by 4–6 weeks; confirms resolution or persistence</td></tr>\n<tr><td>Ongoing (if abnormal)</td><td>Serial echo per cardiology based on aneurysm size/z-score; may need CT angiography or catheterization</td></tr>\n</tbody></table>\n<p><strong>Coronary artery classification (z-scores):</strong></p>\n<ul><li>Normal: z-score &lt;2.0</li>\n<li>Dilation: z-score 2.0–2.5</li>\n<li>Small aneurysm: z-score 2.5–5.0</li>\n<li>Medium aneurysm: z-score 5.0–10.0 or absolute 5–8 mm</li>\n<li>Giant aneurysm: z-score ≥10.0 or absolute ≥8 mm → highest risk for thrombosis, stenosis, MI. Lifelong anticoagulation.</li></ul>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "LOC episode",
+        "node": {
+          "id": "pediatric_cardiac_emergencies-syncope-evaluation-5",
+          "label": "Syncope Evaluation",
+          "type": "decision",
+          "description": "Vasovagal vs cardiac · ECG all patients · Red flags",
+          "panels": [
+            {
+              "label": "Benign vs Concerning",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"dt\"><thead><tr><th>Feature</th><th>Vasovagal (Benign)</th><th>Cardiac (Dangerous)</th></tr></thead><tbody>\n<tr><td>Trigger</td><td>Prolonged standing, heat, pain, blood draw, emotional stress</td><td>During exercise, swimming, startling noise (LQTS), none</td></tr>\n<tr><td>Prodrome</td><td>Lightheadedness, nausea, tunneling vision, warmth, diaphoresis</td><td>Sudden onset with NO prodrome, or palpitations before LOC</td></tr>\n<tr><td>Duration</td><td>Brief (&lt;1 min), rapid recovery</td><td>May be prolonged; may have seizure-like activity (convulsive syncope)</td></tr>\n<tr><td>Position</td><td>Upright (standing or sitting)</td><td>Any position including supine or during exertion</td></tr>\n<tr><td>Family hx</td><td>Often positive for fainting</td><td>Sudden death &lt;50 yr, LQTS, HCM, Brugada, arrhythmias</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Workup",
+              "type": "html",
+              "content": {
+                "html": "<ul><li><strong>ALL syncope:</strong> ECG (look for QTc prolongation, WPW, Brugada, HCM, heart block)</li>\n<li><strong>If typical vasovagal with normal ECG:</strong> Reassurance, hydration, counter-pressure maneuvers. No further workup needed.</li>\n<li><strong>If concerning features:</strong> Echo (HCM, ARVC, coronary anomalies), Holter monitor or event recorder, exercise stress test (exertional syncope), tilt table test (recurrent unexplained syncope)</li>\n<li><strong>If family history of sudden death:</strong> ECG + echo + cardiology referral regardless of presentation</li></ul>"
+              }
+            },
+            {
+              "label": "Red Flags for Cardiac Syncope",
+              "type": "html",
+              "content": {
+                "html": "<div class=\"bx br\">🚨 <strong>Red flags for cardiac syncope (requires cardiology workup):</strong></div>\n<ul><li>Syncope DURING exercise (not after — after exercise is usually vasovagal)</li>\n<li>Syncope while swimming or in water</li>\n<li>Syncope triggered by sudden loud noise or emotional startle (catecholaminergic polymorphic VT or LQTS)</li>\n<li>Syncope in the supine position</li>\n<li>Chest pain or palpitations immediately before syncope</li>\n<li>Family history of sudden cardiac death &lt;50 years, LQTS, HCM, Brugada, or unexplained drowning</li>\n<li>Abnormal ECG (prolonged QTc >470 ms, WPW pattern, Brugada pattern, heart block, significant ventricular ectopy)</li>\n<li>Known structural heart disease</li></ul>"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,252 @@
+{
+  "id": "neonatal-surgical-emergencies",
+  "title": "Neonatal Surgical Emergency",
+  "subtitle": "Acute surgical conditions in the newborn",
+  "version": "1.0",
+  "source": "",
+  "mode": "neonatal",
+  "root": {
+    "id": "neonatal_surgical_emergencies-neonatal-surgical-emergency-1",
+    "label": "Neonatal Surgical Emergency",
+    "type": "assessment",
+    "description": "Acute surgical conditions in the newborn",
+    "panels": [
+      {
+        "label": "STAB-Transport",
+        "type": "html",
+        "content": {
+          "html": "<p><strong>STAB-Transport mnemonic</strong> for pre-transport stabilization of neonatal surgical emergencies:</p>\n<ul><li><strong>S</strong> — Suction: OG/NG to continuous or intermittent suction (decompress stomach/bowel)</li>\n<li><strong>T</strong> — Temperature: Maintain normothermia (plastic wrap for gastroschisis/omphalocele, warmer, hat)</li>\n<li><strong>A</strong> — Access & Antibiotics: IV access (PIV ×2 or UVC), empiric broad-spectrum antibiotics, fluid resuscitation</li>\n<li><strong>B</strong> — Breathing: Secure airway if needed (intubate for CDH — NO bag-mask), SpO₂ monitoring</li>\n<li><strong>Transport</strong>: Arrange EMERGENT transfer to pediatric surgical center (Level III/IV NICU)</li></ul>"
+        }
+      },
+      {
+        "label": "Urgency Classification",
+        "type": "html",
+        "content": {
+          "html": "<table class=\"dt\"><thead><tr><th>Urgency</th><th>Conditions</th><th>Timing</th></tr></thead><tbody>\n<tr><td><strong>🔴 Immediate (&lt;2h)</strong></td><td>Volvulus, gastroschisis (exposed bowel), tension pneumothorax, ruptured omphalocele, tracheoesophageal fistula (aspiration), NEC perforation</td><td>Surgery or definitive procedure within hours</td></tr>\n<tr><td><strong>🟠 Urgent (2–24h)</strong></td><td>CDH (after stabilization), bowel atresias (after decompression), incarcerated hernia, testicular torsion, imperforate anus (high)</td><td>Surgery within 24h after stabilization</td></tr>\n<tr><td><strong>🟡 Semi-urgent (24–72h)</strong></td><td>Omphalocele (intact), pyloric stenosis (after correction of alkalosis), meconium ileus (medical management first)</td><td>Can be optimized before surgery</td></tr>\n</tbody></table>"
+        }
+      },
+      {
+        "label": "Pre-Op Stabilization",
+        "type": "html",
+        "content": {
+          "html": "<p><strong>Universal pre-op stabilization for ALL neonatal surgical conditions:</strong></p>\n<ol class=\"sl\">\n<li><strong>OG/NG tube to suction</strong> (Replogle tube for EA/TEF — double-lumen for continuous suction)</li>\n<li><strong>IV access</strong> — PIV ×2 preferred; UVC if needed for emergent access</li>\n<li><strong>Fluid resuscitation:</strong> NS or LR 10–20 mL/kg bolus PRN for perfusion. Maintenance D10W-based fluids.</li>\n<li><strong>NPO</strong> — start IV fluids and TPN planning</li>\n<li><strong>Broad-spectrum antibiotics:</strong> Ampicillin + gentamicin (for most); add metronidazole for bowel perforation/NEC</li>\n<li><strong>Temperature control:</strong> Radiant warmer, hat, plastic wrap for exposed viscera</li>\n<li><strong>Labs:</strong> CBC, BMP, blood gas, coags, T&S (anticipate transfusion)</li>\n<li><strong>Imaging:</strong> AXR (±lateral decubitus), additional as needed (UGI, US, echo for associated anomalies)</li>\n<li><strong>Parental communication:</strong> Explain condition, urgency, need for transfer</li>\n</ol>"
+        }
+      }
+    ],
+    "children": [
+      {
+        "label": "Abdominal wall\ndefect",
+        "node": {
+          "id": "neonatal_surgical_emergencies-gastroschisis-omphalocele-2",
+          "label": "Gastroschisis / Omphalocele",
+          "type": "emergency",
+          "description": "Exposed viscera · Bowel bag · 2–3× fluids",
+          "panels": [
+            {
+              "label": "Gastroschisis vs Omphalocele",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"dt\"><thead><tr><th>Feature</th><th>Gastroschisis</th><th>Omphalocele</th></tr></thead><tbody>\n<tr><td>Defect location</td><td>Right of umbilicus (paraumbilical)</td><td>Through umbilicus (midline)</td></tr>\n<tr><td>Covering membrane</td><td><strong>NO</strong> (bowel exposed to amniotic fluid)</td><td><strong>YES</strong> (peritoneal sac — unless ruptured)</td></tr>\n<tr><td>Contents</td><td>Small bowel (occasionally stomach, colon)</td><td>Bowel, liver, other organs possible</td></tr>\n<tr><td>Associated anomalies</td><td>~10% (mostly intestinal atresia)</td><td>~50–70% (cardiac, Beckwith-Wiedemann, trisomy 13/18, pentalogy of Cantrell)</td></tr>\n<tr><td>Bowel condition</td><td>Matted, edematous, shortened (chemical peritonitis from amniotic fluid)</td><td>Generally normal (protected by sac)</td></tr>\n<tr><td>Incidence</td><td>~1/2,000–4,000 (increasing)</td><td>~1/5,000–10,000</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "DR Management",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Delivery Room Management:</strong></p>\n<ol class=\"sl\">\n<li><strong>Bowel bag:</strong> Place exposed bowel into a sterile, pre-warmed bowel bag (or sterile saline-moistened gauze covered with plastic wrap). The bag extends from the chest to below the defect, keeping bowel moist and warm.</li>\n<li><strong>Position:</strong> Right lateral decubitus (reduces mesenteric kinking). Support bowel to prevent vascular compromise.</li>\n<li><strong>OG tube to suction</strong> — decompress stomach to reduce bowel distension</li>\n<li><strong>Temperature control:</strong> Massive evaporative and radiant heat loss from exposed bowel. Plastic wrap, warm environment, hat.</li>\n<li><strong>DO NOT attempt to reduce bowel into the abdomen</strong> — risk of vascular compromise, perforation, and abdominal compartment syndrome.</li>\n</ol>"
+              }
+            },
+            {
+              "label": "Fluid Management",
+              "type": "html",
+              "content": {
+                "html": "<div class=\"bx br\">🚨 <strong>Gastroschisis requires 2–3× maintenance IV fluids</strong> due to massive third-space losses from exposed bowel. These infants are at HIGH risk for dehydration and hypovolemia. Fluid resuscitation is often the most critical aspect of initial management.</div>\n<ul><li>Start at 150–200 mL/kg/day of D10W-based crystalloid</li>\n<li>NS boluses 10–20 mL/kg PRN for signs of hypovolemia</li>\n<li>Monitor UOP closely (target ≥1 mL/kg/hr)</li>\n<li>Replace ongoing losses (weigh dressings if possible)</li>\n<li>Omphalocele with intact sac: fluid losses much less; standard fluids adequate</li></ul>"
+              }
+            },
+            {
+              "label": "Associated Anomalies",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Associated anomaly screening:</strong></p>\n<table class=\"dt\"><thead><tr><th>Defect</th><th>Screening</th></tr></thead><tbody>\n<tr><td>Gastroschisis</td><td>Intestinal atresia (10% — found at surgery). Rarely associated with other anomalies. Routine echo/renal US not required unless indicated.</td></tr>\n<tr><td>Omphalocele</td><td>Echocardiogram (cardiac defects in 20–50%). Karyotype (trisomy 13, 18). Renal US (urogenital anomalies). Glucose monitoring (Beckwith-Wiedemann hypoglycemia). Full physical exam for Pentalogy of Cantrell if midline upper omphalocele.</td></tr>\n</tbody></table>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Unable to\npass OG tube\nor drooling",
+        "node": {
+          "id": "neonatal_surgical_emergencies-esophageal-atresia-tef-3",
+          "label": "Esophageal Atresia / TEF",
+          "type": "emergency",
+          "description": "Replogle tube · Head-up · VACTERL screen",
+          "panels": [
+            {
+              "label": "Types",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>EA/TEF classification (Gross):</strong></p>\n<table class=\"rt\"><thead><tr><th>Type</th><th>Description</th><th>% of Cases</th></tr></thead><tbody>\n<tr><td>A</td><td>Pure EA, no fistula</td><td>8%</td></tr>\n<tr><td>B</td><td>EA with proximal TEF</td><td>1%</td></tr>\n<tr><td><strong>C</strong></td><td><strong>EA with distal TEF</strong></td><td><strong>85%</strong></td></tr>\n<tr><td>D</td><td>EA with proximal AND distal TEF</td><td>2%</td></tr>\n<tr><td>E (H-type)</td><td>TEF without EA</td><td>4%</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Diagnosis",
+              "type": "html",
+              "content": {
+                "html": "<ul><li><strong>Prenatal:</strong> Polyhydramnios (absent swallowing), absent stomach bubble on US</li>\n<li><strong>Postnatal:</strong> Excessive drooling/secretions, choking/cyanosis with first feed, inability to pass OG/NG tube (coils in proximal pouch on X-ray)</li>\n<li><strong>X-ray:</strong> OG tube coiled in upper pouch. Gas in stomach/bowel = distal TEF present (type C). Gasless abdomen = pure EA without distal fistula (type A).</li></ul>"
+              }
+            },
+            {
+              "label": "Stabilization",
+              "type": "html",
+              "content": {
+                "html": "<ol class=\"sl\">\n<li><strong>Replogle tube</strong> (10 Fr double-lumen sump) in proximal esophageal pouch to CONTINUOUS suction — prevents aspiration of pooled secretions</li>\n<li><strong>Head-up position</strong> (30–45°) — reduces reflux of gastric acid through distal TEF into lungs</li>\n<li><strong>NPO</strong> — nothing by mouth</li>\n<li><strong>IV fluids</strong> — maintenance D10W</li>\n<li><strong>Avoid positive-pressure ventilation if possible</strong> — air preferentially enters stomach through TEF → gastric distension → aspiration risk → respiratory compromise. If intubation needed, place ETT distal to fistula (may need bronchoscopy).</li>\n<li><strong>Antibiotics</strong> if aspiration suspected</li>\n</ol>\n<div class=\"bx br\">🚨 <strong>If the Replogle is not on continuous suction, secretions will pool and be aspirated.</strong> The Replogle tube is the single most important stabilization tool for EA/TEF. Ensure it is functioning at all times during transport and pre-op.</div>"
+              }
+            },
+            {
+              "label": "VACTERL",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>VACTERL Association — screen for ALL components:</strong></p>\n<table class=\"rt\"><thead><tr><th>Letter</th><th>Anomaly</th><th>Screening</th><th>Incidence with EA</th></tr></thead><tbody>\n<tr><td><strong>V</strong></td><td>Vertebral</td><td>Spine X-ray or US</td><td>~10%</td></tr>\n<tr><td><strong>A</strong></td><td>Anorectal (imperforate anus)</td><td>Physical exam</td><td>~10%</td></tr>\n<tr><td><strong>C</strong></td><td>Cardiac</td><td>Echocardiogram</td><td>~15–25%</td></tr>\n<tr><td><strong>T</strong></td><td>Tracheoesophageal</td><td>This IS the presenting anomaly</td><td>100%</td></tr>\n<tr><td><strong>E</strong></td><td>Esophageal atresia</td><td>This IS the presenting anomaly</td><td>100%</td></tr>\n<tr><td><strong>R</strong></td><td>Renal</td><td>Renal US</td><td>~15%</td></tr>\n<tr><td><strong>L</strong></td><td>Limb (radial ray)</td><td>Physical exam, hand/forearm X-ray</td><td>~10%</td></tr>\n</tbody></table>\n<div class=\"bx bb\">ℹ️ <strong>≥3 VACTERL components = VACTERL association.</strong> Echo and renal US are mandatory before EA repair. Determine aortic arch side (right arch in 2.5% — affects surgical approach).</div>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Obstruction\npattern on\nAXR",
+        "node": {
+          "id": "neonatal_surgical_emergencies-intestinal-atresias-4",
+          "label": "Intestinal Atresias",
+          "type": "urgent",
+          "description": "Duodenal · Jejunoileal · Colonic · Double-bubble",
+          "panels": [
+            {
+              "label": "Types",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"dt\"><thead><tr><th>Type</th><th>Location</th><th>X-ray</th><th>Associations</th></tr></thead><tbody>\n<tr><td><strong>Duodenal atresia</strong></td><td>2nd part of duodenum (at ampulla of Vater)</td><td>Double bubble (dilated stomach + dilated proximal duodenum), NO distal gas</td><td>Trisomy 21 (30%), annular pancreas, cardiac anomalies, malrotation</td></tr>\n<tr><td><strong>Jejunoileal atresia</strong></td><td>Jejunum or ileum</td><td>Multiple dilated loops with air-fluid levels; \"triple bubble\" if proximal jejunal</td><td>Often vascular accident in utero; associated with gastroschisis, CF</td></tr>\n<tr><td><strong>Colonic atresia</strong></td><td>Rare; any segment</td><td>Massive proximal dilation</td><td>Associated with Hirschsprung, gastroschisis</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Duodenal Atresia",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Duodenal Atresia:</strong></p>\n<ul><li><strong>Double bubble sign:</strong> Pathognomonic on AXR. Two gas-filled structures (stomach and dilated proximal duodenum) with NO gas distally.</li>\n<li><strong>Prenatal:</strong> Polyhydramnios (50%), double bubble on prenatal US</li>\n<li><strong>Bilious vomiting</strong> in first 24–48h (obstruction is distal to ampulla in 85%)</li>\n<li><strong>Trisomy 21:</strong> Present in 30% — send karyotype/microarray. Also screen echo for cardiac anomalies.</li>\n<li><strong>Surgery:</strong> Diamond-shaped duodenoduodenostomy (bypass; NOT resection — ampulla is at the obstruction site). Urgent but not emergent — stabilize first.</li></ul>"
+              }
+            },
+            {
+              "label": "Jejunoileal Atresia",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Jejunoileal Atresia:</strong></p>\n<ul><li>Caused by in utero mesenteric vascular accident (not a failure of recanalization like duodenal atresia)</li>\n<li>Types: I (membrane), II (fibrous cord), IIIa (mesenteric gap), IIIb (apple-peel/Christmas tree — high morbidity), IV (multiple atresias)</li>\n<li>AXR: multiple dilated loops, air-fluid levels, absence of distal gas</li>\n<li>Contrast enema: microcolon (unused colon) confirms distal obstruction</li>\n<li>Surgery: resection of atretic segment with primary anastomosis. Apple-peel (IIIb) = high risk of short bowel syndrome.</li></ul>"
+              }
+            },
+            {
+              "label": "Stabilization",
+              "type": "html",
+              "content": {
+                "html": "<ol class=\"sl\">\n<li><strong>NPO + OG/NG to suction</strong> — decompress proximal bowel</li>\n<li><strong>IV fluids:</strong> D10W maintenance + NS boluses PRN for dehydration</li>\n<li><strong>Correct electrolyte losses</strong> (proximal obstruction → loss of HCl from vomiting → hypochloremic metabolic alkalosis)</li>\n<li><strong>Antibiotics if concerned for perforation or sepsis</strong></li>\n<li><strong>Associated anomaly screening:</strong> Karyotype (duodenal atresia + T21), echo, sweat chloride/CF screening (jejunoileal)</li>\n</ol>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Non-bilious\nprojectile\nemesis 2–6 wk",
+        "node": {
+          "id": "neonatal_surgical_emergencies-pyloric-stenosis-5",
+          "label": "Pyloric Stenosis",
+          "type": "urgent",
+          "description": "2–6 weeks · Projectile emesis · Correct alkalosis FIRST",
+          "panels": [
+            {
+              "label": "Diagnosis",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Infantile Hypertrophic Pyloric Stenosis:</strong> Progressive hypertrophy of the pyloric muscle causing gastric outlet obstruction. Incidence: 1–3/1,000. Male:female 4:1. Firstborn males at highest risk.</p>\n<ul><li><strong>Age of onset:</strong> 2–6 weeks (rarely presents in the first week)</li>\n<li><strong>Classic presentation:</strong> Progressive, projectile, NON-BILIOUS emesis. Hungry after vomiting (\"hungry vomiter\"). Visible gastric peristaltic waves on exam. Palpable \"olive\" in RUQ/epigastrium (pathognomonic but found in only ~30%).</li>\n<li><strong>Ultrasound diagnostic criteria:</strong> Pyloric muscle thickness ≥3 mm, pyloric channel length ≥15 mm</li>\n<li><strong>UGI:</strong> \"String sign\" (elongated pyloric channel), \"shoulder sign\" (hypertrophied muscle indenting antrum)</li></ul>"
+              }
+            },
+            {
+              "label": "Metabolic Correction",
+              "type": "html",
+              "content": {
+                "html": "<div class=\"bx br\">🚨 <strong>Pyloric stenosis is a MEDICAL emergency before it is a surgical one.</strong> The hypochloremic, hypokalemic metabolic alkalosis MUST be corrected before anesthesia. Operating on an alkalotic infant risks life-threatening apnea during induction.</div>\n<p><strong>Metabolic derangement:</strong> Loss of HCl from persistent vomiting → hypochloremic metabolic alkalosis with paradoxical aciduria (kidneys excrete H+ to retain K+ when both are low).</p>\n<p><strong>Correction protocol:</strong></p>\n<ol class=\"sl\">\n<li>IV NS + 20–40 mEq/L KCl (once voiding) at 1.5–2× maintenance</li>\n<li>Check BMP every 4–6h until corrected</li>\n<li><strong>Targets for surgery:</strong> CO₂ (bicarb) ≤30 mEq/L, Cl ≥100 mEq/L, K ≥3.5 mEq/L, pH ≤7.45</li>\n<li>Correction typically takes 12–48 hours</li>\n</ol>"
+              }
+            },
+            {
+              "label": "Pyloromyotomy",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Ramstedt Pyloromyotomy:</strong></p>\n<ul><li>Definitive treatment. Longitudinal incision through the hypertrophied pyloric muscle down to (but NOT through) the submucosa.</li>\n<li>Can be performed open (RUQ transverse incision) or laparoscopically</li>\n<li><strong>Complication:</strong> Duodenal perforation (mucosal breach) — test with air insufflation intraoperatively. If recognized and repaired intraoperatively, outcomes are good.</li>\n<li><strong>Post-op feeds:</strong> Ad lib feeding starting 4–6 hours post-op. Emesis in the first 24h is common and self-limited (edema at pyloromyotomy site). Do NOT delay feeds.</li>\n<li>Discharge typically within 24 hours</li></ul>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Firm, dark,\nnon-transillum\nscrotum",
+        "node": {
+          "id": "neonatal_surgical_emergencies-neonatal-testicular-torsion-6",
+          "label": "Neonatal Testicular Torsion",
+          "type": "emergency",
+          "description": "Extravaginal · Often prenatal · 6-hour window",
+          "panels": [
+            {
+              "label": "Neonatal vs Older",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Neonatal testicular torsion</strong> is almost always <strong>extravaginal</strong> (torsion of the entire spermatic cord and tunica vaginalis) — different from intravaginal torsion in older boys.</p>\n<ul><li>Often occurs prenatally (70–80% present at birth with necrotic testis)</li>\n<li>Bilateral in ~10–20% (catastrophic — risk of anorchia)</li>\n<li>Prenatal torsion: firm, non-tender, dark/discolored, non-transilluminating scrotum at birth — usually unsalvageable</li>\n<li>Postnatal torsion (20–30%): acute scrotal swelling, erythema, tenderness — potentially salvageable if &lt;6 hours</li></ul>"
+              }
+            },
+            {
+              "label": "Diagnosis",
+              "type": "html",
+              "content": {
+                "html": "<ul><li>Clinical diagnosis (US may help but should NOT delay surgical exploration)</li>\n<li>Doppler US: absent blood flow to affected testis. However, a normal-appearing US does NOT exclude early torsion.</li>\n<li>Transillumination: negative (solid mass) vs hydrocele (positive)</li>\n<li><strong>If postnatal onset with acute symptoms: surgical exploration is EMERGENT</strong> — do not delay for imaging</li></ul>"
+              }
+            },
+            {
+              "label": "Management",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Surgical approach:</strong></p>\n<ul><li><strong>Prenatal torsion (present at birth, necrotic):</strong> Debate exists. Many centers perform urgent exploration to: (1) confirm diagnosis, (2) perform orchiopexy of the contralateral testis to prevent bilateral loss. Timing controversial — some advocate immediate, others semi-urgent.</li>\n<li><strong>Postnatal torsion (acute onset):</strong> EMERGENT scrotal exploration. Detorsion if viable → orchiopexy (fix testis to prevent recurrence). If necrotic → orchiectomy. ALWAYS fix the contralateral testis (pexy) at the same operation.</li></ul>\n<div class=\"bx br\">🚨 <strong>Bilateral neonatal testicular torsion</strong> (synchronous or asynchronous) is the most devastating scenario — results in anorchia. Contralateral orchiopexy at the time of exploration for unilateral torsion is essential to prevent bilateral loss.</div>"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Groin\nswelling",
+        "node": {
+          "id": "neonatal_surgical_emergencies-inguinal-hernia-7",
+          "label": "Inguinal Hernia",
+          "type": "urgent",
+          "description": "Incarceration risk · Repair before discharge",
+          "panels": [
+            {
+              "label": "Neonatal Hernia",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Indirect inguinal hernia in neonates:</strong> Patent processus vaginalis allowing bowel/omentum/ovary/fallopian tube to enter the inguinal canal. Incidence: 1–5% of term; up to 30% of VLBW. Male >> female. Right > left > bilateral.</p>\n<ul><li>Presents as an intermittent or persistent bulge in the groin/scrotum (males) or labia (females)</li>\n<li>Increases with crying, straining, Valsalva</li>\n<li>Usually reducible with gentle pressure</li></ul>"
+              }
+            },
+            {
+              "label": "Incarceration",
+              "type": "html",
+              "content": {
+                "html": "<div class=\"bx br\">🚨 <strong>Incarcerated hernia = SURGICAL EMERGENCY.</strong> Bowel trapped in the hernia sac → venous congestion → arterial compromise → strangulation → necrosis. Also risk of testicular ischemia from compression of spermatic cord vessels.</div>\n<p><strong>Signs of incarceration:</strong> Irreducible bulge, tenderness, erythema of overlying skin, irritability, vomiting, abdominal distension.</p>\n<p><strong>Management of incarceration:</strong></p>\n<ol class=\"sl\">\n<li>Attempt gentle manual reduction (Trendelenburg position, gentle sustained pressure, ± sedation with small dose of morphine or midazolam)</li>\n<li>If reduction successful: schedule repair within 24–48 hours (high recurrence risk)</li>\n<li>If reduction fails: EMERGENT surgical exploration</li>\n<li>Check for testicular viability (Doppler US if concern for ischemia)</li>\n</ol>"
+              }
+            },
+            {
+              "label": "Timing of Repair",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Timing of repair:</strong></p>\n<ul><li>Full-term with reducible hernia: repair within 2 weeks of diagnosis (or before NICU discharge)</li>\n<li>Preterm in NICU: repair before discharge — many centers wait until infant approaches term GA to reduce anesthesia risk, but prolonged delay increases incarceration risk</li>\n<li>History of incarceration: repair within 24–48h after successful reduction</li>\n<li>Technique: open inguinal herniotomy (high ligation of processus vaginalis). Laparoscopic approach increasingly used.</li>\n<li>Contralateral exploration: controversial. Some centers explore contralaterally in all infants &lt;1 year; others use laparoscopy to inspect the contralateral internal ring.</li></ul>"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

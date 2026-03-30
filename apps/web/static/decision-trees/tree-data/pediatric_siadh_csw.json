@@ -1,0 +1,273 @@
+{
+  "id": "pediatric-siadh-csw",
+  "title": "Hyponatremia (Na < 135)",
+  "subtitle": "Serum Na < 135 · Low serum osmolality · Elevated urine Na",
+  "version": "1.0",
+  "source": "",
+  "mode": "pediatric",
+  "root": {
+    "id": "pediatric_siadh_csw-hyponatremia-na-135-1",
+    "label": "Hyponatremia (Na < 135)",
+    "type": "assessment",
+    "description": "Serum Na < 135 · Low serum osmolality · Elevated urine Na",
+    "panels": [
+      {
+        "label": "Initial Workup",
+        "type": "html",
+        "content": {
+          "html": "<p><strong>Hyponatremia workup:</strong></p>\n<ol class=\"sl\">\n<li><strong>Confirm:</strong> Serum Na, serum osmolality (must be low, &lt;280 mOsm/kg), glucose (correct Na for hyperglycemia: add 1.6 mEq/L per 100 mg/dL glucose above 100)</li>\n<li><strong>Urine studies:</strong> Urine Na, urine osmolality, urine specific gravity</li>\n<li><strong>Volume status:</strong> Weight trend, I&O balance, CVP if available, HR, BP, skin turgor, mucous membranes</li>\n<li><strong>Serum uric acid + FEurate:</strong> Critical for SIADH vs CSW differentiation</li>\n<li><strong>Additional:</strong> BUN, creatinine, TSH, cortisol (rule out hypothyroidism, adrenal insufficiency)</li>\n</ol>\n<div class=\"bx br\">🚨 <strong>If symptomatic</strong> (seizures, altered consciousness, headache): Treat FIRST with 3% NaCl 3-5 mL/kg over 10-20 min, THEN diagnose.</div>"
+        }
+      },
+      {
+        "label": "Common Causes in Children",
+        "type": "html",
+        "content": {
+          "html": "<p><strong>Pediatric causes of hyponatremia:</strong></p>\n<ul>\n<li><strong>SIADH:</strong> CNS infections/tumors, pneumonia, positive-pressure ventilation, pain/nausea/stress, medications (SSRIs, carbamazepine, vincristine, cyclophosphamide)</li>\n<li><strong>Cerebral salt wasting:</strong> Neurosurgery, TBI, subarachnoid hemorrhage, brain tumors, hydrocephalus</li>\n<li><strong>Adrenal insufficiency:</strong> CAH, Addison disease, steroid withdrawal</li>\n<li><strong>Hypothyroidism:</strong> Severe myxedema</li>\n<li><strong>Hypotonic IVF:</strong> Iatrogenic — most common preventable cause (AAP 2018 guideline addressed this)</li>\n<li><strong>GI losses + hypotonic replacement:</strong> Gastroenteritis with free water replacement</li>\n</ul>"
+        }
+      },
+      {
+        "label": "Correction Rate Safety",
+        "type": "html",
+        "content": {
+          "html": "<div class=\"bx br\">🚨 <strong>Correction rate limits — BRIGHT-LINE SAFETY RULES:</strong></div>\n<table class=\"rt\"><thead><tr><th>Scenario</th><th>Maximum Rate</th><th>Rationale</th></tr></thead><tbody>\n<tr><td>Chronic hyponatremia (&gt;48 hr)</td><td><strong>≤8-10 mEq/L per 24 hours</strong></td><td>Prevents osmotic demyelination syndrome (ODS/CPM)</td></tr>\n<tr><td>Acute hyponatremia (&lt;48 hr)</td><td><strong>≤12 mEq/L per 24 hours</strong></td><td>Faster correction safer because brain has not adapted</td></tr>\n<tr><td>Hypernatremia correction</td><td><strong>≤0.5 mEq/L per hour (10-12/24h)</strong></td><td>Prevents cerebral edema from idiogenic osmole mismatch</td></tr>\n</tbody></table>\n<p>Check sodium every 2-4 hours during active correction. If correcting too fast, consider DDAVP 1-2 mcg IV to slow correction.</p>"
+        }
+      }
+    ],
+    "children": [
+      {
+        "label": "Na < 135",
+        "node": {
+          "id": "pediatric_siadh_csw-symptomatic-seizures-ams-2",
+          "label": "Symptomatic? (seizures, AMS)",
+          "type": "decision",
+          "description": "Headache, nausea, confusion, lethargy, seizures",
+          "panels": [
+            {
+              "label": "Symptoms by Severity",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"rt\"><thead><tr><th>Severity</th><th>Na Range</th><th>Symptoms</th></tr></thead><tbody>\n<tr><td>Mild</td><td>130-134</td><td>Often asymptomatic, may have nausea, headache</td></tr>\n<tr><td>Moderate</td><td>125-129</td><td>Nausea, vomiting, headache, confusion, lethargy</td></tr>\n<tr><td>Severe</td><td>&lt;125</td><td>Seizures, obtundation, coma, respiratory arrest, cerebral herniation</td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "Why Children Are Vulnerable",
+              "type": "html",
+              "content": {
+                "html": "<p>Children have a <strong>larger brain-to-skull ratio</strong> than adults, leaving less room for cerebral edema. Hyponatremic encephalopathy is more likely to cause herniation in children. Moritz and Ayus documented <strong>over 50 cases of neurologic morbidity including 26 deaths</strong> from hospital-acquired hyponatremia in children (PMID: 12563043).</p>"
+              }
+            }
+          ],
+          "children": [
+            {
+              "label": "YES —\nseizures/AMS",
+              "node": {
+                "id": "pediatric_siadh_csw-3-nacl-emergent-bolus-3",
+                "label": "3% NaCl Emergent Bolus",
+                "type": "emergency",
+                "description": "3-5 mL/kg over 10-20 min · Raises Na ~4-6 mEq/L",
+                "panels": [
+                  {
+                    "label": "3% NaCl Protocol",
+                    "type": "html",
+                    "content": {
+                      "html": "<ol class=\"sl\">\n<li><strong>3% NaCl: 3-5 mL/kg IV over 10-20 minutes</strong> (513 mEq/L Na)</li>\n<li>Expected rise: ~4-6 mEq/L acutely</li>\n<li>May repeat once if seizures persist after 15 min</li>\n<li>Recheck Na immediately after bolus, then q2h</li>\n<li>Once seizures stop, transition to slower correction protocol</li>\n<li><strong>Total correction must not exceed 8-10 mEq/L in first 24 hours</strong> for chronic hyponatremia</li>\n</ol>\n<div class=\"bx br\">🚨 Na deficit formula: <strong>Na deficit (mEq) = 0.6 × weight (kg) × (desired Na - current Na)</strong></div>"
+                    }
+                  },
+                  {
+                    "label": "Peripheral IV Safety",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Peripheral IV administration of 3% NaCl is SAFE for emergent boluses.</strong> Brenkert et al. (PMID: 23283268) showed 87% of pediatric ED 3% NaCl doses were given peripherally without complications. Do NOT delay treatment waiting for central access.</p>"
+                    }
+                  },
+                  {
+                    "label": "Evidence",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Evidence:</strong> Sarnaik et al. (PMID: 2055051) demonstrated that 3% NaCl 4-6 mL/kg boluses stopped hyponatremic seizures in all children, while conventional anticonvulsants alone failed in 13/28 cases. Hyponatremic seizures are a <strong>sodium problem, not a seizure problem</strong> — fix the sodium.</p>"
+                    }
+                  }
+                ],
+                "children": [
+                  {
+                    "label": "Seizures\ncontrolled",
+                    "node": {
+                      "id": "pediatric_siadh_csw-assess-volume-status-4",
+                      "label": "Assess Volume Status",
+                      "type": "assessment",
+                      "description": "Weight trend · I&O · CVP · BUN · Clinical exam",
+                      "panels": [
+                        {
+                          "label": "Volume Assessment",
+                          "type": "html",
+                          "content": {
+                            "html": "<p><strong>Volume status is THE critical differentiator between SIADH and CSW.</strong></p>\n<ul>\n<li><strong>Weight:</strong> Daily weights — gained weight suggests SIADH (dilutional); lost weight suggests CSW (salt wasting + dehydration)</li>\n<li><strong>I&O:</strong> Negative fluid balance suggests CSW; positive/neutral suggests SIADH</li>\n<li><strong>Heart rate / BP:</strong> Tachycardia and hypotension suggest hypovolemia (CSW)</li>\n<li><strong>BUN:</strong> Low/dilutional in SIADH; elevated in CSW (hemoconcentration)</li>\n<li><strong>Urine output:</strong> Decreased in SIADH; polyuria in CSW</li>\n<li><strong>CVP:</strong> Normal/high in SIADH; low in CSW</li>\n</ul>"
+                          }
+                        },
+                        {
+                          "label": "Key Labs",
+                          "type": "html",
+                          "content": {
+                            "html": "<table class=\"rt\"><thead><tr><th>Lab</th><th>SIADH</th><th>CSW</th></tr></thead><tbody>\n<tr><td>Urine Na</td><td>&gt;40 mEq/L</td><td>&gt;40 mEq/L (SAME)</td></tr>\n<tr><td>Urine Osm</td><td>&gt;100 mOsm/kg</td><td>&gt;100 mOsm/kg (SAME)</td></tr>\n<tr><td>Serum uric acid</td><td>Low</td><td>Low (SAME)</td></tr>\n<tr><td>24h urine Na excretion</td><td>~51 mmol/24h</td><td><strong>~394 mmol/24h</strong></td></tr>\n<tr><td>FEurate (during hyponatremia)</td><td>Elevated (&gt;11%)</td><td>Elevated (&gt;11%) (SAME)</td></tr>\n<tr><td><strong>FEurate AFTER Na corrected</strong></td><td><strong>Normalizes (4-11%)</strong></td><td><strong>Remains elevated (&gt;11%)</strong></td></tr>\n</tbody></table>\n<div class=\"bx bo\">⚠️ <strong>FEurate after Na correction is the most reliable differentiator</strong> (Bardanzellu et al., Pediatr Nephrol 2022; PMID: 34468821).</div>"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "NO —\nasymptomatic",
+              "node": {
+                "id": "pediatric_siadh_csw-assess-volume-status-5",
+                "label": "Assess Volume Status",
+                "type": "assessment",
+                "description": "Weight trend · I&O · CVP · BUN · Clinical exam",
+                "panels": [
+                  {
+                    "label": "Evaluation Algorithm",
+                    "type": "html",
+                    "content": {
+                      "html": "<ol class=\"sl\">\n<li>Confirm true hypotonic hyponatremia (low serum osm, not pseudohyponatremia)</li>\n<li>Check urine Na and urine osmolality</li>\n<li>If urine Na &gt;40 AND urine osm &gt;100 → SIADH or CSW (need volume status to differentiate)</li>\n<li>If urine Na &lt;20 → extrarenal losses or low effective circulating volume</li>\n<li>Assess daily weight trend, I&O, BUN, CVP</li>\n<li>Order serum uric acid and calculate FEurate</li>\n</ol>"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Volume\nassessment",
+        "node": {
+          "id": "pediatric_siadh_csw-siadh-vs-csw-differentiation-6",
+          "label": "SIADH vs CSW Differentiation",
+          "type": "decision",
+          "description": "Both have: low Na, elevated UNa, low serum osm",
+          "panels": [
+            {
+              "label": "Comparison Table",
+              "type": "html",
+              "content": {
+                "html": "<table class=\"dt\"><thead><tr><th>Parameter</th><th>SIADH</th><th>CSW</th></tr></thead><tbody>\n<tr><td><strong>Volume status</strong></td><td>Euvolemic / hypervolemic</td><td><strong>Hypovolemic</strong></td></tr>\n<tr><td>Body weight</td><td>Stable or increased</td><td><strong>Decreased</strong></td></tr>\n<tr><td>Urine output</td><td>Decreased / normal</td><td><strong>Polyuria</strong></td></tr>\n<tr><td>CVP</td><td>Normal / high</td><td><strong>Low</strong></td></tr>\n<tr><td>BUN</td><td>Low (dilutional)</td><td><strong>Elevated</strong></td></tr>\n<tr><td>Fluid balance</td><td>Positive / neutral</td><td><strong>Negative</strong></td></tr>\n<tr><td>24h urine Na</td><td>~51 mmol/24h</td><td><strong>~394 mmol/24h</strong></td></tr>\n<tr><td>FEurate after Na correction</td><td><strong>Normalizes (4-11%)</strong></td><td><strong>Remains &gt;11%</strong></td></tr>\n<tr><td>Fluid restriction response</td><td>Improves</td><td><strong>WORSENS</strong></td></tr>\n</tbody></table>"
+              }
+            },
+            {
+              "label": "FEurate — The Key Test",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>Fractional excretion of uric acid (FEurate)</strong> is calculated as:</p>\n<p style=\"font-family:'IBM Plex Mono',monospace;font-size:14px;padding:8px;background:var(--surface);border-radius:6px;margin:8px 0\">FEurate = (Urine uric acid × Serum Cr) / (Serum uric acid × Urine Cr) × 100</p>\n<p><strong>During hyponatremia:</strong> Both SIADH and CSW show elevated FEurate (&gt;11%) — not helpful yet.</p>\n<p><strong>After sodium is corrected to normal:</strong></p>\n<ul>\n<li><strong>SIADH:</strong> FEurate normalizes to 4-11% → confirms SIADH</li>\n<li><strong>CSW:</strong> FEurate remains &gt;11% → confirms CSW</li>\n</ul>\n<div class=\"bx bg\">✓ This is the <strong>single most reliable differentiator</strong> and should be checked once Na is corrected (Bardanzellu et al., PMID: 34468821).</div>"
+              }
+            },
+            {
+              "label": "When Uncertain",
+              "type": "html",
+              "content": {
+                "html": "<div class=\"bx br\">🚨 <strong>When uncertain between SIADH and CSW, treat as CSW.</strong> Volume expansion is safer than restriction in neurosurgical patients. Restricting fluids in a patient with CSW worsens hypovolemia and threatens cerebral perfusion.</div>\n<p>Re-evaluate after 12-24 hours of NS infusion: if Na rises and patient improves → likely CSW. If Na fails to correct or worsens → likely SIADH, switch to restriction.</p>"
+              }
+            }
+          ],
+          "children": [
+            {
+              "label": "Euvolemic\nweight stable",
+              "node": {
+                "id": "pediatric_siadh_csw-siadh-confirmed-7",
+                "label": "SIADH Confirmed",
+                "type": "diagnosis",
+                "description": "Euvolemic · FEurate normalizes after Na correction",
+                "panels": [
+                  {
+                    "label": "Treatment Protocol",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>SIADH management — RESTRICT fluids:</strong></p>\n<ol class=\"sl\">\n<li><strong>Fluid restrict to 2/3 maintenance</strong> (first-line)</li>\n<li>If Na not improving after 24-48h, restrict to <strong>1/2 maintenance</strong></li>\n<li>Isotonic saline for any necessary IV access (do NOT use hypotonic)</li>\n<li>Address underlying cause (treat infection, stop offending medications)</li>\n<li>If refractory: consider salt tablets (1-2 g NaCl PO q6-8h) or loop diuretics</li>\n<li>For severe refractory SIADH: <strong>tolvaptan</strong> (V2 receptor antagonist) — specialist consultation required</li>\n</ol>\n<div class=\"bx bo\">⚠️ Fluid restriction in SIADH is therapeutic. But fluid restriction in CSW is <strong>DANGEROUS</strong> — always confirm diagnosis before restricting.</div>"
+                    }
+                  },
+                  {
+                    "label": "Common Causes",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Common pediatric SIADH causes:</strong></p>\n<ul>\n<li><strong>CNS:</strong> Meningitis, encephalitis, brain tumors, head trauma, neurosurgery, seizures</li>\n<li><strong>Pulmonary:</strong> Pneumonia, bronchiolitis (especially RSV), positive-pressure ventilation, asthma</li>\n<li><strong>Medications:</strong> SSRIs, carbamazepine, oxcarbazepine, vincristine, cyclophosphamide, desmopressin, opioids</li>\n<li><strong>Other:</strong> Pain, nausea, stress, postoperative state (ADH elevated 3+ days post-op)</li>\n</ul>\n<p>~30% of hospitalized febrile children meet criteria for SIAD.</p>"
+                    }
+                  },
+                  {
+                    "label": "Monitoring",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>Monitoring during SIADH treatment:</strong></p>\n<ul>\n<li>Na every 4-8 hours initially, then every 12-24 hours once stable</li>\n<li>Daily weights (should stabilize or decrease)</li>\n<li>Strict I&O</li>\n<li>Urine specific gravity and osmolality</li>\n<li>Ensure correction rate &lt;8-10 mEq/L per 24 hours</li>\n</ul>"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "label": "Hypovolemic\nweight loss",
+              "node": {
+                "id": "pediatric_siadh_csw-cerebral-salt-wasting-8",
+                "label": "Cerebral Salt Wasting",
+                "type": "diagnosis",
+                "description": "Hypovolemic · Polyuria · FEurate stays elevated",
+                "panels": [
+                  {
+                    "label": "Treatment Protocol",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>CSW management — EXPAND volume:</strong></p>\n<ol class=\"sl\">\n<li><strong>0.9% NS at 1.5-2× maintenance</strong> — replace sodium and volume</li>\n<li>If Na &lt;120 or symptomatic: <strong>3% NaCl at 0.5-1 mL/kg/hr</strong> continuous infusion (with q2h Na checks)</li>\n<li><strong>Replace ongoing urinary sodium losses</strong> — measure 24h urine Na and replace mEq-for-mEq</li>\n<li>Oral NaCl supplementation: 1-2 g PO q6-8h if tolerating oral</li>\n<li>Fludrocortisone 0.05-0.2 mg PO daily (mineralocorticoid — promotes Na retention)</li>\n<li>Monitor weight, urine output, Na closely</li>\n</ol>\n<div class=\"bx br\">🚨 <strong>Treating CSW with fluid restriction (as you would SIADH) worsens hypovolemia and threatens cerebral perfusion.</strong> This is the highest-risk misdiagnosis in pediatric sodium management.</div>"
+                    }
+                  },
+                  {
+                    "label": "Causes",
+                    "type": "html",
+                    "content": {
+                      "html": "<p><strong>CSW causes:</strong></p>\n<ul>\n<li><strong>Neurosurgery</strong> (most common) — especially posterior fossa, hypothalamic/pituitary region</li>\n<li><strong>Traumatic brain injury</strong></li>\n<li><strong>Subarachnoid hemorrhage</strong></li>\n<li><strong>Brain tumors</strong> (craniopharyngioma, glioma)</li>\n<li><strong>Hydrocephalus</strong></li>\n<li><strong>Meningitis / encephalitis</strong></li>\n</ul>\n<p>Mechanism: Release of <strong>brain natriuretic peptide (BNP)</strong> and possibly other natriuretic factors from injured brain tissue causes renal sodium wasting and volume depletion.</p>"
+                    }
+                  },
+                  {
+                    "label": "Key Differences from SIADH",
+                    "type": "html",
+                    "content": {
+                      "html": "<div class=\"bx bo\">⚠️ <strong>The critical difference:</strong> SIADH = too much water (dilutional). CSW = too little sodium (true depletion). Both show low Na and high urine Na — but the volume status and treatment are OPPOSITE.</div>\n<p>In SIADH, ADH retains water → euvolemia/hypervolemia → restriction works.</p>\n<p>In CSW, natriuretic peptides waste sodium → hypovolemia → expansion required.</p>\n<p><strong>FEurate after correction resolves the ambiguity.</strong></p>"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "Severe\nNa < 120",
+        "node": {
+          "id": "pediatric_siadh_csw-hypertonic-saline-continuous-infusion-9",
+          "label": "Hypertonic Saline Continuous Infusion",
+          "type": "urgent",
+          "description": "3% NaCl 0.5-1 mL/kg/hr · Check Na q2h · Max 8-10 mEq/24h",
+          "panels": [
+            {
+              "label": "Continuous Infusion Protocol",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>3% NaCl continuous infusion for severe hyponatremia:</strong></p>\n<ol class=\"sl\">\n<li>Start at <strong>0.5-1 mL/kg/hr</strong></li>\n<li>Check Na every <strong>2 hours</strong></li>\n<li>Target rise: <strong>1-2 mEq/L per hour</strong> initially, then slow</li>\n<li><strong>Maximum total correction: 8-10 mEq/L in first 24 hours</strong></li>\n<li>Once Na &gt;125 and asymptomatic, transition to isotonic maintenance and treat underlying cause</li>\n</ol>"
+              }
+            },
+            {
+              "label": "Rate Calculation",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>3% NaCl infusion rate calculation:</strong></p>\n<p style=\"font-family:'IBM Plex Mono',monospace;font-size:13px;padding:8px;background:var(--surface);border-radius:6px;margin:8px 0\">Rate (mL/hr) = Desired Na rise (mEq/hr) × TBW (L) / 513</p>\n<p>Where TBW = 0.6 × weight (kg) for children</p>\n<p>3% NaCl = 513 mEq/L Na</p>"
+              }
+            },
+            {
+              "label": "Overcorrection Rescue",
+              "type": "html",
+              "content": {
+                "html": "<p><strong>If Na corrects too fast (&gt;10-12 mEq/L in 24h):</strong></p>\n<ol class=\"sl\">\n<li><strong>Stop hypertonic saline immediately</strong></li>\n<li>Switch to D5W to lower sodium back toward safe correction range</li>\n<li><strong>DDAVP 1-2 mcg IV q8h</strong> — prevents further water excretion, effectively pauses correction</li>\n<li>Target: bring Na back to no more than 8 mEq/L above the starting value for that 24-hour period</li>\n<li>Osmotic demyelination syndrome risk is highest with chronic (&gt;48h) hyponatremia corrected too fast</li>\n</ol>"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
