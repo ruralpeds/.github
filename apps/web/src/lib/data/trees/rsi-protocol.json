@@ -1,0 +1,383 @@
+{
+	"id": "rsi-2025",
+	"title": "Rapid Sequence Intubation",
+	"version": "1.0",
+	"mode": "pediatric",
+	"source": "AHA PALS 2025 / PEM Consensus",
+	"lastUpdated": "2025-03",
+	"root": {
+		"id": "rsi-decision",
+		"label": "Intubation Indicated",
+		"type": "decision",
+		"description": "Failure to maintain/protect airway, respiratory failure, GCS ≤8",
+		"panels": [
+			{
+				"label": "Indications",
+				"type": "list",
+				"content": {
+					"title": "Consider RSI when:",
+					"items": [
+						"Failure to maintain or protect airway",
+						"Respiratory failure despite NIV",
+						"GCS ≤8 or rapidly declining consciousness",
+						"Need for controlled ventilation (status epilepticus, TBI)",
+						"Anticipatory (transfer of unstable patient)"
+					]
+				}
+			}
+		],
+		"children": [
+			{
+				"label": "Proceed with RSI",
+				"node": {
+					"id": "preparation",
+					"label": "SOAP-ME Preparation",
+					"type": "action",
+					"description": "Suction, Oxygen, Airway, Pharmacology, Monitoring, Equipment",
+					"panels": [
+						{
+							"label": "SOAP-ME Checklist",
+							"type": "table",
+							"content": {
+								"headers": [
+									"Letter",
+									"Item",
+									"Check"
+								],
+								"rows": [
+									[
+										"S",
+										"Suction",
+										"Yankauer + flexible catheter connected and tested"
+									],
+									[
+										"O",
+										"Oxygen",
+										"BVM with appropriate mask, 15 L/min O₂, PEEP valve if available"
+									],
+									[
+										"A",
+										"Airway",
+										"Laryngoscope blade tested, ETT + backup sizes, stylet loaded, LMA ready"
+									],
+									[
+										"P",
+										"Pharmacology",
+										"Induction + paralytic drawn up, doses verified by 2nd provider"
+									],
+									[
+										"M",
+										"Monitoring",
+										"SpO₂, ETCO₂ (gold standard), cardiac monitor, BP cuff"
+									],
+									[
+										"E",
+										"Equipment",
+										"Tube holder + tape, stethoscope, NG/OG tube"
+									]
+								]
+							}
+						},
+						{
+							"label": "Equipment Sizing",
+							"type": "dosing",
+							"content": {
+								"drugs": [
+									"epinephrine"
+								],
+								"notes": "ETT, blade, LMA, and depth auto-calculated from patient weight/age in the banner."
+							}
+						}
+					],
+					"wasmCompute": [
+						{
+							"fn": "getEquipmentSizing",
+							"args": [],
+							"displayKey": "equipment",
+							"format": "equipment"
+						}
+					],
+					"children": [
+						{
+							"label": "Equipment ready",
+							"node": {
+								"id": "preoxygenate",
+								"label": "Preoxygenate",
+								"type": "action",
+								"description": "3-5 min 100% FiO₂ via NRB. Avoid PPV if possible.",
+								"panels": [
+									{
+										"label": "Technique",
+										"type": "list",
+										"content": {
+											"items": [
+												"3-5 minutes with 100% FiO₂ via non-rebreather mask",
+												"Avoid positive-pressure ventilation (reduces aspiration risk)",
+												"Consider nasal cannula at max flow during attempt for apneic oxygenation",
+												"Infant: shoulder roll to achieve sniffing position (large occiput)",
+												"Child: folded towel under occiput for sniffing position"
+											]
+										}
+									}
+								],
+								"children": [
+									{
+										"label": "SpO₂ ≥95%",
+										"node": {
+											"id": "induction",
+											"label": "Induction — Ketamine",
+											"type": "emergency",
+											"description": "Ketamine 2 mg/kg IV push (PREFERRED)",
+											"wasmCompute": [
+												{
+													"fn": "calculateDose",
+													"args": [
+														"ketamine"
+													],
+													"displayKey": "ketDose",
+													"format": "dose"
+												}
+											],
+											"panels": [
+												{
+													"label": "Why Ketamine",
+													"type": "list",
+													"content": {
+														"title": "Ketamine is PREFERRED for rural RSI",
+														"items": [
+															"Hemodynamic stability (does not drop BP)",
+															"Bronchodilatory (ideal for asthma)",
+															"Preserves respiratory drive during apneic period",
+															"Analgesic + amnestic",
+															"IM route available (3-5 mg/kg) if no IV access",
+															"Safe in shock, asthma, seizures, TBI"
+														]
+													}
+												},
+												{
+													"label": "Cautions",
+													"type": "list",
+													"content": {
+														"title": "Relative cautions (NOT absolute contraindications)",
+														"items": [
+															"Active psychosis (rare in children)",
+															"Known or strongly suspected globe injury",
+															"Emergence reactions: treat with low-dose midazolam"
+														]
+													}
+												}
+											],
+											"children": [
+												{
+													"label": "Onset 30-60 sec",
+													"node": {
+														"id": "paralysis",
+														"label": "Paralysis — Rocuronium",
+														"type": "emergency",
+														"description": "Rocuronium 1 mg/kg IV push",
+														"panels": [
+															{
+																"label": "Paralytic Choice",
+																"type": "table",
+																"content": {
+																	"headers": [
+																		"Agent",
+																		"Dose",
+																		"Onset",
+																		"Duration",
+																		"Notes"
+																	],
+																	"rows": [
+																		[
+																			"Rocuronium (PREFERRED)",
+																			"1 mg/kg",
+																			"45-60 sec",
+																			"30-60 min",
+																			"No hyperkalemia risk. Reversible with sugammadex."
+																		],
+																		[
+																			"Succinylcholine (ALT)",
+																			"2 mg/kg",
+																			"30-45 sec",
+																			"5-10 min",
+																			"CONTRAINDICATED: burns >48h, crush, neuromuscular disease, hyperkalemia risk"
+																		]
+																	]
+																}
+															}
+														],
+														"children": [
+															{
+																"label": "Jaw relaxed (45-60 sec)",
+																"node": {
+																	"id": "intubation",
+																	"label": "Laryngoscopy + Intubation",
+																	"type": "action",
+																	"description": "Direct visualization of cords. Pass ETT. Confirm.",
+																	"children": [
+																		{
+																			"label": "ETT placed",
+																			"node": {
+																				"id": "confirm",
+																				"label": "Confirm Placement",
+																				"type": "assessment",
+																				"description": "ETCO₂ waveform (GOLD STANDARD)",
+																				"panels": [
+																					{
+																						"label": "Confirmation",
+																						"type": "list",
+																						"content": {
+																							"title": "ALL of the following:",
+																							"items": [
+																								"ETCO₂ waveform — GOLD STANDARD (must see consistent waveform)",
+																								"Bilateral breath sounds (auscultate axillae)",
+																								"Chest rise with ventilation",
+																								"Absence of epigastric sounds",
+																								"SpO₂ trending up or stable",
+																								"Chest radiograph to confirm position"
+																							]
+																						}
+																					}
+																				],
+																				"children": [
+																					{
+																						"label": "Confirmed",
+																						"node": {
+																							"id": "post-intubation",
+																							"label": "Post-Intubation Care",
+																							"type": "stable",
+																							"description": "Secure tube, sedation, ventilator, NG tube",
+																							"panels": [
+																								{
+																									"label": "Post-Intubation Orders",
+																									"type": "list",
+																									"content": {
+																										"items": [
+																											"Secure ETT with commercial holder + tape",
+																											"Sedation: Midazolam 0.1 mg/kg q1-2h PRN",
+																											"Analgesia: Fentanyl 1-2 mcg/kg q1h PRN",
+																											"Set initial ventilator parameters",
+																											"Place NG/OG tube to decompress stomach",
+																											"Chest radiograph for ETT position"
+																										]
+																									}
+																								}
+																							]
+																						}
+																					}
+																				]
+																			}
+																		},
+																		{
+																			"label": "Failed attempt",
+																			"node": {
+																				"id": "failed-airway",
+																				"label": "Failed Airway — Plan B",
+																				"type": "emergency",
+																				"description": "LMA → BVM → Reattempt → Surgical airway",
+																				"panels": [
+																					{
+																						"label": "Rescue Sequence",
+																						"type": "list",
+																						"content": {
+																							"title": "Stepwise rescue",
+																							"items": [
+																								"Step 1: Insert LMA — ventilate through LMA",
+																								"Step 2: If LMA fails — BVM with two-person technique",
+																								"Step 3: Reposition, reattempt with different blade/provider",
+																								"Step 4 (<8 yr): Needle cricothyrotomy with 14-18G angiocatheter",
+																								"Step 4 (≥8 yr): Surgical cricothyrotomy with 4.0-6.0 cuffed trach/ETT"
+																							]
+																						}
+																					},
+																					{
+																						"label": "Critical Warning",
+																						"type": "alert",
+																						"content": {
+																							"severity": "emergency",
+																							"title": "Cannot Intubate, Cannot Oxygenate",
+																							"body": "If SpO₂ falling despite BVM and LMA: proceed immediately to surgical airway. Do not make repeated intubation attempts. Oxygenation takes priority over intubation."
+																						}
+																					}
+																				]
+																			}
+																		}
+																	]
+																}
+															}
+														]
+													}
+												}
+											]
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			}
+		]
+	},
+	"textbook": {
+		"title": "Rapid Sequence Intubation in the Rural Emergency Department",
+		"blocks": [
+			{
+				"type": "heading",
+				"level": 1,
+				"text": "Overview"
+			},
+			{
+				"type": "paragraph",
+				"text": "Rapid sequence intubation (RSI) is the simultaneous administration of an induction agent and a neuromuscular blocking agent to facilitate endotracheal intubation. In the rural ED, RSI is the most common method of emergency airway management and requires systematic preparation, practiced technique, and a clear failed-airway plan."
+			},
+			{
+				"type": "keypoint",
+				"text": "<strong>Ketamine + Rocuronium</strong> is the preferred RSI combination for the rural emergency department. Ketamine preserves hemodynamics, provides bronchodilation, and has a wide safety margin. Rocuronium avoids the hyperkalemia risks of succinylcholine."
+			},
+			{
+				"type": "heading",
+				"level": 1,
+				"text": "Preparation"
+			},
+			{
+				"type": "paragraph",
+				"text": "The SOAP-ME mnemonic ensures systematic preparation. Every item must be verified before medication administration. All doses should be verified by a second provider. Equipment should be tested — check laryngoscope light, suction pressure, and BVM seal before pushing medications."
+			},
+			{
+				"type": "alert",
+				"severity": "emergency",
+				"title": "Critical Safety Rule",
+				"body": "NEVER push the paralytic until you have confirmed you can ventilate the patient with BVM. If you cannot bag the patient, do not paralyze them."
+			},
+			{
+				"type": "heading",
+				"level": 1,
+				"text": "Preoxygenation"
+			},
+			{
+				"type": "paragraph",
+				"text": "Preoxygenation with 100% FiO₂ for 3-5 minutes creates a nitrogen washout that extends the safe apnea time. In children, this window is shorter than in adults due to higher oxygen consumption relative to FRC. Apneic oxygenation via nasal cannula at maximum flow during the intubation attempt can further extend this window."
+			},
+			{
+				"type": "heading",
+				"level": 1,
+				"text": "Post-Intubation Management"
+			},
+			{
+				"type": "paragraph",
+				"text": "Confirmation of ETT placement requires ETCO₂ waveform capnography — this is the gold standard and must be documented. Colorimetric CO₂ detectors are acceptable but waveform is preferred. After confirmation, the tube must be secured, sedation/analgesia initiated, and initial ventilator parameters set based on the underlying condition."
+			}
+		],
+		"references": [
+			{
+				"id": "pals2025-airway",
+				"authors": "Topjian AA, Raymond TT, Atkins D, et al.",
+				"title": "Part 4: Pediatric Advanced Life Support — 2025 AHA Guidelines",
+				"journal": "Circulation",
+				"year": 2025,
+				"note": "PALS airway management recommendations"
+			}
+		]
+	}
+}

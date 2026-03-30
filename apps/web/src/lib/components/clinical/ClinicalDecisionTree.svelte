@@ -339,9 +339,8 @@
 					</div>
 
 					<!-- Tabbed panels -->
-					{@const panels = popupNode.panels}
 					<div class="popup__tabs">
-						{#each panels as panel, i}
+						{#each popupNode.panels as panel, i}
 							<button
 								class="popup__tab"
 								class:active={i === 0}

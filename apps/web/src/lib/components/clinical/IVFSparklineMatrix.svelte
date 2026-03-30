@@ -17,7 +17,11 @@
    *   <IVFSparklineMatrix initialWeek={28} initialDol={1} />
    */
   import { onMount, tick } from 'svelte';
-  import * as d3 from 'd3';
+  import { select, selectAll } from 'd3-selection';
+  import { scaleLinear } from 'd3-scale';
+  import { area, line, curveCatmullRom } from 'd3-shape';
+
+  const d3 = { select, scaleLinear, area, line, curveCatmullRom };
 
   // ── Props ──────────────────────────────────────────────────────────
   export let initialWeek: number = 28;

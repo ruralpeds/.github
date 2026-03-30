@@ -116,6 +116,30 @@ const PedsCDSTree = (() => {
       if (e.target === e.currentTarget) closePopup();
     });
 
+    // Back button — go to referrer or decision tree listing
+    const backBtn = document.getElementById('cds-back');
+    if (backBtn) {
+      const ref = document.referrer;
+      if (ref && new URL(ref).origin === location.origin && !ref.includes(location.pathname)) {
+        backBtn.setAttribute('href', ref);
+      } else {
+        // Default: go to parent directory (decision-trees listing) or SvelteKit app
+        backBtn.setAttribute('href', '/reference/decision-trees');
+      }
+    }
+
+    // Measure header and adjust SVG offset so tree is never hidden behind it
+    requestAnimationFrame(() => {
+      const hdr = document.getElementById('cds-header');
+      const banner = document.getElementById('ped-shell-banner');
+      if (hdr) {
+        const bannerH = banner ? banner.offsetHeight : 0;
+        hdr.style.top = bannerH + 'px';
+        const totalH = bannerH + hdr.offsetHeight;
+        document.documentElement.style.setProperty('--cds-header-h', totalH + 'px');
+      }
+    });
+
     // Build D3 tree
     buildTree();
 
@@ -138,12 +162,15 @@ const PedsCDSTree = (() => {
     return `
 <div id="cds-header">
   <div class="cds-hdr-left">
-    <h1 id="cds-title">${data.title || ''}</h1>
-    <div class="cds-hdr-meta">
-      ${sourceBadge}
-      ${data.version ? `<span class="cds-version-badge">v${data.version}</span>` : ''}
+    <a id="cds-back" class="cds-btn cds-back-btn" title="Back to Decision Trees">← Back</a>
+    <div class="cds-hdr-title-wrap">
+      <h1 id="cds-title">${data.title || ''}</h1>
+      <div class="cds-hdr-meta">
+        ${sourceBadge}
+        ${data.version ? `<span class="cds-version-badge">v${data.version}</span>` : ''}
+      </div>
+      ${data.subtitle ? `<div class="cds-subtitle">${data.subtitle}</div>` : ''}
     </div>
-    ${data.subtitle ? `<div class="cds-subtitle">${data.subtitle}</div>` : ''}
   </div>
   <div class="cds-hdr-right">
     <button id="cds-reset" class="cds-btn" title="Reset zoom">⟲ Reset</button>
@@ -172,9 +199,12 @@ const PedsCDSTree = (() => {
   // ── Build tree ─────────────────────────────────────────────────────────
   function buildTree() {
     const svgEl = document.getElementById('cds-svg');
+    const hdr = document.getElementById('cds-header');
+    const banner = document.getElementById('ped-shell-banner');
+    const headerH = (hdr ? hdr.offsetHeight : 0) + (banner ? banner.offsetHeight : 0);
     svg = d3.select(svgEl)
       .attr('width', window.innerWidth)
-      .attr('height', window.innerHeight);
+      .attr('height', window.innerHeight - headerH);
 
     zoom = d3.zoom()
       .scaleExtent([0.2, 3])
@@ -452,22 +482,25 @@ const PedsCDSTree = (() => {
 
   // ── CSS injection ──────────────────────────────────────────────────────
   const STYLES = `
-#cds-header{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--bg,#0b1121);
-  border-bottom:1px solid var(--border,#334155);padding:12px 20px;
+#cds-header{position:fixed;top:0;left:0;right:0;z-index:200;background:var(--bg,#0b1121);
+  border-bottom:1px solid var(--border,#334155);padding:10px 16px;
   display:flex;align-items:center;justify-content:space-between;gap:12px}
-.cds-hdr-left h1{font-family:'DM Serif Display',serif;font-size:1.3rem;
-  color:var(--accent,#38bdf8);margin:0}
-.cds-subtitle{font-size:.75rem;color:var(--text2,#94a3b8);margin-top:2px}
-.cds-hdr-meta{display:flex;gap:6px;margin-top:4px}
+.cds-hdr-left{display:flex;align-items:center;gap:12px}
+.cds-hdr-title-wrap{display:flex;flex-direction:column}
+.cds-hdr-left h1{font-family:'DM Serif Display',serif;font-size:1.15rem;
+  color:var(--accent,#38bdf8);margin:0;line-height:1.3}
+.cds-subtitle{font-size:.72rem;color:var(--text2,#94a3b8);margin-top:1px}
+.cds-hdr-meta{display:flex;gap:6px;margin-top:3px}
 .cds-source-badge,.cds-version-badge{font-family:'IBM Plex Mono',monospace;
   font-size:.65rem;padding:.15rem .5rem;border-radius:4px;
   background:var(--surface,#1e293b);border:1px solid var(--border,#334155);
   color:var(--text2,#94a3b8)}
+.cds-back-btn{text-decoration:none;white-space:nowrap;flex-shrink:0}
 .cds-btn{background:var(--surface,#1e293b);border:1px solid var(--border,#334155);
   color:var(--text,#e2e8f0);padding:6px 14px;border-radius:7px;
   font-family:'IBM Plex Sans',sans-serif;font-size:.75rem;cursor:pointer}
 .cds-btn:hover{border-color:var(--accent,#38bdf8);color:var(--accent,#38bdf8)}
-#cds-svg{width:100vw;height:100vh;cursor:grab}
+#cds-svg{width:100vw;height:calc(100vh - var(--cds-header-h,70px));margin-top:var(--cds-header-h,70px);cursor:grab}
 #cds-svg:active{cursor:grabbing}
 .cds-link{fill:none;stroke:var(--border,#334155);stroke-width:1.8;stroke-opacity:.85}
 .cds-node-rect{rx:10;stroke-width:1.5;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25));
@@ -570,9 +603,22 @@ const PedsCDSTree = (() => {
   styleEl.textContent = STYLES;
   document.head.appendChild(styleEl);
 
-  // Resize handler
+  // Resize handler — also recalculate header offset
   window.addEventListener('resize', () => {
-    if (svg) svg.attr('width', window.innerWidth).attr('height', window.innerHeight);
+    const hdr = document.getElementById('cds-header');
+    const banner = document.getElementById('ped-shell-banner');
+    if (hdr) {
+      const bannerH = banner ? banner.offsetHeight : 0;
+      hdr.style.top = bannerH + 'px';
+      const totalH = bannerH + hdr.offsetHeight;
+      document.documentElement.style.setProperty('--cds-header-h', totalH + 'px');
+      if (svg) {
+        const svgH = window.innerHeight - totalH;
+        svg.attr('width', window.innerWidth).attr('height', svgH);
+      }
+    } else if (svg) {
+      svg.attr('width', window.innerWidth).attr('height', window.innerHeight);
+    }
   });
 
   return { init, expandAll, collapseAll, resetZoom, openPopup, closePopup };

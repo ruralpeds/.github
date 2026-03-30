@@ -36,14 +36,25 @@
     <h1>Admin Access</h1>
     <p>Peds Clinical Decision Support</p>
     <div class="pin-wrap">
-      <input
-        type={showPin ? 'text' : 'password'}
-        bind:value={pin}
-        on:keydown={handleKey}
-        placeholder="Enter PIN"
-        maxlength={8}
-        autofocus
-      />
+      {#if showPin}
+        <input
+          type="text"
+          bind:value={pin}
+          on:keydown={handleKey}
+          placeholder="Enter PIN"
+          maxlength={8}
+          autofocus
+        />
+      {:else}
+        <input
+          type="password"
+          bind:value={pin}
+          on:keydown={handleKey}
+          placeholder="Enter PIN"
+          maxlength={8}
+          autofocus
+        />
+      {/if}
       <button class="show-btn" on:click={() => showPin = !showPin}>
         {showPin ? '🙈' : '👁'}
       </button>
