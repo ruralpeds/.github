@@ -1,0 +1,103 @@
+name: Import Simulation HTML
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Imports pre-rendered simulation HTML files from the Julia-clinical repo
+# render.yml artifact and commits them to static/simulations/.
+#
+# Trigger:
+#   - Manually (workflow_dispatch) — provide the run_id of a julia-clinical
+#     render.yml workflow run to pull the HTML artifact from.
+#   - Or re-run the Python bootstrap generator via the generate job.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'Import source: artifact (from julia-clinical CI) or generate (re-run Python bootstrap)'
+        type: choice
+        options:
+          - generate
+          - artifact
+        default: generate
+      julia_run_id:
+        description: 'julia-clinical render.yml workflow run ID (only needed when source=artifact)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  import-simulations:
+    name: Import or generate simulation HTML
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Peds repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create output directory
+        run: mkdir -p apps/web/static/simulations
+
+      # ── Option A: download from julia-clinical render.yml artifact ──────────
+      - name: Download artifact from julia-clinical
+        if: inputs.source == 'artifact' && inputs.julia_run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: medsim-html-${{ inputs.julia_run_id }}
+          path: apps/web/static/simulations/
+          github-token: ${{ secrets.CROSS_REPO_PAT }}
+          repository: timothyhartzog/Julia-clinical
+          run-id: ${{ inputs.julia_run_id }}
+
+      # ── Option B: Python bootstrap generator (no Julia runtime required) ─────
+      - name: Set up Python
+        if: inputs.source == 'generate'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Checkout julia-clinical for JS engine + scenario data
+        if: inputs.source == 'generate'
+        uses: actions/checkout@v4
+        with:
+          repository: timothyhartzog/Julia-clinical
+          path: julia-clinical-src
+          token: ${{ secrets.CROSS_REPO_PAT }}
+
+      - name: Run Python HTML generator
+        if: inputs.source == 'generate'
+        run: |
+          cd julia-clinical-src
+          python3 scripts/generate_html_bootstrap.py \
+            --output ../apps/web/static/simulations
+
+      # ── Commit ────────────────────────────────────────────────────────────────
+      - name: Check for changes
+        id: changes
+        run: |
+          git add apps/web/static/simulations/
+          if git diff --cached --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Files to commit:"
+            git diff --cached --name-only | head -25
+          fi
+
+      - name: Commit simulation HTML
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name  "CI Bot"
+          git config user.email "ci@hartzog.ai"
+          COUNT=$(git diff --cached --name-only | grep -c simulation.html || true)
+          git commit -m "chore: update simulation HTML — ${COUNT} files (source: ${{ inputs.source }})"
+          git push
+
+      - name: No changes
+        if: steps.changes.outputs.changed == 'false'
+        run: echo "Simulation HTML files are already up to date."

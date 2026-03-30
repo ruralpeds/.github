@@ -92,6 +92,17 @@
 			modes: ['neonatal', 'pediatric'],
 		},
 		{
+			label: 'Simulations',
+			icon: '🎯',
+			href: '/simulations',
+			modes: ['neonatal', 'pediatric'],
+			children: [
+				{ label: 'Vent Management', href: '/simulations#ventilator', modes: ['neonatal', 'pediatric'] },
+				{ label: 'Electrolytes', href: '/simulations#electrolytes', modes: ['neonatal', 'pediatric'] },
+				{ label: 'Acid-Base', href: '/simulations#acidbase', modes: ['pediatric'] },
+			]
+		},
+		{
 			label: 'Reference',
 			icon: '📋',
 			href: '/reference',
