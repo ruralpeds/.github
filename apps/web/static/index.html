@@ -321,20 +321,20 @@ var calcs = [
 ];
 
 var eduTopics = [
-  {n:"Pulmonary Disorders",i:"🫁",cs:"neonatal_pulmonary_disorders",tb:"neonatal_pulmonary_disorders",au:"neonatal_pulmonary_disorders"},
-  {n:"Infectious Diseases",i:"🦠",cs:"neonatal_infectious_diseases",tb:"neonatal_infectious_diseases",au:"neonatal_infectious_diseases"},
-  {n:"Hematology",i:"🩸",cs:"neonatal_hematology",tb:"neonatal_hematology",au:"neonatal_hematology"},
-  {n:"Neurology",i:"🧠",cs:"neonatal_neurology",tb:"neonatal_neurology",au:"neonatal_neurology"},
-  {n:"FEN",i:"💧",cs:"neonatal_fen",tb:"neonatal_fen",au:"neonatal_fen"},
-  {n:"GI & Liver",i:"🔬",cs:"neonatal_gi_liver",tb:"neonatal_gi_liver",au:"neonatal_gi_liver"},
-  {n:"Endocrine",i:"⚗️",cs:"neonatal_endocrine_abnormalities",tb:"neonatal_endocrine_abnormalities",au:"neonatal_endocrine_abnormalities"},
-  {n:"Renal",i:"🫘",cs:"neonatal_renal",tb:"neonatal_renal",au:"neonatal_renal"},
-  {n:"Surgical Emergencies",i:"🔪",cs:"neonatal_surgical_emergencies",tb:"neonatal_surgical_emergencies",au:"neonatal_surgical_emergencies"},
-  {n:"Skin",i:"🩹",cs:"neonatal_skin",tb:"neonatal_skin",au:"neonatal_skin"},
-  {n:"Urology",i:"🏥",cs:"neonatal_urology",tb:"neonatal_urology",au:"neonatal_urology"},
-  {n:"Critical Care Stabilization",i:"🚨",cs:"critical_care_stabilization",tb:"critical_care_stabilization",au:"critical_care_stabilization"},
-  {n:"Maternal Infections",i:"🤰",cs:"maternal_infections",tb:"maternal_infections",au:"maternal_infections"},
-  {n:"Neonatal Ventilation",i:"💨",cs:"neonatal_ventilation_decision_tree",tb:"neonatal_ventilation_decision_tree",au:"neonatal_ventilation_decision_tree"},
+  {m:"neonatal",n:"Pulmonary Disorders",i:"🫁",cs:"neonatal_pulmonary_disorders",tb:"neonatal_pulmonary_disorders",au:"neonatal_pulmonary_disorders"},
+  {m:"neonatal",n:"Infectious Diseases",i:"🦠",cs:"neonatal_infectious_diseases",tb:"neonatal_infectious_diseases",au:"neonatal_infectious_diseases"},
+  {m:"neonatal",n:"Hematology",i:"🩸",cs:"neonatal_hematology",tb:"neonatal_hematology",au:"neonatal_hematology"},
+  {m:"neonatal",n:"Neurology",i:"🧠",cs:"neonatal_neurology",tb:"neonatal_neurology",au:"neonatal_neurology"},
+  {m:"neonatal",n:"FEN",i:"💧",cs:"neonatal_fen",tb:"neonatal_fen",au:"neonatal_fen"},
+  {m:"neonatal",n:"GI & Liver",i:"🔬",cs:"neonatal_gi_liver",tb:"neonatal_gi_liver",au:"neonatal_gi_liver"},
+  {m:"neonatal",n:"Endocrine",i:"⚗️",cs:"neonatal_endocrine_abnormalities",tb:"neonatal_endocrine_abnormalities",au:"neonatal_endocrine_abnormalities"},
+  {m:"neonatal",n:"Renal",i:"🫘",cs:"neonatal_renal",tb:"neonatal_renal",au:"neonatal_renal"},
+  {m:"neonatal",n:"Surgical Emergencies",i:"🔪",cs:"neonatal_surgical_emergencies",tb:"neonatal_surgical_emergencies",au:"neonatal_surgical_emergencies"},
+  {m:"neonatal",n:"Skin",i:"🩹",cs:"neonatal_skin",tb:"neonatal_skin",au:"neonatal_skin"},
+  {m:"neonatal",n:"Urology",i:"🏥",cs:"neonatal_urology",tb:"neonatal_urology",au:"neonatal_urology"},
+  {m:"neonatal",n:"Critical Care Stabilization",i:"🚨",cs:"critical_care_stabilization",tb:"critical_care_stabilization",au:"critical_care_stabilization"},
+  {m:"neonatal",n:"Maternal Infections",i:"🤰",cs:"maternal_infections",tb:"maternal_infections",au:"maternal_infections"},
+  {m:"neonatal",n:"Neonatal Ventilation",i:"💨",cs:"neonatal_ventilation_decision_tree",tb:"neonatal_ventilation_decision_tree",au:"neonatal_ventilation_decision_tree"},
 ];
 
 var BROSELOW = [
@@ -527,6 +527,14 @@ function buildCalcGrid() {
 var eduMode = 'cs';
 function buildEduContent() {
   var tabs = document.getElementById('edu-tabs');
+  var modeTopics = eduTopics.filter(function(t) { return t.m === mode; });
+
+  if (modeTopics.length === 0) {
+    tabs.innerHTML = '';
+    document.getElementById('edu-content').innerHTML = '<div class="info-box info-yellow">Pediatric education materials coming soon.</div>';
+    return;
+  }
+
   tabs.innerHTML = ['cs','tb','au'].map(function(m) {
     var labels = {cs:'📋 Cheat Sheets', tb:'📖 Textbooks', au:'🎧 Audio'};
     return '<button class="btn-sm' + (eduMode === m ? ' active' : '') + '" style="' + (eduMode === m ? 'border-color:var(--accent);color:var(--accent)' : '') + '" onclick="eduMode=\'' + m + '\';buildEduContent()">' + labels[m] + '</button>';
@@ -536,9 +544,8 @@ function buildEduContent() {
   var suffixes = {cs:'_cheat_sheet.docx',tb:'_textbook.docx',au:'_audio_textbook.docx'};
   var p = prefixes[eduMode], s = suffixes[eduMode];
 
-  document.getElementById('edu-content').innerHTML = '<div class="edu-list">' + eduTopics.map(function(t) {
-    var docxFile = p + t.cs + s;
-    var viewUrl = './education/viewer.html?file=' + encodeURIComponent('./' + {cs:'cheat-sheets',tb:'textbooks',au:'audio-textbooks'}[eduMode] + '/' + t.cs + s) + '&format=' + eduMode;
+  document.getElementById('edu-content').innerHTML = '<div class="edu-list">' + modeTopics.map(function(t) {
+    var viewUrl = './education/viewer.html?file=' + encodeURIComponent('./' + {cs:'cheat-sheets',tb:'textbooks',au:'audio-textbooks'}[eduMode] + '/' + t[eduMode] + s) + '&format=' + eduMode;
     return '<a class="edu-item" href="' + viewUrl + '"><span class="edu-icon">' + t.i + '</span><span class="edu-name">' + t.n + '</span><span class="edu-dl" style="margin-left:auto">📄 Read</span></a>';
   }).join('') + '</div>';
 }
