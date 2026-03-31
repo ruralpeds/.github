@@ -12,11 +12,10 @@
  * Do NOT duplicate the data here — edit calculators-registry.js for content.
  */
 
-import type { Calculator, CalculatorCategory } from './textbook-types';
-export type { Calculator, CalculatorField, CalculatorCategory } from './textbook-types';
+import type { Calculator, CalculatorCategory } from '../textbook/textbook-types';
+export type { Calculator, CalculatorField, CalculatorCategory } from '../textbook/textbook-types';
 
 // ── Import raw JS registry ─────────────────────────────────────────────────
-// @ts-expect-error — JS file has no type declaration; we add types here
 import {
 	SCORING_CALCULATORS as _SCORING,
 	getAllCalculators as _getAll,

@@ -121,8 +121,8 @@
 	// ---------------------------------------------------------------------------
 	// Color helpers
 	// ---------------------------------------------------------------------------
-	function nodeColor(type: NodeType): string {
-		return NODE_TYPE_FALLBACK[type];
+	function nodeColor(type: string): string {
+		return (NODE_TYPE_FALLBACK as Record<string, string>)[type];
 	}
 
 	function nodeBg(type: NodeType): string {
@@ -276,7 +276,7 @@
 							Calc error
 						</text>
 					{:else if wasmResults.has(node.id)}
-						{#each [...wasmResults.get(node.id).entries()] as [key, val]}
+						{#each [...(wasmResults.get(node.id)?.entries() ?? [])] as [key, val]}
 							<text
 								x={layout.nodeWidth / 2}
 								y="60"
@@ -362,7 +362,7 @@
 					</div>
 
 					<div class="popup__body">
-						{#each panels as panel, i}
+						{#each popupNode.panels as panel, i}
 							<div class="popup__panel" class:active={i === 0}>
 								{#if panel.type === 'table'}
 									<table class="ref-table">

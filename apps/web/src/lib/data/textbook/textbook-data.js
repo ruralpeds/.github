@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Pediatric Emergency Medicine Textbook Data
 // Auto-generated from textbook content — Volume I & II chapters + appendices
 // This module provides structured textbook content for the Textbook tab

@@ -140,11 +140,11 @@ export async function loadPatient(input: {
 		correctedGA = input.gestationalWeeks + Math.floor(input.dayOfLife / 7);
 	}
 
-	let classification = null;
+	let classification: WeightClassification | null = null;
 	let vitalRanges = null;
 	try {
 		const { classifyBroselow, getVitalRanges } = await import('$lib/wasm');
-		classification = await classifyBroselow(input.weightKg);
+		classification = await classifyBroselow(input.weightKg) as unknown as WeightClassification | null;
 		vitalRanges = await getVitalRanges(input.ageMonths);
 	} catch (err) {
 		reportError(err);

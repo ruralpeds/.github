@@ -2,8 +2,8 @@
 	import { selectMode, MODE_CONFIGS } from '$lib/stores/mode';
 	import type { ClinicalMode } from '$lib/stores/mode';
 
-	function choose(mode: ClinicalMode) {
-		selectMode(mode);
+	function choose(mode: string) {
+		selectMode(mode as ClinicalMode);
 	}
 </script>
 

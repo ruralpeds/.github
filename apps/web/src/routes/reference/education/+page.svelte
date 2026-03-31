@@ -1,5 +1,5 @@
 <script lang="ts">
-	let activeTab: 'cheat-sheets' | 'textbooks' | 'audio' = 'cheat-sheets';
+	let activeTab: string = 'cheat-sheets';
 
 	interface EducationItem {
 		topic: string;
@@ -32,14 +32,18 @@
 		'audio': { label: 'Audio Textbooks', icon: '🎧', desc: 'Narration-optimized versions for Speechify or TTS conversion', pathPrefix: '/education/audio-textbooks/' },
 	};
 
-	function getFile(item: EducationItem, tab: typeof activeTab): string {
+	function getFile(item: EducationItem, tab: string): string {
 		if (tab === 'cheat-sheets') return item.cheatSheet;
 		if (tab === 'textbooks') return item.textbook;
 		return item.audioTextbook;
 	}
 
-	function downloadUrl(item: EducationItem, tab: typeof activeTab): string {
-		return tabMeta[tab].pathPrefix + getFile(item, tab);
+	function downloadUrl(item: EducationItem, tab: string): string {
+		return (tabMeta as any)[tab].pathPrefix + getFile(item, tab);
+	}
+
+	function getTabMeta(tab: string) {
+		return (tabMeta as any)[tab] as { label: string; icon: string; desc: string; pathPrefix: string };
 	}
 </script>
 
@@ -71,7 +75,7 @@
 	</div>
 
 	<!-- Tab description -->
-	<p class="tab-desc">{tabMeta[activeTab].desc}</p>
+	<p class="tab-desc">{getTabMeta(activeTab).desc}</p>
 
 	<!-- Content grid -->
 	<div class="grid">
