@@ -32,3 +32,4 @@ build-queue/to-build/*.docx
 build-queue/built/*.docx
 add-education/incoming/*.docx
 add-education/educational-material/*.docx
+test-results/
