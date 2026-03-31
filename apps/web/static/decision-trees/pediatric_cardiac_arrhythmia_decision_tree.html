@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pediatric Cardiac Arrhythmia Decision Tree</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f8f9fa; --surface: #ffffff; --border: #dee2e6; --text: #212529; --text2: #495057; --text3: #868e96;
+  --accent: #2E4057; --red: #dc3545; --rbg: #FFC7CE; --orange: #fd7e14; --obg: #FFE5CC;
+  --yellow: #e6a817; --ybg: #FFF3CD; --green: #198754; --gbg: #C6EFCE; --blue: #0d6efd; --bbg: #D5E8F0;
+  --purple: #6f42c1; --pbg: #E8D5F5;
+}
+[data-theme="dark"] {
+  --bg: #1a1d21; --surface: #2d3238; --border: #495057; --text: #e9ecef; --text2: #adb5bd; --text3: #6c757d;
+  --accent: #6ea8fe; --red: #ff6b6b; --rbg: #4a2020; --orange: #ffa94d; --obg: #4a3520;
+  --yellow: #ffd43b; --ybg: #4a4520; --green: #51cf66; --gbg: #204a20; --blue: #6ea8fe; --bbg: #20354a;
+  --purple: #b197fc; --pbg: #35204a;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: var(--text); }
+#banner {
+  background: var(--accent); color: white; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+#banner h1 { font-family: 'DM Serif Display', serif; font-size: 1.3rem; font-weight: 400; }
+#banner .subtitle { font-size: 0.8rem; opacity: 0.8; }
+.controls { display: flex; gap: 8px; align-items: center; }
+.controls button { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-family: 'IBM Plex Sans', sans-serif; }
+.controls button:hover { background: rgba(255,255,255,0.25); }
+#tree-container { width: 100%; overflow: auto; position: relative; }
+svg { display: block; }
+.node rect { cursor: pointer; rx: 6; ry: 6; stroke-width: 2; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.1)); transition: all 0.2s; }
+.node rect:hover { filter: drop-shadow(0 3px 8px rgba(0,0,0,0.2)); }
+.node text { font-family: 'IBM Plex Sans', sans-serif; fill: var(--text); pointer-events: none; }
+.node .label { font-weight: 600; font-size: 12px; }
+.node .detail { font-size: 10px; fill: var(--text2); }
+.link { fill: none; stroke: var(--border); stroke-width: 1.5; }
+/* Popup */
+.popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; }
+.popup-overlay.active { display: flex; align-items: center; justify-content: center; }
+.popup { background: var(--surface); border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+.popup-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.popup-header h3 { font-family: 'DM Serif Display', serif; font-size: 1.1rem; }
+.popup-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--text3); }
+.popup-tabs { display: flex; border-bottom: 1px solid var(--border); }
+.popup-tab { padding: 10px 16px; cursor: pointer; font-size: 0.85rem; border-bottom: 2px solid transparent; color: var(--text2); }
+.popup-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.popup-body { padding: 16px 20px; font-size: 0.9rem; line-height: 1.6; }
+.popup-body h4 { font-weight: 600; margin: 12px 0 6px; color: var(--accent); }
+.popup-body ul { margin-left: 20px; margin-bottom: 8px; }
+.popup-body .dose { font-family: 'IBM Plex Mono', monospace; background: var(--ybg); padding: 2px 6px; border-radius: 3px; font-size: 0.85rem; }
+.popup-body .warning { background: var(--rbg); padding: 8px 12px; border-radius: 6px; border-left: 4px solid var(--red); margin: 8px 0; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; }
+.badge-emergency { background: var(--rbg); color: var(--red); }
+.badge-urgent { background: var(--obg); color: var(--orange); }
+.badge-decision { background: var(--ybg); color: var(--yellow); }
+.badge-action { background: var(--gbg); color: var(--green); }
+.badge-assessment { background: var(--bbg); color: var(--blue); }
+.badge-diagnosis { background: var(--pbg); color: var(--purple); }
+.legend { padding: 8px 24px; background: var(--surface); border-top: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.75rem; }
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-swatch { width: 16px; height: 16px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="banner">
+  <div>
+    <h1>Pediatric Cardiac Arrhythmia Decision Tree</h1>
+    <div class="subtitle">Birth through 18 Years — Rural ED & Nursery — PALS 2025 / AHA Guidelines</div>
+  </div>
+  <div class="controls">
+    <button onclick="expandAll()">Expand All</button>
+    <button onclick="collapseAll()">Collapse All</button>
+    <button onclick="toggleTheme()">🌙 Theme</button>
+  </div>
+</div>
+<div id="tree-container"><svg id="tree-svg"></svg></div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch" style="background:#dc3545"></div>Emergency</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#fd7e14"></div>Urgent</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#e6a817"></div>Decision</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#198754"></div>Action</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#0d6efd"></div>Assessment</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#6f42c1"></div>Diagnosis</div>
+  <span style="margin-left:auto;color:var(--text3)">Click nodes to expand/collapse. Click ⓘ for protocols & dosing.</span>
+</div>
+<div class="popup-overlay" id="popup">
+  <div class="popup">
+    <div class="popup-header"><h3 id="popup-title"></h3><button class="popup-close" onclick="closePopup()">✕</button></div>
+    <div class="popup-tabs" id="popup-tabs"></div>
+    <div class="popup-body" id="popup-body"></div>
+  </div>
+</div>
+
+<script>
+const treeData = {
+  name: "Child with Tachycardia\nor Bradycardia", type: "assessment",
+  info: {
+    protocols: "<h4>Initial Assessment (PALS 2025)</h4><ul><li>Maintain airway, support breathing, administer O₂</li><li>Attach cardiac monitor/defibrillator</li><li>Obtain 12-lead ECG when possible</li><li>Establish IV/IO access</li><li>Assess hemodynamic stability</li></ul>",
+    dosing: "<h4>Weight Estimation</h4><p>If weight unknown: <span class='dose'>Weight (kg) = (Age in years × 2) + 8</span></p><p>Always use measured weight when available.</p>",
+    evidence: "<h4>Source</h4><p>AHA/AAP Part 8: PALS 2025 Guidelines. Circulation 2025;151(Suppl 1). DOI: 10.1161/CIR.0000000000001368</p>"
+  },
+  children: [
+    {
+      name: "TACHYCARDIA\n(HR above normal for age)", type: "decision",
+      info: {
+        protocols: "<h4>Rate Thresholds</h4><ul><li>Infant: suspect SVT if HR >220 bpm</li><li>Child: suspect SVT if HR >180 bpm</li><li>Assess QRS width: ≤0.09s = narrow; >0.09s = wide</li></ul>",
+        dosing: "",
+        evidence: "<p>PALS Tachycardia Algorithm 2025. AHA/AAP Guidelines.</p>"
+      },
+      children: [
+        {
+          name: "Narrow QRS\n(≤0.09 sec)", type: "assessment",
+          children: [
+            {
+              name: "Hemodynamically\nUNSTABLE", type: "emergency",
+              info: {
+                protocols: "<h4>Signs of Instability</h4><ul><li>Hypotension for age</li><li>Altered mental status</li><li>Signs of shock (cool, mottled, poor pulses)</li><li>Signs of CHF (hepatomegaly, pulmonary edema)</li></ul><div class='warning'><strong>Act immediately.</strong> Do not delay treatment for diagnosis.</div>",
+                dosing: "<h4>Synchronized Cardioversion</h4><p>1st: <span class='dose'>0.5-1 J/kg</span></p><p>2nd: <span class='dose'>2 J/kg</span></p><p>Sedate if time permits (ketamine 1-2 mg/kg IV or midazolam 0.1 mg/kg IV)</p>",
+                evidence: "<p>AHA PALS 2025 Tachycardia Algorithm.</p>"
+              },
+              children: [
+                { name: "Synchronized\nCardioversion\n0.5-1 J/kg → 2 J/kg", type: "emergency",
+                  info: {
+                    protocols: "<div class='warning'>Ensure defibrillator is in SYNC mode. Verify sync markers on R waves before shocking.</div><h4>If cardioversion fails:</h4><ul><li>Re-attempt at higher energy</li><li>Consider adenosine if IV available</li><li>Consider amiodarone 5 mg/kg IV over 20-60 min</li></ul>",
+                    dosing: "<h4>Energy Doses</h4><p>1st shock: <span class='dose'>0.5-1 J/kg</span></p><p>2nd shock: <span class='dose'>2 J/kg</span></p><p>If converting to arrest: switch to defibrillation <span class='dose'>2 J/kg → 4 J/kg</span></p>",
+                    evidence: "<p>PALS 2025; Circulation 2025;151(Suppl 1).</p>"
+                  }
+                }
+              ]
+            },
+            {
+              name: "Hemodynamically\nSTABLE", type: "decision",
+              children: [
+                {
+                  name: "Probable SVT\n(abrupt onset, fixed rate,\nno P waves)", type: "diagnosis",
+                  children: [
+                    { name: "Vagal Maneuvers\nInfant: Ice to face 15-20s\nChild: Valsalva", type: "action",
+                      info: {
+                        protocols: "<h4>Vagal Maneuver Techniques</h4><ul><li><strong>Infant:</strong> Ice bag/cold wet cloth to forehead, eyes, bridge of nose × 15-20 sec</li><li><strong>Child:</strong> Bear down / blow through straw / modified Valsalva (strain → supine → leg raise)</li><li><strong>Adolescent:</strong> Valsalva or carotid sinus massage (one side only)</li></ul><div class='warning'>Do NOT use ocular pressure. Do NOT use carotid massage in infants.</div>",
+                        dosing: "",
+                        evidence: "<p>Abbasi E, et al. Can Fam Physician 2024;70(2):113-115. PMC10949262.</p>"
+                      },
+                      children: [
+                        { name: "Adenosine\n1st: 0.1 mg/kg (max 6mg)\n2nd: 0.2 mg/kg (max 12mg)", type: "action",
+                          info: {
+                            protocols: "<h4>Adenosine Administration</h4><ul><li>Rapid IV push via largest, most proximal IV</li><li>Follow immediately with 5-10 mL NS flush</li><li>Use stopcock/3-way technique</li><li>Record continuous rhythm strip during admin</li><li>Half-life <10 sec — must be FAST push</li></ul><div class='warning'>If given slowly or via distal IV without flush, drug will be metabolized before reaching heart.</div>",
+                            dosing: "<h4>Dosing</h4><p>1st dose: <span class='dose'>0.1 mg/kg</span> (max 6 mg)</p><p>2nd dose: <span class='dose'>0.2 mg/kg</span> (max 12 mg)</p><p>3rd dose: <span class='dose'>0.2 mg/kg</span> (max 12 mg)</p>",
+                            evidence: "<p>Randall MM, et al. Int J Emerg Med 2024;17:103. DOI:10.1186/s12245-024-00683-5</p><p>Krause U, et al. Children 2023;10(5):847. PMC10217455.</p>"
+                          },
+                          children: [
+                            { name: "Converts → Sinus\nObtain 12-lead ECG\nLook for WPW pattern", type: "action",
+                              info: {
+                                protocols: "<h4>Post-conversion Workup</h4><ul><li>12-lead ECG in sinus rhythm (check for delta wave/short PR)</li><li>If WPW pattern: do NOT use digoxin for prophylaxis</li><li>Observe 4-6 hours minimum</li><li>Consult pediatric cardiology</li></ul>",
+                                dosing: "", evidence: ""
+                              }
+                            },
+                            { name: "Does NOT Convert\n→ Consider Atrial Flutter\n→ Cardioversion 0.5-2 J/kg", type: "urgent",
+                              info: {
+                                protocols: "<h4>Adenosine-Refractory Narrow Tachycardia</h4><ul><li>Adenosine will NOT terminate atrial flutter but WILL reveal F waves</li><li>Review rhythm strip during adenosine — look for sawtooth pattern</li><li>If atrial flutter confirmed: synchronized cardioversion 0.5-2 J/kg</li><li>If mechanism unclear: consult cardiology; consider procainamide or amiodarone</li></ul>",
+                                dosing: "<p>Procainamide: <span class='dose'>15 mg/kg IV over 30-60 min</span></p><p>Amiodarone: <span class='dose'>5 mg/kg IV over 20-60 min</span></p><p>Do NOT give both together.</p>",
+                                evidence: "<p>Texter KM, et al. JACC 2006;48(5):1040-1046.</p>"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  name: "Probable Sinus Tach\n(gradual onset, P waves,\nvariable rate)", type: "diagnosis",
+                  children: [
+                    { name: "Treat Underlying Cause\nFever, pain, dehydration,\nanemia, sepsis, anxiety", type: "action" }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          name: "Wide QRS\n(>0.09 sec)", type: "assessment",
+          info: {
+            protocols: "<h4>Wide-Complex Tachycardia in Children</h4><ul><li>Assume VT until proven otherwise</li><li>May also be SVT with aberrancy or pre-excited SVT (WPW)</li><li>Expert consultation strongly recommended</li></ul><div class='warning'>If WPW suspected (known pre-excitation, irregular wide tachycardia): do NOT give adenosine, digoxin, verapamil, or diltiazem.</div>",
+            dosing: "", evidence: "<p>PALS 2025 Wide-Complex Tachycardia pathway.</p>"
+          },
+          children: [
+            {
+              name: "Hemodynamically\nUNSTABLE", type: "emergency",
+              children: [
+                { name: "Synchronized\nCardioversion\n0.5-1 J/kg → 2 J/kg\nExpert consultation", type: "emergency" }
+              ]
+            },
+            {
+              name: "Hemodynamically\nSTABLE", type: "decision",
+              children: [
+                { name: "Regular + Monomorphic\n→ Consider adenosine\n→ Consider amiodarone\n5 mg/kg IV over 20-60 min", type: "action",
+                  info: {
+                    protocols: "<h4>Stable Wide-Complex Monomorphic VT</h4><ul><li>Adenosine may convert fascicular VT or RVOT VT</li><li>If adenosine fails: amiodarone or procainamide</li><li>Do NOT give amiodarone + procainamide together</li></ul>",
+                    dosing: "<p>Amiodarone: <span class='dose'>5 mg/kg IV over 20-60 min</span></p><p>Procainamide: <span class='dose'>15 mg/kg IV over 30-60 min</span></p><p>Lidocaine: <span class='dose'>1 mg/kg IV bolus</span> (alternative)</p>",
+                    evidence: "<p>PALS 2025; AHA/AAP Guidelines.</p>"
+                  }
+                },
+                { name: "Irregular / Polymorphic\n→ If QT prolonged:\nMgSO₄ 25-50 mg/kg\n(Torsades de Pointes)", type: "emergency",
+                  info: {
+                    protocols: "<h4>Torsades de Pointes</h4><div class='warning'><strong>Do NOT give amiodarone, procainamide, or sotalol</strong> — these prolong QT and worsen TdP.</div><ul><li>IV Magnesium is the drug of choice</li><li>Correct K⁺ (target >4.0), Mg²⁺, Ca²⁺</li><li>Discontinue all QT-prolonging drugs</li><li>Consider overdrive pacing (90-110 bpm) if recurrent</li></ul>",
+                    dosing: "<p>Magnesium sulfate: <span class='dose'>25-50 mg/kg IV (max 2g) over 10-20 min</span></p><p>Isoproterenol: <span class='dose'>0.05-2 mcg/kg/min</span> (bridge to pacing)</p>",
+                    evidence: "<p>Schwartz PJ, et al. Circulation 2009;120(18):1761-1767.</p>"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      name: "BRADYCARDIA\n(HR <60 with poor perfusion)", type: "emergency",
+      info: {
+        protocols: "<h4>PALS Bradycardia Algorithm (2025)</h4><ul><li>If HR <60 bpm with poor perfusion despite adequate oxygenation and ventilation → start CPR</li><li>Epinephrine for persistent bradycardia during CPR</li><li>Atropine if increased vagal tone or primary AV block suspected</li></ul>",
+        dosing: "<h4>Medications</h4><p>Epinephrine: <span class='dose'>0.01 mg/kg IV/IO (1:10,000)</span> every 3-5 min</p><p>Atropine: <span class='dose'>0.02 mg/kg IV/IO</span> (min 0.1 mg, max 0.5 mg child)</p>",
+        evidence: "<p>AHA PALS 2025 Bradycardia Algorithm.</p>"
+      },
+      children: [
+        { name: "Support ABCs\nOxygenation &\nVentilation", type: "action" },
+        { name: "If HR <60 with\npoor perfusion\n→ Start CPR", type: "emergency",
+          children: [
+            { name: "Epinephrine\n0.01 mg/kg IV/IO\n(1:10,000)\nEvery 3-5 min", type: "emergency" },
+            { name: "Atropine\n0.02 mg/kg IV/IO\n(if vagal or AV block)\nMin 0.1 mg, Max 0.5 mg", type: "action" }
+          ]
+        },
+        { name: "If complete heart block\nor unresponsive to meds\n→ Transcutaneous pacing\n→ TRANSPORT", type: "emergency",
+          info: {
+            protocols: "<h4>Transcutaneous Pacing</h4><ul><li>Set rate: 100 bpm (infant), 80 bpm (child)</li><li>Increase mA until electrical capture</li><li>Provide sedation/analgesia</li><li>This is a bridge — arrange urgent transfer for transvenous or permanent pacing</li></ul>",
+            dosing: "", evidence: ""
+          }
+        }
+      ]
+    }
+  ]
+};
+
+// D3 tree rendering
+const margin = {top: 40, right: 200, bottom: 40, left: 80};
+const nodeW = 180, nodeH = 70;
+const svg = d3.select("#tree-svg");
+const g = svg.append("g");
+
+const colorMap = { emergency: "#dc3545", urgent: "#fd7e14", decision: "#e6a817", action: "#198754", assessment: "#0d6efd", diagnosis: "#6f42c1" };
+const bgMap = { emergency: "#FFC7CE", urgent: "#FFE5CC", decision: "#FFF3CD", action: "#C6EFCE", assessment: "#D5E8F0", diagnosis: "#E8D5F5" };
+
+const root = d3.hierarchy(treeData);
+root.x0 = 0; root.y0 = 0;
+// Collapse some nodes initially
+root.children.forEach(c => { if(c.children) c.children.forEach(gc => { if(gc._children || gc.children) { gc._children = gc.children; gc.children = null; } }); });
+
+function update(source) {
+  const tree = d3.tree().nodeSize([nodeH + 20, nodeW + 80]);
+  tree(root);
+  const nodes = root.descendants();
+  const links = root.links();
+
+  // Compute bounds
+  let x0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  nodes.forEach(d => { if(d.x < x0) x0 = d.x; if(d.x > x1) x1 = d.x; if(d.y > y1) y1 = d.y; });
+
+  const svgW = y1 + nodeW + margin.left + margin.right + 100;
+  const svgH = x1 - x0 + nodeH + margin.top + margin.bottom + 80;
+  svg.attr("width", svgW).attr("height", svgH);
+  g.attr("transform", `translate(${margin.left},${-x0 + margin.top + nodeH/2})`);
+
+  // Links
+  const link = g.selectAll(".link").data(links, d => d.target.data.name);
+  const linkEnter = link.enter().append("path").attr("class","link");
+  link.merge(linkEnter).transition().duration(300)
+    .attr("d", d => {
+      const sy = d.source.y + nodeW/2, sx = d.source.x;
+      const ty = d.target.y - nodeW/2, tx = d.target.x;
+      return `M${sy},${sx}C${(sy+ty)/2},${sx} ${(sy+ty)/2},${tx} ${ty},${tx}`;
+    });
+  link.exit().remove();
+
+  // Nodes
+  const node = g.selectAll(".node").data(nodes, d => d.data.name);
+  const nodeEnter = node.enter().append("g").attr("class","node")
+    .attr("transform", d => `translate(${source.y0||0},${source.x0||0})`);
+
+  nodeEnter.append("rect")
+    .attr("x", -nodeW/2).attr("y", -nodeH/2).attr("width", nodeW).attr("height", nodeH)
+    .attr("fill", d => bgMap[d.data.type] || "#fff")
+    .attr("stroke", d => colorMap[d.data.type] || "#999")
+    .on("click", (e, d) => { if(d.children) { d._children = d.children; d.children = null; } else if(d._children) { d.children = d._children; d._children = null; } update(d); });
+
+  // Info button
+  nodeEnter.append("text").attr("x", nodeW/2 - 16).attr("y", -nodeH/2 + 14).attr("text-anchor","middle")
+    .style("font-size","12px").style("cursor","pointer").style("fill", d => colorMap[d.data.type]||"#666")
+    .text(d => d.data.info ? "ⓘ" : "")
+    .on("click", (e, d) => { e.stopPropagation(); if(d.data.info) showPopup(d.data); });
+
+  // Labels
+  nodeEnter.each(function(d) {
+    const lines = d.data.name.split("\n");
+    const startY = -(lines.length - 1) * 7;
+    lines.forEach((line, i) => {
+      d3.select(this).append("text").attr("class", i === 0 ? "label" : "detail")
+        .attr("text-anchor","middle").attr("y", startY + i * 14 + 4).text(line);
+    });
+  });
+
+  // Expand/collapse indicator
+  nodeEnter.append("text").attr("x", nodeW/2 - 4).attr("y", 4).attr("text-anchor","middle")
+    .style("font-size","14px").style("fill","#999").style("pointer-events","none")
+    .attr("class","toggle-indicator");
+
+  const nodeUpdate = node.merge(nodeEnter);
+  nodeUpdate.transition().duration(300).attr("transform", d => `translate(${d.y},${d.x})`);
+  nodeUpdate.select(".toggle-indicator").text(d => d._children ? "▸" : (d.children ? "" : ""));
+
+  node.exit().transition().duration(200).attr("transform", d => `translate(${source.y},${source.x})`).remove();
+
+  nodes.forEach(d => { d.x0 = d.x; d.y0 = d.y; });
+}
+
+update(root);
+
+function expandAll() { root.descendants().forEach(d => { if(d._children) { d.children = d._children; d._children = null; } }); update(root); }
+function collapseAll() { root.descendants().forEach(d => { if(d.depth > 1 && d.children) { d._children = d.children; d.children = null; } }); update(root); }
+function toggleTheme() { document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? '' : 'dark'; }
+
+function showPopup(data) {
+  document.getElementById('popup-title').textContent = data.name.replace(/\n/g, ' ');
+  const tabs = document.getElementById('popup-tabs');
+  const body = document.getElementById('popup-body');
+  tabs.innerHTML = '';
+  const tabData = [];
+  if(data.info.protocols) tabData.push({label:'Protocols', content: data.info.protocols});
+  if(data.info.dosing) tabData.push({label:'Dosing', content: data.info.dosing});
+  if(data.info.evidence) tabData.push({label:'Evidence', content: data.info.evidence});
+  if(data.info.alerts) tabData.push({label:'⚠ Alerts', content: data.info.alerts});
+  tabData.forEach((t, i) => {
+    const el = document.createElement('div');
+    el.className = 'popup-tab' + (i === 0 ? ' active' : '');
+    el.textContent = t.label;
+    el.onclick = () => { document.querySelectorAll('.popup-tab').forEach(e => e.classList.remove('active')); el.classList.add('active'); body.innerHTML = t.content; };
+    tabs.appendChild(el);
+  });
+  if(tabData.length > 0) body.innerHTML = tabData[0].content;
+  document.getElementById('popup').classList.add('active');
+}
+function closePopup() { document.getElementById('popup').classList.remove('active'); }
+document.getElementById('popup').addEventListener('click', e => { if(e.target.id === 'popup') closePopup(); });
+</script>
+</body>
+</html>
