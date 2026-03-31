@@ -144,7 +144,7 @@
 										"node": {
 											"id": "post-benzo",
 											"label": "Post-Seizure Monitoring",
-											"type": "stable",
+											"type": "assessment",
 											"description": "Monitor, obtain IV, consider second-line loading for breakthrough prevention"
 										}
 									},
@@ -195,7 +195,7 @@
 													"node": {
 														"id": "post-second",
 														"label": "Monitoring + Transfer",
-														"type": "stable",
+														"type": "assessment",
 														"description": "Continue monitoring. Arrange PICU transfer."
 													}
 												},

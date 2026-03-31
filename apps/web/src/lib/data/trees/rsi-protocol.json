@@ -245,7 +245,7 @@
 																						"node": {
 																							"id": "post-intubation",
 																							"label": "Post-Intubation Care",
-																							"type": "stable",
+																							"type": "assessment",
 																							"description": "Secure tube, sedation, ventilator, NG tube",
 																							"panels": [
 																								{

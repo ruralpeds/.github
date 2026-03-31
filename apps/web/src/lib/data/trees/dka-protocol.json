@@ -199,7 +199,7 @@
 																"node": {
 																	"id": "resolving",
 																	"label": "DKA Resolving",
-																	"type": "stable",
+																	"type": "assessment",
 																	"description": "pH >7.3, HCO₃ >15, AG closed → transition to SubQ insulin"
 																}
 															},
