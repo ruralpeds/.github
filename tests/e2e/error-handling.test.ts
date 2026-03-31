@@ -158,11 +158,11 @@ test.describe('Edge Cases', () => {
 
     // Rapidly navigate between pages
     await goto(page, '/');
-    await page.goto('/reference');
-    await page.goto('/resuscitation');
-    await page.goto('/airway');
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
+    await page.goto('/reference', { waitUntil: 'domcontentloaded' });
+    await page.goto('/resuscitation', { waitUntil: 'domcontentloaded' });
+    await page.goto('/airway', { waitUntil: 'domcontentloaded' });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('domcontentloaded');
 
     const fatal = errors.filter(
       e => e.includes('Uncaught') && !e.includes('WASM') && !e.includes('navigation'),
@@ -177,15 +177,15 @@ test.describe('Edge Cases', () => {
     await goto(page, '/reference/knowledge');
 
     await page.goBack();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await expect(page).toHaveURL(/\/reference$/);
 
     await page.goBack();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await expect(page).toHaveURL('/');
 
     await page.goForward();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await expect(page).toHaveURL(/\/reference$/);
   });
 
@@ -194,7 +194,7 @@ test.describe('Edge Cases', () => {
     await goto(page, '/reference/knowledge');
 
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Should still be on the same page with content
     await expect(page).toHaveURL(/\/reference\/knowledge/);

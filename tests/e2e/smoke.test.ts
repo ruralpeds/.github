@@ -13,14 +13,7 @@
  * and verify critical user flows work end-to-end in a real browser.
  */
 
-import { test, expect, type Page } from '@playwright/test';
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-async function goto(page: Page, path: string) {
-  await page.goto(path);
-  // Wait for SvelteKit hydration
-  await page.waitForLoadState('networkidle');
-}
+import { test, expect, goto } from './fixtures';
 
 // ── Home page ─────────────────────────────────────────────────────────────
 test.describe('Home page', () => {
@@ -39,7 +32,11 @@ test.describe('Home page', () => {
     });
     await goto(page, '/');
     // Filter known non-critical WASM load messages
-    const critical = errors.filter(e => !e.includes('WASM') && !e.includes('wasm'));
+    const critical = errors.filter(e =>
+      !e.includes('WASM') && !e.includes('wasm') &&
+      !e.includes('net::ERR_FAILED') && !e.includes('net::ERR_ABORTED') &&
+      !e.includes('favicon')
+    );
     expect(critical).toHaveLength(0);
   });
 });
@@ -229,9 +226,9 @@ test.describe('Standalone decision trees (static HTML)', () => {
     test(`${tree} loads and renders SVG`, async ({ page }) => {
       await goto(page, `/decision-trees/${tree}`);
       // D3 should have rendered an SVG with nodes
-      const svg = page.locator('#tc');
+      const svg = page.locator('#cds-svg');
       await expect(svg).toBeVisible({ timeout: 5000 });
-      const nodes = page.locator('.ng');
+      const nodes = page.locator('.cds-node');
       await expect(nodes.first()).toBeVisible({ timeout: 5000 });
     });
   }

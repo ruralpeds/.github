@@ -62,7 +62,7 @@ test.describe('Mode Selection', () => {
     const ms = new ModeSelectorPO(page);
     await ms.selectPediatric();
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     // Should NOT show mode selector again
     await expect(ms.container).not.toBeVisible({ timeout: 3000 });
   });
@@ -253,7 +253,7 @@ test.describe('Mode Switching', () => {
     // If switch button is visible, click it
     if (await banner.switchBtn.isVisible()) {
       await banner.switchBtn.click();
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('domcontentloaded');
       // Should show mode selector or switch mode badge
       const badge = page.locator('.banner__mode-badge, .mode-selector');
       await expect(badge).toBeVisible();
@@ -291,7 +291,7 @@ test.describe('Patient Persistence', () => {
     await banner.loadPatient();
 
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     // Should still show 20 kg
     await expect(banner.banner).toContainText(/20/);

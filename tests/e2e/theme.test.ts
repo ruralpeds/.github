@@ -94,7 +94,7 @@ test.describe('Theme System', () => {
     await page.waitForTimeout(200);
 
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
 
     const currentTheme = await toggle.getCurrentTheme();
     expect(currentTheme).toContain('dark');

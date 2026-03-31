@@ -70,7 +70,7 @@ test.describe('Sidebar Navigation', () => {
     await goto(page, '/');
     const nav = new ClinicalNavPO(page);
     await nav.sectionHeader('Reference').click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await expect(page).toHaveURL(/\/reference/);
   });
 
@@ -78,7 +78,7 @@ test.describe('Sidebar Navigation', () => {
     await goto(page, '/reference');
     const nav = new ClinicalNavPO(page);
     await nav.child('Decision Trees').click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await expect(page).toHaveURL(/\/reference\/decision-trees/);
   });
 });
@@ -160,7 +160,7 @@ test.describe('Logo Navigation', () => {
     await setMode(page, 'pediatric');
     await goto(page, '/reference/knowledge');
     await page.locator('.app-logo').click();
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await expect(page).toHaveURL('/');
   });
 });

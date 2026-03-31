@@ -6,12 +6,24 @@
 
 import { test as base, expect, type Page, type Locator } from '@playwright/test';
 
+// ── Custom test fixture that blocks external resources ──────────────────────
+
+/** Patterns for external resources that hang in CI/sandboxed environments */
+const BLOCKED_EXTERNAL = /fonts\.googleapis\.com|fonts\.gstatic\.com/;
+
+export const test = base.extend({
+  page: async ({ page }, use) => {
+    // Block external font requests that hang without network access
+    await page.route(BLOCKED_EXTERNAL, route => route.abort());
+    await use(page);
+  },
+});
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Navigate and wait for SvelteKit hydration. */
+/** Navigate and wait for DOM ready. */
 export async function goto(page: Page, path: string) {
-  await page.goto(path);
-  await page.waitForLoadState('networkidle');
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
 }
 
 /** Collect console errors during a callback, filtering known WASM noise. */
@@ -31,8 +43,8 @@ export async function collectConsoleErrors(
 
 /** Wait for an SVG with rendered nodes (D3 tree). */
 export async function waitForD3Tree(page: Page, timeout = 8000) {
-  await page.locator('#tc').waitFor({ state: 'visible', timeout });
-  await page.locator('.ng').first().waitFor({ state: 'visible', timeout });
+  await page.locator('#cds-svg').waitFor({ state: 'visible', timeout });
+  await page.locator('.cds-node').first().waitFor({ state: 'visible', timeout });
 }
 
 // ── Page Object: Mode Selector ───────────────────────────────────────────────
@@ -46,12 +58,12 @@ export class ModeSelectorPO {
 
   async selectNeonatal() {
     await this.neonatalCard.click();
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   async selectPediatric() {
     await this.pediatricCard.click();
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('domcontentloaded');
   }
 }
 
@@ -230,4 +242,3 @@ export async function takeScreenshot(page: Page, name: string) {
 // ── Re-exports ───────────────────────────────────────────────────────────────
 
 export { expect };
-export const test = base;

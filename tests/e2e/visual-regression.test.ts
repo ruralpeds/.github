@@ -104,8 +104,8 @@ test.describe('Visual Regression — Decision Trees', () => {
   for (const { file, name } of trees) {
     test(`${name} renders consistently`, async ({ page }) => {
       await goto(page, `/decision-trees/${file}`);
-      await page.locator('#tc').waitFor({ state: 'visible', timeout: 8000 });
-      await page.locator('.ng').first().waitFor({ state: 'visible', timeout: 8000 });
+      await page.locator('#cds-svg').waitFor({ state: 'visible', timeout: 8000 });
+      await page.locator('.cds-node').first().waitFor({ state: 'visible', timeout: 8000 });
       await page.waitForTimeout(1000); // D3 animations settle
 
       await expect(page).toHaveScreenshot(`${name}.png`, {

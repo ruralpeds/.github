@@ -79,7 +79,7 @@ test.describe('Keyboard Navigation', () => {
     const refLink = page.locator('.nav-section__header').filter({ hasText: /Reference/ });
     await refLink.focus();
     await page.keyboard.press('Enter');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await expect(page).toHaveURL(/\/reference/);
   });
 });
