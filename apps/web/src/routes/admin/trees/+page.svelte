@@ -4,9 +4,21 @@
 
   onMount(() => loadRegistries());
 
-  // Trees that have been migrated to JSON data layer
+  // Trees that have been migrated to JSON data layer (all 41 trees now have tree-data/*.json)
   const MIGRATED_TO_JSON = new Set([
-    'neonatal_glucose_management',
+    'neonatal_glucose_management', 'neonatal_cardiac_pda', 'neonatal_endocrine',
+    'neonatal_fen', 'neonatal_gi_liver', 'neonatal_hematology', 'neonatal_infectious_diseases',
+    'neonatal_neurology', 'neonatal_nows_nas', 'neonatal_pulmonary', 'neonatal_renal',
+    'neonatal_skin', 'neonatal_surgical_emergencies', 'neonatal_transport', 'neonatal_urological',
+    'neonatal_ophthalmology', 'neonatal_pain_sedation', 'newborn_discharge_readiness',
+    'newborn_screening_followup', 'nrp_resuscitation', 'neonatal_eos_sepsis', 'neonatal_seizures',
+    'neonatal_respiratory_escalation', 'neonatal_ivf_prescription_calculator',
+    'obstetric_emergencies', 'shoulder_dystocia',
+    'pals_algorithm', 'pediatric_abdominal_pain', 'pediatric_anaphylaxis', 'pediatric_burns',
+    'pediatric_cardiac_emergencies', 'pediatric_dka', 'pediatric_orthopedic',
+    'pediatric_psychiatric_emergencies', 'pediatric_respiratory_emergencies', 'pediatric_seizures',
+    'pediatric_sepsis_shock', 'pediatric_siadh_csw', 'pediatric_toxicology', 'pediatric_trauma',
+    'pediatric_difficult_airway',
   ]);
 
   $: trees = $treeRegistry?.trees ?? [];
