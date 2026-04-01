@@ -141,7 +141,7 @@
 										"node": {
 											"id": "observe",
 											"label": "Observe 4-6 Hours",
-											"type": "stable",
+											"type": "assessment",
 											"description": "Monitor for biphasic reaction. Prescribe EpiPen. Allergy referral."
 										}
 									},

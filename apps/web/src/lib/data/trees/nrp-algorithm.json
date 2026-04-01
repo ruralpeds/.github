@@ -212,7 +212,7 @@
 													"node": {
 														"id": "post-resus-care",
 														"label": "Post-Resuscitation Care",
-														"type": "stable",
+														"type": "assessment",
 														"description": "Position, monitor SpO2, consider CPAP if labored"
 													}
 												},
@@ -303,7 +303,7 @@
 																"node": {
 																	"id": "ppv-success",
 																	"label": "PPV Successful",
-																	"type": "stable",
+																	"type": "assessment",
 																	"description": "Continue post-resuscitation monitoring"
 																}
 															},
@@ -408,7 +408,7 @@
 																						"node": {
 																							"id": "epi-success",
 																							"label": "Post-Resuscitation Care",
-																							"type": "stable",
+																							"type": "assessment",
 																							"description": "NICU admission, monitor, debrief"
 																						}
 																					},

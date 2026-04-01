@@ -159,7 +159,7 @@
 																"node": {
 																	"id": "responsive",
 																	"label": "Post-Resuscitation",
-																	"type": "stable",
+																	"type": "assessment",
 																	"description": "Identify and treat underlying cause. Consider pacing."
 																}
 															},

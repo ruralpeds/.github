@@ -273,7 +273,7 @@
 													"node": {
 														"id": "rosc",
 														"label": "ROSC",
-														"type": "stable",
+														"type": "assessment",
 														"description": "Post-cardiac arrest care. Targeted temperature management."
 													}
 												}

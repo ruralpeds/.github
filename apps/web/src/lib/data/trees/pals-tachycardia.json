@@ -187,7 +187,7 @@
 																"node": {
 																	"id": "svt-converted",
 																	"label": "Rhythm Converted",
-																	"type": "stable",
+																	"type": "assessment",
 																	"description": "Monitor for recurrence. Cardiology referral."
 																}
 															},

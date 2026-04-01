@@ -175,7 +175,7 @@
 													"node": {
 														"id": "fluid-responsive",
 														"label": "Fluid-Responsive Sepsis",
-														"type": "stable",
+														"type": "assessment",
 														"description": "Continue monitoring, reassess q15 min, recheck lactate at 2-4 hr"
 													}
 												},
@@ -231,7 +231,7 @@
 																"node": {
 																	"id": "vaso-responsive",
 																	"label": "Vasopressor-Responsive",
-																	"type": "stable",
+																	"type": "assessment",
 																	"description": "Continue infusion. Transfer to PICU."
 																}
 															},
