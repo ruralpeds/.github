@@ -248,14 +248,14 @@ const PedsCDSTree = (() => {
     if (!updateRoot) updateRoot = source.ancestors().at(-1);
     const root = updateRoot;
 
-    const layout = d3.tree().nodeSize([NH + 28, NW + 90]);
+    const layout = d3.tree().nodeSize([NH + 48, NW + 120]);
     layout(root);
 
     const nodes = root.descendants();
     const links = root.links();
 
     // Transpose: x = vertical, y = horizontal
-    nodes.forEach(d => { d.y = d.depth * (NW + 90); });
+    nodes.forEach(d => { d.y = d.depth * (NW + 120); });
 
     // ── Links ──────────────────────────────────────────────────────────
     const link = g.selectAll('path.cds-link')
@@ -277,15 +277,36 @@ const PedsCDSTree = (() => {
         return diagonal(o, o);
       }).remove();
 
-    // Edge labels
-    g.selectAll('text.cds-edge-label').remove();
+    // Edge labels (with multiline support and background pills)
+    g.selectAll('g.cds-edge-group').remove();
     links.forEach(l => {
       if (!l.target.data._edgeLabel) return;
-      g.append('text').attr('class', 'cds-edge-label')
-        .attr('x', (l.source.y + l.target.y) / 2 + NW / 2)
-        .attr('y', (l.source.x + l.target.x) / 2 - 5)
-        .attr('text-anchor', 'middle')
-        .text(l.target.data._edgeLabel);
+      const cx = (l.source.y + l.target.y) / 2 + NW / 2;
+      const cy = (l.source.x + l.target.x) / 2;
+      const lines = l.target.data._edgeLabel.split('\n');
+      const lineH = 13;
+      const totalH = lines.length * lineH;
+      const maxLen = Math.max(...lines.map(s => s.length));
+      const pillW = Math.max(maxLen * 6.5 + 16, 40);
+      const pillH = totalH + 10;
+
+      const grp = g.append('g').attr('class', 'cds-edge-group')
+        .attr('transform', `translate(${cx},${cy - totalH / 2})`);
+
+      grp.append('rect').attr('class', 'cds-edge-pill')
+        .attr('x', -pillW / 2).attr('y', -8)
+        .attr('width', pillW).attr('height', pillH)
+        .attr('rx', 6);
+
+      const txt = grp.append('text').attr('class', 'cds-edge-label')
+        .attr('text-anchor', 'middle');
+
+      lines.forEach((line, i) => {
+        txt.append('tspan')
+          .attr('x', 0)
+          .attr('dy', i === 0 ? '0.35em' : lineH)
+          .text(line);
+      });
     });
 
     // ── Nodes ──────────────────────────────────────────────────────────
@@ -513,8 +534,9 @@ const PedsCDSTree = (() => {
 .cds-node-icon{font-size:14px;text-anchor:middle;dominant-baseline:middle;pointer-events:none}
 .cds-expand-indicator{font-family:'IBM Plex Mono',monospace;font-size:8px;
   fill:rgba(255,255,255,.5);text-anchor:end;dominant-baseline:middle;pointer-events:none}
-.cds-edge-label{font-family:'IBM Plex Mono',monospace;font-size:9px;
+.cds-edge-label{font-family:'IBM Plex Sans',sans-serif;font-size:10.5px;font-weight:600;
   fill:var(--yellow,#fbbf24)}
+.cds-edge-pill{fill:var(--bg,#0b1121);fill-opacity:.88;stroke:var(--border,#334155);stroke-width:.75;stroke-opacity:.5}
 .cds-info-btn circle{fill:rgba(255,255,255,.15);stroke:rgba(255,255,255,.4);stroke-width:1}
 .cds-info-btn text{font-family:'IBM Plex Mono',monospace;font-size:10px;
   font-weight:700;fill:#fff;pointer-events:none}
