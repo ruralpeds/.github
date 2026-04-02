@@ -128,20 +128,12 @@ const PedsCDSTree = (() => {
       }
     }
 
-    // Measure header and adjust SVG offset so tree is never hidden behind it
-    requestAnimationFrame(() => {
-      const hdr = document.getElementById('cds-header');
-      const banner = document.getElementById('ped-shell-banner');
-      if (hdr) {
-        const bannerH = banner ? banner.offsetHeight : 0;
-        hdr.style.top = bannerH + 'px';
-        const totalH = bannerH + hdr.offsetHeight;
-        document.documentElement.style.setProperty('--cds-header-h', totalH + 'px');
-      }
-    });
-
-    // Build D3 tree
-    buildTree();
+    // Measure header + banner and build tree after layout settles
+    // Use double-rAF to ensure shell.js banner has been injected and laid out
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      adjustHeaderOffset();
+      buildTree();
+    }));
 
     // Education panel (if edu-links.js present)
     if (window.PedsEduLinks && data.educationTopics) {
@@ -516,7 +508,11 @@ const PedsCDSTree = (() => {
   font-size:.65rem;padding:.15rem .5rem;border-radius:4px;
   background:var(--surface,#1e293b);border:1px solid var(--border,#334155);
   color:var(--text2,#94a3b8)}
-.cds-back-btn{text-decoration:none;white-space:nowrap;flex-shrink:0}
+.cds-back-btn{text-decoration:none;white-space:nowrap;flex-shrink:0;
+  font-size:.85rem;font-weight:600;padding:8px 16px;border-radius:8px;
+  background:var(--accent,#38bdf8);color:#0b1121;border-color:var(--accent,#38bdf8);
+  transition:all .15s}
+.cds-back-btn:hover{filter:brightness(1.15);transform:translateX(-2px)}
 .cds-btn{background:var(--surface,#1e293b);border:1px solid var(--border,#334155);
   color:var(--text,#e2e8f0);padding:6px 14px;border-radius:7px;
   font-family:'IBM Plex Sans',sans-serif;font-size:.75rem;cursor:pointer}
@@ -625,8 +621,8 @@ const PedsCDSTree = (() => {
   styleEl.textContent = STYLES;
   document.head.appendChild(styleEl);
 
-  // Resize handler — also recalculate header offset
-  window.addEventListener('resize', () => {
+  // ── Header offset management ────────────────────────────────────────
+  function adjustHeaderOffset() {
     const hdr = document.getElementById('cds-header');
     const banner = document.getElementById('ped-shell-banner');
     if (hdr) {
@@ -635,13 +631,14 @@ const PedsCDSTree = (() => {
       const totalH = bannerH + hdr.offsetHeight;
       document.documentElement.style.setProperty('--cds-header-h', totalH + 'px');
       if (svg) {
-        const svgH = window.innerHeight - totalH;
-        svg.attr('width', window.innerWidth).attr('height', svgH);
+        svg.attr('width', window.innerWidth).attr('height', window.innerHeight - totalH);
       }
     } else if (svg) {
       svg.attr('width', window.innerWidth).attr('height', window.innerHeight);
     }
-  });
+  }
+
+  window.addEventListener('resize', adjustHeaderOffset);
 
   return { init, expandAll, collapseAll, resetZoom, openPopup, closePopup };
 })();
