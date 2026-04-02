@@ -285,8 +285,17 @@ const PedsCDSTree = (() => {
       const pillW = Math.max(maxLen * 6.5 + 16, 40);
       const pillH = totalH + 10;
 
+      const targetNode = l.target;
       const grp = g.append('g').attr('class', 'cds-edge-group')
-        .attr('transform', `translate(${cx},${cy - totalH / 2})`);
+        .attr('transform', `translate(${cx},${cy - totalH / 2})`)
+        .style('cursor', 'pointer')
+        .on('click', () => {
+          // Highlight the target node on tap
+          g.selectAll('.cds-node').filter(n => n === targetNode)
+            .select('.cds-node-rect')
+            .transition().duration(200).attr('stroke-width', 4)
+            .transition().duration(800).attr('stroke-width', 1.5);
+        });
 
       grp.append('rect').attr('class', 'cds-edge-pill')
         .attr('x', -pillW / 2).attr('y', -8)
@@ -343,10 +352,6 @@ const PedsCDSTree = (() => {
         g.append('text').attr('dy', '0.35em').attr('text-anchor', 'middle').text('i');
       });
 
-    // Expand indicator
-    nodeEnter.append('text').attr('class', 'cds-expand-indicator')
-      .attr('x', NW - 8).attr('y', 4);
-
     // Merge + transition
     const nodeUpdate = node.merge(nodeEnter);
     nodeUpdate.transition().duration(320)
@@ -364,8 +369,57 @@ const PedsCDSTree = (() => {
     nodeUpdate.select('.cds-node-desc')
       .text(d => d.data.description ? truncate(d.data.description, 34) : '');
 
-    nodeUpdate.select('.cds-expand-indicator')
-      .text(d => d._children ? `▸ ${d._children.length}` : '');
+    // ── Decision path buttons (shown below collapsed nodes) ───────────
+    g.selectAll('g.cds-path-btns').remove();
+    nodes.forEach(d => {
+      if (!d._children || !d._children.length) return;
+      const edges = d.data.children || [];
+      if (!edges.length) return;
+
+      const btnG = g.append('g').attr('class', 'cds-path-btns')
+        .attr('transform', `translate(${d.y},${d.x})`);
+
+      const btnW = Math.min(NW / edges.length - 4, 92);
+      const btnH = 26;
+      const startX = (NW - edges.length * (btnW + 4) + 4) / 2;
+
+      edges.forEach((edge, i) => {
+        const label = edge.label ? edge.label.replace(/\n/g, ' ') : `Path ${i + 1}`;
+        const bx = startX + i * (btnW + 4);
+        const by = NH / 2 + 6;
+
+        const btn = btnG.append('g').attr('class', 'cds-path-btn')
+          .attr('transform', `translate(${bx},${by})`)
+          .style('cursor', 'pointer')
+          .on('click', (e) => {
+            e.stopPropagation();
+            // Expand this node and scroll to reveal the chosen child
+            if (d._children) { d.children = d._children; d._children = null; }
+            update(d);
+            // Highlight the chosen path briefly
+            const childNode = d.children?.[i];
+            if (childNode) {
+              setTimeout(() => {
+                g.selectAll('.cds-node').filter(n => n === childNode)
+                  .select('.cds-node-rect')
+                  .transition().duration(200)
+                  .attr('stroke-width', 4)
+                  .transition().duration(800)
+                  .attr('stroke-width', 1.5);
+              }, 350);
+            }
+          });
+
+        btn.append('rect')
+          .attr('width', btnW).attr('height', btnH)
+          .attr('rx', 6);
+
+        btn.append('text')
+          .attr('x', btnW / 2).attr('y', btnH / 2)
+          .attr('dy', '0.35em').attr('text-anchor', 'middle')
+          .text(truncate(label, Math.floor(btnW / 6)));
+      });
+    });
 
     node.exit().transition().duration(320)
       .attr('transform', `translate(${source.y},${source.x})`)
@@ -535,8 +589,14 @@ const PedsCDSTree = (() => {
 .cds-expand-indicator{font-family:'IBM Plex Mono',monospace;font-size:8px;
   fill:rgba(255,255,255,.5);text-anchor:end;dominant-baseline:middle;pointer-events:none}
 .cds-edge-label{font-family:'IBM Plex Sans',sans-serif;font-size:10.5px;font-weight:600;
-  fill:var(--yellow,#fbbf24)}
-.cds-edge-pill{fill:var(--bg,#0b1121);fill-opacity:.88;stroke:var(--border,#334155);stroke-width:.75;stroke-opacity:.5}
+  fill:var(--text,#e2e8f0)}
+.cds-edge-pill{fill:var(--surface,#1e293b);fill-opacity:1;stroke:var(--accent,#38bdf8);stroke-width:1.5;rx:6;
+  transition:filter .15s;cursor:pointer}
+.cds-edge-group:hover .cds-edge-pill{filter:brightness(1.2)}
+.cds-path-btn rect{fill:var(--accent,#38bdf8);fill-opacity:.9;stroke:var(--accent,#38bdf8);stroke-width:1;rx:6}
+.cds-path-btn text{font-family:'IBM Plex Sans',sans-serif;font-size:9px;font-weight:600;
+  fill:#0b1121;pointer-events:none}
+.cds-path-btn:hover rect{fill-opacity:1;filter:brightness(1.15)}
 .cds-info-btn circle{fill:rgba(255,255,255,.15);stroke:rgba(255,255,255,.4);stroke-width:1;cursor:pointer}
 .cds-info-btn text{font-family:'IBM Plex Mono',monospace;font-size:10px;
   font-weight:700;fill:#fff;pointer-events:none}
