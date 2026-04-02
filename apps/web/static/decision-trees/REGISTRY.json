@@ -3,7 +3,7 @@
   "description": "Tracking registry for all clinical decision trees in timothyhartzog/Peds",
   "repository": "timothyhartzog/Peds",
   "base_path": "apps/web/static/decision-trees",
-  "last_updated": "2026-03-27",
+  "last_updated": "2026-04-02",
   "standards": {
     "engine": "D3.js 7.8.5 (cdnjs)",
     "fonts": "DM Serif Display, IBM Plex Sans, IBM Plex Mono",
@@ -13,17 +13,17 @@
     "node_types": "Emergency(red), Urgent(orange), Decision(yellow), Action(green), Assessment(blue), Diagnosis(purple)",
     "features": [
       "Click-to-expand/collapse",
-      "\u24d8 tabbed info popups",
-      "\ud83d\udcda Education resources panel",
+      "ⓘ tabbed info popups",
+      "📚 Education resources panel",
       "PubMed-sourced evidence"
     ],
-    "data_separation": "All 36 trees: clinical data in tree-data/*.js \u2014 rendering code in HTML loader. Edit .js files to update protocols without touching HTML."
+    "data_separation": "All 36 trees: clinical data in tree-data/*.js — rendering code in HTML loader. Edit .js files to update protocols without touching HTML."
   },
   "trees": [
     {
       "id": "neonatal_glucose_management",
       "filename": "neonatal_glucose_management_decision_tree.html",
-      "title": "Neonatal Glucose Management Decision Tree (32\u201335 wk)",
+      "title": "Neonatal Glucose Management Decision Tree (32–35 wk)",
       "category": "neonatal",
       "tags": [
         "hypoglycemia",
@@ -1204,7 +1204,7 @@
         "config/ivf_nutrition.toml"
       ],
       "features": [
-        "GA banner selector (22\u201340 weeks)",
+        "GA banner selector (22–40 weeks)",
         "Weight entry in grams with kg display",
         "DOL slider with protocol-driven rate lookup",
         "Condition modifiers (stable, RDS, sepsis, NEC, PPHN, post-op)",
@@ -1355,6 +1355,44 @@
         "NEOLEV2",
         "VON"
       ]
+    },
+    {
+      "id": "neonatal_ecoli_gramneg_sepsis",
+      "filename": "neonatal_ecoli_gramneg_sepsis_decision_tree.html",
+      "title": "E. coli & Gram-Negative Neonatal Sepsis Decision Tree",
+      "category": "neonatal",
+      "tags": [
+        "E. coli",
+        "gram-negative",
+        "sepsis",
+        "EOS",
+        "meningitis",
+        "ampicillin",
+        "gentamicin",
+        "antibiotic resistance",
+        "septic shock",
+        "Level I",
+        "Level II"
+      ],
+      "created": "2026-04-02",
+      "modified": "2026-04-02",
+      "version": "1.0.0",
+      "status": "complete",
+      "has_theme_bridge": true,
+      "has_shell": false,
+      "has_edu_links": true,
+      "literature_review": null,
+      "pubmed_refs": 20,
+      "education_links": {
+        "education_guides": [],
+        "textbooks": [
+          "ecoli_gram_negative_neonatal_sepsis"
+        ],
+        "audio_textbooks": [],
+        "cheat_sheets": [
+          "ecoli_gram_negative_neonatal_sepsis"
+        ]
+      }
     }
   ]
 }
