@@ -1,5 +1,0 @@
-# Keep all wasm-pack generated files — don't ignore them
-!*.js
-!*.wasm
-!*.ts
-!package.json
