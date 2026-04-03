@@ -1,8 +1,8 @@
 # Build Audit Log
 
-**Generated:** 2026-04-03 10:57 UTC  
-**Branch:** `claude/add-build-audit-log-boobF`  
-**Commit:** `720cef8`  
+**Generated:** 2026-04-03 11:12 UTC  
+**Branch:** `main`  
+**Commit:** `c783180`  
 **Generator:** `scripts/generate_audit_log.py`  
 **Machine-readable log:** `build-log.json`
 
@@ -10,7 +10,7 @@
 
 | Metric | Count |
 |--------|-------|
-| Total commits | 79 |
+| Total commits | 96 |
 | Knowledge artifacts | 150 |
 | Decision trees (JSON) | 51 |
 | Web app version | 0.1.0 |
@@ -287,13 +287,23 @@
 
 | Date | Author | Commit | Subject |
 |------|--------|--------|---------|
+| 2026-04-03 07:12 | Timothy H Hartzog | `c783180` | Merge pull request #17 from timothyhartzog/claude/add-build-audit-log-boobF |
+| 2026-04-03 10:58 | Claude | `14359ad` | feat: add comprehensive build audit log with automatic generation |
 | 2026-04-03 10:47 | Claude | `720cef8` | Add seizure management education package — textbook, audio guide, cheat sheet, decision tree |
 | 2026-04-03 10:45 | Claude | `557033e` | Add CAH Acute Illness & Sick Day Dosing education package |
+| 2026-04-03 03:15 | copilot-swe-agent[bot] | `5d4a279` | feat: add Clinical Scoring Systems calculator to calculators index and SvelteKit route |
+| 2026-04-03 03:12 | copilot-swe-agent[bot] | `bb8dc19` | refactor: extract barColorForScore helper in scoring calculator |
+| 2026-04-03 03:10 | copilot-swe-agent[bot] | `859f0bf` | Add standalone pediatric clinical scoring calculator |
+| 2026-04-03 03:01 | copilot-swe-agent[bot] | `c359d49` | Fix split drug entry in gpb-los dosing panel |
+| 2026-04-03 03:00 | copilot-swe-agent[bot] | `80c53d0` | Convert septic shock decision tree to new schema |
+| 2026-04-03 02:53 | copilot-swe-agent[bot] | `26e51ef` | Convert neonatal E. coli/gram-neg sepsis tree to JSON+loader architecture |
 | 2026-04-02 21:37 | Timothy H Hartzog | `7c4f68b` | Merge pull request #16 from timothyhartzog/copilot/include-claude-artifacts-and-cds |
 | 2026-04-03 01:36 | copilot-swe-agent[bot] | `2ffea37` | Initial plan |
+| 2026-04-03 01:32 | copilot-swe-agent[bot] | `3db0e68` | Initial plan |
 | 2026-04-02 19:03 | Timothy H Hartzog | `2606454` | Add redirect for pediatric IVF calculator legacy URL |
 | 2026-04-02 23:01 | Claude | `a213016` | fix: add redirect for pediatric_ivf_calculator at decision-trees/calculators path |
 | 2026-04-02 19:00 | Timothy H Hartzog | `813256b` | fix: make decision tree edge labels visible and add interactive path buttons (#14) |
+| 2026-04-02 23:00 | Claude | `8acfc1d` | fix: make decision tree edge labels visible and add interactive path buttons |
 | 2026-04-02 18:58 | Timothy H Hartzog | `80fe801` | fix: mobile responsive layout for decision trees (#13) |
 | 2026-04-02 18:18 | Timothy H Hartzog | `f8cda28` | Merge pull request #12 from timothyhartzog/claude/merge-pull-requests-ZkfeY |
 | 2026-04-02 16:12 | Claude | `ef4e387` | fix: improve decision tree display, migrate legacy trees, add back button |
@@ -304,6 +314,7 @@
 | 2026-03-31 16:41 | Claude | `65b1d58` | Add septic shock education materials (2026-03-31) |
 | 2026-03-31 15:48 | Timothy Hartzog | `45cb2c4` | Add pediatric cardiac arrhythmia education package (birth-18yr) |
 | 2026-03-31 08:50 | Timothy H Hartzog | `04c1933` | docs: add comprehensive project catalog (2026-03-31 snapshot) |
+| 2026-03-31 09:20 | Claude | `883feda` | docs: add comprehensive project catalog (2026-03-31 snapshot) |
 | 2026-03-31 05:06 | Timothy H Hartzog | `7fe3358` | Merge pull request #11 from timothyhartzog/claude/next-phase-WQCVg |
 | 2026-03-31 08:07 | Claude | `5073d09` | feat: add knowledge registry and mark all 41 trees as JSON-migrated |
 | 2026-03-31 03:56 | Timothy H Hartzog | `33b1b73` | Merge pull request #10 from timothyhartzog/claude/next-phase-4Wt0f |
@@ -338,13 +349,19 @@
 | 2026-03-26 10:23 | Claude | `77d2d9f` | feat(trees): extract clinical data from all 35 standalone trees |
 | 2026-03-26 09:44 | Claude | `b3a9662` | feat: tackle all 3 high-priority issues from project assessment |
 | 2026-03-26 09:34 | Claude | `cc15545` | Add knowledge management system with PubMed search and extensive logging |
+| 2026-03-26 09:29 | Claude | `e45793d` | Add admin module with clinical values editor and passphrase auth |
+| 2026-03-26 09:16 | Claude | `dca7371` | Finalize /knowledge skill with version selection and artifact patterns |
+| 2026-03-26 09:14 | Claude | `bb2f81a` | Add SQLite knowledge database with better-sqlite3 |
+| 2026-03-26 08:41 | Claude | `0f4a11f` | Add deprecate/restore/purge lifecycle and staleness detection |
 | 2026-03-26 04:27 | Timothy H Hartzog | `a6d516e` | Merge pull request #4 from timothyhartzog/claude/document-knowledge-structure-4gkIw |
 | 2026-03-26 08:21 | Claude | `82488bb` | Add unified knowledge management system with single source of truth |
+| 2026-03-26 07:20 | Claude | `8d6243f` | feat: comprehensive logic/education management system with error handling |
 | 2026-03-26 02:45 | Timothy H Hartzog | `d73c0df` | Merge pull request #3 from timothyhartzog/claude/debug-gui-error-handling-SIvcu |
 | 2026-03-26 06:40 | Claude | `5ae965d` | Update GitHub Pages workflow to build full SvelteKit + WASM app |
 | 2026-03-26 02:36 | Timothy H Hartzog | `97a2c98` | Merge pull request #2 from timothyhartzog/claude/debug-gui-error-handling-SIvcu |
 | 2026-03-26 04:00 | Claude | `beeff25` | Add structured error handling for Rust-to-Svelte WASM boundary |
 | 2026-03-25 05:20 | Claude | `279329e` | Add comprehensive link & asset integrity checker with HTML GUI report |
+| 2026-03-25 02:12 | Claude | `35a4323` | Phase 3: Add 📚 education badges and registry links to index.html |
 | 2026-03-25 01:53 | Timothy Hartzog | `c99f0a1` | Add education links system, tracking registry, and glucose management tree |
 | 2026-03-25 01:41 | Claude | `bad4377` | Ignore DOCX binaries in build pipeline queue folders |
 | 2026-03-25 01:40 | Claude | `b05c1fe` | Add education build pipeline with change detection and tracking log |
