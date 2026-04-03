@@ -15,6 +15,8 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 | audit-log.yml | Build audit ledger: dates, refs, deps, full provenance | `uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main` |
 | security-scan.yml | SAST (Semgrep), secret detection, SBOM, supply chain | `uses: timothyhartzog/.github/.github/workflows/security-scan.yml@main` |
 | code-quality.yml | CodeQL, dependency review, license compliance, repo hygiene | `uses: timothyhartzog/.github/.github/workflows/code-quality.yml@main` |
+| release.yml | Conventional commit changelog, semver bumps, GitHub releases | `uses: timothyhartzog/.github/.github/workflows/release.yml@main` |
+| container.yml | Docker build, Hadolint, Trivy scan, GHCR push, attestation | `uses: timothyhartzog/.github/.github/workflows/container.yml@main` |
 
 ## Features
 
@@ -53,6 +55,23 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 - **License compliance**: Scans Node, Python, and Rust dependencies against configurable allow/deny lists
 - **Repository hygiene**: Checks for README, LICENSE, SECURITY.md, CODEOWNERS, CI workflows
 - **Code inspection**: Flags large files, debug statements in production code, tech debt markers
+
+### Release Automation (release.yml)
+- Parses conventional commits (`feat:`, `fix:`, `feat!:`) to determine semver bump
+- Auto-generates categorized changelog (breaking changes, features, fixes, contributors)
+- Updates version in `package.json`, `Cargo.toml`, `pyproject.toml`, `VERSION`
+- Creates annotated git tag and GitHub release with changelog body
+- Supports manual override (major/minor/patch), draft releases, prereleases
+- Outputs version, tag, and release URL for downstream jobs
+
+### Container (container.yml)
+- **Hadolint**: Lints Dockerfile for best practices before building
+- **Multi-platform builds**: Supports `linux/amd64`, `linux/arm64`, etc. via QEMU + Buildx
+- **Smart tagging**: Semver tags (`v1`, `v1.2`, `v1.2.3`), branch tags, SHA tags, `latest` on main
+- **GHCR push**: Builds and pushes to `ghcr.io/<org>/<repo>` with GHA layer caching
+- **Build attestation**: SLSA provenance attestation pushed alongside image
+- **Trivy scan**: Scans built image for CVEs, uploads SARIF to GitHub Security tab, fails on critical/high
+- **OCI labels**: Embeds source URL, revision, and build timestamp in image metadata
 
 ### Audit Logging
 - Every build tracked in `audit-log/ledger.json` per repo
@@ -134,4 +153,44 @@ jobs:
       security-events: write
       contents: read
       pull-requests: write
+```
+
+### Release (manual trigger)
+```yaml
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      release-type:
+        type: choice
+        options: [auto, major, minor, patch]
+        default: auto
+jobs:
+  release:
+    uses: timothyhartzog/.github/.github/workflows/release.yml@main
+    with:
+      release-type: ${{ inputs.release-type }}
+    permissions:
+      contents: write
+```
+
+### Container (repos with Dockerfile)
+```yaml
+name: Container
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  container:
+    uses: timothyhartzog/.github/.github/workflows/container.yml@main
+    with:
+      platforms: "linux/amd64,linux/arm64"
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+      security-events: write
 ```

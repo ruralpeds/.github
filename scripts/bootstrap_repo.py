@@ -53,6 +53,13 @@ def detect_languages(target: Path) -> dict:
     if (target / "Project.toml").exists():
         detected["julia"] = {}
 
+    # Docker
+    if (target / "Dockerfile").exists() or (target / "docker-compose.yml").exists() or (target / "docker-compose.yaml").exists():
+        detected["docker"] = {
+            "has_dockerfile": (target / "Dockerfile").exists(),
+            "has_compose": (target / "docker-compose.yml").exists() or (target / "docker-compose.yaml").exists(),
+        }
+
     return detected
 
 
@@ -174,6 +181,51 @@ jobs:
 """
 
 
+def generate_release_workflow() -> str:
+    """Generate release workflow caller."""
+    org = "timothyhartzog"
+    return f"""name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      release-type:
+        description: "Release type"
+        type: choice
+        options: [auto, major, minor, patch]
+        default: auto
+
+jobs:
+  release:
+    uses: {org}/.github/.github/workflows/release.yml@main
+    with:
+      release-type: ${{{{ inputs.release-type }}}}
+    permissions:
+      contents: write
+"""
+
+
+def generate_container_workflow() -> str:
+    """Generate container build/scan workflow caller."""
+    org = "timothyhartzog"
+    return f"""name: Container
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  container:
+    uses: {org}/.github/.github/workflows/container.yml@main
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+      security-events: write
+"""
+
+
 def generate_security_workflow() -> str:
     """Generate security scan workflow caller."""
     org = "timothyhartzog"
@@ -261,6 +313,29 @@ def main():
             print(f"  Created {audit_file.relative_to(target)}")
         else:
             print(f"  [dry-run] Would create {audit_file.relative_to(target)}")
+        changes = True
+
+    # Container workflow (for repos with Dockerfiles)
+    if "docker" in detected and detected["docker"].get("has_dockerfile"):
+        container_file = workflows_dir / "container.yml"
+        if not container_file.exists():
+            if not dry_run:
+                workflows_dir.mkdir(parents=True, exist_ok=True)
+                container_file.write_text(generate_container_workflow())
+                print(f"  Created {container_file.relative_to(target)}")
+            else:
+                print(f"  [dry-run] Would create {container_file.relative_to(target)}")
+            changes = True
+
+    # Release workflow (all repos)
+    release_file = workflows_dir / "release.yml"
+    if not release_file.exists():
+        if not dry_run:
+            workflows_dir.mkdir(parents=True, exist_ok=True)
+            release_file.write_text(generate_release_workflow())
+            print(f"  Created {release_file.relative_to(target)}")
+        else:
+            print(f"  [dry-run] Would create {release_file.relative_to(target)}")
         changes = True
 
     # Security & code quality workflow (runs on ALL repos)
