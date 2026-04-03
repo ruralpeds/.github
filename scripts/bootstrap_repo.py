@@ -174,6 +174,33 @@ jobs:
 """
 
 
+def generate_security_workflow() -> str:
+    """Generate security scan workflow caller."""
+    org = "timothyhartzog"
+    return f"""name: Security
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 7 * * 1"
+
+jobs:
+  security:
+    uses: {org}/.github/.github/workflows/security-scan.yml@main
+    permissions:
+      security-events: write
+      contents: read
+  quality:
+    uses: {org}/.github/.github/workflows/code-quality.yml@main
+    permissions:
+      security-events: write
+      contents: read
+      pull-requests: write
+"""
+
+
 def main():
     if len(sys.argv) < 3:
         print("Usage: bootstrap_repo.py <target_path> <templates_path> [dry_run]")
@@ -234,6 +261,17 @@ def main():
             print(f"  Created {audit_file.relative_to(target)}")
         else:
             print(f"  [dry-run] Would create {audit_file.relative_to(target)}")
+        changes = True
+
+    # Security & code quality workflow (runs on ALL repos)
+    security_file = workflows_dir / "security.yml"
+    if not security_file.exists():
+        if not dry_run:
+            workflows_dir.mkdir(parents=True, exist_ok=True)
+            security_file.write_text(generate_security_workflow())
+            print(f"  Created {security_file.relative_to(target)}")
+        else:
+            print(f"  [dry-run] Would create {security_file.relative_to(target)}")
         changes = True
 
     set_output("changes", "true" if changes else "false")

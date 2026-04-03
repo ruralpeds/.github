@@ -13,6 +13,8 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 | ci-julia.yml | Julia CI: JuliaFormatter, Pkg.test with coverage | `uses: timothyhartzog/.github/.github/workflows/ci-julia.yml@main` |
 | e2e-playwright.yml | Playwright E2E: multi-browser, sharding, traces, screenshots | `uses: timothyhartzog/.github/.github/workflows/e2e-playwright.yml@main` |
 | audit-log.yml | Build audit ledger: dates, refs, deps, full provenance | `uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main` |
+| security-scan.yml | SAST (Semgrep), secret detection, SBOM, supply chain | `uses: timothyhartzog/.github/.github/workflows/security-scan.yml@main` |
+| code-quality.yml | CodeQL, dependency review, license compliance, repo hygiene | `uses: timothyhartzog/.github/.github/workflows/code-quality.yml@main` |
 
 ## Features
 
@@ -36,6 +38,21 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 - Traces, screenshots, and videos captured on failure
 - Configurable retries for flaky tests
 - HTML report generation and merging across shards
+
+### Security Scanning (security-scan.yml)
+- **SAST**: Semgrep with OWASP Top 10 + CWE Top 25 rulesets, SARIF upload to GitHub Security
+- **Secret detection**: TruffleHog scans full git history for verified credentials/keys/tokens
+- **Sensitive file detection**: Flags `.env`, `*.pem`, `*.key`, credentials files
+- **SBOM generation**: Syft produces SPDX + CycloneDX bills of materials for every build
+- **Vulnerability scanning**: Grype scans SBOM for known CVEs, fails on Critical severity
+- **Supply chain checks**: Flags unpinned GitHub Actions, missing lockfiles, `.gitignore` gaps
+
+### Code Quality & Compliance (code-quality.yml)
+- **CodeQL**: Deep semantic analysis across JS/TS, Python, Go, Java, C/C++, Ruby — auto-detects languages
+- **Dependency review**: Blocks PRs introducing high-severity vulnerabilities or forbidden licenses
+- **License compliance**: Scans Node, Python, and Rust dependencies against configurable allow/deny lists
+- **Repository hygiene**: Checks for README, LICENSE, SECURITY.md, CODEOWNERS, CI workflows
+- **Code inspection**: Flags large files, debug statements in production code, tech debt markers
 
 ### Audit Logging
 - Every build tracked in `audit-log/ledger.json` per repo
@@ -93,4 +110,28 @@ jobs:
     uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main
     permissions:
       contents: write
+```
+
+### Security & compliance (every repo should include this)
+```yaml
+name: Security
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 7 * * 1"  # Weekly Monday scan
+jobs:
+  security:
+    uses: timothyhartzog/.github/.github/workflows/security-scan.yml@main
+    permissions:
+      security-events: write
+      contents: read
+  quality:
+    uses: timothyhartzog/.github/.github/workflows/code-quality.yml@main
+    permissions:
+      security-events: write
+      contents: read
+      pull-requests: write
 ```
