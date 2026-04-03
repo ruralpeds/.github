@@ -1,1 +1,199 @@
-404: Not Found
+name: "CI — Python"
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: "Python version"
+        type: string
+        default: "3.12"
+      python-versions:
+        description: "JSON array of Python versions for matrix"
+        type: string
+        default: ""
+      working-directory:
+        description: "Working directory"
+        type: string
+        default: "."
+      run-lint:
+        description: "Run linting (ruff)"
+        type: boolean
+        default: true
+      run-typecheck:
+        description: "Run mypy type checking"
+        type: boolean
+        default: true
+      run-security:
+        description: "Run bandit security scan"
+        type: boolean
+        default: true
+      test-timeout:
+        description: "Test timeout in minutes"
+        type: number
+        default: 15
+      upload-coverage:
+        description: "Upload coverage artifacts"
+        type: boolean
+        default: true
+
+jobs:
+  detect:
+    name: Detect configuration
+    runs-on: ubuntu-latest
+    outputs:
+      has-tests: ${{ steps.check.outputs.has-tests }}
+      matrix: ${{ steps.matrix.outputs.versions }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Detect project
+        id: check
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          if [ ! -f pyproject.toml ] && [ ! -f setup.py ] && [ ! -f setup.cfg ] && [ ! -f requirements.txt ]; then
+            echo "::error::No Python project file found"
+            exit 1
+          fi
+          if [ -d tests ] || [ -d test ] || find . -maxdepth 3 -name "test_*.py" -o -name "*_test.py" | head -1 | grep -q .; then
+            echo "has-tests=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has-tests=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Build version matrix
+        id: matrix
+        run: |
+          if [ -n '${{ inputs.python-versions }}' ] && [ '${{ inputs.python-versions }}' != '' ]; then
+            echo 'versions=${{ inputs.python-versions }}' >> "$GITHUB_OUTPUT"
+          else
+            echo 'versions=["${{ inputs.python-version }}"]' >> "$GITHUB_OUTPUT"
+          fi
+
+  lint:
+    name: Lint
+    needs: detect
+    if: inputs.run-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+      - name: Install ruff
+        run: pip install ruff
+      - name: Check formatting
+        working-directory: ${{ inputs.working-directory }}
+        run: ruff format --check .
+      - name: Check lints
+        working-directory: ${{ inputs.working-directory }}
+        run: ruff check .
+
+  typecheck:
+    name: Type check (mypy)
+    needs: detect
+    if: inputs.run-typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+      - name: Install dependencies
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          pip install mypy
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+          if [ -f pyproject.toml ]; then pip install -e ".[dev]" 2>/dev/null || pip install -e . 2>/dev/null || true; fi
+      - name: Run mypy
+        working-directory: ${{ inputs.working-directory }}
+        run: mypy . --ignore-missing-imports
+
+  security:
+    name: Security scan
+    needs: detect
+    if: inputs.run-security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python-version }}
+      - name: Install bandit
+        run: pip install bandit
+      - name: Run bandit
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          bandit -r . -x ./tests,./test,./.venv -f json -o bandit-report.json || true
+          if [ -f bandit-report.json ]; then
+            HIGH=$(python3 -c "
+          import json, sys
+          r = json.load(open('bandit-report.json'))
+          high = sum(1 for i in r.get('results', []) if i['issue_severity'] == 'HIGH')
+          print(high)
+          ")
+            if [ "$HIGH" -gt 0 ]; then
+              echo "::error::Bandit found $HIGH high-severity issues"
+              python3 -m json.tool bandit-report.json
+              exit 1
+            fi
+          fi
+      - name: Upload security report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report-python
+          path: ${{ inputs.working-directory }}/bandit-report.json
+          retention-days: 7
+          if-no-files-found: ignore
+
+  test:
+    name: "Test (Python ${{ matrix.python-version }})"
+    needs: detect
+    if: needs.detect.outputs.has-tests == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ fromJson(inputs.test-timeout) }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJson(needs.detect.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          pip install pytest pytest-cov pytest-timeout
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+          if [ -f pyproject.toml ]; then pip install -e ".[dev,test]" 2>/dev/null || pip install -e . 2>/dev/null || true; fi
+      - name: Run tests with coverage
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          pytest \
+            --tb=long \
+            --timeout=300 \
+            --cov=. \
+            --cov-report=xml:coverage.xml \
+            --cov-report=html:htmlcov \
+            --cov-report=term-missing \
+            --junitxml=junit-results.xml \
+            -v
+      - name: Upload coverage
+        if: inputs.upload-coverage && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-python-${{ matrix.python-version }}
+          path: |
+            ${{ inputs.working-directory }}/coverage.xml
+            ${{ inputs.working-directory }}/htmlcov/
+          retention-days: 7
+          if-no-files-found: ignore
+      - name: Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-python-${{ matrix.python-version }}
+          path: ${{ inputs.working-directory }}/junit-results.xml
+          retention-days: 7
+          if-no-files-found: ignore

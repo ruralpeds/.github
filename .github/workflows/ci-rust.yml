@@ -1,1 +1,135 @@
-404: Not Found
+name: "CI — Rust"
+
+on:
+  workflow_call:
+    inputs:
+      rust-version:
+        description: "Rust toolchain version"
+        type: string
+        default: "stable"
+      working-directory:
+        description: "Working directory"
+        type: string
+        default: "."
+      run-clippy:
+        description: "Run clippy lints"
+        type: boolean
+        default: true
+      run-fmt:
+        description: "Check formatting"
+        type: boolean
+        default: true
+      run-security-audit:
+        description: "Run cargo audit"
+        type: boolean
+        default: true
+      test-timeout:
+        description: "Test timeout in minutes"
+        type: number
+        default: 20
+      cargo-features:
+        description: "Comma-separated features to enable"
+        type: string
+        default: ""
+
+jobs:
+  fmt:
+    name: Format check
+    if: inputs.run-fmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Check formatting
+        working-directory: ${{ inputs.working-directory }}
+        run: cargo fmt --all -- --check
+
+  clippy:
+    name: Clippy
+    if: inputs.run-clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ${{ inputs.working-directory }}
+      - name: Run clippy
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          FEATURES_FLAG=""
+          if [ -n "${{ inputs.cargo-features }}" ]; then
+            FEATURES_FLAG="--features ${{ inputs.cargo-features }}"
+          fi
+          cargo clippy --all-targets $FEATURES_FLAG -- -D warnings
+
+  security-audit:
+    name: Security audit
+    if: inputs.run-security-audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cargo-audit
+        run: cargo install cargo-audit
+      - name: Run audit
+        working-directory: ${{ inputs.working-directory }}
+        run: cargo audit
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ fromJson(inputs.test-timeout) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ inputs.rust-version }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ${{ inputs.working-directory }}
+      - name: Build
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          FEATURES_FLAG=""
+          if [ -n "${{ inputs.cargo-features }}" ]; then
+            FEATURES_FLAG="--features ${{ inputs.cargo-features }}"
+          fi
+          cargo build --all-targets $FEATURES_FLAG
+      - name: Run unit and integration tests
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          FEATURES_FLAG=""
+          if [ -n "${{ inputs.cargo-features }}" ]; then
+            FEATURES_FLAG="--features ${{ inputs.cargo-features }}"
+          fi
+          cargo test --all-targets $FEATURES_FLAG -- --nocapture
+      - name: Run doc tests
+        working-directory: ${{ inputs.working-directory }}
+        run: cargo test --doc
+
+  coverage:
+    name: Coverage
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ${{ inputs.working-directory }}
+      - name: Install tarpaulin
+        run: cargo install cargo-tarpaulin
+      - name: Generate coverage
+        working-directory: ${{ inputs.working-directory }}
+        run: cargo tarpaulin --out xml --output-dir coverage/ || echo "::warning::Coverage generation failed"
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-rust
+          path: ${{ inputs.working-directory }}/coverage/
+          retention-days: 7
+          if-no-files-found: ignore
