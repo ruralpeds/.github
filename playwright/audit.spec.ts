@@ -55,11 +55,23 @@ function loadComplianceReport(): ComplianceReport | null {
 // ---- Helper: navigate to a repo's Actions tab and take a screenshot ----
 async function captureActionsPage(page: Page, org: string, repo: string): Promise<void> {
   await page.goto(`/${org}/${repo}/actions`, { waitUntil: "domcontentloaded" });
-  // Wait for either the workflow list or the "no workflows" message
-  await page.waitForSelector(
-    '[data-testid="workflow-list"], .blankslate, .Box-header, h2',
-    { timeout: 15_000 }
-  ).catch(() => {/* ignore timeout — screenshot whatever is there */});
+  // Wait for any recognizable Actions-page element. GitHub may render a workflow
+  // list, a "no workflows" blankslate, or a generic heading depending on the repo.
+  // We try each selector individually so Playwright gives a clear error if none match.
+  for (const selector of [
+    '[data-testid="workflow-list"]',
+    ".blankslate",
+    ".Box-header",
+    "h2",
+  ]) {
+    try {
+      await page.waitForSelector(selector, { timeout: 5_000 });
+      return;
+    } catch {
+      // Try next selector
+    }
+  }
+  // No selector matched — fall through and screenshot whatever is present
 }
 
 // ---- Tests ----
@@ -136,8 +148,8 @@ test.describe(`${ORG} — CI/Audit Compliance Audit`, () => {
     const resultsDir = "playwright-results/actions-snapshots";
     fs.mkdirSync(resultsDir, { recursive: true });
 
-    for (const r of report!.repos.slice(0, 20)) {
-      // Cap at 20 to avoid excessive runtime
+    const maxRepos = parseInt(process.env.AUDIT_MAX_REPOS || "20", 10);
+    for (const r of report!.repos.slice(0, maxRepos)) {
       await captureActionsPage(page, ORG, r.repo);
       await page.screenshot({
         path: path.join(resultsDir, `${r.repo}.png`),

@@ -54,7 +54,7 @@ jobs:
           retention-days: 30
 
       - name: Create GitHub issue with compliance summary
-        if: (inputs.create-issue == true || inputs.create-issue == '') && steps.check.outputs.non_compliant != '0'
+        if: (github.event_name == 'schedule' || inputs.create-issue == true) && steps.check.outputs.non_compliant != '0'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.REPO_SETUP_TOKEN || secrets.GITHUB_TOKEN }}

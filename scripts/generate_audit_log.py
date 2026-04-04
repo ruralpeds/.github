@@ -205,7 +205,10 @@ def main():
     review_notes = ""
     if review_mode:
         idx = sys.argv.index("--review")
-        reviewer = sys.argv[idx + 1] if idx + 1 < len(sys.argv) else "unknown"
+        if idx + 1 >= len(sys.argv):
+            print("::error::--review requires a reviewer name as the next argument")
+            sys.exit(1)
+        reviewer = sys.argv[idx + 1]
         review_notes = sys.argv[idx + 2] if idx + 2 < len(sys.argv) else ""
 
     if not repo.exists():
