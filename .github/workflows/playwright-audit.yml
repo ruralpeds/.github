@@ -1,0 +1,61 @@
+name: "Playwright Audit"
+
+on:
+  schedule:
+    # Every Monday at 8 AM UTC (after compliance check at 7 AM)
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+    inputs:
+      org:
+        description: "GitHub org or username to audit (defaults to repo owner)"
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  playwright-audit:
+    name: Playwright CI audit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Generate compliance report
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_SETUP_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          ORG="${{ inputs.org || github.repository_owner }}"
+          python3 scripts/check_compliance.py "$ORG" --output compliance-report
+
+      - name: Run Playwright audit
+        env:
+          AUDIT_ORG: ${{ inputs.org || github.repository_owner }}
+          COMPLIANCE_JSON: compliance-report/compliance.json
+        run: npm run audit -- --reporter=html,list
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-audit-report-${{ github.run_number }}
+          path: |
+            playwright-report/
+            playwright-results/
+            compliance-report/
+          retention-days: 30

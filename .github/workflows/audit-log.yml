@@ -19,6 +19,18 @@ on:
         description: "Max audit entries to retain (0 = unlimited)"
         type: number
         default: 500
+      review-mode:
+        description: "Stamp this run as a manual review (true/false)"
+        type: boolean
+        default: false
+      reviewer:
+        description: "Name of the reviewer (used when review-mode is true)"
+        type: string
+        default: ""
+      review-notes:
+        description: "Optional notes for the review stamp"
+        type: string
+        default: ""
 
 jobs:
   audit:
@@ -112,6 +124,9 @@ jobs:
           META_TAG: ${{ steps.meta.outputs.tag }}
           INCLUDE_DEPS: ${{ inputs.include-deps }}
           RETENTION: ${{ inputs.retention-entries }}
+          REVIEW_MODE: ${{ inputs.review-mode }}
+          REVIEWER: ${{ inputs.reviewer }}
+          REVIEW_NOTES: ${{ inputs.review-notes }}
         run: |
           python3 << 'PYEOF'
           import json, os, glob
@@ -129,6 +144,7 @@ jobs:
               "repository": repo,
               "date_created": os.environ.get("META_CREATED", ""),
               "date_modified": os.environ.get("META_MODIFIED", ""),
+              "date_last_reviewed": None,
               "build": {
                   "run_id": os.environ["META_RUN_ID"],
                   "run_number": os.environ["META_RUN_NUMBER"],
@@ -212,12 +228,37 @@ jobs:
           # Update summary
           builds = ledger["builds"]
           contributors = sorted(set(b["build"]["actor"] for b in builds if b.get("build", {}).get("actor")))
+
+          # Handle review stamp
+          review_mode = os.environ.get("REVIEW_MODE", "false").lower() == "true"
+          reviewer = os.environ.get("REVIEWER", "").strip()
+          review_notes = os.environ.get("REVIEW_NOTES", "").strip()
+          now_iso = datetime.now(timezone.utc).isoformat()
+
+          if review_mode and reviewer:
+              review_entry = {
+                  "reviewed_at": now_iso,
+                  "reviewer": reviewer,
+                  "notes": review_notes,
+              }
+              if "review_history" not in ledger:
+                  ledger["review_history"] = []
+              ledger["review_history"].append(review_entry)
+              # Stamp the most recent build entry
+              if builds:
+                  builds[-1]["date_last_reviewed"] = now_iso
+
+          # Compute date_last_reviewed for summary
+          review_history = ledger.get("review_history", [])
+          date_last_reviewed = review_history[-1]["reviewed_at"] if review_history else None
+
           ledger["summary"] = {
               "total_builds": len(builds),
               "first_build": builds[0]["timestamp"] if builds else None,
               "last_build": builds[-1]["timestamp"] if builds else None,
               "date_created": builds[0].get("date_created", "") if builds else "",
               "date_last_modified": entry["date_modified"],
+              "date_last_reviewed": date_last_reviewed,
               "contributors": contributors,
           }
 
