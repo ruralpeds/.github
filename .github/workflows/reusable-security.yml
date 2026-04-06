@@ -91,8 +91,10 @@ jobs:
           FOUND=0
           for f in $FILES; do
             [ -f "$f" ] || continue
-            # Patterns that suggest hard-coded credentials (intentionally broad)
-            if grep -qiE '(password|passwd|secret|api_?key|auth_?token|private_?key)\s*[=:]\s*["\x27][^"\x27]{6,}' "$f" 2>/dev/null; then
+            # Patterns that suggest hard-coded credentials (intentionally broad).
+            # Use a character class ['"'"'"] to match both single and double quotes
+            # without relying on escape sequences inside shell single-quoted strings.
+            if grep -qiE '(password|passwd|secret|api_?key|auth_?token|private_?key)[[:space:]]*[=:][[:space:]]*['"'"'"][^'"'"'"]{6,}' "$f" 2>/dev/null; then
               echo "::warning file=$f::Possible credential pattern detected. Ensure no real secrets are committed."
               FOUND=$((FOUND + 1))
             fi

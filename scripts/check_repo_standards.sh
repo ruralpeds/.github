@@ -24,7 +24,7 @@
 #
 # Optional (warnings only):
 #   - .env.example
-#   - copilot-instructions.md (or .github/copilot-instructions.md)
+#   - copilot-instructions.md (checked at repo root and .github/copilot-instructions.md)
 
 set -euo pipefail
 
@@ -90,7 +90,15 @@ echo ""
 
 echo "--- Optional / recommended files ---"
 warn_missing_file ".env.example" "Template for required environment variables (no real secrets)"
-warn_missing_file "copilot-instructions.md" "Copilot/agent instructions at repo root"
+
+# copilot-instructions.md may live at the repo root or in .github/
+COPILOT_ROOT="$REPO_ROOT/copilot-instructions.md"
+COPILOT_GITHUB="$REPO_ROOT/.github/copilot-instructions.md"
+if [ -f "$COPILOT_ROOT" ] || [ -f "$COPILOT_GITHUB" ]; then
+  echo "  ✓ copilot-instructions.md (optional)"
+else
+  warn "Missing optional file: copilot-instructions.md (checked repo root and .github/) — Copilot/agent instructions"
+fi
 echo ""
 
 echo "=== Results ==="
