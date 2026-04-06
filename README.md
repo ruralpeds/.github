@@ -13,6 +13,10 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 | ci-julia.yml | Julia CI: JuliaFormatter, Pkg.test with coverage | `uses: timothyhartzog/.github/.github/workflows/ci-julia.yml@main` |
 | e2e-playwright.yml | Playwright E2E: multi-browser, sharding, traces, screenshots | `uses: timothyhartzog/.github/.github/workflows/e2e-playwright.yml@main` |
 | audit-log.yml | Build audit ledger: dates, refs, deps, full provenance | `uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main` |
+| review-stamp.yml | Record a manual code review in the audit ledger | `uses: timothyhartzog/.github/.github/workflows/review-stamp.yml@main` |
+| check-compliance.yml | Scan all org repos for missing CI/audit features | runs on schedule (Mon 7 AM UTC) |
+| playwright-audit.yml | Playwright visual audit of org CI status | runs on schedule (Mon 8 AM UTC) |
+| repo-scanner.yml | Auto-bootstrap CI workflows into all org repos | runs on schedule (Mon 6 AM UTC) |
 
 ## Features
 
@@ -37,22 +41,49 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 - Configurable retries for flaky tests
 - HTML report generation and merging across shards
 
-### Audit Logging
+### Playwright Audit (`playwright-audit.yml`)
+- Runs weekly — navigates GitHub Actions pages for every org repo
+- Captures screenshots of each repo's CI/Actions status
+- Reads the compliance JSON report and generates `audit-summary.html`
+- Uploads all screenshots + reports as workflow artifacts
+- Local run: `AUDIT_ORG=timothyhartzog COMPLIANCE_JSON=compliance-report/compliance.json npm run audit`
+
+### Audit Logging (`audit-log.yml`)
 - Every build tracked in `audit-log/ledger.json` per repo
-- Records: date created, date modified, commit SHA, author, branch, tag
+- Records: **date_created**, **date_modified**, **date_last_reviewed**, commit SHA, author, branch, tag
 - Full references: commit URL, run URL, tree URL, compare URL
 - Dependency snapshots included
 - Contributor tracking
 - Retention-limited (default 500 entries) to prevent unbounded growth
 - Individual entry files for easy access
 
-## Auto-Bootstrap
+### Review Stamps (`review-stamp.yml`)
+- Records a named reviewer + optional notes in `audit-log/ledger.json`
+- Updates `date_last_reviewed` on both the ledger summary and the latest build entry
+- Full `review_history` array in the ledger for traceability
+- Trigger via: `gh workflow run "Review Stamp" -f reviewer="your-name" -f notes="LGTM"`
 
+### Compliance Checker (`check-compliance.yml` + `scripts/check_compliance.py`)
+- Scans all org repos weekly and on demand
+- Checks each repo for: CI workflow, audit-log workflow, Playwright config, review stamp
+- Outputs JSON + HTML compliance reports as workflow artifacts
+- Creates a GitHub issue listing non-compliant repos (if any)
+- Local run: `python3 scripts/check_compliance.py timothyhartzog --output compliance-report`
+
+### Auto-Bootstrap
 `repo-scanner.yml` runs weekly — scans all org repos, creates PRs with CI/testing/audit workflows.
 
 Trigger manually: `gh workflow run "Scan & Bootstrap All Repos" --repo timothyhartzog/.github`
 
 Requires `REPO_SETUP_TOKEN` secret (fine-grained PAT with Contents + PRs + Workflows permissions).
+
+## Weekly Schedule
+
+| Time (UTC Mon) | Workflow | Purpose |
+|---|---|---|
+| 06:00 | repo-scanner.yml | Bootstrap missing CI workflows via PRs |
+| 07:00 | check-compliance.yml | Scan all repos, create issue if non-compliant |
+| 08:00 | playwright-audit.yml | Visual audit of org Actions status |
 
 ## Example Usage
 
@@ -94,3 +125,23 @@ jobs:
     permissions:
       contents: write
 ```
+
+### Stamp a code review
+```yaml
+# .github/workflows/review.yml
+name: Review
+on:
+  workflow_dispatch:
+    inputs:
+      reviewer: { required: true, type: string }
+      notes: { required: false, type: string, default: "" }
+jobs:
+  review:
+    uses: timothyhartzog/.github/.github/workflows/review-stamp.yml@main
+    with:
+      reviewer: ${{ inputs.reviewer }}
+      notes: ${{ inputs.notes }}
+    permissions:
+      contents: write
+```
+

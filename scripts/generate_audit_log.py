@@ -68,6 +68,7 @@ def get_build_entry(repo: Path) -> dict:
         "timestamp": now.isoformat(),
         "date_created": now.strftime("%Y-%m-%d"),
         "date_modified": now.strftime("%Y-%m-%d"),
+        "date_last_reviewed": None,
         "build": {
             "run_id": os.environ.get("GITHUB_RUN_ID", "local"),
             "run_number": os.environ.get("GITHUB_RUN_NUMBER", "0"),
@@ -117,9 +118,11 @@ def load_ledger(ledger_path: Path) -> dict:
             "total_builds": 0,
             "first_build": None,
             "last_build": None,
+            "date_last_reviewed": None,
             "contributors": [],
         },
         "builds": [],
+        "review_history": [],
     }
 
 
@@ -154,6 +157,13 @@ def update_ledger(ledger: dict, entry: dict, repo_meta: dict) -> dict:
             contributors.add(actor)
     ledger["summary"]["contributors"] = sorted(contributors)
 
+    # Preserve date_last_reviewed from existing review_history
+    reviews = ledger.get("review_history", [])
+    if reviews:
+        ledger["summary"]["date_last_reviewed"] = reviews[-1].get("reviewed_at")
+    else:
+        ledger["summary"]["date_last_reviewed"] = None
+
     # Keep last 500 builds to prevent unbounded growth
     if len(ledger["builds"]) > 500:
         ledger["builds"] = ledger["builds"][-500:]
@@ -161,13 +171,45 @@ def update_ledger(ledger: dict, entry: dict, repo_meta: dict) -> dict:
     return ledger
 
 
+def stamp_review(ledger: dict, reviewer: str, notes: str = "") -> dict:
+    """Record a manual code review event in the ledger."""
+    now = datetime.now(timezone.utc).isoformat()
+    review_entry = {
+        "reviewed_at": now,
+        "reviewer": reviewer,
+        "notes": notes,
+    }
+    if "review_history" not in ledger:
+        ledger["review_history"] = []
+    ledger["review_history"].append(review_entry)
+    ledger["summary"]["date_last_reviewed"] = now
+
+    # Also stamp the most recent build entry with the review date
+    if ledger.get("builds"):
+        ledger["builds"][-1]["date_last_reviewed"] = now
+
+    ledger["last_updated"] = now
+    return ledger
+
+
 def main():
     if len(sys.argv) < 2:
-        print("Usage: generate_audit_log.py <repo_path> [--update]")
+        print("Usage: generate_audit_log.py <repo_path> [--update] [--review <reviewer> [notes]]")
         sys.exit(1)
 
     repo = Path(sys.argv[1]).resolve()
     update_mode = "--update" in sys.argv
+    review_mode = "--review" in sys.argv
+
+    reviewer = ""
+    review_notes = ""
+    if review_mode:
+        idx = sys.argv.index("--review")
+        if idx + 1 >= len(sys.argv):
+            print("::error::--review requires a reviewer name as the next argument")
+            sys.exit(1)
+        reviewer = sys.argv[idx + 1]
+        review_notes = sys.argv[idx + 2] if idx + 2 < len(sys.argv) else ""
 
     if not repo.exists():
         print(f"::error::Repo path does not exist: {repo}")
@@ -182,10 +224,16 @@ def main():
     ledger = load_ledger(ledger_path)
     ledger = update_ledger(ledger, entry, repo_meta)
 
+    if review_mode:
+        ledger = stamp_review(ledger, reviewer, review_notes)
+        print(f"  Review stamped by: {reviewer}")
+
     ledger_path.write_text(json.dumps(ledger, indent=2) + "\n")
     print(f"Audit ledger updated: {ledger_path}")
     print(f"  Total builds tracked: {ledger['summary']['total_builds']}")
     print(f"  Last build: {entry['commit']['short_sha']} by {entry['build']['actor']}")
+    if ledger["summary"].get("date_last_reviewed"):
+        print(f"  Last reviewed: {ledger['summary']['date_last_reviewed']}")
 
     # Also write individual entry for easy access
     entry_file = audit_dir / f"{entry['id']}.json"

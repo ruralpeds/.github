@@ -1,0 +1,133 @@
+name: "Review Stamp"
+
+on:
+  workflow_dispatch:
+    inputs:
+      reviewer:
+        description: "GitHub username or name of the reviewer"
+        required: true
+        type: string
+      notes:
+        description: "Optional review notes (what was checked, any findings)"
+        required: false
+        type: string
+        default: ""
+  workflow_call:
+    inputs:
+      reviewer:
+        description: "GitHub username or name of the reviewer"
+        required: true
+        type: string
+      notes:
+        description: "Optional review notes"
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  review-stamp:
+    name: Stamp code review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Record review in audit ledger
+        env:
+          REVIEWER: ${{ inputs.reviewer || github.actor }}
+          REVIEW_NOTES: ${{ inputs.notes }}
+        run: |
+          python3 << 'PYEOF'
+          import json, os
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          reviewer = os.environ.get("REVIEWER", "unknown")
+          notes = os.environ.get("REVIEW_NOTES", "")
+          now = datetime.now(timezone.utc).isoformat()
+
+          audit_dir = Path("audit-log")
+          audit_dir.mkdir(parents=True, exist_ok=True)
+          ledger_path = audit_dir / "ledger.json"
+
+          if ledger_path.exists():
+              try:
+                  ledger = json.loads(ledger_path.read_text())
+              except Exception:
+                  ledger = {}
+          else:
+              ledger = {}
+
+          if not ledger:
+              ledger = {
+                  "schema_version": "2.0",
+                  "created_at": now,
+                  "repository": os.environ.get("GITHUB_REPOSITORY", ""),
+                  "builds": [],
+                  "summary": {},
+              }
+
+          if "review_history" not in ledger:
+              ledger["review_history"] = []
+
+          review_entry = {
+              "reviewed_at": now,
+              "reviewer": reviewer,
+              "notes": notes,
+              "run_id": os.environ.get("GITHUB_RUN_ID", ""),
+              "run_url": f"https://github.com/{os.environ.get('GITHUB_REPOSITORY', '')}/actions/runs/{os.environ.get('GITHUB_RUN_ID', '')}",
+          }
+          ledger["review_history"].append(review_entry)
+          ledger["last_updated"] = now
+
+          # Stamp date_last_reviewed on the most recent build entry
+          if ledger.get("builds"):
+              ledger["builds"][-1]["date_last_reviewed"] = now
+
+          # Update summary
+          if "summary" not in ledger:
+              ledger["summary"] = {}
+          ledger["summary"]["date_last_reviewed"] = now
+
+          ledger_path.write_text(json.dumps(ledger, indent=2) + "\n")
+          print(f"Review stamp recorded")
+          print(f"  Reviewer: {reviewer}")
+          print(f"  Time: {now}")
+          if notes:
+              print(f"  Notes: {notes}")
+
+          # Set GitHub Actions outputs
+          output_file = os.environ.get("GITHUB_OUTPUT")
+          if output_file:
+              with open(output_file, "a") as f:
+                  f.write(f"reviewed_at={now}\n")
+                  f.write(f"reviewer={reviewer}\n")
+          PYEOF
+
+      - name: Commit review stamp
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add audit-log/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "review: stamped by ${{ inputs.reviewer || github.actor }} @ $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            BRANCH="${{ github.ref_name }}"
+            for attempt in 1 2 3 4; do
+              if git push origin HEAD:"$BRANCH"; then
+                echo "Push succeeded"
+                break
+              fi
+              WAIT=$((attempt * 2))
+              echo "Push failed, retrying in ${WAIT}s..."
+              sleep "$WAIT"
+            done
+          fi
