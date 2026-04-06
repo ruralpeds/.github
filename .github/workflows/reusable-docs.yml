@@ -1,0 +1,110 @@
+name: "Reusable Docs"
+# Reusable documentation quality workflow for healthcare enterprise repositories.
+# Derived from HEALTHCARE_ENTERPRISE_REPO_BLUEPRINT.md controls.
+#
+# Callers: uses: timothyhartzog/.github/.github/workflows/reusable-docs.yml@main
+#
+# Covers:
+#   - Markdown lint (markdownlint-cli) — style consistency
+#   - Link check (lychee) — best-effort; external timeouts don't fail the build
+#   - Required docs verification — checks that required files exist
+
+on:
+  workflow_call:
+    inputs:
+      docs-directory:
+        description: "Directory containing documentation files to lint"
+        type: string
+        default: "docs"
+      run-markdown-lint:
+        description: "Run markdownlint"
+        type: boolean
+        default: true
+      run-link-check:
+        description: "Run link checker (lychee) — best-effort, timeouts are warnings"
+        type: boolean
+        default: true
+      run-required-docs-check:
+        description: "Check that required governance docs exist"
+        type: boolean
+        default: true
+      # Override path to standards script if it lives somewhere else in the caller repo
+      standards-script-ref:
+        description: "Git ref (branch/tag/SHA) to fetch scripts from timothyhartzog/.github"
+        type: string
+        default: "main"
+
+permissions:
+  contents: read
+
+jobs:
+  # ── 1. Markdown lint ──────────────────────────────────────────────────────────
+  markdown-lint:
+    name: Markdown lint
+    if: ${{ inputs.run-markdown-lint }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Run markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@05f32210e84442804257b2a6f20b273450ec8265 # v19.1.0
+        with:
+          globs: |
+            **/*.md
+            !**/node_modules/**
+            !**/vendor/**
+          # Config inline — callers can override via .markdownlint.json in their repo
+          config: |
+            {
+              "default": true,
+              "MD013": false,
+              "MD033": false,
+              "MD041": false
+            }
+
+  # ── 2. Link check ─────────────────────────────────────────────────────────────
+  link-check:
+    name: Link check
+    if: ${{ inputs.run-link-check }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Check links (lychee)
+        uses: lycheeverse/lychee-action@82202e5e9c2f4ef1a55a3d02563e1cb6041e5332 # v2.4.1
+        with:
+          args: |
+            --no-progress
+            --timeout 10
+            --max-retries 2
+            --exclude "^https?://localhost"
+            --exclude "^https?://127\."
+            --exclude "^https?://0\.0\.0\.0"
+            --exclude "^file://"
+            '${{ inputs.docs-directory }}/**/*.md'
+            '*.md'
+          # Best-effort: link failures are warnings, not errors.
+          # Network timeouts in CI should not block merges.
+          fail: false
+
+  # ── 3. Required docs check ────────────────────────────────────────────────────
+  required-docs:
+    name: Required docs check
+    if: ${{ inputs.run-required-docs-check }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Fetch standards scripts from timothyhartzog/.github
+        run: |
+          # Download the standards check scripts from the central standards repo.
+          mkdir -p _standards_scripts
+          curl -sSfL \
+            "https://raw.githubusercontent.com/timothyhartzog/.github/${{ inputs.standards-script-ref }}/scripts/check_repo_standards.sh" \
+            -o _standards_scripts/check_repo_standards.sh
+          chmod +x _standards_scripts/check_repo_standards.sh
+      - name: Run required docs/governance check
+        run: bash _standards_scripts/check_repo_standards.sh .

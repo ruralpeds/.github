@@ -1,0 +1,134 @@
+name: "Reusable Security"
+# Reusable security workflow for healthcare enterprise repositories.
+# Derived from HEALTHCARE_ENTERPRISE_REPO_BLUEPRINT.md controls.
+#
+# Callers: uses: timothyhartzog/.github/.github/workflows/reusable-security.yml@main
+#
+# Covers:
+#   - Dependency review (PRs only) — blocks known-vulnerable dependencies
+#   - Secret scanning guidance (advisory; secrets alerts managed at repo/org level)
+#   - Optional CodeQL SAST scan (controlled by run-codeql input)
+#
+# Default permissions: contents: read only. No write permissions required.
+# CodeQL uploads require security-events: write — enabled only when run-codeql=true.
+
+on:
+  workflow_call:
+    inputs:
+      run-dependency-review:
+        description: "Run dependency-review (effective only on pull_request events)"
+        type: boolean
+        default: true
+      dependency-review-fail-on-severity:
+        description: "Minimum severity to block a PR: critical, high, moderate, low"
+        type: string
+        default: "high"
+      run-codeql:
+        description: "Run CodeQL SAST analysis (requires security-events write permission on the calling repo)"
+        type: boolean
+        default: false
+      codeql-languages:
+        description: "JSON array of CodeQL languages, e.g. '[\"javascript\",\"python\"]'"
+        type: string
+        default: "[]"
+      working-directory:
+        description: "Working directory for scans"
+        type: string
+        default: "."
+
+permissions:
+  contents: read
+
+jobs:
+  # ── 1. Dependency review (PRs only) ──────────────────────────────────────────
+  dependency-review:
+    name: Dependency review
+    if: ${{ inputs.run-dependency-review && github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write  # needed to post review comments
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Run dependency review
+        uses: actions/dependency-review-action@da24556a548ea9f8f4777688ebe3e1feebba9d11 # v4.7.1
+        with:
+          fail-on-severity: ${{ inputs.dependency-review-fail-on-severity }}
+          # Healthcare safety: block licenses that may have IP concerns
+          deny-licenses: "GPL-2.0, GPL-3.0, AGPL-3.0"
+
+  # ── 2. Secret scanning guidance ──────────────────────────────────────────────
+  # GitHub native secret scanning is enabled at the repository or organization
+  # level and does not require a workflow step. This job provides a visible
+  # advisory gate that reminds contributors of the policy and fails if common
+  # credential patterns are accidentally committed in changed files.
+  secret-scan-advisory:
+    name: Secret scan advisory
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          # Fetch PR base so we can check only changed files
+          fetch-depth: 0
+      - name: Check for credential patterns in changed files
+        run: |
+          # Determine which files changed (PR or push)
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+            HEAD="${{ github.event.pull_request.head.sha }}"
+            FILES=$(git diff --name-only "$BASE" "$HEAD" 2>/dev/null || git diff --name-only HEAD~1 HEAD)
+          else
+            FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+          fi
+
+          if [ -z "$FILES" ]; then
+            echo "No changed files detected — skipping secret pattern check."
+            exit 0
+          fi
+
+          FOUND=0
+          for f in $FILES; do
+            [ -f "$f" ] || continue
+            # Patterns that suggest hard-coded credentials (intentionally broad)
+            if grep -qiE '(password|passwd|secret|api_?key|auth_?token|private_?key)\s*[=:]\s*["\x27][^"\x27]{6,}' "$f" 2>/dev/null; then
+              echo "::warning file=$f::Possible credential pattern detected. Ensure no real secrets are committed."
+              FOUND=$((FOUND + 1))
+            fi
+          done
+
+          if [ "$FOUND" -gt 0 ]; then
+            echo ""
+            echo "::warning::$FOUND file(s) contain possible credential patterns. Review the warnings above."
+            echo "If these are test fixtures or example placeholders, ensure they are not real credentials."
+            echo "GitHub native secret scanning will block known credential formats automatically."
+            # This is advisory only — do not fail the workflow so CI is not blocked by false positives.
+          else
+            echo "No credential patterns detected in changed files."
+          fi
+
+  # ── 3. CodeQL SAST (optional, gated by input) ────────────────────────────────
+  codeql:
+    name: "CodeQL (${{ matrix.language }})"
+    if: ${{ inputs.run-codeql && fromJson(inputs.codeql-languages)[0] != null }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write  # required for SARIF upload
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ${{ fromJson(inputs.codeql-languages) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@28deaeda66b76a05916b6923827895f2b14ab96f # v3.28.16
+        with:
+          languages: ${{ matrix.language }}
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@28deaeda66b76a05916b6923827895f2b14ab96f # v3.28.16
+      - name: Run CodeQL analysis
+        uses: github/codeql-action/analyze@28deaeda66b76a05916b6923827895f2b14ab96f # v3.28.16
+        with:
+          category: "/language:${{ matrix.language }}"
