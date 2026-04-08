@@ -56,7 +56,7 @@ jobs:
       upload-test-report: true
 ```
 
-#### Julia project
+#### Julia project (back-end only)
 
 ```yaml
 # .github/workflows/ci.yml
@@ -80,6 +80,36 @@ jobs:
       run-format-check: true
       working-directory: .
       upload-coverage: true
+```
+
+#### Julia + React + Playwright project (standard)
+
+For full-stack Julia projects with a React front-end, Observable JS charts, and
+Playwright E2E testing, use the combined workflow. See
+[`JULIA_REACT_PROJECT_STANDARD.md`](JULIA_REACT_PROJECT_STANDARD.md) for the
+complete standard.
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    uses: timothyhartzog/.github/.github/workflows/ci-julia-react.yml@main
+    with:
+      julia-version: "1"
+      julia-working-directory: "backend"
+      frontend-working-directory: "frontend"
+      e2e-working-directory: "e2e"
+      e2e-start-command: "bash scripts/dev.sh"
+      e2e-browsers: '["chromium", "firefox", "webkit"]'
+    permissions:
+      contents: write
 ```
 
 ---
