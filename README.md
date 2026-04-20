@@ -18,6 +18,44 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 | playwright-audit.yml | Playwright visual audit of org CI status | runs on schedule (Mon 8 AM UTC) |
 | repo-scanner.yml | Auto-bootstrap CI workflows into all org repos | runs on schedule (Mon 6 AM UTC) |
 
+## Enterprise Audit Logging
+
+### Mandatory for All Enterprise Projects
+
+Every enterprise project must implement comprehensive audit logging:
+
+- ✅ **Build Dates**: Every build creates an audit entry with timestamps
+- ✅ **Modified Dates**: Track creation, last modification, and last review dates
+- ✅ **Review Dates**: Record all code reviews with reviewer name and notes
+- ✅ **Reference Materials**: Full dependency snapshots, commit history, and GitHub links
+
+### Getting Started
+
+1. **Quick Setup** (5 minutes): [AUDIT_LOG_SETUP_TEMPLATE.md](docs/AUDIT_LOG_SETUP_TEMPLATE.md)
+2. **Complete Guide**: [ENTERPRISE_AUDIT_LOGGING.md](docs/ENTERPRISE_AUDIT_LOGGING.md)
+3. **Standards & References**: [AUDIT_LOG_REFERENCES.md](docs/AUDIT_LOG_REFERENCES.md)
+
+### Audit Log Features
+
+| Feature | Description |
+|---------|-------------|
+| **Automatic Tracking** | Builds automatically logged in `audit-log/ledger.json` |
+| **Dependency Snapshots** | Lock files captured: npm, pip, cargo, go.sum, Julia Manifest |
+| **Review Stamps** | Manual review workflow records reviewer, date, and notes |
+| **Full Provenance** | Git commit SHA, author, message, branch, and tag |
+| **GitHub References** | Direct links to commits, runs, tree state, comparisons |
+| **Retention Policies** | Configurable retention (default 500 builds) |
+| **Searchable** | JSON format enables querying with jq or custom scripts |
+
+### Compliance Verification
+
+Check if your organization's repos are compliant:
+
+```bash
+# Verify all repos in your organization
+./scripts/verify-audit-logging.sh timothyhartzog compliance-report
+```
+
 ## Features
 
 ### Error Handling
@@ -52,10 +90,12 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 - Every build tracked in `audit-log/ledger.json` per repo
 - Records: **date_created**, **date_modified**, **date_last_reviewed**, commit SHA, author, branch, tag
 - Full references: commit URL, run URL, tree URL, compare URL
-- Dependency snapshots included
+- Dependency snapshots included (package-lock.json, Cargo.lock, requirements.txt, etc.)
 - Contributor tracking
 - Retention-limited (default 500 entries) to prevent unbounded growth
 - Individual entry files for easy access
+- **Enterprise Standard**: All enterprise projects MUST use this system
+- **Documentation**: See [ENTERPRISE_AUDIT_LOGGING.md](docs/ENTERPRISE_AUDIT_LOGGING.md)
 
 ### Review Stamps (`review-stamp.yml`)
 - Records a named reviewer + optional notes in `audit-log/ledger.json`
@@ -129,12 +169,20 @@ jobs:
 ### Stamp a code review
 ```yaml
 # .github/workflows/review.yml
-name: Review
+name: Review Stamp
+
 on:
   workflow_dispatch:
     inputs:
-      reviewer: { required: true, type: string }
-      notes: { required: false, type: string, default: "" }
+      reviewer:
+        description: 'Name of the reviewer'
+        required: true
+        type: string
+      notes:
+        description: 'Review notes'
+        required: false
+        type: string
+
 jobs:
   review:
     uses: timothyhartzog/.github/.github/workflows/review-stamp.yml@main
@@ -143,5 +191,60 @@ jobs:
       notes: ${{ inputs.notes }}
     permissions:
       contents: write
+```
+
+Then trigger via GitHub CLI:
+
+```bash
+gh workflow run "Review Stamp" \
+  -f reviewer="alice.qa" \
+  -f notes="LGTM: All tests pass, security checks OK, approved for production"
+```
+
+### Enterprise project with full audit logging
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  # Your CI jobs here
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make test
+
+  # Add audit logging
+  audit:
+    if: always()
+    needs: ci
+    uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main
+    with:
+      include-deps: true
+      retention-entries: 500
+    permissions:
+      contents: write
+```
+
+After setup, view your audit log:
+
+```bash
+# See audit summary
+cat audit-log/ledger.json | jq '.summary'
+
+# List all builds
+cat audit-log/ledger.json | jq -r '.builds[] | "\(.timestamp) \(.commit.short_sha) \(.commit.author)"'
+
+# View review history
+cat audit-log/ledger.json | jq '.review_history'
+
+# Check last review date
+cat audit-log/ledger.json | jq '.summary.date_last_reviewed'
 ```
 
