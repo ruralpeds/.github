@@ -24,6 +24,9 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 | reusable-sign-artifact.yml | **21 CFR Part 11 §11.70 / HIPAA §164.312(c)(1)** — cosign keyless artifact signing (OIDC → Fulcio → Rekor); no keys to rotate | `uses: timothyhartzog/.github/.github/workflows/reusable-sign-artifact.yml@main` |
 | reusable-attest.yml | **CISA SSDF Attestation Common Form** — GitHub-native build attestations via `actions/attest-build-provenance`; lighter-weight SLSA alternative | `uses: timothyhartzog/.github/.github/workflows/reusable-attest.yml@main` |
 | review-stamp-v2.yml | **21 CFR Part 11 §11.50, §11.70, §11.200** — electronic signatures with controlled-vocabulary meaning, tree-hash binding, signed git tag, JSONL ledger | `uses: timothyhartzog/.github/.github/workflows/review-stamp-v2.yml@main` |
+| reusable-rtm.yml | **GAMP 5 §4.2 / IEC 62304 §5.2** — Requirements Traceability Matrix — scans PRs/commits/tests/issues for requirement IDs; produces `traceability/rtm.json` and `rtm.md` with gap report | `uses: timothyhartzog/.github/.github/workflows/reusable-rtm.yml@main` |
+| reusable-container-scan.yml | **NIST SSDF RV.1.1 / FDA Cyber** — Dual-scanner (Trivy + Grype) for Docker images, OCI artifacts, and binaries; SARIF to code scanning | `uses: timothyhartzog/.github/.github/workflows/reusable-container-scan.yml@main` |
+| reusable-license-scan.yml | **ISO 13485 §7.2.1 / IP risk** — Deep license analysis beyond SBOM baseline; runtime-vs-dev classification with graduated policy | `uses: timothyhartzog/.github/.github/workflows/reusable-license-scan.yml@main` |
 
 ## Medical-Software Compliance Features
 
