@@ -20,6 +20,10 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 | reusable-phi-scan.yml | **HIPAA §164.312(b)** — PHI scrubbing scan via gitleaks with healthcare pattern catalog; uploads SARIF to code scanning | `uses: timothyhartzog/.github/.github/workflows/reusable-phi-scan.yml@main` |
 | reusable-sbom.yml | **FDA 524B / EO 14028** — CycloneDX + SPDX SBOM generation; license denylist enforcement; commits to `sbom/` | `uses: timothyhartzog/.github/.github/workflows/reusable-sbom.yml@main` |
 | sync-rulesets.yml | **Governance-as-code** — applies JSON ruleset files in `policies/rulesets/` to every org repo via GitHub API | runs on schedule (Mon 5 AM UTC) |
+| reusable-slsa.yml | **FDA 524B / NIST SSDF PS.3.2** — SLSA Level 3 build provenance via slsa-github-generator; produces `.intoto.jsonl` signed via Sigstore | `uses: timothyhartzog/.github/.github/workflows/reusable-slsa.yml@main` |
+| reusable-sign-artifact.yml | **21 CFR Part 11 §11.70 / HIPAA §164.312(c)(1)** — cosign keyless artifact signing (OIDC → Fulcio → Rekor); no keys to rotate | `uses: timothyhartzog/.github/.github/workflows/reusable-sign-artifact.yml@main` |
+| reusable-attest.yml | **CISA SSDF Attestation Common Form** — GitHub-native build attestations via `actions/attest-build-provenance`; lighter-weight SLSA alternative | `uses: timothyhartzog/.github/.github/workflows/reusable-attest.yml@main` |
+| review-stamp-v2.yml | **21 CFR Part 11 §11.50, §11.70, §11.200** — electronic signatures with controlled-vocabulary meaning, tree-hash binding, signed git tag, JSONL ledger | `uses: timothyhartzog/.github/.github/workflows/review-stamp-v2.yml@main` |
 
 ## Medical-Software Compliance Features
 
@@ -57,6 +61,28 @@ The baseline ruleset `signed-commits-main.json` enforces:
 - 1+ required reviewer on PR; stale reviews dismissed on push
 - PHI scrubbing scan required as a merge gate
 - Code scanning must pass (blocks high+ findings from phi-scan category)
+
+### Supply-Chain Attestation Trio (P1)
+
+For every release of a clinical repo, four artifacts travel together to form a complete supply-chain evidence package:
+
+- **SBOM** (`reusable-sbom.yml`) — what's in it
+- **SLSA provenance** (`reusable-slsa.yml`) — how it was built
+- **Signatures** (`reusable-sign-artifact.yml`) — this is the real binary
+- **E-signature** (`review-stamp-v2.yml`) — who approved it with what meaning
+
+See `docs/SUPPLY_CHAIN_AND_ESIGNATURE.md` for the full workflow, caller example, verification instructions for hospital partners, and regulatory mapping.
+
+### 21 CFR Part 11 Electronic Signatures (P1)
+
+`review-stamp-v2.yml` upgrades the v1 review-stamp workflow with full 21 CFR Part 11 compliance:
+
+- **Controlled-vocabulary `meaning`** — 10 defined values (verified, approved, risk-accepted, capa-closed, etc.) per §11.50(a)(3)
+- **Tree-hash binding** — signature cryptographically linked to file state per §11.70
+- **Signed Git tag** — first-class tamper-evident record of each signing event
+- **Printed name** — reviewer's real name retrieved from GitHub API per §11.50(a)(1)
+- **MFA enforcement** — delegated to GitHub org 2FA policy per §11.200
+- **JSONL ledger** — `audit-log/esignatures.jsonl` separate from build ledger, streaming-friendly
 
 ### Migrating from PAT to GitHub App
 
