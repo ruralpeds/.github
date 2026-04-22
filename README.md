@@ -27,6 +27,10 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 | reusable-rtm.yml | **GAMP 5 §4.2 / IEC 62304 §5.2** — Requirements Traceability Matrix — scans PRs/commits/tests/issues for requirement IDs; produces `traceability/rtm.json` and `rtm.md` with gap report | `uses: timothyhartzog/.github/.github/workflows/reusable-rtm.yml@main` |
 | reusable-container-scan.yml | **NIST SSDF RV.1.1 / FDA Cyber** — Dual-scanner (Trivy + Grype) for Docker images, OCI artifacts, and binaries; SARIF to code scanning | `uses: timothyhartzog/.github/.github/workflows/reusable-container-scan.yml@main` |
 | reusable-license-scan.yml | **ISO 13485 §7.2.1 / IP risk** — Deep license analysis beyond SBOM baseline; runtime-vs-dev classification with graduated policy | `uses: timothyhartzog/.github/.github/workflows/reusable-license-scan.yml@main` |
+| reusable-risk-file.yml | **ISO 14971:2019 / IEC 62304 §7** — Aggregates hazard-labeled issues into `risk/hazard-analysis.md` + `risk-summary.json`; compliance-flag enforcement; scaffolds RMP and residual-risk acceptance files | `uses: timothyhartzog/.github/.github/workflows/reusable-risk-file.yml@main` |
+| dependency-eol.yml | **NIST SSDF RV.1.2 / FDA Cyber** — Monthly EOL check via endoflife.date; opens/updates tracking issue when runtime platform cycles approach EOL | runs monthly (1st 10 AM UTC) |
+| vuln-triage.yml | **NIST SSDF RV.2** — Daily Dependabot-alert query with severity-based SLAs (Critical 7d / High 30d / Medium 90d / Low 180d); opens tracking issue on SLA breach | runs daily at 11 AM UTC |
+| origin-label.yml | **FDA GMLP / EU AI Act / NIST AI RMF** — Required status check; verifies each PR carries exactly one `origin:*` label; validates AI session summary for `ai-authored` and `agentic` PRs; enforces PHI/credential negatives | required status check on clinical repos |
 
 ## Medical-Software Compliance Features
 
