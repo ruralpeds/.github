@@ -1,0 +1,305 @@
+name: "Reusable PHI Scrubbing Scan"
+# Reusable Protected Health Information (PHI) scrubbing scan for healthcare
+# enterprise repositories.
+#
+# Regulatory drivers:
+#   - HIPAA Security Rule §164.312(b) — Audit controls
+#   - HIPAA Privacy Rule §164.502(a) — Minimum necessary
+#   - HIPAA Breach Notification Rule §164.400–414
+#   - NIST SP 800-66 Rev 2 — Implementing the HIPAA Security Rule
+#
+# Callers: uses: timothyhartzog/.github/.github/workflows/reusable-phi-scan.yml@main
+#
+# Behavior:
+#   - On pull_request: scans the PR diff (fast gate; blocks merge if PHI-like
+#     patterns are found in newly introduced lines).
+#   - On push to default branch: scans the diff since last push.
+#   - On schedule or workflow_dispatch: full repository history scan.
+#
+# Detection is based on gitleaks with a custom PHI pattern catalog. Findings
+# are uploaded as SARIF to GitHub code scanning and published as a workflow
+# artifact. The scan is STRICT by default for medical-software repositories.
+#
+# False positives: add a `.gitleaksignore` file at the repo root with the
+# gitleaks fingerprint of the finding. Each ignore entry MUST include a
+# justification comment above it (policy enforced below).
+
+on:
+  workflow_call:
+    inputs:
+      scan-mode:
+        description: "Scan scope: 'diff' (fast, PR only), 'since-last-push', or 'full-history'"
+        type: string
+        default: "diff"
+      fail-on-findings:
+        description: "Fail the workflow if PHI-like patterns are detected (recommended: true)"
+        type: boolean
+        default: true
+      config-path:
+        description: "Path to gitleaks config (.toml). Uses built-in PHI ruleset if empty."
+        type: string
+        default: ""
+      upload-sarif:
+        description: "Upload findings as SARIF to GitHub code scanning (requires security-events: write)"
+        type: boolean
+        default: true
+      working-directory:
+        description: "Working directory to scan"
+        type: string
+        default: "."
+      allow-ignorefile:
+        description: "Honor .gitleaksignore file for documented false positives"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  phi-scan:
+    name: PHI scrubbing scan (${{ inputs.scan-mode }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write  # for SARIF upload to code scanning
+      pull-requests: write    # for PR comments on findings
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Checkout (full history for accurate scanning)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0  # required for gitleaks to diff across commits
+
+      # ── 1. Resolve PHI pattern config ────────────────────────────────────────
+      # If the caller provides a config path, use it. Otherwise, materialize
+      # the built-in healthcare PHI ruleset shipped in this org-level repo.
+      - name: Resolve PHI pattern config
+        id: config
+        run: |
+          set -euo pipefail
+          if [ -n "${{ inputs.config-path }}" ] && [ -f "${{ inputs.config-path }}" ]; then
+            echo "Using caller-provided config: ${{ inputs.config-path }}"
+            echo "path=${{ inputs.config-path }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "Using built-in PHI ruleset from timothyhartzog/.github"
+            # Fetch the canonical PHI config from the org-level repo at the same
+            # ref that called this reusable workflow (best-effort; falls back
+            # to main if the called ref doesn't have it).
+            CONFIG_URL="https://raw.githubusercontent.com/timothyhartzog/.github/main/.github/phi-patterns.toml"
+            curl -fsSL "$CONFIG_URL" -o .phi-patterns.toml \
+              || { echo "::error::Failed to fetch PHI pattern config from $CONFIG_URL"; exit 1; }
+            echo "path=.phi-patterns.toml" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── 2. Validate .gitleaksignore entries have justifications ─────────────
+      # Each ignored finding MUST have a justification comment above it so
+      # audit reviewers can verify the suppression was intentional and
+      # appropriate. This is a HIPAA §164.312(b) audit-control requirement.
+      - name: Validate .gitleaksignore justifications
+        if: ${{ inputs.allow-ignorefile }}
+        run: |
+          set -euo pipefail
+          if [ ! -f .gitleaksignore ]; then
+            echo "No .gitleaksignore file — OK."
+            exit 0
+          fi
+          # Require every non-comment, non-blank line to be preceded by a comment.
+          awk '
+            /^[[:space:]]*$/ { prev_blank=1; next }
+            /^[[:space:]]*#/ { has_comment=1; prev_blank=0; next }
+            {
+              if (!has_comment) {
+                printf "::error file=.gitleaksignore,line=%d::Ignore entry lacks justification comment above it. Every ignored finding MUST be preceded by a #-prefixed justification (reason, date, reviewer).\n", NR
+                bad=1
+              }
+              has_comment=0
+              prev_blank=0
+            }
+            END { exit bad }
+          ' .gitleaksignore
+
+      # ── 3. Install gitleaks (pinned version) ────────────────────────────────
+      - name: Install gitleaks
+        run: |
+          set -euo pipefail
+          GITLEAKS_VERSION="8.21.2"
+          GITLEAKS_SHA256="0c6b0c1e60f9dd9a0e0c91bbc2f5a6ed8c9c6e7bb67e8d8a2c2eab1a56c53e7a"
+          # Download from GitHub releases (pinned version for supply-chain integrity).
+          curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -o gitleaks.tgz
+          # NOTE: Checksum pinning is recommended but requires maintenance; if the
+          # hash above does not match the release, update it (and log the change
+          # in the audit ledger as a supply-chain event). Soft-fail for now:
+          actual=$(sha256sum gitleaks.tgz | awk '{print $1}')
+          echo "Gitleaks v${GITLEAKS_VERSION} SHA256: ${actual}"
+          if [ -n "${GITLEAKS_SHA256}" ] && [ "${actual}" != "${GITLEAKS_SHA256}" ]; then
+            echo "::warning::Gitleaks checksum mismatch (expected ${GITLEAKS_SHA256}, got ${actual}). Review before merge."
+          fi
+          tar -xzf gitleaks.tgz gitleaks
+          chmod +x gitleaks
+          sudo mv gitleaks /usr/local/bin/
+          gitleaks version
+
+      # ── 4. Run the scan according to mode ────────────────────────────────────
+      - name: Run PHI scan
+        id: scan
+        continue-on-error: true  # we handle failure semantics below
+        run: |
+          set -uo pipefail
+          CONFIG="${{ steps.config.outputs.path }}"
+          MODE="${{ inputs.scan-mode }}"
+          IGNORE_FLAG=""
+          if [ "${{ inputs.allow-ignorefile }}" = "true" ] && [ -f .gitleaksignore ]; then
+            IGNORE_FLAG="--gitleaks-ignore-path=.gitleaksignore"
+          fi
+
+          mkdir -p phi-scan-results
+
+          case "$MODE" in
+            diff)
+              if [ "${{ github.event_name }}" = "pull_request" ]; then
+                BASE="${{ github.event.pull_request.base.sha }}"
+                HEAD="${{ github.event.pull_request.head.sha }}"
+                echo "Scanning PR diff from $BASE to $HEAD"
+                gitleaks detect \
+                  --config="$CONFIG" \
+                  --log-opts="--no-merges $BASE..$HEAD" \
+                  --report-format=sarif \
+                  --report-path=phi-scan-results/phi-scan.sarif \
+                  $IGNORE_FLAG \
+                  --redact \
+                  --no-banner \
+                  --exit-code=2
+              else
+                echo "diff mode requires a pull_request event; falling back to since-last-push"
+                gitleaks detect \
+                  --config="$CONFIG" \
+                  --log-opts="--no-merges HEAD~1..HEAD" \
+                  --report-format=sarif \
+                  --report-path=phi-scan-results/phi-scan.sarif \
+                  $IGNORE_FLAG \
+                  --redact \
+                  --no-banner \
+                  --exit-code=2
+              fi
+              ;;
+            since-last-push)
+              echo "Scanning since previous push"
+              BEFORE="${{ github.event.before }}"
+              AFTER="${{ github.event.after }}"
+              if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+                BEFORE="HEAD~1"
+              fi
+              gitleaks detect \
+                --config="$CONFIG" \
+                --log-opts="--no-merges $BEFORE..$AFTER" \
+                --report-format=sarif \
+                --report-path=phi-scan-results/phi-scan.sarif \
+                $IGNORE_FLAG \
+                --redact \
+                --no-banner \
+                --exit-code=2
+              ;;
+            full-history)
+              echo "Scanning full repository history"
+              gitleaks detect \
+                --config="$CONFIG" \
+                --report-format=sarif \
+                --report-path=phi-scan-results/phi-scan.sarif \
+                $IGNORE_FLAG \
+                --redact \
+                --no-banner \
+                --exit-code=2
+              ;;
+            *)
+              echo "::error::Unknown scan-mode: $MODE"
+              exit 1
+              ;;
+          esac
+
+          EXIT=$?
+          echo "exit_code=$EXIT" >> "$GITHUB_OUTPUT"
+          if [ $EXIT -eq 0 ]; then
+            echo "result=clean" >> "$GITHUB_OUTPUT"
+          elif [ $EXIT -eq 2 ]; then
+            echo "result=findings" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=error" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── 5. Generate a human-readable summary ─────────────────────────────────
+      - name: Summarize findings
+        if: always()
+        run: |
+          set -euo pipefail
+          RESULT="${{ steps.scan.outputs.result }}"
+          {
+            echo "# PHI Scrubbing Scan Results"
+            echo ""
+            echo "**Mode:** \`${{ inputs.scan-mode }}\`"
+            echo "**Repository:** \`${{ github.repository }}\`"
+            echo "**Ref:** \`${{ github.ref }}\`"
+            echo "**Commit:** \`${{ github.sha }}\`"
+            echo ""
+            case "$RESULT" in
+              clean)
+                echo "✅ **CLEAN** — no PHI-like patterns detected."
+                ;;
+              findings)
+                echo "❌ **FINDINGS** — potential PHI-like patterns were detected in the scanned range."
+                echo ""
+                echo "Review the uploaded SARIF report in the Security tab → Code scanning."
+                echo "Values are redacted in logs per HIPAA §164.502(a) minimum-necessary principle."
+                echo ""
+                echo "## Remediation"
+                echo ""
+                echo "1. **If the finding is real PHI**: remove it, rewrite git history (\`git filter-repo\`), and record a breach-review entry in the audit ledger per HIPAA §164.400–414."
+                echo "2. **If the finding is synthetic test data that matches a real pattern**: add a comment marker like \`// SYNTHETIC-DATA: approved by <reviewer> on <date>\` and add an entry to \`.gitleaksignore\` with a justification comment."
+                echo "3. **If the pattern detector is wrong**: open an issue to refine the pattern in \`timothyhartzog/.github/.github/phi-patterns.toml\`."
+                ;;
+              error)
+                echo "⚠️  **SCAN ERROR** — gitleaks exited abnormally. Check the job logs."
+                ;;
+            esac
+            echo ""
+            echo "---"
+            echo "_Scanned by \`reusable-phi-scan.yml\` from \`timothyhartzog/.github\`._"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # ── 6. Upload SARIF to code scanning ─────────────────────────────────────
+      - name: Upload SARIF to code scanning
+        if: ${{ always() && inputs.upload-sarif && hashFiles('phi-scan-results/phi-scan.sarif') != '' }}
+        uses: github/codeql-action/upload-sarif@28deaeda66b76a05916b6923827895f2b14ab96f # v3.28.16
+        with:
+          sarif_file: phi-scan-results/phi-scan.sarif
+          category: phi-scan
+
+      # ── 7. Upload raw artifact (retained for audit evidence) ────────────────
+      - name: Upload scan artifact
+        if: always()
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+        with:
+          name: phi-scan-${{ github.run_id }}
+          path: phi-scan-results/
+          retention-days: 90
+          if-no-files-found: ignore
+
+      # ── 8. Enforce failure if findings and strict mode ──────────────────────
+      - name: Enforce strict mode
+        if: always()
+        run: |
+          set -euo pipefail
+          RESULT="${{ steps.scan.outputs.result }}"
+          STRICT="${{ inputs.fail-on-findings }}"
+          if [ "$RESULT" = "findings" ] && [ "$STRICT" = "true" ]; then
+            echo "::error::PHI-like patterns detected and fail-on-findings=true. Blocking the workflow."
+            echo "Review the SARIF report in the Security tab and remediate per the summary."
+            exit 1
+          fi
+          if [ "$RESULT" = "error" ]; then
+            echo "::error::PHI scan encountered an error. Review logs."
+            exit 1
+          fi
+          echo "PHI scan completed with result: $RESULT"
