@@ -1,0 +1,87 @@
+name: Install Project Documentation Automation
+description: Install the automated project-docs refresh workflow (assign this issue to Copilot to have it done for you)
+title: "chore: install project documentation automation"
+labels: ["automation", "documentation", "copilot-ready"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## What this installs
+
+        A scheduled GitHub Actions workflow that, once per day, detects every sub-project in this repo that has had commits in the last 24 hours (or since the last successful run of this workflow), and regenerates:
+
+        - The `<!-- AUTO-STATUS:START -->` / `<!-- AUTO-STATUS:END -->` block inside each active project's `README.md`.
+        - A full `STATUS.md` snapshot per active project (commits, files touched, languages, LOC, dependencies, TODOs, entry points, tree).
+        - A `<!-- AUTO-PROJECTS:START -->` / `<!-- AUTO-PROJECTS:END -->` dashboard block in the repo's root `README.md`.
+
+        Full operator docs land at `docs/PROJECT_DOC_AUTOMATION.md` as part of the install.
+
+        ## How to use this issue
+
+        1. Fill in the two fields below.
+        2. Submit.
+        3. Assign the issue to Copilot (the icon next to "Assignees" in the sidebar — pick **Copilot**).
+        4. Copilot will open a pull request with every file in place.
+
+  - type: input
+    id: registry
+    attributes:
+      label: Explicit project registry?
+      description: Comma-separated list of directories to track, or leave blank for auto-discovery based on manifest files. Use `.` for the repo root.
+      placeholder: "apps/web, packages/core, content/deuteronomy"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: llm
+    attributes:
+      label: Enable Claude-generated prose summary?
+      description: Adds a 2-3 sentence "what changed" paragraph per project. Requires an ANTHROPIC_API_KEY repo secret (you can set it later).
+      options:
+        - "No — deterministic content only"
+        - "Yes — enable the use_llm workflow input and document the secret"
+    validations:
+      required: true
+
+  - type: textarea
+    id: copilot-task
+    attributes:
+      label: Copilot task (do not edit — this is the instruction block)
+      description: Leave this field alone. Copilot reads it to do the install.
+      value: |
+        Install the Project Documentation Automation system into this repository by invoking the repo's own `/install-project-docs` prompt file, which lives at `.github/prompts/install-project-docs.prompt.md` once installed. Since that file does not yet exist here, follow these steps directly instead:
+
+        1. Fetch every source file from the `timothyhartzog/Claude-artifacts` repository under the `project-docs-automation/` directory using raw URLs of the form `https://raw.githubusercontent.com/timothyhartzog/Claude-artifacts/main/project-docs-automation/<path>`.
+
+        2. Write each file at the corresponding path in **this** repository, **dropping the `project-docs-automation/` prefix**. The full file list is in `project-docs-automation/.github/prompts/install-project-docs.prompt.md` in the source repo — read that file first, then follow its table of sources and destinations exactly.
+
+        3. After copying, run `python -m py_compile .github/scripts/*.py` and `python -c "import yaml; yaml.safe_load(open('.github/workflows/update-project-docs.yml'))"` to validate. Both must succeed.
+
+        4. Run a dry-run detection to list existing projects:
+
+           ```bash
+           export CUTOFF_ISO="2015-01-01T00:00:00Z"
+           python .github/scripts/detect_active_projects.py
+           ```
+
+           Capture the output and include it in the PR body.
+
+        5. If the user answered "Yes" to "Enable Claude-generated prose summary", add a note to the PR body instructing them to set `ANTHROPIC_API_KEY` in repo secrets and to pass `use_llm: true` on workflow_dispatch. Do not change the workflow default; keep `use_llm` off by default.
+
+        6. If the user listed explicit registry entries, write `.github/project-registry.json` with:
+
+           ```json
+           {"projects": ["<entry1>", "<entry2>", ...]}
+           ```
+
+           (paths as provided, deduplicated, no leading `./`).
+
+        7. Open the pull request with title `chore: install project documentation automation`. The PR body must include: a summary of files installed, the detected project list from step 4, and a one-line instruction telling the user to run the workflow manually once with `force_all: true` to seed every `STATUS.md`.
+
+        8. Do not modify the repo's existing `README.md` beyond adding the `<!-- AUTO-PROJECTS:START -->` / `<!-- AUTO-PROJECTS:END -->` block at the bottom if it is absent. Leave all other README content untouched.
+
+        9. If `.github/copilot-instructions.md` already exists, append the new content under a `## Project Documentation Automation` heading rather than overwriting.
+
+        10. Do not trigger the workflow yourself. The user will run it manually after merging the PR.
+    validations:
+      required: true
