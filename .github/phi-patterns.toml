@@ -1,0 +1,174 @@
+# Protected Health Information (PHI) detection patterns for gitleaks
+#
+# Regulatory basis:
+#   - HIPAA §164.514(b)(2)(i) — 18 Safe Harbor identifiers
+#   - HIPAA §164.312(b) — Audit controls
+#   - HHS OCR guidance on de-identification (Nov 2012)
+#
+# These patterns err on the side of FALSE POSITIVES over false negatives.
+# A false positive costs a developer 2 minutes to mark with a justification;
+# a false negative is a reportable HIPAA breach.
+#
+# How to use an exception:
+#   Add an entry to .gitleaksignore with a justification comment.
+#   See reusable-phi-scan.yml for the exact format.
+
+title = "timothyhartzog Healthcare PHI Detection Ruleset"
+
+[extend]
+# Inherit gitleaks' default rules (API keys, tokens, etc.) in addition to PHI.
+useDefault = true
+
+[allowlist]
+description = "Global allowlist for safe files"
+paths = [
+  '''(^|/)test[_-]fixtures(/|$)''',
+  '''(^|/)synthetic[_-]data(/|$)''',
+  '''(^|/)\.gitleaksignore$''',
+  '''(^|/)CHANGELOG\.md$''',
+  # Pattern definitions and documentation about PHI — meta references should not self-match.
+  '''(^|/)phi-patterns\.toml$''',
+  '''(^|/)docs/data-classification\.md$''',
+  '''(^|/)docs/audit-events\.md$''',
+]
+# Lines that explicitly declare themselves as synthetic/sample/test data.
+regexes = [
+  '''(?i)\b(synthetic|sample|example|fixture|dummy|fake|test|seed)[[:space:]]*(data|patient|record|mrn|id)?\b''',
+  '''(?i)// *SYNTHETIC[_-]DATA\b''',
+  '''(?i)# *SYNTHETIC[_-]DATA\b''',
+  '''(?i)SYNTHI?EA\b''',  # Synthea synthetic patient generator
+]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Rule 1: Social Security Numbers (HIPAA Safe Harbor identifier #9)
+# ─────────────────────────────────────────────────────────────────────────────
+[[rules]]
+id = "hipaa-ssn"
+description = "HIPAA identifier: Social Security Number pattern"
+regex = '''(?i)(?:ssn|social[_\s-]*security)[_\s:=-]{0,4}\b\d{3}-?\d{2}-?\d{4}\b|\b\d{3}-\d{2}-\d{4}\b'''
+tags = ["hipaa", "phi", "ssn"]
+keywords = ["ssn", "social"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Rule 2: Medical Record Number (MRN) in context
+# HIPAA Safe Harbor identifier #7 (medical record numbers)
+# MRNs have no universal format; detect via keyword proximity.
+# ─────────────────────────────────────────────────────────────────────────────
+[[rules]]
+id = "hipaa-mrn-context"
+description = "HIPAA identifier: Medical Record Number (MRN) with identifier in context"
+regex = '''(?i)\b(?:mrn|medical[_\s-]*record[_\s-]*(?:number|no|#)?|chart[_\s-]*(?:number|no|#))[_\s:=#-]{0,5}["']?[A-Z0-9-]{5,15}["']?'''
+tags = ["hipaa", "phi", "mrn"]
+keywords = ["mrn", "medical record", "chart number"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Rule 3: Date of Birth (HIPAA Safe Harbor identifier #3)
+# Full DOB (month, day, year) with keyword proximity.
+# ─────────────────────────────────────────────────────────────────────────────
+[[rules]]
+id = "hipaa-dob-context"
+description = "HIPAA identifier: Date of birth with identifier in context"
+regex = '''(?i)\b(?:dob|date[_\s-]*of[_\s-]*birth|birth[_\s-]*date|born[_\s-]*on)[_\s:=-]{0,5}["']?(?:\d{1,2}[-/]\d{1,2}[-/]\d{2,4}|\d{4}-\d{2}-\d{2})["']?'''
+tags = ["hipaa", "phi", "dob"]
+keywords = ["dob", "date of birth", "birth date", "born"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Rule 4: Patient name with identifier (HIPAA Safe Harbor identifier #1)
+# Detects patterns like `patient_name = "Jane Doe"` or `patientName: "John Smith"`.
+# ─────────────────────────────────────────────────────────────────────────────
+[[rules]]
+id = "hipaa-patient-name-context"
+description = "HIPAA identifier: Patient name in assignment or field"
+regex = '''(?i)(?:patient[_\s-]*(?:name|first|last|full)|first[_\s-]*name|last[_\s-]*name|given[_\s-]*name|family[_\s-]*name|surname)[_\s:=-]{0,5}["'][A-Z][a-z]+(?:[[:space:]-][A-Z][a-z]+)+["']'''
+tags = ["hipaa", "phi", "name"]
+keywords = ["patient_name", "patientname", "first_name", "last_name", "given_name", "family_name"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Rule 5: Phone numbers (HIPAA Safe Harbor identifier #4)
+# US phone numbers with identifier context.
+# ─────────────────────────────────────────────────────────────────────────────
+[[rules]]
+id = "hipaa-phone-context"
+description = "HIPAA identifier: Phone number with identifier in context"
+regex = '''(?i)\b(?:phone|tel|telephone|mobile|cell|fax)[_\s:=#-]{0,5}["']?(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}["']?'''
+tags = ["hipaa", "phi", "phone"]
+keywords = ["phone", "tel", "telephone", "mobile", "fax"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Rule 6: Email address with hospital/clinical domain
+# HIPAA Safe Harbor identifier #6 (electronic mail addresses)
+# Generic emails are not PHI; emails containing clinical context strongly imply PHI.
+# ─────────────────────────────────────────────────────────────────────────────
+[[rules]]
+id = "hipaa-clinical-email"
+description = "HIPAA identifier: Email address in a clinical/patient context"
+regex = '''(?i)(?:patient[_\s-]*(?:email|e-mail)|patient_address)[_\s:=-]{0,5}["'][A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}["']'''
+tags = ["hipaa", "phi", "email"]
+keywords = ["patient_email", "patient email"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Rule 7: Insurance / Health plan beneficiary number
+# HIPAA Safe Harbor identifier #8
+# ─────────────────────────────────────────────────────────────────────────────
+[[rules]]
+id = "hipaa-insurance-id"
+description = "HIPAA identifier: Insurance member ID / Health plan beneficiary number"
+regex = '''(?i)\b(?:insurance[_\s-]*(?:id|number|member)|policy[_\s-]*(?:number|no|#)|member[_\s-]*(?:id|number)|subscriber[_\s-]*(?:id|number)|medicare[_\s-]*(?:id|number)|medicaid[_\s-]*(?:id|number))[_\s:=#-]{0,5}["']?[A-Z0-9-]{6,20}["']?'''
+tags = ["hipaa", "phi", "insurance"]
+keywords = ["insurance", "policy", "member id", "subscriber", "medicare", "medicaid"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Rule 8: Device identifier / serial number (HIPAA Safe Harbor identifier #14)
+# Medical device serial numbers that could be linked to a patient.
+# ─────────────────────────────────────────────────────────────────────────────
+[[rules]]
+id = "hipaa-device-serial"
+description = "HIPAA identifier: Medical device identifier / serial number"
+regex = '''(?i)\b(?:device[_\s-]*(?:id|serial)|pacemaker[_\s-]*(?:id|serial)|implant[_\s-]*(?:id|serial)|serial[_\s-]*(?:number|no))[_\s:=#-]{0,5}["']?[A-Z0-9-]{6,30}["']?'''
+tags = ["hipaa", "phi", "device"]
+keywords = ["device_id", "pacemaker", "implant", "serial_number"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Rule 9: Full US ZIP+4 with address keywords (HIPAA Safe Harbor identifier #2)
+# Full ZIP+4 is PHI; first 3 digits of ZIP may be PHI if population <20,000.
+# ─────────────────────────────────────────────────────────────────────────────
+[[rules]]
+id = "hipaa-address-zip4"
+description = "HIPAA identifier: Full address with ZIP+4"
+regex = '''(?i)(?:patient[_\s-]*address|home[_\s-]*address|street[_\s-]*address|mailing[_\s-]*address)[_\s:=-]{0,5}["'][^"']{5,100}\b\d{5}-\d{4}\b'''
+tags = ["hipaa", "phi", "address"]
+keywords = ["patient_address", "home_address", "mailing_address"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Rule 10: NPI (National Provider Identifier) in patient context
+# NPIs are public for providers but may be PHI when linked to patient care.
+# ─────────────────────────────────────────────────────────────────────────────
+[[rules]]
+id = "hipaa-npi-patient-context"
+description = "National Provider Identifier in patient-linked context"
+regex = '''(?i)(?:patient[_\s-]*(?:npi|provider)|treating[_\s-]*npi)[_\s:=#-]{0,5}["']?\b\d{10}\b["']?'''
+tags = ["hipaa", "phi", "npi"]
+keywords = ["patient_npi", "treating_npi"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Rule 11: PHI in log statements (common accidental leak pattern)
+# Matches log/print/console statements that interpolate patient-identifying fields.
+# ─────────────────────────────────────────────────────────────────────────────
+[[rules]]
+id = "hipaa-phi-in-log"
+description = "Potential PHI interpolated into a log statement"
+regex = '''(?i)(?:log|logger|logging|println!|printf|console\.log|println|@info|@warn|@error|@debug|@log_info|fmt\.Print(?:ln|f)?|eprintln!|print)\s*[!(]?\s*[^)]{0,200}\{[^}]{0,50}(?:patient|mrn|dob|ssn|phi|first_?name|last_?name|email|address|phone)[^}]{0,50}\}'''
+tags = ["hipaa", "phi", "logging"]
+keywords = ["log", "println", "printf", "console.log"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Rule 12: SNOMED / ICD-10 code paired with patient identifier
+# Clinical codes alone are not PHI, but paired with patient ID they are.
+# This rule detects suspicious pairings within a tight character window.
+# ─────────────────────────────────────────────────────────────────────────────
+[[rules]]
+id = "hipaa-clinical-code-with-patient"
+description = "Clinical code (ICD-10 / SNOMED) adjacent to patient identifier"
+regex = '''(?i)(?:patient_id|mrn|chart_?num)[^"\n]{0,100}["'][A-Z]\d{2}(?:\.\d{1,4})?["']'''
+tags = ["hipaa", "phi", "clinical-code"]
+keywords = ["patient_id", "mrn", "chart"]

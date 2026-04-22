@@ -17,6 +17,62 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 | check-compliance.yml | Scan all org repos for missing CI/audit features | runs on schedule (Mon 7 AM UTC) |
 | playwright-audit.yml | Playwright visual audit of org CI status | runs on schedule (Mon 8 AM UTC) |
 | repo-scanner.yml | Auto-bootstrap CI workflows into all org repos | runs on schedule (Mon 6 AM UTC) |
+| reusable-phi-scan.yml | **HIPAA §164.312(b)** — PHI scrubbing scan via gitleaks with healthcare pattern catalog; uploads SARIF to code scanning | `uses: timothyhartzog/.github/.github/workflows/reusable-phi-scan.yml@main` |
+| reusable-sbom.yml | **FDA 524B / EO 14028** — CycloneDX + SPDX SBOM generation; license denylist enforcement; commits to `sbom/` | `uses: timothyhartzog/.github/.github/workflows/reusable-sbom.yml@main` |
+| sync-rulesets.yml | **Governance-as-code** — applies JSON ruleset files in `policies/rulesets/` to every org repo via GitHub API | runs on schedule (Mon 5 AM UTC) |
+
+## Medical-Software Compliance Features
+
+These workflows and policies are **specific to the HIPAA / GAMP 5 / FDA CSA / 21 CFR Part 11** regulatory environment. They are not required for non-clinical repos but are **mandatory** for any repo that may handle PHI or is part of a clinical decision-support path.
+
+### PHI Scrubbing (`reusable-phi-scan.yml`)
+
+Scans commits, pull requests, and (on schedule) full repository history for Protected Health Information patterns covered by HIPAA's 18 Safe Harbor identifiers (§164.514(b)(2)(i)):
+
+- SSN, MRN, DOB, names, phone, address, insurance IDs, NPIs, device serials
+- PHI in log statements (common accidental leak)
+- Clinical codes (ICD-10 / SNOMED) paired with patient identifiers
+- Custom false-positive allowlist via `.gitleaksignore` (justification required)
+
+Configuration: `.github/phi-patterns.toml` at the org level. Override per-repo by providing a `config-path` input.
+
+### SBOM Generation (`reusable-sbom.yml`)
+
+Generates FDA 524B-compliant Software Bill of Materials per release:
+
+- CycloneDX 1.5 JSON (primary, FDA-preferred)
+- SPDX 2.3 JSON (optional)
+- NTIA Minimum Elements covered
+- License denylist (GPL-3.0, AGPL-3.0, SSPL, BUSL by default — configurable)
+- Attached to GitHub Release, committed to `sbom/`, retained 90 days as workflow artifact
+- Generation context JSON provides audit trail
+
+### Governance as Code (`sync-rulesets.yml`)
+
+Applies repository rulesets (signed commits, linear history, required reviewers, required status checks) to every org repo via the GitHub API. Ruleset definitions live under version control in `policies/rulesets/*.json` so governance changes are themselves auditable.
+
+The baseline ruleset `signed-commits-main.json` enforces:
+- Required signed commits (cryptographic non-repudiation for 21 CFR Part 11 §11.70)
+- Linear history (no force pushes, no deletions)
+- 1+ required reviewer on PR; stale reviews dismissed on push
+- PHI scrubbing scan required as a merge gate
+- Code scanning must pass (blocks high+ findings from phi-scan category)
+
+### Migrating from PAT to GitHub App
+
+The `sync-rulesets.yml` workflow prefers a `timothyhartzog-bot` GitHub App token (short-lived) over `REPO_SETUP_TOKEN` (long-lived PAT). To migrate:
+
+1. Create a GitHub App named `timothyhartzog-bot` with permissions:
+   - Contents: Read & Write
+   - Pull Requests: Read & Write
+   - Workflows: Write
+   - Issues: Read & Write
+   - Metadata: Read
+2. Generate a private key; store in org secrets as `TH_BOT_PRIVATE_KEY`.
+3. Store the App ID in org variables as `TH_BOT_APP_ID`.
+4. Install on all repos in the org.
+5. Revoke the long-lived PAT after the first successful App-token run.
+6. Log the rotation in `audit-log/governance-ledger.jsonl`.
 
 ## Enterprise Audit Logging
 
