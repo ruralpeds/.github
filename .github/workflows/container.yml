@@ -1,0 +1,296 @@
+name: "Container"
+
+on:
+  workflow_call:
+    inputs:
+      dockerfile:
+        description: "Path to Dockerfile"
+        type: string
+        default: "Dockerfile"
+      context:
+        description: "Docker build context"
+        type: string
+        default: "."
+      image-name:
+        description: "Image name (default: repo name)"
+        type: string
+        default: ""
+      platforms:
+        description: "Target platforms (comma-separated)"
+        type: string
+        default: "linux/amd64"
+      build-args:
+        description: "Docker build args (KEY=VALUE, newline-separated)"
+        type: string
+        default: ""
+      push:
+        description: "Push image to registry"
+        type: boolean
+        default: true
+      run-trivy:
+        description: "Run Trivy vulnerability scan"
+        type: boolean
+        default: true
+      trivy-severity:
+        description: "Trivy fail threshold"
+        type: string
+        default: "CRITICAL,HIGH"
+      trivy-ignore-unfixed:
+        description: "Ignore unfixed vulnerabilities"
+        type: boolean
+        default: true
+      run-hadolint:
+        description: "Lint Dockerfile with Hadolint"
+        type: boolean
+        default: true
+      tag-strategy:
+        description: "Tagging strategy: semver, sha, branch, all"
+        type: string
+        default: "all"
+    outputs:
+      image:
+        description: "Full image reference (registry/name:tag)"
+        value: ${{ jobs.build.outputs.image }}
+      digest:
+        description: "Image digest"
+        value: ${{ jobs.build.outputs.digest }}
+      tags:
+        description: "All applied tags"
+        value: ${{ jobs.build.outputs.tags }}
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Lint — Dockerfile best practices
+  # ─────────────────────────────────────────────
+  hadolint:
+    name: Lint Dockerfile
+    if: inputs.run-hadolint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: ${{ inputs.dockerfile }}
+          failure-threshold: warning
+
+  # ─────────────────────────────────────────────
+  # Build — multi-platform, tagged, pushed to GHCR
+  # ─────────────────────────────────────────────
+  build:
+    name: Build & push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+      digest: ${{ steps.push.outputs.digest }}
+      tags: ${{ steps.tags.outputs.tags }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine image name
+        id: name
+        run: |
+          if [ -n "${{ inputs.image-name }}" ]; then
+            echo "image=${{ inputs.image-name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "image=${{ github.event.repository.name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate tags
+        id: tags
+        run: |
+          REGISTRY="ghcr.io/${{ github.repository_owner }}"
+          IMAGE="$REGISTRY/${{ steps.name.outputs.image }}"
+          SHA="${{ github.sha }}"
+          SHORT_SHA="${SHA:0:7}"
+          BRANCH="${GITHUB_REF_NAME//\//-}"
+          STRATEGY="${{ inputs.tag-strategy }}"
+          TAGS=""
+
+          add_tag() {
+            if [ -z "$TAGS" ]; then
+              TAGS="$1"
+            else
+              TAGS="$TAGS,$1"
+            fi
+          }
+
+          # SHA tag (always)
+          if [ "$STRATEGY" = "sha" ] || [ "$STRATEGY" = "all" ]; then
+            add_tag "$IMAGE:sha-$SHORT_SHA"
+          fi
+
+          # Branch tag
+          if [ "$STRATEGY" = "branch" ] || [ "$STRATEGY" = "all" ]; then
+            add_tag "$IMAGE:$BRANCH"
+            if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
+              add_tag "$IMAGE:latest"
+            fi
+          fi
+
+          # Semver tags (from git tags)
+          if [ "$STRATEGY" = "semver" ] || [ "$STRATEGY" = "all" ]; then
+            GIT_TAG=$(git describe --tags --exact-match HEAD 2>/dev/null || echo "")
+            if [ -n "$GIT_TAG" ]; then
+              VER="${GIT_TAG#v}"
+              add_tag "$IMAGE:$GIT_TAG"
+              # Also tag major.minor and major for semver
+              MAJOR=$(echo "$VER" | cut -d. -f1)
+              MINOR=$(echo "$VER" | cut -d. -f1-2)
+              add_tag "$IMAGE:v$MAJOR"
+              add_tag "$IMAGE:v$MINOR"
+            fi
+          fi
+
+          # Fallback: at least one tag
+          if [ -z "$TAGS" ]; then
+            add_tag "$IMAGE:sha-$SHORT_SHA"
+          fi
+
+          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
+          echo "primary=$(echo "$TAGS" | cut -d',' -f1)" >> "$GITHUB_OUTPUT"
+          echo "Tags: $TAGS"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up QEMU (multi-platform)
+        if: contains(inputs.platforms, ',')
+        uses: docker/setup-qemu-action@v3
+
+      - name: Login to GHCR
+        if: inputs.push
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.dockerfile }}
+          platforms: ${{ inputs.platforms }}
+          push: ${{ inputs.push }}
+          load: ${{ !inputs.push }}
+          tags: ${{ steps.tags.outputs.tags }}
+          build-args: ${{ inputs.build-args }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+
+      - name: Output image reference
+        id: meta
+        run: |
+          echo "image=${{ steps.tags.outputs.primary }}" >> "$GITHUB_OUTPUT"
+          echo "digest=${{ steps.push.outputs.digest }}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate build attestation
+        if: inputs.push
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ghcr.io/${{ github.repository_owner }}/${{ steps.name.outputs.image }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
+        continue-on-error: true
+
+  # ─────────────────────────────────────────────
+  # Scan — Trivy vulnerability analysis
+  # ─────────────────────────────────────────────
+  trivy:
+    name: Vulnerability scan
+    needs: build
+    if: inputs.run-trivy
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        if: inputs.push
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Trivy (table output)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ needs.build.outputs.image }}
+          format: table
+          exit-code: 0
+          severity: ${{ inputs.trivy-severity }}
+          ignore-unfixed: ${{ inputs.trivy-ignore-unfixed }}
+
+      - name: Run Trivy (SARIF for GitHub Security)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ needs.build.outputs.image }}
+          format: sarif
+          output: trivy-results.sarif
+          severity: ${{ inputs.trivy-severity }}
+          ignore-unfixed: ${{ inputs.trivy-ignore-unfixed }}
+
+      - name: Upload SARIF to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+        continue-on-error: true
+
+      - name: Run Trivy (fail on threshold)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ needs.build.outputs.image }}
+          format: json
+          output: trivy-results.json
+          exit-code: 1
+          severity: ${{ inputs.trivy-severity }}
+          ignore-unfixed: ${{ inputs.trivy-ignore-unfixed }}
+
+      - name: Summarize findings
+        if: always()
+        run: |
+          if [ -f trivy-results.json ]; then
+            python3 -c "
+          import json
+          r = json.load(open('trivy-results.json'))
+          total = 0
+          by_sev = {}
+          for result in r.get('Results', []):
+              for vuln in result.get('Vulnerabilities', []):
+                  sev = vuln.get('Severity', 'UNKNOWN')
+                  by_sev[sev] = by_sev.get(sev, 0) + 1
+                  total += 1
+          print(f'Total vulnerabilities: {total}')
+          for sev in ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']:
+              count = by_sev.get(sev, 0)
+              if count > 0:
+                  print(f'  {sev}: {count}')
+          " 2>/dev/null || echo "Could not parse results"
+          fi
+
+      - name: Upload scan results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-results
+          path: |
+            trivy-results.json
+            trivy-results.sarif
+          retention-days: 30
+          if-no-files-found: ignore
