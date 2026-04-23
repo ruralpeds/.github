@@ -2,7 +2,7 @@ name: "Reusable Security"
 # Reusable security workflow for healthcare enterprise repositories.
 # Derived from HEALTHCARE_ENTERPRISE_REPO_BLUEPRINT.md controls.
 #
-# Callers: uses: timothyhartzog/.github/.github/workflows/reusable-security.yml@main
+# Callers: uses: ruralpeds/.github/.github/workflows/reusable-security.yml@main
 #
 # Covers:
 #   - Dependency review (PRs only) — blocks known-vulnerable dependencies

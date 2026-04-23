@@ -2,7 +2,7 @@
 """Sync canonical Copilot assets from central .github repo to one target repo.
 
 Environment:
-  CENTRAL_DIR  absolute path to the checkout of timothyhartzog/.github
+  CENTRAL_DIR  absolute path to the checkout of ruralpeds/.github
   TARGET_DIR   absolute path to the checkout of the target repo (e.g., Peds)
   TARGET_REPO  "owner/name" slug of the target
   DRY_RUN      "true" to skip the push/PR step (prints the diff only)
@@ -199,11 +199,11 @@ def main() -> int:
     _run(["git", "checkout", "-b", branch], cwd=target_dir)
     _run(["git", "add"] + changes, cwd=target_dir)
     commit_msg = (
-        "chore: sync Copilot assets from timothyhartzog/.github\n\n"
+        "chore: sync Copilot assets from ruralpeds/.github\n\n"
         f"Files updated ({len(changes)}):\n"
         + "\n".join(f"  - {c}" for c in changes)
         + "\n\n"
-        "Source of truth: https://github.com/timothyhartzog/.github/tree/"
+        "Source of truth: https://github.com/ruralpeds/.github/tree/"
         "main/copilot-assets/\n\n"
         "To opt this repo's file out of future sync, add the marker\n"
         "`<!-- AUTO-SYNC-OPT-OUT -->` anywhere in the file."
@@ -213,7 +213,7 @@ def main() -> int:
 
     # Open a PR via gh CLI (GH_TOKEN is already in env).
     pr_body = (
-        f"Automated sync from `timothyhartzog/.github`.\n\n"
+        f"Automated sync from `ruralpeds/.github`.\n\n"
         f"**Files updated:**\n"
         + "\n".join(f"- `{c}`" for c in changes)
         + "\n\n"

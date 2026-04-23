@@ -6,19 +6,19 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 
 | Workflow | Purpose | Call with |
 |----------|---------|-----------|
-| ci-node.yml | Node.js CI: lint, typecheck, test, build, security audit | `uses: timothyhartzog/.github/.github/workflows/ci-node.yml@main` |
-| ci-python.yml | Python CI: ruff, mypy, bandit, pytest with coverage | `uses: timothyhartzog/.github/.github/workflows/ci-python.yml@main` |
-| ci-rust.yml | Rust CI: fmt, clippy, cargo test/audit, tarpaulin coverage | `uses: timothyhartzog/.github/.github/workflows/ci-rust.yml@main` |
-| ci-go.yml | Go CI: golangci-lint, vet, gosec, race-enabled tests | `uses: timothyhartzog/.github/.github/workflows/ci-go.yml@main` |
-| ci-julia.yml | Julia CI: JuliaFormatter, Pkg.test with coverage | `uses: timothyhartzog/.github/.github/workflows/ci-julia.yml@main` |
-| e2e-playwright.yml | Playwright E2E: multi-browser, sharding, traces, screenshots | `uses: timothyhartzog/.github/.github/workflows/e2e-playwright.yml@main` |
-| audit-log.yml | Build audit ledger: dates, refs, deps, full provenance | `uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main` |
-| review-stamp.yml | Record a manual code review in the audit ledger | `uses: timothyhartzog/.github/.github/workflows/review-stamp.yml@main` |
+| ci-node.yml | Node.js CI: lint, typecheck, test, build, security audit | `uses: ruralpeds/.github/.github/workflows/ci-node.yml@main` |
+| ci-python.yml | Python CI: ruff, mypy, bandit, pytest with coverage | `uses: ruralpeds/.github/.github/workflows/ci-python.yml@main` |
+| ci-rust.yml | Rust CI: fmt, clippy, cargo test/audit, tarpaulin coverage | `uses: ruralpeds/.github/.github/workflows/ci-rust.yml@main` |
+| ci-go.yml | Go CI: golangci-lint, vet, gosec, race-enabled tests | `uses: ruralpeds/.github/.github/workflows/ci-go.yml@main` |
+| ci-julia.yml | Julia CI: JuliaFormatter, Pkg.test with coverage | `uses: ruralpeds/.github/.github/workflows/ci-julia.yml@main` |
+| e2e-playwright.yml | Playwright E2E: multi-browser, sharding, traces, screenshots | `uses: ruralpeds/.github/.github/workflows/e2e-playwright.yml@main` |
+| audit-log.yml | Build audit ledger: dates, refs, deps, full provenance | `uses: ruralpeds/.github/.github/workflows/audit-log.yml@main` |
+| review-stamp.yml | Record a manual code review in the audit ledger | `uses: ruralpeds/.github/.github/workflows/review-stamp.yml@main` |
 | check-compliance.yml | Scan all org repos for missing CI/audit features | runs on schedule (Mon 7 AM UTC) |
 | playwright-audit.yml | Playwright visual audit of org CI status | runs on schedule (Mon 8 AM UTC) |
 | repo-scanner.yml | Auto-bootstrap CI workflows into all org repos | runs on schedule (Mon 6 AM UTC) |
-| reusable-phi-scan.yml | **HIPAA §164.312(b)** — PHI scrubbing scan via gitleaks with healthcare pattern catalog; uploads SARIF to code scanning | `uses: timothyhartzog/.github/.github/workflows/reusable-phi-scan.yml@main` |
-| reusable-sbom.yml | **FDA 524B / EO 14028** — CycloneDX + SPDX SBOM generation; license denylist enforcement; commits to `sbom/` | `uses: timothyhartzog/.github/.github/workflows/reusable-sbom.yml@main` |
+| reusable-phi-scan.yml | **HIPAA §164.312(b)** — PHI scrubbing scan via gitleaks with healthcare pattern catalog; uploads SARIF to code scanning | `uses: ruralpeds/.github/.github/workflows/reusable-phi-scan.yml@main` |
+| reusable-sbom.yml | **FDA 524B / EO 14028** — CycloneDX + SPDX SBOM generation; license denylist enforcement; commits to `sbom/` | `uses: ruralpeds/.github/.github/workflows/reusable-sbom.yml@main` |
 | sync-rulesets.yml | **Governance-as-code** — applies JSON ruleset files in `policies/rulesets/` to every org repo via GitHub API | runs on schedule (Mon 5 AM UTC) |
 
 ## Medical-Software Compliance Features
@@ -169,7 +169,7 @@ Check if your organization's repos are compliant:
 ### Auto-Bootstrap
 `repo-scanner.yml` runs weekly — scans all org repos, creates PRs with CI/testing/audit workflows.
 
-Trigger manually: `gh workflow run "Scan & Bootstrap All Repos" --repo timothyhartzog/.github`
+Trigger manually: `gh workflow run "Scan & Bootstrap All Repos" --repo ruralpeds/.github`
 
 Requires `REPO_SETUP_TOKEN` secret (fine-grained PAT with Contents + PRs + Workflows permissions).
 
@@ -190,19 +190,19 @@ name: CI
 on: [push, pull_request]
 jobs:
   ci:
-    uses: timothyhartzog/.github/.github/workflows/ci-node.yml@main
+    uses: ruralpeds/.github/.github/workflows/ci-node.yml@main
     with:
       package-manager: "pnpm"
       node-versions: '["18", "20"]'
   e2e:
-    uses: timothyhartzog/.github/.github/workflows/e2e-playwright.yml@main
+    uses: ruralpeds/.github/.github/workflows/e2e-playwright.yml@main
     with:
       package-manager: "pnpm"
       start-command: "pnpm dev"
       browsers: '["chromium", "firefox", "webkit"]'
       shards: 3
   audit:
-    uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main
+    uses: ruralpeds/.github/.github/workflows/audit-log.yml@main
     permissions:
       contents: write
 ```
@@ -213,11 +213,11 @@ name: CI
 on: [push, pull_request]
 jobs:
   ci:
-    uses: timothyhartzog/.github/.github/workflows/ci-python.yml@main
+    uses: ruralpeds/.github/.github/workflows/ci-python.yml@main
     with:
       python-versions: '["3.11", "3.12"]'
   audit:
-    uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main
+    uses: ruralpeds/.github/.github/workflows/audit-log.yml@main
     permissions:
       contents: write
 ```
@@ -241,7 +241,7 @@ on:
 
 jobs:
   review:
-    uses: timothyhartzog/.github/.github/workflows/review-stamp.yml@main
+    uses: ruralpeds/.github/.github/workflows/review-stamp.yml@main
     with:
       reviewer: ${{ inputs.reviewer }}
       notes: ${{ inputs.notes }}
@@ -280,7 +280,7 @@ jobs:
   audit:
     if: always()
     needs: ci
-    uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main
+    uses: ruralpeds/.github/.github/workflows/audit-log.yml@main
     with:
       include-deps: true
       retention-entries: 500

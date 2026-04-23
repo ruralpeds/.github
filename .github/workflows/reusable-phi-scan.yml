@@ -8,7 +8,7 @@ name: "Reusable PHI Scrubbing Scan"
 #   - HIPAA Breach Notification Rule §164.400–414
 #   - NIST SP 800-66 Rev 2 — Implementing the HIPAA Security Rule
 #
-# Callers: uses: timothyhartzog/.github/.github/workflows/reusable-phi-scan.yml@main
+# Callers: uses: ruralpeds/.github/.github/workflows/reusable-phi-scan.yml@main
 #
 # Behavior:
 #   - On pull_request: scans the PR diff (fast gate; blocks merge if PHI-like
@@ -84,11 +84,11 @@ jobs:
             echo "Using caller-provided config: ${{ inputs.config-path }}"
             echo "path=${{ inputs.config-path }}" >> "$GITHUB_OUTPUT"
           else
-            echo "Using built-in PHI ruleset from timothyhartzog/.github"
+            echo "Using built-in PHI ruleset from ruralpeds/.github"
             # Fetch the canonical PHI config from the org-level repo at the same
             # ref that called this reusable workflow (best-effort; falls back
             # to main if the called ref doesn't have it).
-            CONFIG_URL="https://raw.githubusercontent.com/timothyhartzog/.github/main/.github/phi-patterns.toml"
+            CONFIG_URL="https://raw.githubusercontent.com/ruralpeds/.github/main/.github/phi-patterns.toml"
             curl -fsSL "$CONFIG_URL" -o .phi-patterns.toml \
               || { echo "::error::Failed to fetch PHI pattern config from $CONFIG_URL"; exit 1; }
             echo "path=.phi-patterns.toml" >> "$GITHUB_OUTPUT"
@@ -257,7 +257,7 @@ jobs:
                 echo ""
                 echo "1. **If the finding is real PHI**: remove it, rewrite git history (\`git filter-repo\`), and record a breach-review entry in the audit ledger per HIPAA §164.400–414."
                 echo "2. **If the finding is synthetic test data that matches a real pattern**: add a comment marker like \`// SYNTHETIC-DATA: approved by <reviewer> on <date>\` and add an entry to \`.gitleaksignore\` with a justification comment."
-                echo "3. **If the pattern detector is wrong**: open an issue to refine the pattern in \`timothyhartzog/.github/.github/phi-patterns.toml\`."
+                echo "3. **If the pattern detector is wrong**: open an issue to refine the pattern in \`ruralpeds/.github/.github/phi-patterns.toml\`."
                 ;;
               error)
                 echo "⚠️  **SCAN ERROR** — gitleaks exited abnormally. Check the job logs."
@@ -265,7 +265,7 @@ jobs:
             esac
             echo ""
             echo "---"
-            echo "_Scanned by \`reusable-phi-scan.yml\` from \`timothyhartzog/.github\`._"
+            echo "_Scanned by \`reusable-phi-scan.yml\` from \`ruralpeds/.github\`._"
           } >> "$GITHUB_STEP_SUMMARY"
 
       # ── 6. Upload SARIF to code scanning ─────────────────────────────────────

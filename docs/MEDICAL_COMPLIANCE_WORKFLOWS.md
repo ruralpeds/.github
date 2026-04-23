@@ -75,7 +75,7 @@ The scanner validates that every ignore entry has a preceding justification comm
 
 **3. Pattern false positive (the regex is wrong)**
 
-Open an issue against `timothyhartzog/.github` to refine the rule in `phi-patterns.toml`. Include:
+Open an issue against `ruralpeds/.github` to refine the rule in `phi-patterns.toml`. Include:
 - The falsely-matched snippet (redacted)
 - The rule ID (from the SARIF report)
 - A proposed regex improvement
