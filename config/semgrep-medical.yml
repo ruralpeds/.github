@@ -1,0 +1,63 @@
+# .github/semgrep-medical.yml
+# Custom Semgrep rules for clinical / medical codebases.
+# Layered on top of p/owasp-top-ten, p/cwe-top-25, p/secrets.
+
+rules:
+  - id: medical-hardcoded-patient-id
+    message: >
+      Possible hardcoded patient identifier. Use fixtures/synthetic
+      data and never commit real IDs, even for testing.
+    severity: ERROR
+    languages: [python, javascript, typescript, rust, go, julia]
+    pattern-regex: '(patient_id|mrn|encounter_id)\s*=\s*["\x27][A-Z0-9]{5,12}["\x27]'
+
+  - id: medical-phi-in-log
+    message: >
+      Logging something that looks like PHI. Pipe through a redactor
+      or use structured logging with explicit allow-list fields.
+    severity: WARNING
+    languages: [python]
+    patterns:
+      - pattern-either:
+          - pattern: logging.info($MSG, $PATIENT)
+          - pattern: logger.info($MSG, $PATIENT)
+          - pattern: print($MSG, $PATIENT)
+      - metavariable-regex:
+          metavariable: $MSG
+          regex: '(?i)(patient|mrn|ssn|dob|name|address|email)'
+
+  - id: medical-unchecked-unit-conversion
+    message: >
+      Dose calculation without explicit unit check. Clinical software
+      (IEC 62304 Class B+) must validate units at conversion boundaries.
+    severity: WARNING
+    languages: [python, julia, rust]
+    pattern-regex: '(dose|weight|concentration)\s*\*\s*\d+\.?\d*'
+
+  - id: medical-missing-audit-call
+    message: >
+      State-changing clinical function without @audited decorator or
+      audit log call. 21 CFR Part 11 requires audit trail.
+    severity: WARNING
+    languages: [python]
+    patterns:
+      - pattern-either:
+          - pattern: |
+              def $FUNC(...):
+                  ...
+                  $OBJ.save()
+          - pattern: |
+              def $FUNC(...):
+                  ...
+                  db.commit()
+      - pattern-not: |
+          @audited(...)
+          def $FUNC(...):
+              ...
+
+  - id: medical-no-tls-egress
+    message: >
+      HTTP (not HTTPS) egress. HIPAA transmission security requires TLS.
+    severity: ERROR
+    languages: [python, javascript, typescript, rust, go]
+    pattern-regex: 'http://(?!localhost|127\.0\.0\.1|0\.0\.0\.0)'
