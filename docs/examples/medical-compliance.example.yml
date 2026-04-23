@@ -30,7 +30,7 @@ jobs:
   # ── Fast gate on every PR: PHI scan on diff ─────────────────────────────────
   phi-scan-pr:
     if: github.event_name == 'pull_request'
-    uses: timothyhartzog/.github/.github/workflows/reusable-phi-scan.yml@main
+    uses: ruralpeds/.github/.github/workflows/reusable-phi-scan.yml@main
     with:
       scan-mode: diff
       fail-on-findings: true
@@ -42,7 +42,7 @@ jobs:
   # ── Weekly deep scan: full history ──────────────────────────────────────────
   phi-scan-full:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    uses: timothyhartzog/.github/.github/workflows/reusable-phi-scan.yml@main
+    uses: ruralpeds/.github/.github/workflows/reusable-phi-scan.yml@main
     with:
       scan-mode: full-history
       fail-on-findings: true
@@ -54,7 +54,7 @@ jobs:
   # ── SBOM on release + weekly refresh ────────────────────────────────────────
   sbom:
     if: github.event_name == 'release' || github.event_name == 'schedule' || github.event_name == 'push'
-    uses: timothyhartzog/.github/.github/workflows/reusable-sbom.yml@main
+    uses: ruralpeds/.github/.github/workflows/reusable-sbom.yml@main
     with:
       sbom-format: both
       commit-sbom: true
@@ -67,7 +67,7 @@ jobs:
   audit:
     if: always()
     needs: [phi-scan-pr, sbom]
-    uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main
+    uses: ruralpeds/.github/.github/workflows/audit-log.yml@main
     with:
       include-deps: true
       retention-entries: 500

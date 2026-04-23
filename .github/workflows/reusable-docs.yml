@@ -2,7 +2,7 @@ name: "Reusable Docs"
 # Reusable documentation quality workflow for healthcare enterprise repositories.
 # Derived from HEALTHCARE_ENTERPRISE_REPO_BLUEPRINT.md controls.
 #
-# Callers: uses: timothyhartzog/.github/.github/workflows/reusable-docs.yml@main
+# Callers: uses: ruralpeds/.github/.github/workflows/reusable-docs.yml@main
 #
 # Covers:
 #   - Markdown lint (markdownlint-cli) — style consistency
@@ -30,7 +30,7 @@ on:
         default: true
       # Override path to standards script if it lives somewhere else in the caller repo
       standards-script-ref:
-        description: "Git ref (branch/tag/SHA) to fetch scripts from timothyhartzog/.github"
+        description: "Git ref (branch/tag/SHA) to fetch scripts from ruralpeds/.github"
         type: string
         default: "main"
 
@@ -98,12 +98,12 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - name: Fetch standards scripts from timothyhartzog/.github
+      - name: Fetch standards scripts from ruralpeds/.github
         run: |
           # Download the standards check scripts from the central standards repo.
           mkdir -p _standards_scripts
           curl -sSfL \
-            "https://raw.githubusercontent.com/timothyhartzog/.github/${{ inputs.standards-script-ref }}/scripts/check_repo_standards.sh" \
+            "https://raw.githubusercontent.com/ruralpeds/.github/${{ inputs.standards-script-ref }}/scripts/check_repo_standards.sh" \
             -o _standards_scripts/check_repo_standards.sh
           chmod +x _standards_scripts/check_repo_standards.sh
       - name: Run required docs/governance check

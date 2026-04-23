@@ -29,7 +29,7 @@ permissions:
 
 jobs:
   audit:
-    uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main
+    uses: ruralpeds/.github/.github/workflows/audit-log.yml@main
     with:
       include-deps: true
       include-test-summary: false
@@ -65,7 +65,7 @@ permissions:
 
 jobs:
   review:
-    uses: timothyhartzog/.github/.github/workflows/review-stamp.yml@main
+    uses: ruralpeds/.github/.github/workflows/review-stamp.yml@main
     with:
       reviewer: ${{ inputs.reviewer }}
       notes: ${{ inputs.notes }}
@@ -203,7 +203,7 @@ To keep only 100 recent builds:
 ```yaml
 jobs:
   audit:
-    uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main
+    uses: ruralpeds/.github/.github/workflows/audit-log.yml@main
     with:
       retention-entries: 100  # Change from 500 to 100
 ```
@@ -215,7 +215,7 @@ To store audit logs on a separate branch (useful for large repos):
 ```yaml
 jobs:
   audit:
-    uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main
+    uses: ruralpeds/.github/.github/workflows/audit-log.yml@main
     with:
       audit-branch: audit-logs  # Store on separate branch
 ```

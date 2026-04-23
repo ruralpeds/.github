@@ -139,7 +139,7 @@ on:
 
 jobs:
   audit:
-    uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main
+    uses: ruralpeds/.github/.github/workflows/audit-log.yml@main
     with:
       include-deps: true
       include-test-summary: false
@@ -172,7 +172,7 @@ on:
 
 jobs:
   review:
-    uses: timothyhartzog/.github/.github/workflows/review-stamp.yml@main
+    uses: ruralpeds/.github/.github/workflows/review-stamp.yml@main
     with:
       reviewer: ${{ inputs.reviewer }}
       notes: ${{ inputs.notes }}

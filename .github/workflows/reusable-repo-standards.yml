@@ -2,7 +2,7 @@ name: "Reusable Repo Standards"
 # Reusable repository standards and governance validation workflow.
 # Derived from HEALTHCARE_ENTERPRISE_REPO_BLUEPRINT.md controls.
 #
-# Callers: uses: timothyhartzog/.github/.github/workflows/reusable-repo-standards.yml@main
+# Callers: uses: ruralpeds/.github/.github/workflows/reusable-repo-standards.yml@main
 #
 # Covers:
 #   - Required governance files (AGENTS.md, SECURITY.md, CONTRIBUTING.md, README.md)
@@ -14,7 +14,7 @@ on:
   workflow_call:
     inputs:
       standards-script-ref:
-        description: "Git ref (branch/tag/SHA) to fetch scripts from timothyhartzog/.github"
+        description: "Git ref (branch/tag/SHA) to fetch scripts from ruralpeds/.github"
         type: string
         default: "main"
       run-audit-events-check:
@@ -42,7 +42,7 @@ jobs:
         run: |
           mkdir -p _standards_scripts
           curl -sSfL \
-            "https://raw.githubusercontent.com/timothyhartzog/.github/${{ inputs.standards-script-ref }}/scripts/check_repo_standards.sh" \
+            "https://raw.githubusercontent.com/ruralpeds/.github/${{ inputs.standards-script-ref }}/scripts/check_repo_standards.sh" \
             -o _standards_scripts/check_repo_standards.sh
           chmod +x _standards_scripts/check_repo_standards.sh
       - name: Check repository standards
@@ -61,7 +61,7 @@ jobs:
         run: |
           mkdir -p _standards_scripts
           curl -sSfL \
-            "https://raw.githubusercontent.com/timothyhartzog/.github/${{ inputs.standards-script-ref }}/scripts/check_audit_events_md.sh" \
+            "https://raw.githubusercontent.com/ruralpeds/.github/${{ inputs.standards-script-ref }}/scripts/check_audit_events_md.sh" \
             -o _standards_scripts/check_audit_events_md.sh
           chmod +x _standards_scripts/check_audit_events_md.sh
       - name: Validate docs/audit-events.md catalog
