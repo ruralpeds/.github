@@ -1,0 +1,128 @@
+{
+  "name": "org-fda-part11",
+  "description": "21 CFR Part 11 compliance rules for regulated/clinical decision support repos",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "repository_property_targeting": {
+      "include": {
+        "repository_property": [
+          {
+            "property_name": "regulated",
+            "property_values": [
+              "true"
+            ]
+          }
+        ]
+      },
+      "exclude": {}
+    }
+  },
+  "rules": [
+    {
+      "type": "creation",
+      "parameters": {
+        "restriction": "non_empty"
+      }
+    },
+    {
+      "type": "required_signatures",
+      "parameters": {
+        "key_type_set": [
+          "pgp",
+          "ssh"
+        ]
+      }
+    },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "dismiss_stale_reviews": false,
+        "require_code_owner_review": true,
+        "require_last_push_approval": true,
+        "require_review_thread_resolution": true,
+        "required_approving_review_count": 2,
+        "required_review_thread_resolution": true
+      }
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "do_not_enforce_on_create": false,
+        "required_status_checks": [
+          {
+            "context": "ci"
+          },
+          {
+            "context": "PHI scan"
+          },
+          {
+            "context": "SBOM"
+          },
+          {
+            "context": "CodeQL"
+          },
+          {
+            "context": "IEC 62304 traceability"
+          },
+          {
+            "context": "Release audit signature"
+          }
+        ],
+        "strict_required_status_checks_policy": true
+      }
+    },
+    {
+      "type": "restrict_pushes",
+      "parameters": {
+        "restrict_to": [
+          "deploy_keys",
+          "github_app"
+        ]
+      }
+    },
+    {
+      "type": "non_fast_forward",
+      "parameters": {}
+    }
+  ],
+  "metadata": {
+    "applies_to": "Repos where regulated = true (21 CFR Part 11 scope)",
+    "regulatory_framework": "21 CFR Part 11 (Electronic Records; Electronic Signatures)",
+    "min_reviewers": 2,
+    "requires_code_owner": true,
+    "requires_signatures": true,
+    "requires_release_signature": true,
+    "part_11_requirements": [
+      "§11.50 — Electronic records legally binding",
+      "§11.70 — Electronic signature requirements (identity, meaning, binding)",
+      "§11.70(f) — RFC 3161 timestamp authority integration",
+      "§11.70(i) — Immutable audit trail with before/after values",
+      "§11.100 — User identification and authentication",
+      "§11.200 — Electronic signature = handwritten equivalent"
+    ],
+    "required_checks": [
+      "ci",
+      "PHI scan",
+      "SBOM",
+      "CodeQL",
+      "IEC 62304 traceability",
+      "Release audit signature"
+    ],
+    "release_approval_process": {
+      "step_1_code_review": "2+ reviewers, code owner approval required",
+      "step_2_tests_pass": "CI, PHI scan, CodeQL, SBOM all passing",
+      "step_3_traceability": "IEC 62304 requirements mapped to tests (if device)",
+      "step_4_release_approval": "Signer invokes audit-sign-envelope.yml",
+      "step_5_signature_binding": "Signer provides meaning statement (intent for clinical use)",
+      "step_6_timestamp": "RFC 3161 TSA timestamps signature (independent)",
+      "step_7_audit_record": "Signed event appended to immutable audit log",
+      "step_8_verification": "Nightly audit-verify.yml validates signature chain"
+    },
+    "signature_format": "JWS (JSON Web Signature) with embedded RFC 3161 timestamp",
+    "signer_identity": "GitHub Actions actor (via OIDC + cosign keyless)",
+    "signature_storage": "audit-logs/YYYY-MM.jsonl (immutable, Merkle-chained)",
+    "deployment_protection": "Required for any prod deployment (manual approval + signature)",
+    "comment": "Part 11 scope: digital signatures + timestamps for regulated records. Every release approval requires 2 code-owner reviews + signer's meaning statement + RFC 3161 timestamp + immutable audit trail."
+  }
+}
