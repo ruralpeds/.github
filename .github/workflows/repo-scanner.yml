@@ -36,8 +36,7 @@ jobs:
           if [ -n "${{ inputs.target-repo }}" ]; then
             echo 'repos=["${{ inputs.target-repo }}"]' >> $GITHUB_OUTPUT
           else
-            REPOS=$(gh repo list "$GH_OWNER" --json name --limit 100 -q '.[].name' | jq -R -s 'split("
-") | map(select(length > 0))' | jq -c '.')
+            REPOS=$(gh repo list "$GH_OWNER" --json name --limit 200 --jq '[.[].name]')
             echo "repos=$REPOS" >> $GITHUB_OUTPUT
           fi
 
