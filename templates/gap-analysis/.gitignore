@@ -1,0 +1,8 @@
+# Auto-generated index — do NOT commit
+status.json
+
+# Temporary files
+*.swp
+*.swo
+*~
+.DS_Store
