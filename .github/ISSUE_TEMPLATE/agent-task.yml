@@ -1,0 +1,180 @@
+name: Agent-actionable task
+description: A scoped task ready for an AI coding agent (Copilot, Claude Code, Codex) to execute.
+title: "[agent-task] <phase>/<slug>: <short description>"
+labels: ["agent-task", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Agent task
+
+        This issue is intended to be picked up by an AI coding agent. Before filling this out, verify the task is scoped to a single, testable, reviewable change.
+
+        **If the task is larger than ~400 diff lines or requires clinical judgment, do not file as an agent task.** Break it down first.
+
+  - type: input
+    id: phase
+    attributes:
+      label: Roadmap phase
+      description: Phase number (1–12) from the ENTERPRISE_ROADMAP.md
+      placeholder: "phase-01"
+    validations:
+      required: true
+
+  - type: input
+    id: slug
+    attributes:
+      label: Task slug
+      description: kebab-case identifier matching the task file under copilot-tasks/phase-NN-*/
+      placeholder: "pin-actions-sha"
+    validations:
+      required: true
+
+  - type: input
+    id: task-file
+    attributes:
+      label: Linked task file
+      description: Path (in the .github repo) to the machine-readable task spec
+      placeholder: "copilot-tasks/phase-01-platform-hardening/task-02-pin-actions-sha.md"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target-agent
+    attributes:
+      label: Preferred agent
+      description: Which agent should pick this up
+      options:
+        - copilot
+        - claude-code
+        - codex
+        - any
+    validations:
+      required: true
+
+  - type: dropdown
+    id: iec-class
+    attributes:
+      label: Repo IEC 62304 class
+      description: Copy from the repo's custom property. Tasks against Class C repos require extra human review.
+      options:
+        - not-applicable
+        - class-a
+        - class-b
+        - class-c
+    validations:
+      required: true
+
+  - type: dropdown
+    id: data-classification
+    attributes:
+      label: Repo data classification
+      description: Copy from the repo's custom property.
+      options:
+        - public
+        - internal
+        - synthetic
+        - phi-capable
+        - phi-active
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal (plain language)
+      description: What this task accomplishes. Two sentences max.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: Testable outcomes. The agent's PR is not "done" until every box is checked.
+      value: |
+        - [ ] <criterion 1>
+        - [ ] <criterion 2>
+        - [ ] <criterion 3>
+    validations:
+      required: true
+
+  - type: textarea
+    id: files-to-touch
+    attributes:
+      label: Files the agent may modify
+      description: Explicit allow-list. Anything not listed is out of scope.
+      placeholder: |
+        - .github/workflows/ci-node.yml
+        - .github/workflows/ci-rust.yml
+    validations:
+      required: true
+
+  - type: textarea
+    id: files-not-to-touch
+    attributes:
+      label: Files the agent MUST NOT modify
+      description: Anything from AGENTS.md §4.3 plus task-specific exclusions.
+      value: |
+        - audit-log/**
+        - dhf/risk/**
+        - policies/rulesets/**
+        - .github/workflows/audit-log.yml
+        - .github/workflows/audit-verify.yml
+        - AGENTS.md
+    validations:
+      required: true
+
+  - type: textarea
+    id: tests-required
+    attributes:
+      label: Tests required
+      description: What new or modified tests must accompany this change
+    validations:
+      required: true
+
+  - type: textarea
+    id: standards
+    attributes:
+      label: Standards touched
+      description: Cite the regulatory / industry standards this change implements or affects
+      placeholder: "NIST SSDF PW.4, HIPAA §164.312(b), IEC 62304 §5.5"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: preflight-confirmation
+    attributes:
+      label: Require preflight confirmation?
+      description: Should the agent list its planned file changes and wait for a human comment before editing?
+      options:
+        - "false"
+        - "true"
+      default: 0
+    validations:
+      required: true
+
+  - type: textarea
+    id: rollback
+    attributes:
+      label: Rollback plan
+      description: How to revert if this lands and breaks something
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: agent-ready
+    attributes:
+      label: Agent readiness checklist
+      description: Confirm before assigning to an agent
+      options:
+        - label: "Task is scoped to a single reviewable change (< 400 diff lines)"
+          required: true
+        - label: "Acceptance criteria are testable"
+          required: true
+        - label: "No clinical judgment required beyond what's written here"
+          required: true
+        - label: "Files-to-touch list is explicit"
+          required: true
+        - label: "Task file exists under copilot-tasks/"
+          required: true

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/specification/main/schema/mcp-config.schema.json",
+  "mcpServers": {
+    "github": {
+      "type": "local",
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "ghcr.io/github/github-mcp-server"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GH_TOKEN}"
+      },
+      "description": "GitHub API access for issue/PR/repo operations. Read-only unless otherwise granted by task.",
+      "allowed-tools": [
+        "get_issue",
+        "get_pull_request",
+        "list_pull_request_files",
+        "get_file_contents",
+        "search_code",
+        "search_issues",
+        "list_commits",
+        "get_commit"
+      ]
+    },
+    "fhir-validator": {
+      "type": "local",
+      "command": "fhir-validator",
+      "args": ["-mcp"],
+      "description": "HAPI FHIR validator for FHIR R4/R5 resource validation during test authoring.",
+      "allowed-tools": ["validate_resource", "list_ig_packages"]
+    },
+    "ruralpeds-docs": {
+      "type": "url",
+      "url": "https://docs.ruralpeds.internal/mcp",
+      "description": "Org-internal docs MCP: standards maps, DHF templates, coding guidelines. Read-only.",
+      "allowed-tools": ["search_docs", "fetch_standards_map"]
+    }
+  },
+  "notes": [
+    "This file is the template for agent MCP config. Copy into repos that need the github/fhir-validator/docs MCPs.",
+    "The Copilot coding agent reads .github/mcp-config.json if present in the repo it's assigned to.",
+    "Claude Code reads .mcp.json at the repo root by convention; users should symlink or duplicate as needed.",
+    "Never include MCP servers that can exfiltrate PHI or write to external systems without explicit task authorization."
+  ]
+}
