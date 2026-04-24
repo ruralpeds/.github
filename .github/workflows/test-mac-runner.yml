@@ -1,0 +1,14 @@
+name: Test Mac Runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: [self-hosted, mac-studio]
+    timeout-minutes: 5
+    steps:
+      - run: echo "Mac runner works!"
+      - run: gh --version
+      - run: |
+          gh repo list ruralpeds --json name --limit 5 --jq '.[].name'
