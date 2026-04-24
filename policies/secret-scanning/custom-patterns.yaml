@@ -1,121 +1,53 @@
-# GitHub Secret Scanning — Custom Pattern Definitions
+# policies/secret-scanning/custom-patterns.yaml
 #
-# These patterns are organization-wide custom detectors for secret types that
-# GitHub's built-in scanners do not cover. Each pattern must be registered via
-# the GitHub API or UI by someone with org-owner permissions and access to
-# GitHub Advanced Security.
+# Custom secret-scanning patterns for the ruralpeds GitHub organization.
 #
-# Regulatory drivers:
-#   - NIST SSDF PO.5.1 — implement supporting toolchains (secret detection)
-#   - HIPAA §164.312(a)(2)(i) — unique user identification (prevent shared credentials)
-#   - OpenSSF Scorecard: Token-Permissions
+# These patterns supplement GitHub's built-in secret-scanning detectors with
+# credential types specific to the ruralpeds toolchain.
 #
-# How to apply these patterns:
-#   1. Via UI: Organization Settings → Code Security & Analysis → Custom patterns
-#      (requires GitHub Advanced Security and org-owner role).
-#   2. Via API: POST /repos/{org}/{repo}/secret-scanning/custom-patterns
-#      (example payloads documented below).
-#   3. Apply org-wide: configure in the organization settings, not per-repo.
+# How to apply:
+#   GitHub's Custom Patterns API requires GitHub Advanced Security.
+#   Apply each pattern via:
+#     POST /orgs/ruralpeds/secret-scanning/custom-patterns
+#   or via Organization Settings → Code security and analysis →
+#   Secret scanning → Custom patterns → "New pattern".
 #
-# References:
-#   - GitHub docs: https://docs.github.com/en/code-security/secret-scanning/managing-custom-patterns-for-secret-scanning
-#   - API endpoint: https://docs.github.com/en/rest/secret-scanning/custom-patterns
+# API payload example (Tailscale):
+#   {
+#     "name": "Tailscale auth key",
+#     "secret_type": "tailscale_auth_key",
+#     "regex": "tskey-auth-[A-Za-z0-9]{30,}",
+#     "push_protection_enabled": true
+#   }
+#
+# Regulatory note:
+#   Preventing committed credentials supports:
+#     - HIPAA §164.312(a)(2)(i) — unique user identification
+#     - NIST SSDF PO.5.1 — implement supporting toolchains
+#     - OpenSSF Scorecard: Token-Permissions
+#
+# Last updated: 2026-04-24
+# Owner: security@ruralpeds (on-call: see docs/security/secret-scanning.md)
 
 patterns:
   - name: "Tailscale auth key"
-    description: "Tailscale authentication token (tskey-auth-XXXXXXX...)"
-    pattern: 'tskey-auth-[A-Za-z0-9]{30,}'
+    # Matches Tailscale authentication keys used for device enrollment.
+    # These keys grant access to the WireGuard overlay network and, if leaked,
+    # allow unauthorized devices to join the VPN.
+    regex: 'tskey-auth-[A-Za-z0-9]{30,}'
     push_protection: true
-    severity: "critical"
-    comment: |
-      Tailscale auth keys grant full access to the Tailscale network. Exposure
-      allows an attacker to join the private network and access all connected
-      devices without further authentication.
 
   - name: "Anthropic API key"
-    description: "Anthropic API key (sk-ant-api03-XXXXXXX or sk-ant-admin01-XXXXXXX)"
-    pattern: 'sk-ant-(api03|admin01)-[A-Za-z0-9_-]{40,}'
+    # Matches Anthropic Claude API keys (both standard and admin variants).
+    # A leaked key allows unbounded LLM usage billed to the org.
+    regex: 'sk-ant-(api03|admin01)-[A-Za-z0-9_-]{40,}'
     push_protection: true
-    severity: "critical"
-    comment: |
-      Anthropic API keys authenticate requests to the Claude API. Exposure allows
-      an attacker to exhaust quota, access user data, or invoke the API at the
-      holder's expense. admin01 keys have elevated permissions and can manage
-      org billing and user access.
 
   - name: "WordPress application password"
-    description: "WordPress app password (16-character groups in 4-group format)"
-    pattern: '[A-Za-z0-9]{4}(?:\s[A-Za-z0-9]{4}){5}'
-    push_protection: false
-    severity: "high"
-    comment: |
-      WordPress app passwords authenticate programmatic access (e.g., REST API,
-      CI/CD). Unlike regular passwords, they are scoped to specific capabilities
-      and cannot change account settings. Marked `push_protection: false` due to
-      high false-positive rate (matches generic 4-word sequences); instead,
-      reviewers must manually triage alerts. Triage: if found with wp-rest-related
-      context (curl, Postman, CI script), investigate intent. If in tests/fixtures,
-      document the false positive in .gitleaksignore.
-
-# ── API Examples ────────────────────────────────────────────────────────────
-#
-# To register these patterns via the GitHub REST API, send one PUT request per
-# pattern to:
-#   PUT /orgs/{org}/secret-scanning/custom-patterns
-#
-# Example for Tailscale key:
-#
-#   curl -X POST \
-#     -H "Authorization: token <org-admin-token>" \
-#     -H "Accept: application/vnd.github.v3+json" \
-#     https://api.github.com/orgs/ruralpeds/secret-scanning/custom-patterns \
-#     -d '{
-#       "name": "Tailscale auth key",
-#       "description": "Tailscale authentication token (tskey-auth-XXXXXXX...)",
-#       "pattern": "tskey-auth-[A-Za-z0-9]{30,}",
-#       "push_protection_enabled": true
-#     }'
-#
-# The endpoint returns 201 Created with the registered pattern object, including
-# a `pattern_id` for future updates.
-#
-# To list all registered patterns for the org:
-#
-#   curl -X GET \
-#     -H "Authorization: token <org-admin-token>" \
-#     -H "Accept: application/vnd.github.v3+json" \
-#     https://api.github.com/orgs/ruralpeds/secret-scanning/custom-patterns
-#
-# References:
-#   - API docs: https://docs.github.com/en/rest/secret-scanning/custom-patterns
-
-# ── Triage & Remediation Workflow ────────────────────────────────────────────
-#
-# When a secret is detected (either by org-level secret scanning or the
-# reusable-secret-scan-report.yml workflow), the following triage sequence applies:
-#
-# 1. **Assess urgency:**
-#    - Critical: API key, auth token, signing key, or credentials for prod/live service.
-#    - High: Credentials for non-prod, staging, or testing.
-#    - Medium: Credentials already rotated (detected in old history) but not in use.
-#
-# 2. **Revoke immediately** (if critical or actively in use):
-#    - Tailscale: remove device from network, rotate key (https://tailscale.com/kb/1099/api).
-#    - Anthropic: revoke key at https://console.anthropic.com, audit recent API calls.
-#    - WordPress: revoke app password in Settings → Apps & Passwords.
-#
-# 3. **Rotate the secret** in the destination system (don't just remove old one;
-#    generate a new one and update all references).
-#
-# 4. **Close the GitHub alert** with a comment:
-#    "Credential was [revoked/rotated on DATE] and replaced with new ID [ID].
-#     No further action required. Reason: [accidentally committed | exposed in PR |
-#     historical exposure]."
-#
-# 5. **Document the incident** if:
-#    - It was exposed to an external party (open an issue in dhf/ with incident
-#      classification).
-#    - It was a production credential (required HIPAA breach-notification review).
-#    - It was in code long enough that someone unauthorized could have used it.
-#
-# See also: docs/security/secret-scanning.md (Triage Process section).
+    # Matches the 24-character space-separated format generated by WordPress
+    # for application passwords (introduced in WP 5.6).
+    # Push protection is intentionally disabled because the pattern overlaps
+    # with other base-32 encoded data — too many false positives for a hard
+    # block. Alerts are still raised for human review.
+    regex: '[A-Za-z0-9]{4}(?:\s[A-Za-z0-9]{4}){5}'
+    push_protection: false   # too many false positives for hard block
