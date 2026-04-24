@@ -14,6 +14,10 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 | ci-julia-react.yml | Julia + React + Playwright: full-stack CI for Julia projects | `uses: timothyhartzog/.github/.github/workflows/ci-julia-react.yml@main` |
 | e2e-playwright.yml | Playwright E2E: multi-browser, sharding, traces, screenshots | `uses: timothyhartzog/.github/.github/workflows/e2e-playwright.yml@main` |
 | audit-log.yml | Build audit ledger: dates, refs, deps, full provenance | `uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main` |
+| security-scan.yml | SAST (Semgrep), secret detection, SBOM, supply chain | `uses: timothyhartzog/.github/.github/workflows/security-scan.yml@main` |
+| code-quality.yml | CodeQL, dependency review, license compliance, repo hygiene | `uses: timothyhartzog/.github/.github/workflows/code-quality.yml@main` |
+| release.yml | Conventional commit changelog, semver bumps, GitHub releases | `uses: timothyhartzog/.github/.github/workflows/release.yml@main` |
+| container.yml | Docker build, Hadolint, Trivy scan, GHCR push, attestation | `uses: timothyhartzog/.github/.github/workflows/container.yml@main` |
 | review-stamp.yml | Record a manual code review in the audit ledger | `uses: timothyhartzog/.github/.github/workflows/review-stamp.yml@main` |
 | ci-node.yml | Node.js CI: lint, typecheck, test, build, security audit | `uses: ruralpeds/.github/.github/workflows/ci-node.yml@main` |
 | ci-python.yml | Python CI: ruff, mypy, bandit, pytest with coverage | `uses: ruralpeds/.github/.github/workflows/ci-python.yml@main` |
@@ -144,6 +148,39 @@ Check if your organization's repos are compliant:
 - Configurable retries for flaky tests
 - HTML report generation and merging across shards
 
+### Security Scanning (security-scan.yml)
+- **SAST**: Semgrep with OWASP Top 10 + CWE Top 25 rulesets, SARIF upload to GitHub Security
+- **Secret detection**: TruffleHog scans full git history for verified credentials/keys/tokens
+- **Sensitive file detection**: Flags `.env`, `*.pem`, `*.key`, credentials files
+- **SBOM generation**: Syft produces SPDX + CycloneDX bills of materials for every build
+- **Vulnerability scanning**: Grype scans SBOM for known CVEs, fails on Critical severity
+- **Supply chain checks**: Flags unpinned GitHub Actions, missing lockfiles, `.gitignore` gaps
+
+### Code Quality & Compliance (code-quality.yml)
+- **CodeQL**: Deep semantic analysis across JS/TS, Python, Go, Java, C/C++, Ruby — auto-detects languages
+- **Dependency review**: Blocks PRs introducing high-severity vulnerabilities or forbidden licenses
+- **License compliance**: Scans Node, Python, and Rust dependencies against configurable allow/deny lists
+- **Repository hygiene**: Checks for README, LICENSE, SECURITY.md, CODEOWNERS, CI workflows
+- **Code inspection**: Flags large files, debug statements in production code, tech debt markers
+
+### Release Automation (release.yml)
+- Parses conventional commits (`feat:`, `fix:`, `feat!:`) to determine semver bump
+- Auto-generates categorized changelog (breaking changes, features, fixes, contributors)
+- Updates version in `package.json`, `Cargo.toml`, `pyproject.toml`, `VERSION`
+- Creates annotated git tag and GitHub release with changelog body
+- Supports manual override (major/minor/patch), draft releases, prereleases
+- Outputs version, tag, and release URL for downstream jobs
+
+### Container (container.yml)
+- **Hadolint**: Lints Dockerfile for best practices before building
+- **Multi-platform builds**: Supports `linux/amd64`, `linux/arm64`, etc. via QEMU + Buildx
+- **Smart tagging**: Semver tags (`v1`, `v1.2`, `v1.2.3`), branch tags, SHA tags, `latest` on main
+- **GHCR push**: Builds and pushes to `ghcr.io/<org>/<repo>` with GHA layer caching
+- **Build attestation**: SLSA provenance attestation pushed alongside image
+- **Trivy scan**: Scans built image for CVEs, uploads SARIF to GitHub Security tab, fails on critical/high
+- **OCI labels**: Embeds source URL, revision, and build timestamp in image metadata
+
+### Audit Logging
 ### Playwright Audit (`playwright-audit.yml`)
 - Runs weekly — navigates GitHub Actions pages for every org repo
 - Captures screenshots of each repo's CI/Actions status
