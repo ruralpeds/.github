@@ -90,3 +90,100 @@ jobs:
               body: body,
               labels: ['compliance', 'automated'],
             });
+check-gap-analysis:
+    runs-on: ubuntu-latest
+    name: Check Gap Analysis Adoption
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check all org repos for gap analysis
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: python
+        run: |
+          import subprocess
+          import json
+          from pathlib import Path
+          
+          # Fetch all repos in the org
+          result = subprocess.run(
+              ["gh", "repo", "list", "ruralpeds", "--json", "name,isArchived", "-L", "200"],
+              capture_output=True,
+              text=True
+          )
+          
+          if result.returncode != 0:
+              print(f"❌ Failed to fetch repos: {result.stderr}")
+              exit(1)
+          
+          repos = json.loads(result.stdout)
+          
+          missing_gap_analysis = []
+          has_gap_analysis = []
+          
+          print(f"Checking {len(repos)} repos...")
+          print("")
+          
+          for repo in repos:
+              repo_name = repo["name"]
+              is_archived = repo["isArchived"]
+              
+              if is_archived:
+                  continue
+              
+              check = subprocess.run(
+                  ["gh", "api", f"repos/ruralpeds/{repo_name}/contents/.gap-analysis/GAP_ANALYSIS.md"],
+                  capture_output=True,
+                  text=True
+              )
+              
+              if check.returncode == 0:
+                  has_gap_analysis.append(repo_name)
+              else:
+                  commits = subprocess.run(
+                      ["gh", "api", f"repos/ruralpeds/{repo_name}/commits", 
+                       "-H", "Accept: application/vnd.github.v3+json",
+                       "--paginate", "-F", "since=2026-01-24"],
+                      capture_output=True,
+                      text=True
+                  )
+                  
+                  if commits.returncode == 0:
+                      commit_list = json.loads(commits.stdout)
+                      if commit_list:
+                          missing_gap_analysis.append(repo_name)
+          
+          report = {
+              "scanned_at": subprocess.check_output(["date", "-Iseconds"]).decode().strip(),
+              "total_active_repos": len([r for r in repos if not r["isArchived"]]),
+              "with_gap_analysis": len(has_gap_analysis),
+              "missing_gap_analysis": len(missing_gap_analysis),
+              "compliance_rate": round(100 * len(has_gap_analysis) / max(1, len(has_gap_analysis) + len(missing_gap_analysis))),
+              "missing_repos": missing_gap_analysis,
+          }
+          
+          report_file = Path("compliance-report")
+          report_file.mkdir(exist_ok=True)
+          
+          report_json = report_file / "gap-analysis-compliance.json"
+          report_json.write_text(json.dumps(report, indent=2))
+          
+          print("=" * 60)
+          print("GAP ANALYSIS COMPLIANCE REPORT")
+          print("=" * 60)
+          print(f"Total active repos: {report['total_active_repos']}")
+          print(f"With gap analysis: {report['with_gap_analysis']}")
+          print(f"Missing gap analysis: {report['missing_gap_analysis']}")
+          print(f"Compliance rate: {report['compliance_rate']}%")
+          print("")
+          
+          if missing_gap_analysis:
+              print("❌ REPOS MISSING GAP ANALYSIS:")
+              for repo in sorted(missing_gap_analysis):
+                  print(f"  - {repo}")
+          else:
+              print("✅ All active repos have gap analysis!")
+          
+          print("=" * 60)
