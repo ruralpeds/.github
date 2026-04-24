@@ -6,6 +6,15 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 
 | Workflow | Purpose | Call with |
 |----------|---------|-----------|
+| ci-node.yml | Node.js CI: lint, typecheck, test, build, security audit | `uses: timothyhartzog/.github/.github/workflows/ci-node.yml@main` |
+| ci-python.yml | Python CI: ruff, mypy, bandit, pytest with coverage | `uses: timothyhartzog/.github/.github/workflows/ci-python.yml@main` |
+| ci-rust.yml | Rust CI: fmt, clippy, cargo test/audit, tarpaulin coverage | `uses: timothyhartzog/.github/.github/workflows/ci-rust.yml@main` |
+| ci-go.yml | Go CI: golangci-lint, vet, gosec, race-enabled tests | `uses: timothyhartzog/.github/.github/workflows/ci-go.yml@main` |
+| ci-julia.yml | Julia CI: JuliaFormatter, Pkg.test with coverage | `uses: timothyhartzog/.github/.github/workflows/ci-julia.yml@main` |
+| ci-julia-react.yml | Julia + React + Playwright: full-stack CI for Julia projects | `uses: timothyhartzog/.github/.github/workflows/ci-julia-react.yml@main` |
+| e2e-playwright.yml | Playwright E2E: multi-browser, sharding, traces, screenshots | `uses: timothyhartzog/.github/.github/workflows/e2e-playwright.yml@main` |
+| audit-log.yml | Build audit ledger: dates, refs, deps, full provenance | `uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main` |
+| review-stamp.yml | Record a manual code review in the audit ledger | `uses: timothyhartzog/.github/.github/workflows/review-stamp.yml@main` |
 | ci-node.yml | Node.js CI: lint, typecheck, test, build, security audit | `uses: ruralpeds/.github/.github/workflows/ci-node.yml@main` |
 | ci-python.yml | Python CI: ruff, mypy, bandit, pytest with coverage | `uses: ruralpeds/.github/.github/workflows/ci-python.yml@main` |
 | ci-rust.yml | Rust CI: fmt, clippy, cargo test/audit, tarpaulin coverage | `uses: ruralpeds/.github/.github/workflows/ci-rust.yml@main` |
@@ -206,6 +215,27 @@ jobs:
     permissions:
       contents: write
 ```
+
+### Julia + React project (standard)
+```yaml
+# .github/workflows/ci.yml — uses the combined Julia+React+Playwright workflow
+name: CI
+on: [push, pull_request]
+jobs:
+  ci:
+    uses: timothyhartzog/.github/.github/workflows/ci-julia-react.yml@main
+    with:
+      julia-version: "1"
+      julia-working-directory: "backend"
+      frontend-working-directory: "frontend"
+      e2e-working-directory: "e2e"
+      e2e-start-command: "bash scripts/dev.sh"
+      e2e-browsers: '["chromium", "firefox", "webkit"]'
+    permissions:
+      contents: write
+```
+
+See [`docs/JULIA_REACT_PROJECT_STANDARD.md`](docs/JULIA_REACT_PROJECT_STANDARD.md) for the complete Julia project standard including Observable JS charts, error handling, and testing requirements.
 
 ### Python project
 ```yaml

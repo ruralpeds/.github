@@ -1,0 +1,134 @@
+name: "CI — Julia + React + Playwright"
+# Standard CI pipeline for Julia back-end + React front-end + Playwright E2E projects.
+# Derived from docs/JULIA_REACT_PROJECT_STANDARD.md
+#
+# Callers: uses: timothyhartzog/.github/.github/workflows/ci-julia-react.yml@main
+#
+# Orchestrates: Julia CI (format, test, coverage) + Node CI (lint, typecheck, test)
+#               + Playwright E2E (multi-browser) + Audit logging.
+
+on:
+  workflow_call:
+    inputs:
+      julia-version:
+        description: "Julia version (default: 1 = latest stable)"
+        type: string
+        default: "1"
+      julia-versions:
+        description: "JSON array of Julia versions for matrix testing, e.g. '[\"1.10\", \"1\"]'. Overrides julia-version."
+        type: string
+        default: ""
+      julia-working-directory:
+        description: "Directory containing Julia Project.toml (default: backend)"
+        type: string
+        default: "backend"
+      run-julia-format-check:
+        description: "Run JuliaFormatter check on back-end"
+        type: boolean
+        default: true
+      julia-test-timeout:
+        description: "Julia test timeout in minutes"
+        type: number
+        default: 30
+      node-version:
+        description: "Node.js version for React front-end"
+        type: string
+        default: "20"
+      node-versions:
+        description: "JSON array of Node versions for matrix, e.g. '[\"18\", \"20\"]'. Overrides node-version."
+        type: string
+        default: ""
+      frontend-working-directory:
+        description: "Directory containing React package.json (default: frontend)"
+        type: string
+        default: "frontend"
+      package-manager:
+        description: "Node package manager (npm, yarn, pnpm)"
+        type: string
+        default: "npm"
+      run-e2e:
+        description: "Run Playwright E2E tests"
+        type: boolean
+        default: true
+      e2e-working-directory:
+        description: "Directory containing Playwright config (default: e2e)"
+        type: string
+        default: "e2e"
+      e2e-start-command:
+        description: "Command to start Julia back-end + React front-end for E2E testing"
+        type: string
+        default: "bash scripts/dev.sh"
+      e2e-browsers:
+        description: "JSON array of Playwright browsers"
+        type: string
+        default: '["chromium", "firefox", "webkit"]'
+      e2e-shards:
+        description: "Number of Playwright parallel shards"
+        type: number
+        default: 2
+      e2e-retries:
+        description: "Number of Playwright retries for flaky tests"
+        type: number
+        default: 2
+      e2e-test-timeout:
+        description: "Playwright test timeout in minutes"
+        type: number
+        default: 30
+      run-audit-log:
+        description: "Run audit log workflow"
+        type: boolean
+        default: true
+      upload-coverage:
+        description: "Upload coverage artifacts for both Julia and React"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ── 1. Julia Back-End CI ─────────────────────────────────────────────────────
+  julia-ci:
+    name: Julia CI
+    uses: timothyhartzog/.github/.github/workflows/ci-julia.yml@main
+    with:
+      julia-version: ${{ inputs.julia-version }}
+      julia-versions: ${{ inputs.julia-versions }}
+      working-directory: ${{ inputs.julia-working-directory }}
+      run-format-check: ${{ inputs.run-julia-format-check }}
+      test-timeout: ${{ inputs.julia-test-timeout }}
+
+  # ── 2. React Front-End CI ────────────────────────────────────────────────────
+  frontend-ci:
+    name: React CI
+    uses: timothyhartzog/.github/.github/workflows/ci-node.yml@main
+    with:
+      node-version: ${{ inputs.node-version }}
+      working-directory: ${{ inputs.frontend-working-directory }}
+      package-manager: ${{ inputs.package-manager }}
+
+  # ── 3. Playwright E2E (runs after both back-end and front-end pass) ──────────
+  e2e:
+    name: Playwright E2E
+    needs: [julia-ci, frontend-ci]
+    if: ${{ inputs.run-e2e }}
+    uses: timothyhartzog/.github/.github/workflows/e2e-playwright.yml@main
+    with:
+      working-directory: ${{ inputs.e2e-working-directory }}
+      start-command: ${{ inputs.e2e-start-command }}
+      browsers: ${{ inputs.e2e-browsers }}
+      shards: ${{ inputs.e2e-shards }}
+      retries: ${{ inputs.e2e-retries }}
+      test-timeout: ${{ inputs.e2e-test-timeout }}
+      upload-report: true
+      upload-traces: true
+      node-version: ${{ inputs.node-version }}
+      package-manager: ${{ inputs.package-manager }}
+
+  # ── 4. Audit Log ────────────────────────────────────────────────────────────
+  audit:
+    name: Audit Log
+    if: ${{ inputs.run-audit-log }}
+    uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main
+    permissions:
+      contents: write
