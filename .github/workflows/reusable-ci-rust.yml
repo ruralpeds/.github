@@ -2,7 +2,7 @@ name: "Reusable CI — Rust"
 # Reusable Rust CI workflow for healthcare enterprise repositories.
 # Derived from HEALTHCARE_ENTERPRISE_REPO_BLUEPRINT.md controls.
 #
-# Callers: uses: timothyhartzog/.github/.github/workflows/reusable-ci-rust.yml@main
+# Callers: uses: ruralpeds/.github/.github/workflows/reusable-ci-rust.yml@main
 #
 # Covers: fmt, clippy, stable test matrix, optional nightly, caching,
 #         artifact upload for test reports.

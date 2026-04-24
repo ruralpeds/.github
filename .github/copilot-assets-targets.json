@@ -1,0 +1,35 @@
+{
+  "_comment": "Declarative list of repos that receive Copilot-asset sync. Keep this in step with the matrix.target list in .github/workflows/sync-copilot-assets.yml. Humans and Copilot both read this when asked 'which repos get the org-wide docs automation?'",
+  "repos": [
+    {
+      "slug": "timothyhartzog/Peds",
+      "visibility": "private",
+      "installed": "2026-04-22",
+      "notes": "Cargo workspace + Node apps + knowledge module. 17 tracked projects. 06:00 UTC."
+    },
+    {
+      "slug": "timothyhartzog/rust-sci-core",
+      "visibility": "private",
+      "installed": "2026-04-22",
+      "notes": "Cargo workspace. 21 tracked projects (root + 18 crates + 2 validation ref impls). 07:00 UTC (shifted to avoid mutation.yml collision)."
+    },
+    {
+      "slug": "timothyhartzog/Patient-simulation-julia",
+      "visibility": "private",
+      "installed": "2026-04-22",
+      "notes": "Julia workspace. 9 tracked projects (root + 8 packages). 06:00 UTC."
+    },
+    {
+      "slug": "timothyhartzog/modeling",
+      "visibility": "private",
+      "installed": "2026-04-22",
+      "notes": "Textbook-generation pipeline. Explicit registry (7 content sections). 06:00 UTC."
+    },
+    {
+      "slug": "timothyhartzog/Claude-artifacts",
+      "visibility": "private",
+      "installed": "pending",
+      "notes": "Canonical artifact/content repo. Gets Copilot sync but not the full workflow (yet)."
+    }
+  ]
+}

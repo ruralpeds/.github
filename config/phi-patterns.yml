@@ -1,0 +1,105 @@
+# .github/phi-patterns.yml
+# PHI / PII pattern pack for US clinical software.
+# Tune per repo. Findings at or above --fail-on severity block the workflow.
+#
+# Severity guidance:
+#   critical — direct identifiers that, on leak, cause immediate HIPAA breach
+#   high     — combinations or quasi-identifiers that reliably re-identify
+#   medium   — plausible but common-in-code (needs review)
+#   low      — pattern-based hints, often false positives
+
+patterns:
+  # ── Critical: unambiguous PHI ────────────────────────────────
+  - id: SSN-STRICT
+    name: US Social Security Number
+    severity: critical
+    regex: '(?<!\d)(?!000|666|9\d{2})\d{3}-(?!00)\d{2}-(?!0000)\d{4}(?!\d)'
+
+  - id: MRN-LABELED
+    name: Labeled medical record number
+    severity: critical
+    regex: '(?i)(MRN|medical[_\s-]*record[_\s-]*number)\s*[:=]\s*[A-Z0-9]{5,12}'
+
+  - id: NPI
+    name: National Provider Identifier
+    severity: high
+    regex: '(?<!\d)\d{10}(?!\d)'           # 10-digit — confirm with Luhn-mod-10 in practice
+    allow_in_paths:
+      - test/
+      - tests/
+      - fixtures/
+
+  - id: DEA
+    name: DEA registration number
+    severity: critical
+    regex: '\b[A-Z]{2}\d{7}\b'
+
+  # ── High: patient demographics ───────────────────────────────
+  - id: DOB-SLASH
+    name: Possible date of birth (MM/DD/YYYY)
+    severity: medium
+    regex: '(?<!\d)(0[1-9]|1[0-2])/(0[1-9]|[12]\d|3[01])/(19|20)\d{2}(?!\d)'
+
+  - id: PHONE-US
+    name: US phone number
+    severity: medium
+    regex: '(?<!\d)(\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}(?!\d)'
+    allow_in_paths:
+      - test/
+      - tests/
+      - docs/
+
+  - id: EMAIL-PATIENT
+    name: Email address (treat as PHI when with clinical data)
+    severity: low
+    regex: '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
+    allow_in_paths:
+      - README.md
+      - CONTRIBUTING.md
+      - docs/
+      - CITATIONS.md
+      - package.json
+      - pyproject.toml
+      - Project.toml
+
+  - id: CREDIT-CARD
+    name: Credit card number (Luhn candidates)
+    severity: critical
+    regex: '(?<!\d)(?:4\d{12}(?:\d{3})?|5[1-5]\d{14}|3[47]\d{13}|6(?:011|5\d{2})\d{12})(?!\d)'
+
+  - id: US-ADDRESS
+    name: US street address
+    severity: low
+    regex: '\b\d{1,5}\s+[A-Z][a-z]+\s+(Street|St|Ave|Avenue|Road|Rd|Blvd|Boulevard|Drive|Dr|Lane|Ln|Court|Ct|Way)\b'
+
+  # ── Secrets / credentials (complements trufflehog) ───────────
+  - id: PRIVATE-KEY
+    name: PEM private key block
+    severity: critical
+    regex: '-----BEGIN (RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY-----'
+
+  - id: AWS-ACCESS-KEY
+    name: AWS access key ID
+    severity: critical
+    regex: '\b(AKIA|ASIA)[0-9A-Z]{16}\b'
+
+  - id: ANTHROPIC-API-KEY
+    name: Anthropic API key
+    severity: critical
+    regex: 'sk-ant-(api|admin)[0-9a-zA-Z_-]{80,}'
+
+  - id: OPENAI-API-KEY
+    name: OpenAI API key
+    severity: critical
+    regex: '\bsk-(proj-)?[A-Za-z0-9]{40,}\b'
+
+  - id: GITHUB-TOKEN
+    name: GitHub token
+    severity: critical
+    regex: '\b(ghp_|gho_|ghu_|ghs_|ghr_)[A-Za-z0-9]{36,}\b'
+
+  # ── Synthetic/de-identified markers — informational only ─────
+  - id: SYNTHETIC-MARK
+    name: Marked as synthetic test data
+    severity: low
+    regex: '(?i)#\s*synthetic[-_\s]*(test|phi|data)'

@@ -1,0 +1,210 @@
+name: "Sync Rulesets (Governance as Code)"
+# Applies ruleset JSON files in policies/rulesets/ to every repository in the
+# organization via the GitHub REST API.
+#
+# Regulatory drivers:
+#   - HIPAA §164.312(a)(1) — Access control (technical safeguards)
+#   - HIPAA §164.312(c)(1) — Integrity (technical safeguards)
+#   - 21 CFR Part 11 §11.10(a) — Validation of systems to ensure accuracy
+#   - 21 CFR Part 11 §11.70 — Signature/record linking
+#   - NIST SSDF PS.1.1 — Protect all forms of code from unauthorized access
+#
+# How it works:
+#   - Reads every *.json file in policies/rulesets/
+#   - For each ruleset, computes the list of target repos (via the filter
+#     in the ruleset conditions, or the full org if no filter)
+#   - Calls PUT /repos/{owner}/{repo}/rulesets/{id} (or POST if new)
+#   - Records the action in the audit ledger of this repo
+#
+# Required secret:
+#   - TH_BOT_APP_ID (vars) and TH_BOT_PRIVATE_KEY (secret) for the
+#     timothyhartzog-bot GitHub App (after P0.1 migration).
+#   - Falls back to REPO_SETUP_TOKEN for transition period.
+#
+# Runs:
+#   - On push to main that modifies policies/rulesets/**
+#   - On schedule (Mon 5:00 UTC — before repo-scanner at 6:00 UTC)
+#   - On workflow_dispatch
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "policies/rulesets/**"
+      - ".github/workflows/sync-rulesets.yml"
+  schedule:
+    - cron: "0 5 * * 1"  # Mon 5:00 UTC
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Dry run (don't apply changes)"
+        type: boolean
+        default: false
+      target-repos:
+        description: "Comma-separated list of repos to sync (empty = all)"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    name: Apply rulesets to org repos
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write   # to commit ledger entry
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # ── 1. Generate short-lived App token (preferred path) ──────────────────
+      - name: Generate GitHub App token
+        id: app-token
+        if: ${{ vars.TH_BOT_APP_ID != '' }}
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.TH_BOT_APP_ID }}
+          private-key: ${{ secrets.TH_BOT_PRIVATE_KEY }}
+          owner: timothyhartzog
+
+      # ── 2. Choose token (App token preferred, fallback to PAT) ─────────────
+      - name: Resolve token
+        id: token
+        run: |
+          if [ -n "${{ steps.app-token.outputs.token }}" ]; then
+            echo "source=app" >> "$GITHUB_OUTPUT"
+            echo "::notice::Using GitHub App installation token (preferred)."
+          elif [ -n "${{ secrets.REPO_SETUP_TOKEN }}" ]; then
+            echo "source=pat" >> "$GITHUB_OUTPUT"
+            echo "::warning::Falling back to REPO_SETUP_TOKEN (PAT). Migrate to GitHub App per P0.1."
+          else
+            echo "::error::No token available. Configure TH_BOT_APP_ID+TH_BOT_PRIVATE_KEY or REPO_SETUP_TOKEN."
+            exit 1
+          fi
+        env:
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Export token to env
+        run: |
+          if [ -n "${{ steps.app-token.outputs.token }}" ]; then
+            echo "GH_TOKEN=${{ steps.app-token.outputs.token }}" >> "$GITHUB_ENV"
+          else
+            echo "GH_TOKEN=${{ secrets.REPO_SETUP_TOKEN }}" >> "$GITHUB_ENV"
+          fi
+
+      # ── 3. Enumerate target repositories ────────────────────────────────────
+      - name: List org repositories
+        id: repos
+        run: |
+          set -euo pipefail
+          if [ -n "${{ inputs.target-repos }}" ]; then
+            echo "${{ inputs.target-repos }}" | tr ',' '\n' | tr -d ' ' > repos.txt
+          else
+            gh api --paginate "/orgs/timothyhartzog/repos?per_page=100" \
+              --jq '.[] | select(.archived == false and .fork == false) | .name' > repos.txt \
+            || gh api --paginate "/users/timothyhartzog/repos?per_page=100" \
+              --jq '.[] | select(.archived == false and .fork == false) | .name' > repos.txt
+          fi
+          echo "Target repo count: $(wc -l < repos.txt)"
+          cat repos.txt
+
+      # ── 4. Apply each ruleset to each repo ──────────────────────────────────
+      - name: Apply rulesets
+        id: apply
+        run: |
+          set -euo pipefail
+          DRY_RUN="${{ inputs.dry-run || 'false' }}"
+          mkdir -p sync-results
+          SUMMARY="sync-results/summary.md"
+          LEDGER="sync-results/ledger-entries.jsonl"
+
+          {
+            echo "# Ruleset Sync Summary"
+            echo ""
+            echo "| Repo | Ruleset | Action | Status |"
+            echo "|---|---|---|---|"
+          } > "$SUMMARY"
+
+          for ruleset_file in policies/rulesets/*.json; do
+            [ -f "$ruleset_file" ] || continue
+            RULESET_NAME=$(jq -r '.name' "$ruleset_file")
+            echo "═══════════════════════════════════════════════════════════"
+            echo "Processing ruleset: $RULESET_NAME ($ruleset_file)"
+            echo "═══════════════════════════════════════════════════════════"
+
+            while read -r repo; do
+              [ -n "$repo" ] || continue
+              echo "→ $repo"
+
+              # Check if the ruleset already exists by name
+              EXISTING=$(gh api "/repos/timothyhartzog/$repo/rulesets" --jq \
+                ".[] | select(.name == \"$RULESET_NAME\") | .id" 2>/dev/null || echo "")
+
+              if [ -n "$EXISTING" ]; then
+                ACTION="update"
+                METHOD="PUT"
+                ENDPOINT="/repos/timothyhartzog/$repo/rulesets/$EXISTING"
+              else
+                ACTION="create"
+                METHOD="POST"
+                ENDPOINT="/repos/timothyhartzog/$repo/rulesets"
+              fi
+
+              if [ "$DRY_RUN" = "true" ]; then
+                STATUS="DRY-RUN"
+                echo "  [DRY-RUN] would $ACTION via $METHOD $ENDPOINT"
+              else
+                RESPONSE=$(gh api --method "$METHOD" "$ENDPOINT" --input "$ruleset_file" 2>&1 || echo "API_ERROR:$?")
+                if echo "$RESPONSE" | grep -q '"name"'; then
+                  STATUS="ok"
+                  echo "  ✓ $ACTION successful"
+                else
+                  STATUS="error"
+                  echo "  ✗ $ACTION failed: $RESPONSE"
+                fi
+              fi
+
+              echo "| $repo | $RULESET_NAME | $ACTION | $STATUS |" >> "$SUMMARY"
+
+              # Audit ledger entry
+              jq -n \
+                --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+                --arg repo "$repo" \
+                --arg ruleset "$RULESET_NAME" \
+                --arg action "$ACTION" \
+                --arg status "$STATUS" \
+                --arg actor "${{ github.actor }}" \
+                --arg run_id "${{ github.run_id }}" \
+                '{timestamp:$ts, event:"ruleset_sync", repository:$repo, ruleset:$ruleset, action:$action, status:$status, actor:$actor, run_id:$run_id}' \
+                >> "$LEDGER"
+            done < repos.txt
+          done
+
+          cat "$SUMMARY" >> "$GITHUB_STEP_SUMMARY"
+
+      # ── 5. Upload results + commit ledger entries ──────────────────────────
+      - name: Upload sync results
+        if: always()
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+        with:
+          name: ruleset-sync-${{ github.run_id }}
+          path: sync-results/
+          retention-days: 365
+
+      - name: Append to governance ledger
+        if: ${{ always() && inputs.dry-run != 'true' }}
+        run: |
+          set -euo pipefail
+          mkdir -p audit-log
+          if [ -f sync-results/ledger-entries.jsonl ]; then
+            cat sync-results/ledger-entries.jsonl >> audit-log/governance-ledger.jsonl
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add audit-log/governance-ledger.jsonl
+            if ! git diff --cached --quiet; then
+              git commit -m "audit(governance): ruleset sync run ${{ github.run_id }} [skip ci]"
+              git push || echo "::warning::Could not push governance ledger update."
+            fi
+          fi

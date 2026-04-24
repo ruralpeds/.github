@@ -1,10 +1,10 @@
-# Using Reusable Workflows from `timothyhartzog/.github`
+# Using Reusable Workflows from `ruralpeds/.github`
 
 This document explains how downstream repositories adopt the healthcare enterprise
 standards defined in this repo by adding thin wrapper workflows.
 
 All heavy lifting (linting, testing, security scans, governance checks) lives
-here in `timothyhartzog/.github`. Each consuming repo only needs a few small
+here in `ruralpeds/.github`. Each consuming repo only needs a few small
 wrapper files.
 
 ---
@@ -46,7 +46,7 @@ permissions:
 
 jobs:
   ci:
-    uses: timothyhartzog/.github/.github/workflows/reusable-ci-rust.yml@main
+    uses: ruralpeds/.github/.github/workflows/reusable-ci-rust.yml@main
     with:
       toolchain: stable
       run-nightly: false       # set true to also run tests on nightly
@@ -72,7 +72,7 @@ permissions:
 
 jobs:
   ci:
-    uses: timothyhartzog/.github/.github/workflows/reusable-ci-julia.yml@main
+    uses: ruralpeds/.github/.github/workflows/reusable-ci-julia.yml@main
     with:
       julia-version: "1"
       # Uncomment to test across multiple versions:
@@ -132,7 +132,7 @@ permissions:
 
 jobs:
   security:
-    uses: timothyhartzog/.github/.github/workflows/reusable-security.yml@main
+    uses: ruralpeds/.github/.github/workflows/reusable-security.yml@main
     with:
       run-dependency-review: true
       dependency-review-fail-on-severity: high
@@ -163,7 +163,7 @@ permissions:
 
 jobs:
   docs:
-    uses: timothyhartzog/.github/.github/workflows/reusable-docs.yml@main
+    uses: ruralpeds/.github/.github/workflows/reusable-docs.yml@main
     with:
       docs-directory: docs
       run-markdown-lint: true
@@ -189,7 +189,7 @@ permissions:
 
 jobs:
   standards:
-    uses: timothyhartzog/.github/.github/workflows/reusable-repo-standards.yml@main
+    uses: ruralpeds/.github/.github/workflows/reusable-repo-standards.yml@main
     with:
       run-audit-events-check: true
       run-pinning-advisory: true

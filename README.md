@@ -15,9 +15,111 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 | e2e-playwright.yml | Playwright E2E: multi-browser, sharding, traces, screenshots | `uses: timothyhartzog/.github/.github/workflows/e2e-playwright.yml@main` |
 | audit-log.yml | Build audit ledger: dates, refs, deps, full provenance | `uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main` |
 | review-stamp.yml | Record a manual code review in the audit ledger | `uses: timothyhartzog/.github/.github/workflows/review-stamp.yml@main` |
+| ci-node.yml | Node.js CI: lint, typecheck, test, build, security audit | `uses: ruralpeds/.github/.github/workflows/ci-node.yml@main` |
+| ci-python.yml | Python CI: ruff, mypy, bandit, pytest with coverage | `uses: ruralpeds/.github/.github/workflows/ci-python.yml@main` |
+| ci-rust.yml | Rust CI: fmt, clippy, cargo test/audit, tarpaulin coverage | `uses: ruralpeds/.github/.github/workflows/ci-rust.yml@main` |
+| ci-go.yml | Go CI: golangci-lint, vet, gosec, race-enabled tests | `uses: ruralpeds/.github/.github/workflows/ci-go.yml@main` |
+| ci-julia.yml | Julia CI: JuliaFormatter, Pkg.test with coverage | `uses: ruralpeds/.github/.github/workflows/ci-julia.yml@main` |
+| e2e-playwright.yml | Playwright E2E: multi-browser, sharding, traces, screenshots | `uses: ruralpeds/.github/.github/workflows/e2e-playwright.yml@main` |
+| audit-log.yml | Build audit ledger: dates, refs, deps, full provenance | `uses: ruralpeds/.github/.github/workflows/audit-log.yml@main` |
+| review-stamp.yml | Record a manual code review in the audit ledger | `uses: ruralpeds/.github/.github/workflows/review-stamp.yml@main` |
 | check-compliance.yml | Scan all org repos for missing CI/audit features | runs on schedule (Mon 7 AM UTC) |
 | playwright-audit.yml | Playwright visual audit of org CI status | runs on schedule (Mon 8 AM UTC) |
 | repo-scanner.yml | Auto-bootstrap CI workflows into all org repos | runs on schedule (Mon 6 AM UTC) |
+| reusable-phi-scan.yml | **HIPAA §164.312(b)** — PHI scrubbing scan via gitleaks with healthcare pattern catalog; uploads SARIF to code scanning | `uses: ruralpeds/.github/.github/workflows/reusable-phi-scan.yml@main` |
+| reusable-sbom.yml | **FDA 524B / EO 14028** — CycloneDX + SPDX SBOM generation; license denylist enforcement; commits to `sbom/` | `uses: ruralpeds/.github/.github/workflows/reusable-sbom.yml@main` |
+| sync-rulesets.yml | **Governance-as-code** — applies JSON ruleset files in `policies/rulesets/` to every org repo via GitHub API | runs on schedule (Mon 5 AM UTC) |
+
+## Medical-Software Compliance Features
+
+These workflows and policies are **specific to the HIPAA / GAMP 5 / FDA CSA / 21 CFR Part 11** regulatory environment. They are not required for non-clinical repos but are **mandatory** for any repo that may handle PHI or is part of a clinical decision-support path.
+
+### PHI Scrubbing (`reusable-phi-scan.yml`)
+
+Scans commits, pull requests, and (on schedule) full repository history for Protected Health Information patterns covered by HIPAA's 18 Safe Harbor identifiers (§164.514(b)(2)(i)):
+
+- SSN, MRN, DOB, names, phone, address, insurance IDs, NPIs, device serials
+- PHI in log statements (common accidental leak)
+- Clinical codes (ICD-10 / SNOMED) paired with patient identifiers
+- Custom false-positive allowlist via `.gitleaksignore` (justification required)
+
+Configuration: `.github/phi-patterns.toml` at the org level. Override per-repo by providing a `config-path` input.
+
+### SBOM Generation (`reusable-sbom.yml`)
+
+Generates FDA 524B-compliant Software Bill of Materials per release:
+
+- CycloneDX 1.5 JSON (primary, FDA-preferred)
+- SPDX 2.3 JSON (optional)
+- NTIA Minimum Elements covered
+- License denylist (GPL-3.0, AGPL-3.0, SSPL, BUSL by default — configurable)
+- Attached to GitHub Release, committed to `sbom/`, retained 90 days as workflow artifact
+- Generation context JSON provides audit trail
+
+### Governance as Code (`sync-rulesets.yml`)
+
+Applies repository rulesets (signed commits, linear history, required reviewers, required status checks) to every org repo via the GitHub API. Ruleset definitions live under version control in `policies/rulesets/*.json` so governance changes are themselves auditable.
+
+The baseline ruleset `signed-commits-main.json` enforces:
+- Required signed commits (cryptographic non-repudiation for 21 CFR Part 11 §11.70)
+- Linear history (no force pushes, no deletions)
+- 1+ required reviewer on PR; stale reviews dismissed on push
+- PHI scrubbing scan required as a merge gate
+- Code scanning must pass (blocks high+ findings from phi-scan category)
+
+### Migrating from PAT to GitHub App
+
+The `sync-rulesets.yml` workflow prefers a `timothyhartzog-bot` GitHub App token (short-lived) over `REPO_SETUP_TOKEN` (long-lived PAT). To migrate:
+
+1. Create a GitHub App named `timothyhartzog-bot` with permissions:
+   - Contents: Read & Write
+   - Pull Requests: Read & Write
+   - Workflows: Write
+   - Issues: Read & Write
+   - Metadata: Read
+2. Generate a private key; store in org secrets as `TH_BOT_PRIVATE_KEY`.
+3. Store the App ID in org variables as `TH_BOT_APP_ID`.
+4. Install on all repos in the org.
+5. Revoke the long-lived PAT after the first successful App-token run.
+6. Log the rotation in `audit-log/governance-ledger.jsonl`.
+
+## Enterprise Audit Logging
+
+### Mandatory for All Enterprise Projects
+
+Every enterprise project must implement comprehensive audit logging:
+
+- ✅ **Build Dates**: Every build creates an audit entry with timestamps
+- ✅ **Modified Dates**: Track creation, last modification, and last review dates
+- ✅ **Review Dates**: Record all code reviews with reviewer name and notes
+- ✅ **Reference Materials**: Full dependency snapshots, commit history, and GitHub links
+
+### Getting Started
+
+1. **Quick Setup** (5 minutes): [AUDIT_LOG_SETUP_TEMPLATE.md](docs/AUDIT_LOG_SETUP_TEMPLATE.md)
+2. **Complete Guide**: [ENTERPRISE_AUDIT_LOGGING.md](docs/ENTERPRISE_AUDIT_LOGGING.md)
+3. **Standards & References**: [AUDIT_LOG_REFERENCES.md](docs/AUDIT_LOG_REFERENCES.md)
+
+### Audit Log Features
+
+| Feature | Description |
+|---------|-------------|
+| **Automatic Tracking** | Builds automatically logged in `audit-log/ledger.json` |
+| **Dependency Snapshots** | Lock files captured: npm, pip, cargo, go.sum, Julia Manifest |
+| **Review Stamps** | Manual review workflow records reviewer, date, and notes |
+| **Full Provenance** | Git commit SHA, author, message, branch, and tag |
+| **GitHub References** | Direct links to commits, runs, tree state, comparisons |
+| **Retention Policies** | Configurable retention (default 500 builds) |
+| **Searchable** | JSON format enables querying with jq or custom scripts |
+
+### Compliance Verification
+
+Check if your organization's repos are compliant:
+
+```bash
+# Verify all repos in your organization
+./scripts/verify-audit-logging.sh timothyhartzog compliance-report
+```
 
 ## Features
 
@@ -53,10 +155,12 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 - Every build tracked in `audit-log/ledger.json` per repo
 - Records: **date_created**, **date_modified**, **date_last_reviewed**, commit SHA, author, branch, tag
 - Full references: commit URL, run URL, tree URL, compare URL
-- Dependency snapshots included
+- Dependency snapshots included (package-lock.json, Cargo.lock, requirements.txt, etc.)
 - Contributor tracking
 - Retention-limited (default 500 entries) to prevent unbounded growth
 - Individual entry files for easy access
+- **Enterprise Standard**: All enterprise projects MUST use this system
+- **Documentation**: See [ENTERPRISE_AUDIT_LOGGING.md](docs/ENTERPRISE_AUDIT_LOGGING.md)
 
 ### Review Stamps (`review-stamp.yml`)
 - Records a named reviewer + optional notes in `audit-log/ledger.json`
@@ -74,7 +178,7 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 ### Auto-Bootstrap
 `repo-scanner.yml` runs weekly — scans all org repos, creates PRs with CI/testing/audit workflows.
 
-Trigger manually: `gh workflow run "Scan & Bootstrap All Repos" --repo timothyhartzog/.github`
+Trigger manually: `gh workflow run "Scan & Bootstrap All Repos" --repo ruralpeds/.github`
 
 Requires `REPO_SETUP_TOKEN` secret (fine-grained PAT with Contents + PRs + Workflows permissions).
 
@@ -95,19 +199,19 @@ name: CI
 on: [push, pull_request]
 jobs:
   ci:
-    uses: timothyhartzog/.github/.github/workflows/ci-node.yml@main
+    uses: ruralpeds/.github/.github/workflows/ci-node.yml@main
     with:
       package-manager: "pnpm"
       node-versions: '["18", "20"]'
   e2e:
-    uses: timothyhartzog/.github/.github/workflows/e2e-playwright.yml@main
+    uses: ruralpeds/.github/.github/workflows/e2e-playwright.yml@main
     with:
       package-manager: "pnpm"
       start-command: "pnpm dev"
       browsers: '["chromium", "firefox", "webkit"]'
       shards: 3
   audit:
-    uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main
+    uses: ruralpeds/.github/.github/workflows/audit-log.yml@main
     permissions:
       contents: write
 ```
@@ -139,11 +243,11 @@ name: CI
 on: [push, pull_request]
 jobs:
   ci:
-    uses: timothyhartzog/.github/.github/workflows/ci-python.yml@main
+    uses: ruralpeds/.github/.github/workflows/ci-python.yml@main
     with:
       python-versions: '["3.11", "3.12"]'
   audit:
-    uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main
+    uses: ruralpeds/.github/.github/workflows/audit-log.yml@main
     permissions:
       contents: write
 ```
@@ -151,19 +255,82 @@ jobs:
 ### Stamp a code review
 ```yaml
 # .github/workflows/review.yml
-name: Review
+name: Review Stamp
+
 on:
   workflow_dispatch:
     inputs:
-      reviewer: { required: true, type: string }
-      notes: { required: false, type: string, default: "" }
+      reviewer:
+        description: 'Name of the reviewer'
+        required: true
+        type: string
+      notes:
+        description: 'Review notes'
+        required: false
+        type: string
+
 jobs:
   review:
-    uses: timothyhartzog/.github/.github/workflows/review-stamp.yml@main
+    uses: ruralpeds/.github/.github/workflows/review-stamp.yml@main
     with:
       reviewer: ${{ inputs.reviewer }}
       notes: ${{ inputs.notes }}
     permissions:
       contents: write
+```
+
+Then trigger via GitHub CLI:
+
+```bash
+gh workflow run "Review Stamp" \
+  -f reviewer="alice.qa" \
+  -f notes="LGTM: All tests pass, security checks OK, approved for production"
+```
+
+### Enterprise project with full audit logging
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  # Your CI jobs here
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make test
+
+  # Add audit logging
+  audit:
+    if: always()
+    needs: ci
+    uses: ruralpeds/.github/.github/workflows/audit-log.yml@main
+    with:
+      include-deps: true
+      retention-entries: 500
+    permissions:
+      contents: write
+```
+
+After setup, view your audit log:
+
+```bash
+# See audit summary
+cat audit-log/ledger.json | jq '.summary'
+
+# List all builds
+cat audit-log/ledger.json | jq -r '.builds[] | "\(.timestamp) \(.commit.short_sha) \(.commit.author)"'
+
+# View review history
+cat audit-log/ledger.json | jq '.review_history'
+
+# Check last review date
+cat audit-log/ledger.json | jq '.summary.date_last_reviewed'
 ```
 

@@ -1,0 +1,135 @@
+name: Sync Gap Analysis Index
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.gap-analysis/GAP_ANALYSIS.md'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate status.json from GAP_ANALYSIS.md
+        shell: python
+        run: |
+          import re
+          import json
+          import datetime
+          from pathlib import Path
+          
+          # Read GAP_ANALYSIS.md
+          gap_file = Path(".gap-analysis/GAP_ANALYSIS.md")
+          if not gap_file.exists():
+              print("No GAP_ANALYSIS.md found")
+              exit(0)
+          
+          content = gap_file.read_text()
+          
+          # Parse gaps
+          gaps = []
+          gap_blocks = re.split(r'^### GAP-', content, flags=re.MULTILINE)[1:]
+          
+          for block in gap_blocks:
+              lines = block.split('\n')
+              
+              # Extract gap ID from first line
+              first_line = lines[0]
+              gap_num = first_line.split(':')[0].strip()
+              gap_id = f"GAP-{gap_num}"
+              
+              # Extract fields using regex
+              status_match = re.search(r'\*\*Status\*\*:\s*(.+)', block)
+              priority_match = re.search(r'\*\*Priority\*\*:\s*(.+)', block)
+              owner_match = re.search(r'\*\*Owner\*\*:\s*(.+)', block)
+              target_match = re.search(r'\*\*Target Completion\*\*:\s*(.+)', block)
+              
+              # Extract description (first line after Description header)
+              desc_match = re.search(r'\*\*Description\*\*:\s*\n(.+?)(?:\n\n|\n\*\*)', block, re.DOTALL)
+              description = desc_match.group(1).strip() if desc_match else ""
+              
+              gap_data = {
+                  'id': gap_id,
+                  'status': status_match.group(1).strip() if status_match else None,
+                  'priority': priority_match.group(1).strip() if priority_match else None,
+                  'owner': owner_match.group(1).strip() if owner_match else None,
+                  'target_completion': target_match.group(1).strip() if target_match else None,
+                  'description': description[:100] + '...' if len(description) > 100 else description,
+              }
+              
+              # Only include gaps with valid status
+              if gap_data['status']:
+                  gaps.append(gap_data)
+          
+          # Build status summary
+          by_status = {}
+          by_priority = {}
+          
+          for gap in gaps:
+              status = gap['status']
+              priority = gap['priority']
+              
+              by_status[status] = by_status.get(status, 0) + 1
+              by_priority[priority] = by_priority.get(priority, 0) + 1
+          
+          # Create status object
+          status_obj = {
+              'last_updated': datetime.datetime.utcnow().isoformat() + 'Z',
+              'total_gaps': len(gaps),
+              'summary': {
+                  'by_status': by_status,
+                  'by_priority': by_priority,
+              },
+              'gaps': gaps,
+          }
+          
+          # Write status.json
+          status_json = Path(".gap-analysis/status.json")
+          status_json.write_text(json.dumps(status_obj, indent=2))
+          
+          print(f"✅ Generated status.json")
+          print(f"Total gaps: {len(gaps)}")
+          print(f"By status: {json.dumps(by_status)}")
+          print(f"By priority: {json.dumps(by_priority)}")
+
+      - name: Check for changes
+        id: changes
+        shell: bash
+        run: |
+          if git diff --quiet .gap-analysis/status.json; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes to status.json"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "status.json changed; will commit"
+          fi
+
+      - name: Configure git
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.githubusercontent.com"
+
+      - name: Commit and push
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git add .gap-analysis/status.json
+          git commit -m "chore: update gap analysis index [skip ci]"
+          git push
+
+      - name: Summary
+        run: |
+          echo "Gap Analysis Index Sync"
+          echo "======================="
+          if [ -f .gap-analysis/status.json ]; then
+            echo ""
+            echo "Status Summary:"
+            python3 -c "import json; data=json.load(open('.gap-analysis/status.json')); print('  Total gaps:', data['total_gaps']); print('  By status:', json.dumps(data['summary']['by_status'], indent=4))"
+          fi

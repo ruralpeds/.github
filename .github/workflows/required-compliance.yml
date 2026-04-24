@@ -1,0 +1,25 @@
+# ruralpeds/.github/.github/workflows/required-compliance.yml
+# Registered as an org-level required workflow.
+# See docs/org-required-workflows.md for registration steps.
+
+name: Required — Compliance
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+jobs:
+  hipaa:
+    uses: ./.github/workflows/hipaa-compliance.yml
+    with:
+      language: mixed
+      phi-scan: true
+      sbom: true
+      coverage-threshold: 70
+      fda-class: none
+      runner-label: 'self-hosted,mac-studio,arm64'
+      fail-on: high
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

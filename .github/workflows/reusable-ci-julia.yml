@@ -2,7 +2,7 @@ name: "Reusable CI — Julia"
 # Reusable Julia CI workflow for healthcare enterprise repositories.
 # Derived from HEALTHCARE_ENTERPRISE_REPO_BLUEPRINT.md controls.
 #
-# Callers: uses: timothyhartzog/.github/.github/workflows/reusable-ci-julia.yml@main
+# Callers: uses: ruralpeds/.github/.github/workflows/reusable-ci-julia.yml@main
 #
 # Covers: Julia setup, Pkg.instantiate, test with coverage, optional format
 #         check (JuliaFormatter), caching via julia-actions/cache.
