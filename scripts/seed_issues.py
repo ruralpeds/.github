@@ -84,7 +84,7 @@ def parse_task(path: Path) -> Task | None:
         print(f"[skip] {path} — frontmatter is not a mapping", file=sys.stderr)
         return None
     phase = path.parent.name
-    slug = path.stem.split("-", 1)[1] if path.stem.startswith("task-") else path.stem
+    slug = fm.get("slug") or path.stem.split("-", 1)[1] if path.stem.startswith("task-") else path.stem
     return Task(phase=phase, slug=slug, path=path, frontmatter=fm, body=m.group(2).strip())
 
 
