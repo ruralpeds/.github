@@ -14,7 +14,7 @@ env:
 
 jobs:
   scan:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio]
     outputs:
       repos: ${{ steps.discover.outputs.repos }}
     steps:
@@ -25,48 +25,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.REPO_SETUP_TOKEN }}
         run: |
-          echo "Fetching all repos from $GH_OWNER..."
           REPOS=$(gh repo list "$GH_OWNER" --json name --limit 300 --jq '[.[].name]')
           echo "repos=$REPOS" >> $GITHUB_OUTPUT
           echo "Found $(echo "$REPOS" | jq 'length') repos"
-
-  bootstrap:
-    needs: scan
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      max-parallel: 5
-      matrix:
-        repo: ${{ fromJson(needs.scan.outputs.repos) }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          path: templates
-
-      - uses: actions/checkout@v4
-        with:
-          repository: ${{ env.GH_OWNER }}/${{ matrix.repo }}
-          token: ${{ secrets.REPO_SETUP_TOKEN }}
-          path: target
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - run: python templates/scripts/bootstrap_repo.py target templates "false"
-        env:
-          GH_TOKEN: ${{ secrets.REPO_SETUP_TOKEN }}
-
-      - run: |
-          cd target
-          if git diff --quiet; then exit 0; fi
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          BRANCH="ci/bootstrap-$(date +%s)"
-          git checkout -b "$BRANCH"
-          git add .
-          git commit -m "ci: bootstrap workflows"
-          git push origin "$BRANCH"
-          gh pr create --repo "${{ env.GH_OWNER }}/${{ matrix.repo }}" --title "ci: add workflows" --body "Bootstrap from ruralpeds/.github" --head "$BRANCH" --base main || true
-        env:
-          GH_TOKEN: ${{ secrets.REPO_SETUP_TOKEN }}
