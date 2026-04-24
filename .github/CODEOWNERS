@@ -1,0 +1,9 @@
+
+# Agentic pipeline — sensitive paths require human review
+/AGENTS.md                             @ruralpeds/security @ruralpeds/clinical
+/.github/copilot-instructions.md       @ruralpeds/security
+/.github/instructions/dhf*             @ruralpeds/clinical
+/.github/instructions/security*        @ruralpeds/security
+/policies/**                           @ruralpeds/security
+/audit-log/**                          @ruralpeds/security
+/copilot-tasks/**                      @ruralpeds/engineering
