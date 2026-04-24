@@ -1,0 +1,154 @@
+# .github/workflows/repo-audit.yml
+# Reusable workflow: Repository Audit Log Maintenance
+# Host in:  ruralpeds/.github/.github/workflows/repo-audit.yml
+# Callable: workflow_call from any repo that wants persistent audit metadata.
+#
+# What this does:
+#   - Parses / creates .github/AUDIT.yaml at repo root
+#   - Updates created, last_modified, last_reviewed from git history
+#   - Harvests source citations from README, CITATIONS.md, CITATION.cff,
+#     and any file tagged with <!-- SOURCE: ... --> markers
+#   - Appends immutable history entries per commit (append-only log)
+#   - Verifies freshness: flags repos not reviewed in N days
+#   - Commits the updated AUDIT.yaml + AUDIT_LOG.md back to the repo
+#   - Generates a signed JSON attestation for each run
+#
+# Runs:
+#   - On every push to main / master
+#   - On schedule (weekly freshness sweep)
+#   - On workflow_dispatch with optional reviewer input
+
+name: Repository Audit Log (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      review-interval-days:
+        description: 'Max days between reviews before flagging stale'
+        required: false
+        type: number
+        default: 180
+      classification:
+        description: 'clinical-software | research | documentation | education | library | data'
+        required: false
+        type: string
+        default: 'library'
+      require-sources:
+        description: 'Fail if AUDIT.yaml has no sources listed'
+        required: false
+        type: boolean
+        default: false
+      runner-label:
+        description: 'Runner label(s), comma-separated'
+        required: false
+        type: string
+        default: 'self-hosted,mac-studio,arm64'
+      mark-reviewed:
+        description: 'Mark as reviewed today (set true on approved PR)'
+        required: false
+        type: boolean
+        default: false
+      reviewer:
+        description: 'Reviewer username (defaults to actor)'
+        required: false
+        type: string
+        default: ''
+    outputs:
+      status:
+        description: 'fresh | stale | missing-sources | updated'
+        value: ${{ jobs.audit.outputs.status }}
+      last-reviewed:
+        description: 'ISO8601 last reviewed date'
+        value: ${{ jobs.audit.outputs.last-reviewed }}
+
+permissions:
+  contents: write          # needs to commit AUDIT files back
+  id-token: write
+  attestations: write
+
+jobs:
+  resolve-runner:
+    runs-on: ubuntu-latest
+    outputs:
+      labels: ${{ steps.parse.outputs.labels }}
+    steps:
+      - id: parse
+        run: |
+          IFS=',' read -ra LABELS <<< "${{ inputs.runner-label }}"
+          json=$(printf '%s\n' "${LABELS[@]}" | jq -Rn '[inputs]')
+          echo "labels=$(echo "$json" | jq -c .)" >> "$GITHUB_OUTPUT"
+
+  audit:
+    needs: resolve-runner
+    runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
+    outputs:
+      status: ${{ steps.update.outputs.status }}
+      last-reviewed: ${{ steps.update.outputs.last-reviewed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0       # need full history for first/last commit dates
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch audit engine
+        run: |
+          mkdir -p .github/audit-tools
+          curl -sL \
+            https://raw.githubusercontent.com/ruralpeds/.github/main/scripts/audit_engine.py \
+            -o .github/audit-tools/audit_engine.py
+          python3 -m pip install --user pyyaml ruamel.yaml python-dateutil
+
+      - name: Update AUDIT.yaml
+        id: update
+        env:
+          REVIEW_INTERVAL_DAYS: ${{ inputs.review-interval-days }}
+          CLASSIFICATION: ${{ inputs.classification }}
+          REQUIRE_SOURCES: ${{ inputs.require-sources }}
+          MARK_REVIEWED: ${{ inputs.mark-reviewed }}
+          REVIEWER: ${{ inputs.reviewer != '' && inputs.reviewer || github.actor }}
+          REPO: ${{ github.repository }}
+          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          python3 .github/audit-tools/audit_engine.py update
+
+      - name: Sign attestation
+        run: |
+          brew list cosign >/dev/null 2>&1 || brew install cosign
+          cosign sign-blob --yes \
+            --output-signature .github/AUDIT.yaml.sig \
+            --output-certificate .github/AUDIT.yaml.crt \
+            .github/AUDIT.yaml || true
+
+      - name: Commit changes
+        if: steps.update.outputs.changed == 'true'
+        run: |
+          git config user.name  'audit-bot'
+          git config user.email 'audit-bot@users.noreply.github.com'
+          git add .github/AUDIT.yaml AUDIT_LOG.md .github/AUDIT.yaml.sig .github/AUDIT.yaml.crt 2>/dev/null || true
+          git commit -m "chore(audit): update audit log [skip ci]" \
+                     -m "Run: ${{ github.run_id }}" \
+                     -m "Reviewer: ${{ inputs.reviewer != '' && inputs.reviewer || github.actor }}" \
+                     -S || exit 0
+          git push
+
+      - name: Write step summary
+        run: |
+          {
+            echo "## Audit Log — ${{ steps.update.outputs.status }}"
+            echo ""
+            echo "- **Repo:** \`${{ github.repository }}\`"
+            echo "- **Classification:** ${{ inputs.classification }}"
+            echo "- **Last reviewed:** ${{ steps.update.outputs.last-reviewed }}"
+            echo "- **Review interval:** ${{ inputs.review-interval-days }} days"
+            echo "- **Sources found:** ${{ steps.update.outputs.source-count }}"
+            echo "- **Total history entries:** ${{ steps.update.outputs.history-count }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail on stale or missing sources
+        if: |
+          steps.update.outputs.status == 'stale' ||
+          (inputs.require-sources && steps.update.outputs.source-count == '0')
+        run: |
+          echo "::error::Audit gate failed: ${{ steps.update.outputs.status }}"
+          exit 1

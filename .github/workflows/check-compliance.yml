@@ -1,0 +1,189 @@
+name: "Check Compliance"
+
+on:
+  schedule:
+    # Every Monday at 7 AM UTC (after repo-scanner at 6 AM)
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+    inputs:
+      org:
+        description: "GitHub org or username to scan (defaults to repo owner)"
+        required: false
+        type: string
+        default: ""
+      fail-on-non-compliant:
+        description: "Fail the workflow if any repos are non-compliant"
+        required: false
+        type: boolean
+        default: false
+      create-issue:
+        description: "Create a GitHub issue with the compliance summary"
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  compliance-check:
+    name: Scan org CI compliance
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run compliance check
+        id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_SETUP_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          ORG="${{ inputs.org || github.repository_owner }}"
+          python3 scripts/check_compliance.py "$ORG" \
+            --output compliance-report \
+            ${{ inputs.fail-on-non-compliant && '--fail-on-non-compliant' || '' }}
+
+      - name: Upload compliance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-report-${{ github.run_number }}
+          path: compliance-report/
+          retention-days: 30
+
+      - name: Create GitHub issue with compliance summary
+        if: (github.event_name == 'schedule' || inputs.create-issue == true) && steps.check.outputs.non_compliant != '0'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.REPO_SETUP_TOKEN || secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('compliance-report/compliance.json', 'utf8'));
+            const nonCompliant = report.repos.filter(r => !r.compliant);
+
+            let body = `## CI & Audit Compliance Report\n\n`;
+            body += `**Scanned:** ${report.checked_at}\n`;
+            body += `**Total repos:** ${report.total} | **Compliant:** ${report.compliant} | **Non-compliant:** ${nonCompliant.length}\n\n`;
+
+            if (nonCompliant.length > 0) {
+              body += `### ❌ Non-Compliant Repos\n\n`;
+              body += `| Repo | Languages | Missing |\n|------|-----------|--------|\n`;
+              for (const r of nonCompliant) {
+                const langs = (r.languages || []).join(', ') || 'unknown';
+                const missing = (r.missing || []).join(', ');
+                body += `| [${r.repo}](https://github.com/${report.org}/${r.repo}) | ${langs} | ${missing} |\n`;
+              }
+              body += `\n`;
+            }
+
+            body += `### ✅ Compliant Repos\n\n`;
+            const compliant = report.repos.filter(r => r.compliant);
+            body += compliant.map(r => `- [${r.repo}](https://github.com/${report.org}/${r.repo})`).join('\n');
+            body += `\n\n_Run [\`repo-scanner.yml\`](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/workflows/repo-scanner.yml) to auto-bootstrap missing workflows._`;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `CI Compliance: ${nonCompliant.length} repos need attention (${new Date().toISOString().split('T')[0]})`,
+              body: body,
+              labels: ['compliance', 'automated'],
+            });
+check-gap-analysis:
+    runs-on: ubuntu-latest
+    name: Check Gap Analysis Adoption
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check all org repos for gap analysis
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: python
+        run: |
+          import subprocess
+          import json
+          from pathlib import Path
+          
+          # Fetch all repos in the org
+          result = subprocess.run(
+              ["gh", "repo", "list", "ruralpeds", "--json", "name,isArchived", "-L", "200"],
+              capture_output=True,
+              text=True
+          )
+          
+          if result.returncode != 0:
+              print(f"❌ Failed to fetch repos: {result.stderr}")
+              exit(1)
+          
+          repos = json.loads(result.stdout)
+          
+          missing_gap_analysis = []
+          has_gap_analysis = []
+          
+          print(f"Checking {len(repos)} repos...")
+          print("")
+          
+          for repo in repos:
+              repo_name = repo["name"]
+              is_archived = repo["isArchived"]
+              
+              if is_archived:
+                  continue
+              
+              check = subprocess.run(
+                  ["gh", "api", f"repos/ruralpeds/{repo_name}/contents/.gap-analysis/GAP_ANALYSIS.md"],
+                  capture_output=True,
+                  text=True
+              )
+              
+              if check.returncode == 0:
+                  has_gap_analysis.append(repo_name)
+              else:
+                  commits = subprocess.run(
+                      ["gh", "api", f"repos/ruralpeds/{repo_name}/commits", 
+                       "-H", "Accept: application/vnd.github.v3+json",
+                       "--paginate", "-F", "since=2026-01-24"],
+                      capture_output=True,
+                      text=True
+                  )
+                  
+                  if commits.returncode == 0:
+                      commit_list = json.loads(commits.stdout)
+                      if commit_list:
+                          missing_gap_analysis.append(repo_name)
+          
+          report = {
+              "scanned_at": subprocess.check_output(["date", "-Iseconds"]).decode().strip(),
+              "total_active_repos": len([r for r in repos if not r["isArchived"]]),
+              "with_gap_analysis": len(has_gap_analysis),
+              "missing_gap_analysis": len(missing_gap_analysis),
+              "compliance_rate": round(100 * len(has_gap_analysis) / max(1, len(has_gap_analysis) + len(missing_gap_analysis))),
+              "missing_repos": missing_gap_analysis,
+          }
+          
+          report_file = Path("compliance-report")
+          report_file.mkdir(exist_ok=True)
+          
+          report_json = report_file / "gap-analysis-compliance.json"
+          report_json.write_text(json.dumps(report, indent=2))
+          
+          print("=" * 60)
+          print("GAP ANALYSIS COMPLIANCE REPORT")
+          print("=" * 60)
+          print(f"Total active repos: {report['total_active_repos']}")
+          print(f"With gap analysis: {report['with_gap_analysis']}")
+          print(f"Missing gap analysis: {report['missing_gap_analysis']}")
+          print(f"Compliance rate: {report['compliance_rate']}%")
+          print("")
+          
+          if missing_gap_analysis:
+              print("❌ REPOS MISSING GAP ANALYSIS:")
+              for repo in sorted(missing_gap_analysis):
+                  print(f"  - {repo}")
+          else:
+              print("✅ All active repos have gap analysis!")
+          
+          print("=" * 60)

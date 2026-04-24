@@ -1,0 +1,160 @@
+name: "Reusable CI — Julia"
+# Reusable Julia CI workflow for healthcare enterprise repositories.
+# Derived from HEALTHCARE_ENTERPRISE_REPO_BLUEPRINT.md controls.
+#
+# Callers: uses: ruralpeds/.github/.github/workflows/reusable-ci-julia.yml@main
+#
+# Covers: Julia setup, Pkg.instantiate, test with coverage, optional format
+#         check (JuliaFormatter), caching via julia-actions/cache.
+
+on:
+  workflow_call:
+    inputs:
+      julia-version:
+        description: "Julia version for single-version runs (default: 1)"
+        type: string
+        default: "1"
+      julia-versions:
+        description: "JSON array of Julia versions for matrix testing, e.g. '[\"1.9\", \"1\"]'. Overrides julia-version."
+        type: string
+        default: ""
+      working-directory:
+        description: "Directory containing Project.toml"
+        type: string
+        default: "."
+      run-format-check:
+        description: "Run JuliaFormatter check (requires JuliaFormatter in [extras] or globally available)"
+        type: boolean
+        default: true
+      test-timeout-minutes:
+        description: "Timeout in minutes for the test job"
+        type: number
+        default: 30
+      upload-coverage:
+        description: "Upload LCOV coverage artifact"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ── 0. Pre-flight: detect config and build version matrix ─────────────────────
+  detect:
+    name: Detect configuration
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      has-project: ${{ steps.check.outputs.has-project }}
+      has-tests: ${{ steps.check.outputs.has-tests }}
+      matrix: ${{ steps.matrix.outputs.versions }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Check Project.toml and tests
+        id: check
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          if [ -f Project.toml ]; then
+            echo "has-project=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::No Project.toml found in ${{ inputs.working-directory }}"
+            echo "has-project=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          if [ -d test ] || [ -f test/runtests.jl ]; then
+            echo "has-tests=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::No test/ directory or test/runtests.jl found — skipping tests."
+            echo "has-tests=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Build version matrix
+        id: matrix
+        run: |
+          OVERRIDE='${{ inputs.julia-versions }}'
+          if [ -n "$OVERRIDE" ] && [ "$OVERRIDE" != '' ]; then
+            echo "versions=$OVERRIDE" >> "$GITHUB_OUTPUT"
+          else
+            echo 'versions=["${{ inputs.julia-version }}"]' >> "$GITHUB_OUTPUT"
+          fi
+
+  # ── 1. Format check (JuliaFormatter) ─────────────────────────────────────────
+  format-check:
+    name: Format check (JuliaFormatter)
+    needs: detect
+    if: ${{ inputs.run-format-check && needs.detect.outputs.has-project == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: julia-actions/setup-julia@5c9647d97b78a5debe5164d7e8085d5976676950 # v2.6.1
+        with:
+          version: ${{ inputs.julia-version }}
+      - name: Restore Julia cache
+        uses: julia-actions/cache@d10a6fd8f08c40cee5944fd50e3be8e13d3090de # v2.1.0
+      - name: Install JuliaFormatter
+        run: julia -e 'using Pkg; Pkg.add("JuliaFormatter")'
+      - name: Check formatting
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          julia -e '
+          using JuliaFormatter
+          ok = format(".", verbose=true, overwrite=false)
+          if !ok
+            @error "Files are not formatted. Run: using JuliaFormatter; format(\".\")"
+            exit(1)
+          end
+          '
+
+  # ── 2. Test matrix ────────────────────────────────────────────────────────────
+  test:
+    name: "Test (Julia ${{ matrix.julia-version }})"
+    needs: detect
+    if: ${{ needs.detect.outputs.has-tests == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ fromJson(inputs.test-timeout-minutes) }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        julia-version: ${{ fromJson(needs.detect.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: julia-actions/setup-julia@5c9647d97b78a5debe5164d7e8085d5976676950 # v2.6.1
+        with:
+          version: ${{ matrix.julia-version }}
+      - name: Restore Julia cache
+        uses: julia-actions/cache@d10a6fd8f08c40cee5944fd50e3be8e13d3090de # v2.1.0
+      - name: Instantiate package
+        working-directory: ${{ inputs.working-directory }}
+        run: julia --project=. -e 'using Pkg; Pkg.instantiate()'
+      - name: Build package
+        working-directory: ${{ inputs.working-directory }}
+        run: julia --project=. -e 'using Pkg; Pkg.build()'
+      - name: Run tests
+        working-directory: ${{ inputs.working-directory }}
+        run: julia --project=. -e 'using Pkg; Pkg.test(coverage=true)'
+      - name: Process coverage
+        if: ${{ inputs.upload-coverage && always() }}
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          julia -e '
+          using Pkg
+          Pkg.add("CoverageTools")
+          using CoverageTools
+          cov = process_folder("src")
+          LCOV.writefile("lcov.info", cov)
+          covered, total = get_summary(cov)
+          pct = total > 0 ? round(covered / total * 100, digits=1) : 0.0
+          println("Coverage: $covered/$total lines ($pct%)")
+          ' || echo "::warning::Coverage processing failed — continuing"
+      - name: Upload coverage artifact
+        if: ${{ inputs.upload-coverage && always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "coverage-julia-${{ matrix.julia-version }}"
+          path: "${{ inputs.working-directory }}/lcov.info"
+          retention-days: 7
+          if-no-files-found: ignore

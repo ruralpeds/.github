@@ -1,0 +1,14 @@
+{
+  "name": "github-org-playwright-audit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright audit of org CI/Actions compliance for timothyhartzog",
+  "scripts": {
+    "audit": "playwright test playwright/audit.spec.ts",
+    "audit:report": "playwright show-report playwright-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "typescript": "^5.4.5"
+  }
+}
