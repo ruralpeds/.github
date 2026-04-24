@@ -61,5 +61,5 @@ jobs:
           python scripts/seed_issues.py \
             --phase "$PHASE" \
             --repo "$REPO" \
-            ${DRY_RUN:+--dry-run} \
+            $([ "$DRY_RUN" = "true" ] && echo "--dry-run") \
             ${ASSIGN_TO:+--assign-to "$ASSIGN_TO"}
