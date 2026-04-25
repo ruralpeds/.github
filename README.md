@@ -44,6 +44,10 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 | dependency-eol.yml | **NIST SSDF RV.1.2 / FDA Cyber** — Monthly EOL check via endoflife.date; opens/updates tracking issue when runtime platform cycles approach EOL | runs monthly (1st 10 AM UTC) |
 | vuln-triage.yml | **NIST SSDF RV.2** — Daily Dependabot-alert query with severity-based SLAs (Critical 7d / High 30d / Medium 90d / Low 180d); opens tracking issue on SLA breach | runs daily at 11 AM UTC |
 | origin-label.yml | **FDA GMLP / EU AI Act / NIST AI RMF** — Required status check; verifies each PR carries exactly one `origin:*` label; validates AI session summary for `ai-authored` and `agentic` PRs; enforces PHI/credential negatives | required status check on clinical repos |
+| reusable-mutation.yml | **FDA CSA / IEC 62304 §5.5.3** — Multi-language mutation testing (Rust/cargo-mutants, Python/mutmut, Node/Stryker); scores test adequacy beyond line coverage | `uses: timothyhartzog/.github/.github/workflows/reusable-mutation.yml@main` |
+| reusable-contract.yml | **42 CFR Part 170 / HL7 FHIR US Core** — Validates FHIR resources against US Core IG; validates OpenAPI specs via Redocly CLI | `uses: timothyhartzog/.github/.github/workflows/reusable-contract.yml@main` |
+| reusable-validation-export.yml | **GAMP 5 §4.2 / IEC 62304 §5.8 / 21 CFR 820.30(j)** — Packages SBOM + risk + RTM + docs into validation bundle; dispatches to `Github-workflow` archive via repository_dispatch | `uses: timothyhartzog/.github/.github/workflows/reusable-validation-export.yml@main` |
+| reusable-release.yml | **IEC 62304 §5.8 / release governance** — One-button conventional-commits release: release-please PR → build → SBOM → SLSA → cosign → validation export → audit | `uses: timothyhartzog/.github/.github/workflows/reusable-release.yml@main` |
 
 ## Medical-Software Compliance Features
 
