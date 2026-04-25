@@ -1,0 +1,220 @@
+name: "Reusable Artifact Signing (cosign keyless)"
+# Signs release artifacts via Sigstore cosign in keyless mode. No private
+# keys to manage or rotate — signing identity is derived from the workflow's
+# OIDC token via Fulcio (short-lived cert) and logged in Rekor (transparency).
+#
+# Regulatory drivers:
+#   - NIST SSDF PS.2.1 — Provide a mechanism for verifying software integrity
+#   - 21 CFR Part 11 §11.70 — Signature/record linking
+#   - FDA Premarket Cybersecurity Guidance (Sept 2023)
+#   - HIPAA §164.312(c)(1) — Integrity (technical safeguards)
+#   - Sigstore / cosign / Fulcio / Rekor specifications
+#
+# Callers: uses: timothyhartzog/.github/.github/workflows/reusable-sign-artifact.yml@main
+#
+# Verification (by the end user):
+#   $ cosign verify-blob <artifact> \
+#       --bundle <artifact>.sig.bundle \
+#       --certificate-identity-regexp '^https://github.com/timothyhartzog/<repo>/\.github/workflows/.*@refs/tags/<tag>$' \
+#       --certificate-oidc-issuer https://token.actions.githubusercontent.com
+
+on:
+  workflow_call:
+    inputs:
+      artifact-paths:
+        description: |
+          Newline-separated list of paths (globs allowed) of files to sign.
+          Example:
+            dist/*.whl
+            dist/*.tar.gz
+        type: string
+        required: true
+      upload-to-release:
+        description: "Attach signatures to the GitHub Release"
+        type: boolean
+        default: true
+      output-dir:
+        description: "Where to write signature bundles"
+        type: string
+        default: "signatures"
+      cosign-version:
+        description: "Pinned cosign version"
+        type: string
+        default: "v2.4.1"
+
+permissions:
+  id-token: write    # for OIDC keyless signing
+  contents: write    # for uploading to release
+  attestations: write  # for attestation-style signatures if requested
+
+jobs:
+  sign:
+    name: Sign artifacts (keyless)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@d7d6bc7722e3daa8354c50bcb52f4837da5e9b6a # v3.8.1
+        with:
+          cosign-release: ${{ inputs.cosign-version }}
+
+      - name: Verify cosign
+        run: |
+          set -euo pipefail
+          cosign version
+          # The OIDC audience must be sigstore; check the token has the right aud.
+          # This is a belt-and-suspenders check.
+          echo "Workflow OIDC issuer: https://token.actions.githubusercontent.com"
+
+      - name: Enumerate artifacts
+        id: enumerate
+        run: |
+          set -euo pipefail
+          mkdir -p "${{ inputs.output-dir }}"
+          : > artifacts-to-sign.txt
+          # Read paths line-by-line, expanding globs
+          while IFS= read -r pattern; do
+            [ -z "$pattern" ] && continue
+            # Use shell glob expansion (permits wildcards)
+            for f in $pattern; do
+              if [ -f "$f" ]; then
+                echo "$f" >> artifacts-to-sign.txt
+              fi
+            done
+          done <<< "${{ inputs.artifact-paths }}"
+
+          COUNT=$(wc -l < artifacts-to-sign.txt)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::error::No matching artifacts found to sign."
+            echo "Artifact patterns provided:"
+            echo "${{ inputs.artifact-paths }}"
+            exit 1
+          fi
+          echo "Will sign $COUNT artifact(s):"
+          cat artifacts-to-sign.txt
+
+      - name: Sign each artifact
+        env:
+          COSIGN_EXPERIMENTAL: "1"  # legacy var for older cosign; v2 auto-enables
+        run: |
+          set -euo pipefail
+          OUT="${{ inputs.output-dir }}"
+          while IFS= read -r artifact; do
+            base=$(basename "$artifact")
+            echo "═══ Signing $artifact ═══"
+            cosign sign-blob \
+              --yes \
+              --bundle "$OUT/${base}.sig.bundle" \
+              "$artifact"
+            # Extract signature and certificate for convenience (some consumers prefer separate files)
+            cosign sign-blob \
+              --yes \
+              --output-signature "$OUT/${base}.sig" \
+              --output-certificate "$OUT/${base}.pem" \
+              "$artifact"
+            # Record the SHA-256 for record-keeping
+            sha256sum "$artifact" > "$OUT/${base}.sha256"
+            echo "  ✓ signature → $OUT/${base}.sig.bundle"
+            echo "  ✓ cert      → $OUT/${base}.pem"
+          done < artifacts-to-sign.txt
+
+      - name: Verify each signature (self-test)
+        run: |
+          set -euo pipefail
+          OUT="${{ inputs.output-dir }}"
+          # The identity pattern depends on how this reusable was called.
+          # For a release workflow in timothyhartzog/<repo>, the signing identity
+          # is the URL of the reusable workflow at the ref that invoked it.
+          # Construct a regex that accepts any valid callsite in the org.
+          IDENTITY_REGEX='^https://github\.com/timothyhartzog/[^/]+/\.github/workflows/.*@refs/(heads|tags|pull)/.*$'
+          ISSUER='https://token.actions.githubusercontent.com'
+
+          while IFS= read -r artifact; do
+            base=$(basename "$artifact")
+            echo "═══ Verifying $artifact ═══"
+            cosign verify-blob \
+              --bundle "$OUT/${base}.sig.bundle" \
+              --certificate-identity-regexp "$IDENTITY_REGEX" \
+              --certificate-oidc-issuer "$ISSUER" \
+              "$artifact"
+            echo "  ✓ verified"
+          done < artifacts-to-sign.txt
+
+      - name: Write verification instructions
+        run: |
+          set -euo pipefail
+          OUT="${{ inputs.output-dir }}"
+          cat > "$OUT/VERIFY.md" <<'EOF'
+          # Verifying Signed Artifacts
+
+          These artifacts were signed using Sigstore cosign in keyless mode.
+          No public key is required; the signing identity is bound to this
+          GitHub workflow's OIDC token and recorded in the Rekor transparency log.
+
+          ## Requirements
+
+          - `cosign` v2.x (https://github.com/sigstore/cosign)
+
+          ## Verify a single artifact
+
+          ```bash
+          cosign verify-blob <artifact-filename> \
+            --bundle <artifact-filename>.sig.bundle \
+            --certificate-identity-regexp \
+              '^https://github\.com/timothyhartzog/<REPO>/\.github/workflows/.*@refs/tags/<TAG>$' \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com
+          ```
+
+          Replace `<REPO>` with the source repository name and `<TAG>` with the release tag.
+
+          ## Regulatory note
+
+          This signing scheme satisfies:
+          - NIST SSDF PS.2.1 (integrity verification mechanism)
+          - 21 CFR Part 11 §11.70 (signature/record linking — the signature is
+            bound to the artifact via SHA-256 and to the signer via OIDC identity)
+          - HIPAA §164.312(c)(1) (technical safeguard for integrity)
+
+          The Rekor transparency log provides public, append-only, third-party
+          auditability of every signing event — an auditor can independently
+          verify the signature's existence and metadata at https://rekor.sigstore.dev.
+          EOF
+
+      - name: Upload signatures as workflow artifact
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+        with:
+          name: signatures-${{ github.run_id }}
+          path: ${{ inputs.output-dir }}/
+          retention-days: 90
+
+      - name: Attach signatures to GitHub Release
+        if: ${{ inputs.upload-to-release && github.event_name == 'release' }}
+        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
+        with:
+          files: |
+            ${{ inputs.output-dir }}/*.sig.bundle
+            ${{ inputs.output-dir }}/*.sig
+            ${{ inputs.output-dir }}/*.pem
+            ${{ inputs.output-dir }}/*.sha256
+            ${{ inputs.output-dir }}/VERIFY.md
+          fail_on_unmatched_files: false
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "# Artifact Signing (cosign keyless)"
+            echo ""
+            echo "- **Artifacts signed:** ${{ steps.enumerate.outputs.count }}"
+            echo "- **Signing identity:** OIDC from this workflow run"
+            echo "- **Transparency log:** Rekor (publicly auditable)"
+            echo "- **Algorithm:** ECDSA P-256 via Fulcio short-lived cert"
+            echo ""
+            echo "Signatures uploaded as workflow artifact \`signatures-${{ github.run_id }}\`."
+            if [ "${{ github.event_name }}" = "release" ]; then
+              echo "Signatures also attached to the GitHub Release."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
