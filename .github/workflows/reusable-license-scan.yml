@@ -1,0 +1,199 @@
+name: "Reusable License Compliance Scan"
+# Deep license analysis beyond the baseline in reusable-sbom.yml.
+#
+# Regulatory drivers:
+#   - ISO 13485:2016 §7.2.1 — Determination of requirements related to the product
+#   - Healthcare commercial / IP considerations (copyleft risk management)
+#
+# Uses google/osv-scanner (which understands most ecosystems) plus a
+# dependency-type classifier (runtime vs dev) to apply graduated policy:
+#   - Runtime deps: strict denylist enforcement
+#   - Dev deps: warning only, documented in report
+#
+# Callers: uses: timothyhartzog/.github/.github/workflows/reusable-license-scan.yml@main
+
+on:
+  workflow_call:
+    inputs:
+      deny-licenses-runtime:
+        description: "Comma-separated SPDX IDs denied in runtime deps"
+        type: string
+        default: "GPL-3.0-only,GPL-3.0-or-later,AGPL-3.0-only,AGPL-3.0-or-later,SSPL-1.0,Commons-Clause,BUSL-1.1"
+      warn-licenses-runtime:
+        description: "Comma-separated SPDX IDs that produce a warning (not block)"
+        type: string
+        default: "GPL-2.0-only,GPL-2.0-or-later,LGPL-3.0-only,LGPL-3.0-or-later"
+      allow-unknown:
+        description: "Permit UNKNOWN / NOASSERTION licenses (recommend: false for clinical)"
+        type: boolean
+        default: false
+      scan-target:
+        description: "Path to scan for lock files"
+        type: string
+        default: "."
+
+permissions:
+  contents: read
+
+jobs:
+  license-scan:
+    name: License compliance scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Ensure SBOM exists
+        id: sbom
+        run: |
+          set -euo pipefail
+          # Prefer an existing SBOM from reusable-sbom.yml; regenerate if missing.
+          if [ -f sbom/sbom.cyclonedx.json ]; then
+            echo "path=sbom/sbom.cyclonedx.json" >> "$GITHUB_OUTPUT"
+            echo "Using existing SBOM at sbom/sbom.cyclonedx.json"
+          else
+            echo "No SBOM found; generating a transient one."
+            echo "path=sbom-tmp/sbom.cyclonedx.json" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate transient SBOM if needed
+        if: ${{ !hashFiles('sbom/sbom.cyclonedx.json') }}
+        uses: anchore/sbom-action@df80a981bc6edbc4e220a492d3cbe9f5547a6e75 # v0.17.9
+        with:
+          path: ${{ inputs.scan-target }}
+          format: cyclonedx-json
+          output-file: sbom-tmp/sbom.cyclonedx.json
+          upload-artifact: false
+          upload-release-assets: false
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Classify and enforce licenses
+        id: enforce
+        env:
+          DENY: ${{ inputs.deny-licenses-runtime }}
+          WARN: ${{ inputs.warn-licenses-runtime }}
+          ALLOW_UNKNOWN: ${{ inputs.allow-unknown }}
+          SBOM: ${{ steps.sbom.outputs.path }}
+        run: |
+          set -euo pipefail
+          mkdir -p license-results
+          python3 <<'PY'
+          import json, os, sys, pathlib
+          deny = set(x.strip() for x in os.environ["DENY"].split(",") if x.strip())
+          warn = set(x.strip() for x in os.environ["WARN"].split(",") if x.strip())
+          allow_unknown = os.environ["ALLOW_UNKNOWN"].lower() == "true"
+          sbom_path = os.environ["SBOM"]
+
+          data = json.loads(pathlib.Path(sbom_path).read_text())
+          components = data.get("components", [])
+
+          def licenses_of(comp):
+              out = set()
+              for lic in comp.get("licenses", []) or []:
+                  if isinstance(lic, dict):
+                      inner = lic.get("license", {}) or {}
+                      if inner.get("id"): out.add(inner["id"])
+                      elif inner.get("name"): out.add(inner["name"])
+                  elif isinstance(lic, str):
+                      out.add(lic)
+              if not out:
+                  out.add("UNKNOWN")
+              return out
+
+          # Classify runtime vs dev:
+          # CycloneDX may include "scope" ("required" = runtime, "optional" = dev)
+          # If absent, we default to runtime (conservative).
+          runtime = []
+          dev = []
+          for c in components:
+              scope = c.get("scope", "required")
+              (runtime if scope == "required" else dev).append(c)
+
+          denied = []
+          warned = []
+          unknown = []
+          for c in runtime:
+              for lic in licenses_of(c):
+                  name = f"{c.get('name','?')}@{c.get('version','?')}"
+                  if lic in deny:
+                      denied.append((name, lic))
+                  elif lic in warn:
+                      warned.append((name, lic))
+                  elif lic in ("UNKNOWN", "NOASSERTION"):
+                      unknown.append((name, lic))
+
+          # Write report
+          rpt = pathlib.Path("license-results/report.md")
+          lines = [
+              "# License Compliance Report",
+              "",
+              f"**SBOM:** `{sbom_path}`",
+              f"**Runtime components:** {len(runtime)}",
+              f"**Dev/optional components:** {len(dev)}",
+              "",
+              "## Policy",
+              "",
+              f"**Denied (runtime):** {', '.join(sorted(deny)) or '—'}",
+              f"**Warn (runtime):**   {', '.join(sorted(warn)) or '—'}",
+              f"**Allow unknown:**    {allow_unknown}",
+              "",
+              "## Findings",
+              "",
+          ]
+
+          if denied:
+              lines.append(f"### ❌ Denied licenses in runtime ({len(denied)})")
+              lines.append("")
+              for name, lic in denied:
+                  lines.append(f"- `{name}` — **{lic}**")
+              lines.append("")
+
+          if warned:
+              lines.append(f"### ⚠️ Warn licenses in runtime ({len(warned)})")
+              lines.append("")
+              for name, lic in warned:
+                  lines.append(f"- `{name}` — {lic}")
+              lines.append("")
+
+          if unknown:
+              lines.append(f"### ❓ Unknown-license runtime components ({len(unknown)})")
+              lines.append("")
+              for name, lic in unknown:
+                  lines.append(f"- `{name}`")
+              lines.append("")
+
+          if not (denied or warned or unknown):
+              lines.append("✅ No runtime license issues detected.")
+              lines.append("")
+
+          rpt.write_text("\n".join(lines))
+
+          # Append to step summary
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write(rpt.read_text())
+
+          # Set outputs
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"denied_count={len(denied)}\n")
+              f.write(f"warned_count={len(warned)}\n")
+              f.write(f"unknown_count={len(unknown)}\n")
+
+          # Enforce
+          if denied:
+              print(f"::error::{len(denied)} denied-license runtime dependency(ies) detected")
+              sys.exit(1)
+          if unknown and not allow_unknown:
+              print(f"::error::{len(unknown)} unknown-license runtime dep(s) and allow-unknown=false")
+              sys.exit(1)
+          print("License scan passed.")
+          PY
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+        with:
+          name: license-scan-${{ github.run_id }}
+          path: license-results/
+          retention-days: 90

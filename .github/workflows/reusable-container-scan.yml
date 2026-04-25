@@ -1,0 +1,236 @@
+name: "Reusable Container / Binary Scan"
+# Scans Docker images, OCI artifacts, and standalone binaries for known
+# vulnerabilities using Trivy + Grype in parallel.
+#
+# Regulatory drivers:
+#   - NIST SSDF RV.1.1 — Identify and confirm vulnerabilities on an ongoing basis
+#   - FDA Premarket Cybersecurity Guidance (Sept 2023) — known-unknown CVE posture
+#   - NIST SP 800-53 SI-2 — Flaw remediation
+#
+# Callers: uses: timothyhartzog/.github/.github/workflows/reusable-container-scan.yml@main
+#
+# Outputs:
+#   - SARIF uploaded to GitHub code scanning (visible in Security tab)
+#   - JSON reports as workflow artifact
+#   - Combined severity gate: fails on CRITICAL or HIGH by default
+
+on:
+  workflow_call:
+    inputs:
+      scan-target:
+        description: |
+          Target to scan. Can be:
+          - A container image ref (e.g., 'ghcr.io/timothyhartzog/peds:v1.0.0')
+          - A directory path (filesystem scan)
+          - A single binary file
+        type: string
+        required: true
+      target-type:
+        description: "'image', 'fs', or 'binary' (auto-detected if empty)"
+        type: string
+        default: ""
+      fail-on-severity:
+        description: "Minimum severity to fail build: CRITICAL, HIGH, MEDIUM, LOW, UNKNOWN"
+        type: string
+        default: "HIGH"
+      upload-sarif:
+        description: "Upload SARIF to GitHub code scanning"
+        type: boolean
+        default: true
+      ignore-unfixed:
+        description: "Only report CVEs that have a fix available"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Vulnerability scan (${{ inputs.target-type || 'auto' }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write  # SARIF upload
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Resolve target type
+        id: resolve
+        run: |
+          set -euo pipefail
+          TARGET="${{ inputs.scan-target }}"
+          TYPE="${{ inputs.target-type }}"
+          if [ -z "$TYPE" ]; then
+            # Auto-detect
+            if [[ "$TARGET" == *":"* ]] && [[ "$TARGET" != /* ]]; then
+              TYPE="image"
+            elif [ -d "$TARGET" ]; then
+              TYPE="fs"
+            elif [ -f "$TARGET" ]; then
+              TYPE="binary"
+            else
+              TYPE="fs"
+            fi
+          fi
+          echo "type=$TYPE" >> "$GITHUB_OUTPUT"
+          echo "Target type: $TYPE"
+          mkdir -p scan-results
+
+      # ── Trivy scan (primary) ─────────────────────────────────────────────────
+      - name: Run Trivy (image)
+        if: steps.resolve.outputs.type == 'image'
+        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # 0.28.0
+        with:
+          image-ref: ${{ inputs.scan-target }}
+          format: sarif
+          output: scan-results/trivy.sarif
+          severity: CRITICAL,HIGH,MEDIUM,LOW,UNKNOWN
+          ignore-unfixed: ${{ inputs.ignore-unfixed }}
+          exit-code: '0'  # we enforce manually below
+
+      - name: Run Trivy (filesystem)
+        if: steps.resolve.outputs.type == 'fs'
+        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # 0.28.0
+        with:
+          scan-type: fs
+          scan-ref: ${{ inputs.scan-target }}
+          format: sarif
+          output: scan-results/trivy.sarif
+          severity: CRITICAL,HIGH,MEDIUM,LOW,UNKNOWN
+          ignore-unfixed: ${{ inputs.ignore-unfixed }}
+          exit-code: '0'
+
+      - name: Run Trivy (binary — rootfs mode)
+        if: steps.resolve.outputs.type == 'binary'
+        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # 0.28.0
+        with:
+          scan-type: rootfs
+          scan-ref: ${{ inputs.scan-target }}
+          format: sarif
+          output: scan-results/trivy.sarif
+          severity: CRITICAL,HIGH,MEDIUM,LOW,UNKNOWN
+          ignore-unfixed: ${{ inputs.ignore-unfixed }}
+          exit-code: '0'
+
+      # ── Grype scan (secondary — corroborates Trivy) ────────────────────────
+      - name: Run Grype
+        uses: anchore/scan-action@5ed195cc06065322983cae4bb31e2a751feb86fd # v6.0.0
+        id: grype
+        with:
+          path: ${{ steps.resolve.outputs.type == 'fs' && inputs.scan-target || '' }}
+          image: ${{ steps.resolve.outputs.type == 'image' && inputs.scan-target || '' }}
+          fail-build: false
+          severity-cutoff: ${{ inputs.fail-on-severity }}
+          output-format: sarif
+
+      - name: Move Grype SARIF
+        if: always() && steps.grype.outputs.sarif != ''
+        run: cp "${{ steps.grype.outputs.sarif }}" scan-results/grype.sarif || true
+
+      # ── Parse + gate ────────────────────────────────────────────────────────
+      - name: Parse results and enforce gate
+        id: gate
+        run: |
+          set -euo pipefail
+          MIN="${{ inputs.fail-on-severity }}"
+
+          # Levels in order
+          declare -A LEVEL=([UNKNOWN]=0 [LOW]=1 [MEDIUM]=2 [HIGH]=3 [CRITICAL]=4)
+          MIN_LEVEL=${LEVEL[$MIN]:-3}
+
+          python3 <<PY
+          import json, os, sys, pathlib
+          min_level = int("${MIN_LEVEL}")
+          levels = {"UNKNOWN":0,"LOW":1,"MEDIUM":2,"HIGH":3,"CRITICAL":4}
+          total = 0
+          by_sev = {k:0 for k in levels}
+          offenders = []
+          for sarif_path in ["scan-results/trivy.sarif", "scan-results/grype.sarif"]:
+              p = pathlib.Path(sarif_path)
+              if not p.exists(): continue
+              try:
+                  data = json.loads(p.read_text())
+              except Exception as e:
+                  print(f"::warning::Failed to parse {sarif_path}: {e}")
+                  continue
+              for run in data.get("runs", []):
+                  tool = run.get("tool", {}).get("driver", {}).get("name", "?")
+                  rules = {r.get("id"): r for r in run.get("tool", {}).get("driver", {}).get("rules", [])}
+                  for result in run.get("results", []):
+                      rid = result.get("ruleId", "")
+                      level_prop = (result.get("properties", {}) or {}).get("security-severity", None)
+                      # Fall back to the rule-level severity if result-level missing
+                      if not level_prop:
+                          rule = rules.get(rid, {})
+                          level_prop = (rule.get("properties", {}) or {}).get("security-severity", None)
+                      # Convert numeric CVSS to band if needed
+                      sev_label = "UNKNOWN"
+                      try:
+                          cvss = float(level_prop)
+                          if cvss >= 9.0: sev_label = "CRITICAL"
+                          elif cvss >= 7.0: sev_label = "HIGH"
+                          elif cvss >= 4.0: sev_label = "MEDIUM"
+                          elif cvss > 0.0: sev_label = "LOW"
+                      except (TypeError, ValueError):
+                          # Some SARIF use level: error/warning/note
+                          lv = result.get("level", "")
+                          if lv == "error": sev_label = "HIGH"
+                          elif lv == "warning": sev_label = "MEDIUM"
+                          elif lv == "note": sev_label = "LOW"
+                      by_sev[sev_label] = by_sev.get(sev_label, 0) + 1
+                      total += 1
+                      if levels[sev_label] >= min_level:
+                          msg = (result.get("message", {}) or {}).get("text", "")[:100]
+                          offenders.append(f"[{tool}] {rid} {sev_label}: {msg}")
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("## Vulnerability scan results\n\n")
+              f.write(f"- **Target:** `${{ inputs.scan-target }}`\n")
+              f.write(f"- **Type:** ${{ steps.resolve.outputs.type }}\n")
+              f.write(f"- **Total findings:** {total}\n\n")
+              f.write("| Severity | Count |\n|---|---|\n")
+              for s in ["CRITICAL","HIGH","MEDIUM","LOW","UNKNOWN"]:
+                  f.write(f"| {s} | {by_sev.get(s,0)} |\n")
+              f.write("\n")
+              if offenders:
+                  f.write(f"### Findings at or above {'${MIN}'} ({len(offenders)})\n\n")
+                  for o in offenders[:50]:
+                      f.write(f"- {o}\n")
+                  if len(offenders) > 50:
+                      f.write(f"\n_…plus {len(offenders)-50} more. See SARIF artifact._\n")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"total={total}\n")
+              f.write(f"offenders={len(offenders)}\n")
+              for s,c in by_sev.items():
+                  f.write(f"count_{s.lower()}={c}\n")
+
+          if offenders:
+              print(f"::error::{len(offenders)} finding(s) at or above ${MIN}")
+              sys.exit(1)
+          print(f"No findings at or above ${MIN}.")
+          PY
+
+      - name: Upload SARIF (Trivy)
+        if: ${{ always() && inputs.upload-sarif && hashFiles('scan-results/trivy.sarif') != '' }}
+        uses: github/codeql-action/upload-sarif@28deaeda66b76a05916b6923827895f2b14ab96f # v3.28.16
+        with:
+          sarif_file: scan-results/trivy.sarif
+          category: trivy
+
+      - name: Upload SARIF (Grype)
+        if: ${{ always() && inputs.upload-sarif && hashFiles('scan-results/grype.sarif') != '' }}
+        uses: github/codeql-action/upload-sarif@28deaeda66b76a05916b6923827895f2b14ab96f # v3.28.16
+        with:
+          sarif_file: scan-results/grype.sarif
+          category: grype
+
+      - name: Upload scan artifacts
+        if: always()
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+        with:
+          name: vuln-scan-${{ github.run_id }}
+          path: scan-results/
+          retention-days: 90
