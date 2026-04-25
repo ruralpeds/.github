@@ -228,7 +228,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Trivy (table output)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ needs.build.outputs.image }}
           format: table
@@ -237,7 +237,7 @@ jobs:
           ignore-unfixed: ${{ inputs.trivy-ignore-unfixed }}
 
       - name: Run Trivy (SARIF for GitHub Security)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ needs.build.outputs.image }}
           format: sarif
@@ -253,7 +253,7 @@ jobs:
         continue-on-error: true
 
       - name: Run Trivy (fail on threshold)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ needs.build.outputs.image }}
           format: json
