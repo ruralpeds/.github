@@ -1,0 +1,519 @@
+# Prometheus Alert Rules: Enterprise Medical Device Platform
+# Compliance: IEC 62304, CFR Part 11, HIPAA
+# Version: 1.0 (April 25, 2026)
+# Source: Incident-Response-Runbook.md alert thresholds
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-alerts
+  namespace: monitoring
+data:
+  platform-alerts.yml: |
+    groups:
+    - name: platform_critical_alerts
+      interval: 30s
+      rules:
+
+      # =============================================================================
+      # P1 CRITICAL ALERTS (15 min response, page immediately)
+      # =============================================================================
+
+      - alert: SystemAuthenticationBypassDetected
+        expr: increase(auth_failures_total{reason="signature_invalid"}[5m]) > 0.1
+        for: 1m
+        labels:
+          severity: P1
+          category: security
+          component: authentication
+        annotations:
+          summary: "Authentication bypass detected (P1 - CRITICAL)"
+          description: >
+            Digital signature verification failures detected at rate {{ $value }}/sec.
+            This indicates a possible authentication bypass attack.
+
+            IMMEDIATE ACTIONS:
+            1. Page on-call engineer immediately via PagerDuty
+            2. Assess impact: How many unauthorized accesses? (See runbook Step 2)
+            3. Contain: Disable feature or rollback deployment (See runbook Step 3)
+            4. Investigate: Root cause analysis (See runbook Step 4)
+
+            Runbook: Incident-Response-Runbook.md → P1: Critical Incident Response
+          dashboard: "https://grafana.example.com/d/incident-response"
+          runbook: "operations-runbooks/02-Incident-Response-Runbook.md#p1-critical"
+
+      - alert: AuditTrailTamperingDetected
+        expr: audit_chain_integrity_status == "TAMPERED"
+        for: 30s
+        labels:
+          severity: P1
+          category: compliance
+          component: audit-trail
+        annotations:
+          summary: "Audit trail tampering detected (P1 - CRITICAL)"
+          description: >
+            Daily chain verification has detected tampered events.
+            Merkle-chain hash mismatch or signature verification failed.
+
+            IMMEDIATE ACTIONS:
+            1. Page compliance officer + CTO immediately
+            2. Preserve forensic evidence (database snapshot, logs)
+            3. Freeze audit trail writes to prevent further tampering
+            4. Check backup integrity
+            5. Prepare FDA notification (MDR likely required)
+
+            Runbook: Incident-Response-Runbook.md → P1: Critical Incident Response
+            Verification: Audit-Verification-Runbook.md → Emergency: Restore from Backup
+          dashboard: "https://grafana.example.com/d/audit-trail-status"
+          runbook: "operations-runbooks/02-Incident-Response-Runbook.md#p1-critical"
+
+      - alert: SystemUnavailabilityAboveThreshold
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 1m
+        labels:
+          severity: P1
+          category: availability
+          component: api
+        annotations:
+          summary: "System unavailability >5% (P1 - CRITICAL)"
+          description: >
+            API error rate is {{ $value | humanizePercentage }}.
+            System availability <95% indicates critical issue.
+
+            IMMEDIATE ACTIONS:
+            1. Page on-call engineer
+            2. Check metrics: database latency, CPU, memory, disk
+            3. Check recent deployments: rollback if needed
+            4. Check database connectivity
+            5. If unavailability >5 min: notify clinical team (patient safety risk)
+
+            Runbook: Incident-Response-Runbook.md → P1: Critical Incident Response
+          dashboard: "https://grafana.example.com/d/system-health"
+          runbook: "operations-runbooks/02-Incident-Response-Runbook.md#p1-critical"
+
+      - alert: AuthenticationFailureRateElevated
+        expr: rate(auth_failures_total[5m]) > 0.167
+        for: 2m
+        labels:
+          severity: P1
+          category: security
+          component: authentication
+        annotations:
+          summary: "Authentication failures >10/min (P1 - CRITICAL)"
+          description: >
+            Authentication failure rate is {{ $value | humanizePercentage }}/sec (~{{ $value * 60 | humanize }}/min).
+            Threshold: >0.167/sec (>10/min).
+
+            Possible causes:
+            - Brute force attack
+            - Misconfigured client
+            - Compromised credentials
+            - Compromised authentication service
+
+            IMMEDIATE ACTIONS:
+            1. Page on-call engineer
+            2. Check failed auth patterns (who/what/when?)
+            3. Check if legitimate (deployment/config issue) or attack
+            4. If attack: enable rate limiting, block suspicious IPs
+            5. If legitimate: fix configuration and monitor
+
+            Runbook: Incident-Response-Runbook.md → P1: Critical Incident Response
+          dashboard: "https://grafana.example.com/d/security-monitoring"
+          runbook: "operations-runbooks/02-Incident-Response-Runbook.md#p1-critical"
+
+      - alert: AuditTrailLagUnacceptable
+        expr: (time() - max(audit_trail_max_timestamp)) > 10
+        for: 2m
+        labels:
+          severity: P1
+          category: compliance
+          component: audit-trail
+        annotations:
+          summary: "Audit trail lag >10 seconds (P1 - CRITICAL)"
+          description: >
+            Audit trail is lagging {{ $value | humanize }}s behind current time.
+            Threshold: >10 seconds.
+
+            This indicates audit logging is falling behind, which violates CFR Part 11.
+
+            Possible causes:
+            - Database is slow (high load, missing indexes)
+            - Audit logging service down/degraded
+            - Network issues to audit trail database
+
+            IMMEDIATE ACTIONS:
+            1. Page on-call engineer
+            2. Check database performance (query latency, CPU, connections)
+            3. Check audit logging service logs
+            4. If database slow: add indexes, increase connection pool
+            5. If service down: restart service or failover
+
+            Runbook: Incident-Response-Runbook.md → P1: Critical Incident Response (P2 example)
+          dashboard: "https://grafana.example.com/d/audit-trail-status"
+          runbook: "operations-runbooks/02-Incident-Response-Runbook.md#p2-high"
+
+      - alert: PatientDataExposureDetected
+        expr: audit_unauthorized_access_attempts > 0
+        for: 30s
+        labels:
+          severity: P1
+          category: security
+          component: data-access
+        annotations:
+          summary: "Unauthorized patient data access detected (P1 - CRITICAL)"
+          description: >
+            Unauthorized access attempts to patient records detected.
+            This is a patient safety and HIPAA violation risk.
+
+            IMMEDIATE ACTIONS:
+            1. Page on-call + compliance officer + clinical team immediately
+            2. Assess: How many records accessed? What data exposed?
+            3. Determine: Was attacker able to read/modify data?
+            4. Notify: Affected patients may require notification (HIPAA)
+            5. Preserve: Keep audit logs for forensic analysis
+            6. FDA: Likely MDR submission required
+
+            Runbook: Incident-Response-Runbook.md → P1: Critical Incident Response
+          dashboard: "https://grafana.example.com/d/security-monitoring"
+          runbook: "operations-runbooks/02-Incident-Response-Runbook.md#p1-critical"
+
+      - alert: DatabaseConnectivityLost
+        expr: pg_up{job="audit-trail-db"} == 0
+        for: 30s
+        labels:
+          severity: P1
+          category: infrastructure
+          component: database
+        annotations:
+          summary: "Database connectivity lost (P1 - CRITICAL)"
+          description: >
+            Audit trail database is unreachable. All audit logging and API functionality
+            will be impaired.
+
+            IMMEDIATE ACTIONS:
+            1. Page on-call engineer
+            2. Check database pod status: kubectl get pods -n platform audit-trail-db-0
+            3. Check logs: kubectl logs -n platform audit-trail-db-0 postgres
+            4. Check network: can API reach database?
+            5. If pod crashed: check disk space, memory, crashes
+            6. If network issue: check k8s networking, security groups
+            7. Failover to backup database if available
+
+            Runbook: Incident-Response-Runbook.md → P1: Critical Incident Response
+          dashboard: "https://grafana.example.com/d/infrastructure-health"
+          runbook: "operations-runbooks/02-Incident-Response-Runbook.md#p1-critical"
+
+      # =============================================================================
+      # P2 HIGH PRIORITY ALERTS (1 hour response, acknowledge within 1 hour)
+      # =============================================================================
+
+      - alert: SystemPerformanceDegraded
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2.0
+        for: 5m
+        labels:
+          severity: P2
+          category: performance
+          component: api
+        annotations:
+          summary: "API response time >2s at p95 (P2 - HIGH)"
+          description: >
+            API response time at 95th percentile is {{ $value | humanize }}s.
+            Threshold: >2 seconds.
+
+            Possible causes:
+            - High database load
+            - Missing database indexes
+            - Slow external API calls (EHR integration)
+            - Resource contention (CPU, memory)
+
+            ACTIONS:
+            1. Acknowledge within 1 hour
+            2. Investigate slow queries
+            3. Check database indexes
+            4. Check external API latency
+            5. Monitor and resolve within 4 hours
+
+            Runbook: Incident-Response-Runbook.md → P2: High Priority
+          dashboard: "https://grafana.example.com/d/system-health"
+          runbook: "operations-runbooks/02-Incident-Response-Runbook.md#p2-high"
+
+      - alert: AuditTrailVerificationFailed
+        expr: increase(audit_chain_verification_failed_total[10m]) > 0
+        for: 1m
+        labels:
+          severity: P2
+          category: compliance
+          component: audit-trail
+        annotations:
+          summary: "Audit trail verification failure detected (P2 - HIGH)"
+          description: >
+            Daily chain verification has failed to complete successfully.
+            This means we cannot confirm audit trail integrity.
+
+            Possible causes:
+            - Database connectivity issues
+            - Corrupt audit trail data
+            - Verification script error
+            - Insufficient resources for verification
+
+            ACTIONS:
+            1. Acknowledge within 1 hour
+            2. Check verification script logs
+            3. Check database connectivity and health
+            4. Re-run verification manually to diagnose
+            5. If data corrupt: restore from backup
+            6. Resolve within 4 hours
+
+            Runbook: Audit-Verification-Runbook.md → Daily Verification Procedure
+          dashboard: "https://grafana.example.com/d/audit-trail-status"
+          runbook: "operations-runbooks/03-Audit-Verification-Runbook.md"
+
+      - alert: HighMemoryUsage
+        expr: container_memory_usage_bytes{pod=~"platform-api.*"} / container_spec_memory_limit_bytes > 0.85
+        for: 5m
+        labels:
+          severity: P2
+          category: infrastructure
+          component: compute
+        annotations:
+          summary: "Pod memory usage >85% (P2 - HIGH)"
+          description: >
+            Pod {{ $labels.pod }} is using {{ $value | humanizePercentage }} of allocated memory.
+
+            ACTIONS:
+            1. Check which pod is consuming memory
+            2. Check for memory leak (memory grows over time?)
+            3. Check logs for errors
+            4. If leak: redeploy pod
+            5. If consistent high usage: increase memory limits and add replicas
+
+            Runbook: Incident-Response-Runbook.md → P2: High Priority
+          dashboard: "https://grafana.example.com/d/infrastructure-health"
+          runbook: "operations-runbooks/02-Incident-Response-Runbook.md#p2-high"
+
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{pod=~"platform-api.*"}[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: P2
+          category: infrastructure
+          component: compute
+        annotations:
+          summary: "Pod CPU usage >80% (P2 - HIGH)"
+          description: >
+            Pod {{ $labels.pod }} is using {{ $value | humanizePercentage }} of CPU.
+
+            ACTIONS:
+            1. Check HPA status: is it scaling up?
+            2. If not scaling: check HPA limits (may have hit maxReplicas)
+            3. Check for runaway process (profiling)
+            4. If traffic spike: expected; monitor for resolution
+            5. If resource inefficiency: optimize code
+
+            Runbook: Incident-Response-Runbook.md → P2: High Priority
+          dashboard: "https://grafana.example.com/d/infrastructure-health"
+          runbook: "operations-runbooks/02-Incident-Response-Runbook.md#p2-high"
+
+      - alert: HorizontalPodAutoscalerMaxedOut
+        expr: kube_horizontalpodautoscaler_status_current_replicas{horizontalpodautoscaler="platform-api-hpa"} >= kube_horizontalpodautoscaler_spec_max_replicas{horizontalpodautoscaler="platform-api-hpa"}
+        for: 5m
+        labels:
+          severity: P2
+          category: infrastructure
+          component: scaling
+        annotations:
+          summary: "HPA maxed out at {{ $value }} replicas (P2 - HIGH)"
+          description: >
+            Horizontal Pod Autoscaler has scaled to max replicas and cannot scale further.
+            System is under sustained high load.
+
+            ACTIONS:
+            1. Check if load is expected (new feature, surge traffic?)
+            2. Increase HPA maxReplicas in deployment
+            3. Check if database is bottleneck (if so, scaling pods won't help)
+            4. Implement caching or rate limiting if appropriate
+            5. Resolve within 4 hours
+
+            Runbook: Incident-Response-Runbook.md → P2: High Priority
+          dashboard: "https://grafana.example.com/d/system-health"
+          runbook: "operations-runbooks/02-Incident-Response-Runbook.md#p2-high"
+
+      # =============================================================================
+      # P3 MEDIUM PRIORITY ALERTS (4 hour response)
+      # =============================================================================
+
+      - alert: PodRestartingFrequently
+        expr: increase(kube_pod_container_status_restarts_total{pod=~"platform-api.*"}[15m]) > 3
+        for: 5m
+        labels:
+          severity: P3
+          category: infrastructure
+          component: reliability
+        annotations:
+          summary: "Pod restarting frequently (P3 - MEDIUM)"
+          description: >
+            Pod {{ $labels.pod }} has restarted {{ $value }} times in 15 minutes.
+
+            Possible causes:
+            - Memory leak (pod killed by OOMKiller)
+            - Liveness probe failure
+            - Process crash in application
+            - Insufficient resources
+
+            ACTIONS:
+            1. Acknowledge within 4 hours
+            2. Check pod logs: kubectl logs -n platform {{ $labels.pod }}
+            3. Check previous logs: kubectl logs --previous -n platform {{ $labels.pod }}
+            4. Identify crash cause (memory, exception, etc.)
+            5. Deploy fix within 24 hours
+
+            Runbook: Incident-Response-Runbook.md → P3: Medium Priority
+          dashboard: "https://grafana.example.com/d/infrastructure-health"
+          runbook: "operations-runbooks/02-Incident-Response-Runbook.md#p3-medium"
+
+      - alert: DatabaseDiskSpaceRunningLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/var/lib/postgresql/data"} / node_filesystem_size_bytes) < 0.15
+        for: 10m
+        labels:
+          severity: P3
+          category: infrastructure
+          component: storage
+        annotations:
+          summary: "Database disk space <15% remaining (P3 - MEDIUM)"
+          description: >
+            Audit trail database volume has less than 15% free space.
+            Growth rate: {{ $value | humanize }} bytes free.
+
+            ACTIONS:
+            1. Acknowledge within 4 hours
+            2. Archive old audit trail events (>30 days)
+            3. Monitor growth rate
+            4. Plan to increase disk size before hitting 5% (emergency)
+            5. Implement automatic archival if not in place
+
+            Runbook: Incident-Response-Runbook.md → P3: Medium Priority
+          dashboard: "https://grafana.example.com/d/infrastructure-health"
+          runbook: "operations-runbooks/03-Audit-Verification-Runbook.md#step-3-archive"
+
+      - alert: HighErrorRateInLogs
+        expr: rate(log_errors_total[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: P3
+          category: reliability
+          component: logging
+        annotations:
+          summary: "High error rate in logs (P3 - MEDIUM)"
+          description: >
+            Application error rate is {{ $value | humanize }}/sec.
+
+            ACTIONS:
+            1. Check recent errors in application logs
+            2. Identify error pattern (what's failing?)
+            3. Determine if critical or cosmetic
+            4. File ticket for investigation
+            5. Deploy fix within 24 hours if critical
+
+            Runbook: Incident-Response-Runbook.md → P3: Medium Priority
+          dashboard: "https://grafana.example.com/d/application-logs"
+          runbook: "operations-runbooks/02-Incident-Response-Runbook.md#p3-medium"
+
+      # =============================================================================
+      # COMPLIANCE MONITORING (Not incident severity, but FDA requirement)
+      # =============================================================================
+
+      - alert: MFAEnforcementCheckNeeded
+        expr: increase(auth_mfa_disabled_sessions[1h]) > 0
+        for: 1m
+        labels:
+          severity: compliance
+          category: security
+          component: authentication
+        annotations:
+          summary: "Non-MFA sessions detected (COMPLIANCE)"
+          description: >
+            Sessions exist without MFA enabled.
+            Requirement: REQUIRE_MFA=true per SDLC-IEC62304-Flow.
+
+            INVESTIGATION:
+            1. Check who/when/why MFA was disabled
+            2. Check audit trail for authorization
+            3. Ensure re-enabled before next release
+
+            Compliance: IEC 62304, HIPAA Access Control Rule
+          dashboard: "https://grafana.example.com/d/compliance-scorecard"
+
+      - alert: EncryptionAlgorithmCheckNeeded
+        expr: audit_events_encrypted_with_algorithm{algorithm!="AES-256-GCM"} > 0
+        for: 1m
+        labels:
+          severity: compliance
+          category: security
+          component: encryption
+        annotations:
+          summary: "Non-AES-256-GCM encryption detected (COMPLIANCE)"
+          description: >
+            Events encrypted with algorithm other than AES-256-GCM detected.
+            Requirement: ENCRYPTION_ALGORITHM=AES-256-GCM per configuration.
+
+            INVESTIGATION:
+            1. Check which events/records use non-compliant encryption
+            2. Determine if old data (acceptable) or new (issue)
+            3. If new: fix encryption service
+            4. Plan re-encryption of historical data if needed
+
+            Compliance: HIPAA Security Rule §164.312(a)(2)(ii)
+          dashboard: "https://grafana.example.com/d/compliance-scorecard"
+
+      - alert: SessionTimeoutEnforced
+        expr: audit_sessions_exceeding_timeout{timeout_minutes="30"} > 0
+        for: 1m
+        labels:
+          severity: compliance
+          category: security
+          component: session-management
+        annotations:
+          summary: "Sessions exceeding 30-min timeout detected (COMPLIANCE)"
+          description: >
+            Active sessions lasting longer than SESSION_TIMEOUT_MINUTES=30 detected.
+
+            INVESTIGATION:
+            1. Check if timeout is correctly configured
+            2. Check if sessions are being forcefully terminated
+            3. Check if users have legitimate reason for long sessions
+            4. Verify session timeout enforcement in code
+
+            Compliance: HIPAA Security Rule §164.312(a)(2)(i)
+          dashboard: "https://grafana.example.com/d/compliance-scorecard"
+
+    # =============================================================================
+    # RECORDING RULES (For dashboard performance, compute frequently-needed metrics)
+    # =============================================================================
+
+    - name: platform_recording_rules
+      interval: 15s
+      rules:
+
+      - record: audit_trail_max_timestamp
+        expr: max(audit_trail_timestamp_seconds)
+
+      - record: audit_unauthorized_access_attempts
+        expr: increase(audit_events_total{action_type="unauthorized_access"}[5m])
+
+      - record: audit_chain_integrity_status
+        expr: max(audit_verification_last_status)
+
+      - record: auth_failures_total
+        expr: increase(authentication_failures_total[5m])
+
+      - record: auth_mfa_disabled_sessions
+        expr: count(session_mfa_enabled == 0)
+
+      - record: audit_events_encrypted_with_algorithm
+        expr: count by (algorithm) (audit_events_total{encrypted="true"})
+
+      - record: audit_sessions_exceeding_timeout
+        expr: count(session_duration_seconds > 1800)
+
+      - record: log_errors_total
+        expr: increase(application_error_count_total[5m])
