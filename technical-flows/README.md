@@ -263,14 +263,16 @@ def approve_design_phase(design_id, approver_user_id):
 
 ---
 
-## Next Technical Flows
+## Complete Technical Stack (6 Flows)
 
-### Planned (Not Yet Built)
+All 6 technical flows are now complete and integrated:
 
-- **Flow 3:** Data Security & EHR Integration (FHIR mapping, encryption, access control)
-- **Flow 4:** Risk Management Flow (ISO 14971 FMEA integration)
-- **Flow 5:** Supply Chain Security Flow (SLSA v1.0 provenance, dependency scanning)
-- **Flow 6:** Post-Market Surveillance Flow (clinical event capture, signal detection, FDA reporting)
+✅ **Flow 1: SDLC (IEC 62304)** — 6-phase development with 8 approval gates
+✅ **Flow 2: Audit Trail (CFR Part 11)** — Merkle-chain hashing + digital signatures
+✅ **Flow 3: Data Security & EHR** — AES-256-GCM encryption + FHIR integration
+✅ **Flow 4: Risk Management (ISO 14971)** — 18 hazards → FMEA → residual risk
+✅ **Flow 5: Supply Chain Security (SLSA v1.0)** — Provenance attestation + SCA
+✅ **Flow 6: Post-Market Surveillance** — Adverse event detection + MDR reporting
 
 ---
 
