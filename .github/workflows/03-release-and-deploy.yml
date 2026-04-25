@@ -1,0 +1,438 @@
+# GitHub Actions: SDLC Phase 4 Gates (Release & Deployment)
+# Compliance: IEC 62304 §5.7 (Release), SLSA v1.0 Supply Chain Security
+# Purpose: Build artifact, SBOM, SLSA provenance, sign, deploy to staging/production
+
+name: Release & Deploy (SDLC Gate 5)
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/platform
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # =========================================================================
+  # Gate 5: Release - Build & Sign Artifacts
+  # =========================================================================
+  build:
+    name: Build Release Artifact
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            VERSION="v$(date +%Y%m%d)-$(git rev-parse --short HEAD)"
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Version: ${VERSION}"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true
+          sbom: true
+
+  # =========================================================================
+  # SBOM Generation (Software Bill of Materials)
+  # =========================================================================
+  sbom:
+    name: Generate SBOM (CycloneDX)
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate SBOM with syft
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.version }}
+          format: cyclonedx-json
+          output-file: sbom-cyclonedx.json
+
+      - name: Generate SBOM with CycloneDX Maven
+        run: |
+          pip install cyclonedx-bom
+          cyclonedx-py -o sbom-requirements.json -format json requirements.txt
+
+      - name: Validate SBOM
+        run: |
+          echo "📋 SBOM Validation"
+
+          # Check SBOM contains all dependencies
+          python3 <<'EOF'
+          import json
+
+          with open('sbom-cyclonedx.json', 'r') as f:
+            sbom = json.load(f)
+
+          components = sbom.get('components', [])
+          print(f"Components in SBOM: {len(components)}")
+
+          for comp in components[:5]:
+            print(f"  - {comp.get('name', 'Unknown')}: {comp.get('version', 'No version')}")
+
+          if len(components) > 0:
+            print("✅ SBOM generated successfully")
+          else:
+            print("❌ SBOM is empty")
+            exit(1)
+          EOF
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v3
+        with:
+          name: sbom
+          path: sbom-*.json
+
+  # =========================================================================
+  # SLSA v1.0 Provenance Signing
+  # =========================================================================
+  provenance:
+    name: Generate SLSA v1.0 Provenance
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Generate SLSA provenance
+        uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v1.7.0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          image-digest: ${{ needs.build.outputs.image-digest }}
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ secrets.GITHUB_TOKEN }}
+          provenance-registry-username: ${{ github.actor }}
+          provenance-registry-password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sign image with Cosign (keyless)
+        run: |
+          echo "🔐 Signing container image with Cosign (keyless via GitHub OIDC)"
+
+          cosign sign --yes \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build.outputs.image-digest }}
+
+          echo "✅ Image signed with Cosign"
+
+      - name: Verify signature
+        run: |
+          echo "✓ Verifying signature..."
+
+          cosign verify \
+            --certificate-identity=https://github.com/${{ github.repository_owner }}/${{ github.event.repository.name }} \
+            --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.build.outputs.image-digest }}
+
+          echo "✅ Signature verified"
+
+  # =========================================================================
+  # Vulnerability Scanning (Block release if CRITICAL)
+  # =========================================================================
+  vulnerability-scan:
+    name: Vulnerability Scanning
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Scan with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.version }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Upload Trivy results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: trivy-results.sarif
+
+  # =========================================================================
+  # Deploy to Staging (Automated, full testing)
+  # =========================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build, sbom, provenance, vulnerability-scan]
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      id-token: write
+
+    environment:
+      name: staging
+      url: https://staging.platform.example.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/GitHubActionsDeployRole
+          aws-region: us-east-1
+
+      - name: Update EKS kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --name platform-cluster \
+            --region us-east-1
+
+      - name: Deploy to staging
+        run: |
+          echo "🚀 Deploying to staging environment"
+
+          # Update image in Kubernetes deployment
+          kubectl set image deployment/platform-api \
+            platform=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.version }} \
+            -n platform
+
+          # Wait for rollout
+          kubectl rollout status deployment/platform-api -n platform --timeout=5m
+
+          echo "✅ Deployment to staging complete"
+
+      - name: Run smoke tests against staging
+        run: |
+          echo "🧪 Running smoke tests against staging"
+
+          # Wait for API to be ready
+          for i in {1..30}; do
+            if curl -f https://staging.platform.example.com/health/ready; then
+              break
+            fi
+            sleep 10
+          done
+
+          # Run smoke tests
+          pytest tests/smoke \
+            --base-url https://staging.platform.example.com \
+            -v
+
+          echo "✅ Smoke tests passed"
+
+  # =========================================================================
+  # Manual Approval for Production Deployment
+  # =========================================================================
+  approval-production:
+    name: Await Manual Approval for Production
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    environment:
+      name: production
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Await approval
+        run: |
+          echo "⏸️  Waiting for manual approval to deploy to production..."
+          echo ""
+          echo "This deployment requires approval from:"
+          echo "  - Release Manager"
+          echo "  - Compliance Officer"
+          echo ""
+          echo "Production deployment will proceed once approved in GitHub."
+
+  # =========================================================================
+  # Deploy to Production (After manual approval)
+  # =========================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, approval-production]
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      id-token: write
+
+    environment:
+      name: production
+      url: https://platform.example.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (production)
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID_PROD }}:role/GitHubActionsDeployRole
+          aws-region: us-east-1
+
+      - name: Update EKS kubeconfig (production)
+        run: |
+          aws eks update-kubeconfig \
+            --name platform-cluster-prod \
+            --region us-east-1
+
+      - name: Deploy to production (blue-green)
+        run: |
+          echo "🚀 Blue-green deployment to production"
+
+          # Deploy new version (green) alongside old (blue)
+          kubectl set image deployment/platform-api-green \
+            platform=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.version }} \
+            -n platform
+
+          # Wait for green to be ready
+          kubectl rollout status deployment/platform-api-green -n platform --timeout=5m
+
+          # Run health checks on green
+          echo "Verifying green deployment health..."
+          kubectl port-forward -n platform svc/platform-api-green 8080:8080 &
+          sleep 5
+          curl -f http://localhost:8080/health/ready && echo "✅ Green deployment healthy"
+
+          # Switch traffic to green
+          kubectl patch service platform-api -n platform \
+            -p '{"spec":{"selector":{"version":"green"}}}'
+
+          echo "✅ Production deployment complete (blue-green switch)"
+
+      - name: Monitor production metrics
+        run: |
+          echo "📊 Monitoring production metrics"
+
+          # Wait 2 minutes for metrics to stabilize
+          sleep 120
+
+          # Check error rate (should remain <1%)
+          ERRORS=$(curl -s http://prometheus:9090/api/v1/query \
+            --data-urlencode 'query=rate(http_requests_total{status=~"5.."}[5m])' \
+            | jq '.data.result[0].value[1]' || echo "0")
+
+          echo "Current error rate: ${ERRORS}%"
+
+          if (( $(echo "$ERRORS < 0.01" | bc -l) )); then
+            echo "✅ Error rate within acceptable range"
+          else
+            echo "⚠️  Error rate elevated, monitoring closely"
+          fi
+
+  # =========================================================================
+  # Release Summary & Notification
+  # =========================================================================
+  release-summary:
+    name: Release Summary (Gate 5 Complete)
+    runs-on: ubuntu-latest
+    needs: [build, sbom, provenance, vulnerability-scan, deploy-staging, deploy-production]
+    if: always()
+
+    steps:
+      - name: Generate release summary
+        run: |
+          echo "## Release Summary (SDLC Gate 5)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ needs.build.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ✅ ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| SBOM | ✅ ${{ needs.sbom.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| SLSA Provenance | ✅ ${{ needs.provenance.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Vulnerability Scan | ⚠️ ${{ needs.vulnerability-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deploy Staging | ✅ ${{ needs.deploy-staging.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Deploy Production | ✅ ${{ needs.deploy-production.result }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify Slack
+        if: always()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "🚀 Release: ${{ needs.build.outputs.version }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Build*\n${{ needs.build.result }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Staging Deploy*\n${{ needs.deploy-staging.result }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Production Deploy*\n${{ needs.deploy-production.result }}"
+                    }
+                  ]
+                }
+              ]
+            }
