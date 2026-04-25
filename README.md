@@ -161,6 +161,10 @@ Check if your organization's repos are compliant:
 # Verify all repos in your organization
 ./scripts/verify-audit-logging.sh timothyhartzog compliance-report
 ```
+| security-scan.yml | SAST (Semgrep), secret detection, SBOM, supply chain | `uses: timothyhartzog/.github/.github/workflows/security-scan.yml@main` |
+| code-quality.yml | CodeQL, dependency review, license compliance, repo hygiene | `uses: timothyhartzog/.github/.github/workflows/code-quality.yml@main` |
+| release.yml | Conventional commit changelog, semver bumps, GitHub releases | `uses: timothyhartzog/.github/.github/workflows/release.yml@main` |
+| container.yml | Docker build, Hadolint, Trivy scan, GHCR push, attestation | `uses: timothyhartzog/.github/.github/workflows/container.yml@main` |
 
 ## Features
 
@@ -226,6 +230,39 @@ Check if your organization's repos are compliant:
 - Local run: `AUDIT_ORG=timothyhartzog COMPLIANCE_JSON=compliance-report/compliance.json npm run audit`
 
 ### Audit Logging (`audit-log.yml`)
+### Security Scanning (security-scan.yml)
+- **SAST**: Semgrep with OWASP Top 10 + CWE Top 25 rulesets, SARIF upload to GitHub Security
+- **Secret detection**: TruffleHog scans full git history for verified credentials/keys/tokens
+- **Sensitive file detection**: Flags `.env`, `*.pem`, `*.key`, credentials files
+- **SBOM generation**: Syft produces SPDX + CycloneDX bills of materials for every build
+- **Vulnerability scanning**: Grype scans SBOM for known CVEs, fails on Critical severity
+- **Supply chain checks**: Flags unpinned GitHub Actions, missing lockfiles, `.gitignore` gaps
+
+### Code Quality & Compliance (code-quality.yml)
+- **CodeQL**: Deep semantic analysis across JS/TS, Python, Go, Java, C/C++, Ruby — auto-detects languages
+- **Dependency review**: Blocks PRs introducing high-severity vulnerabilities or forbidden licenses
+- **License compliance**: Scans Node, Python, and Rust dependencies against configurable allow/deny lists
+- **Repository hygiene**: Checks for README, LICENSE, SECURITY.md, CODEOWNERS, CI workflows
+- **Code inspection**: Flags large files, debug statements in production code, tech debt markers
+
+### Release Automation (release.yml)
+- Parses conventional commits (`feat:`, `fix:`, `feat!:`) to determine semver bump
+- Auto-generates categorized changelog (breaking changes, features, fixes, contributors)
+- Updates version in `package.json`, `Cargo.toml`, `pyproject.toml`, `VERSION`
+- Creates annotated git tag and GitHub release with changelog body
+- Supports manual override (major/minor/patch), draft releases, prereleases
+- Outputs version, tag, and release URL for downstream jobs
+
+### Container (container.yml)
+- **Hadolint**: Lints Dockerfile for best practices before building
+- **Multi-platform builds**: Supports `linux/amd64`, `linux/arm64`, etc. via QEMU + Buildx
+- **Smart tagging**: Semver tags (`v1`, `v1.2`, `v1.2.3`), branch tags, SHA tags, `latest` on main
+- **GHCR push**: Builds and pushes to `ghcr.io/<org>/<repo>` with GHA layer caching
+- **Build attestation**: SLSA provenance attestation pushed alongside image
+- **Trivy scan**: Scans built image for CVEs, uploads SARIF to GitHub Security tab, fails on critical/high
+- **OCI labels**: Embeds source URL, revision, and build timestamp in image metadata
+
+### Audit Logging
 - Every build tracked in `audit-log/ledger.json` per repo
 - Records: **date_created**, **date_modified**, **date_last_reviewed**, commit SHA, author, branch, tag
 - Full references: commit URL, run URL, tree URL, compare URL
@@ -349,6 +386,45 @@ jobs:
     with:
       reviewer: ${{ inputs.reviewer }}
       notes: ${{ inputs.notes }}
+### Security & compliance (every repo should include this)
+```yaml
+name: Security
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 7 * * 1"  # Weekly Monday scan
+jobs:
+  security:
+    uses: timothyhartzog/.github/.github/workflows/security-scan.yml@main
+    permissions:
+      security-events: write
+      contents: read
+  quality:
+    uses: timothyhartzog/.github/.github/workflows/code-quality.yml@main
+    permissions:
+      security-events: write
+      contents: read
+      pull-requests: write
+```
+
+### Release (manual trigger)
+```yaml
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      release-type:
+        type: choice
+        options: [auto, major, minor, patch]
+        default: auto
+jobs:
+  release:
+    uses: timothyhartzog/.github/.github/workflows/release.yml@main
+    with:
+      release-type: ${{ inputs.release-type }}
     permissions:
       contents: write
 ```
@@ -408,3 +484,23 @@ cat audit-log/ledger.json | jq '.review_history'
 cat audit-log/ledger.json | jq '.summary.date_last_reviewed'
 ```
 
+### Container (repos with Dockerfile)
+```yaml
+name: Container
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  container:
+    uses: timothyhartzog/.github/.github/workflows/container.yml@main
+    with:
+      platforms: "linux/amd64,linux/arm64"
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+      security-events: write
+```
