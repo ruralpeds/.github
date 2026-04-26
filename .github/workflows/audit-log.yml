@@ -38,8 +38,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write   # for Sigstore keyless OIDC signing of chain entries
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           fetch-depth: 0
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
@@ -273,6 +274,34 @@ jobs:
               json.dump(entry, f, indent=2)
           print(f"Entry: {entry_path}")
           PYEOF
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@fb28c2b6339dcd94da6e4cbcbc5e888961f6f8c3  # v3.9.0
+
+      - name: Append to Merkle chain
+        env:
+          COSIGN_YES: "true"
+        run: |
+          python3 -c "
+          import json, os
+
+          event_data = {
+              'repo': os.environ.get('GITHUB_REPOSITORY', ''),
+              'sha': os.environ.get('GITHUB_SHA', ''),
+              'ref': os.environ.get('GITHUB_REF', ''),
+              'workflow': os.environ.get('GITHUB_WORKFLOW', ''),
+              'run_id': os.environ.get('GITHUB_RUN_ID', ''),
+              'actor': os.environ.get('GITHUB_ACTOR', ''),
+              'event': os.environ.get('GITHUB_EVENT_NAME', ''),
+          }
+          with open('/tmp/chain-event.json', 'w') as f:
+              json.dump(event_data, f)
+          "
+          python3 scripts/chain/append.py \
+            --event-type build.completed \
+            --event-data /tmp/chain-event.json \
+            --chain audit-log/chain.ndjson \
+            --sign
 
       - name: Commit audit log to repo
         run: |
