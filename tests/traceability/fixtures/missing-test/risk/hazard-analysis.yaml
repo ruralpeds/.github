@@ -1,0 +1,11 @@
+version: "1.0"
+hazards:
+  - id: HZ-001
+    title: "Invalid GA accepted"
+    severity: negligible
+    probability: incredible
+    risk_level: acceptable
+    controls:
+      - id: RC-001
+        title: "Input validation"
+        type: protective-measure

@@ -1,0 +1,14 @@
+version: "1.0"
+hazards:
+  - id: HZ-001
+    title: "Invalid GA accepted"
+    severity: serious
+    probability: occasional
+    risk_level: alarp
+    controls:
+      - id: RC-001
+        title: "Input validation gate"
+        type: protective-measure
+    severity_residual: negligible
+    probability_residual: incredible
+    risk_level_residual: acceptable

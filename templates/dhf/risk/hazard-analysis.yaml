@@ -1,0 +1,45 @@
+# yaml-language-server: $schema=../../../policies/dhf/schemas/hazard-analysis.schema.json
+#
+# Hazard Analysis — ISO 14971:2019 §5
+#
+# Each hazard must have:
+#   - A unique ID in the format HZ-NNN
+#   - Severity and probability BEFORE risk controls (initial)
+#   - Risk controls (RC-NNN objects) with type: inherent-safety, protective-measure, or information-for-safety
+#   - Severity and risk level AFTER risk controls (residual)
+#
+# Severity scale: negligible | minor | serious | critical | catastrophic
+# Probability:    frequent | probable | occasional | remote | improbable | incredible
+# Risk level:     unacceptable | alarp | acceptable
+#
+# Traceability rule: every RC-NNN listed here must also appear in
+# requirements/software-requirements.yaml under `risk_controls:` for at least one SW-NNN.
+
+version: "1.0"
+hazards:
+
+  - id: HZ-001
+    title: "[REPLACE] System accepts invalid <input>"
+    description: "[REPLACE] Describe the hazardous condition."
+    hazardous_situation: "[REPLACE] Describe what happens when the hazard occurs."
+    harm: "[REPLACE] Describe the patient harm that could result."
+
+    # Initial risk (before controls)
+    severity: serious          # negligible | minor | serious | critical | catastrophic
+    probability: occasional    # frequent | probable | occasional | remote | improbable | incredible
+    risk_level: alarp          # unacceptable | alarp | acceptable
+
+    # Risk controls — each RC-NNN must be referenced by a SW-NNN requirement
+    controls:
+      - id: RC-001
+        title: "[REPLACE] Input validation gate"
+        type: protective-measure   # inherent-safety | protective-measure | information-for-safety
+        description: "[REPLACE] Describe what this control does."
+        implemented_in: "src/validation.rs"  # optional: relative path
+
+    # Residual risk (after controls are applied)
+    severity_residual: negligible
+    probability_residual: incredible
+    risk_level_residual: acceptable
+
+  # Add more hazards below. The template HZ-001 entry should be replaced or retired.

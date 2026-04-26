@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ruralpeds.github.io/schemas/dhf/requirements.schema.json",
+  "title": "IEC 62304 Software Requirements",
+  "description": "Schema for dhf/requirements/software-requirements.yaml",
+  "type": "object",
+  "required": ["version", "requirements"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version (e.g. '1.0')"
+    },
+    "requirements": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/requirement" },
+      "minItems": 0
+    }
+  },
+  "$defs": {
+    "requirement": {
+      "type": "object",
+      "required": ["id", "title", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^SW-\\d{3,}$",
+          "description": "Unique software requirement ID (e.g. SW-001)"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 5
+        },
+        "description": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "active", "retired"],
+          "description": "Lifecycle status; retired reqs should not be tested"
+        },
+        "parent": {
+          "type": "string",
+          "pattern": "^SYS-\\d{3,}$",
+          "description": "Parent system requirement ID (optional)"
+        },
+        "risk_controls": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^RC-\\d{3,}$"
+          },
+          "description": "Risk control IDs that this requirement implements"
+        },
+        "implemented": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "location": { "type": "string", "description": "Relative file path" },
+            "symbol": { "type": "string", "description": "Function or type name" }
+          }
+        },
+        "rationale": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

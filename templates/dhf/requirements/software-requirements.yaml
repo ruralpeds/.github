@@ -1,0 +1,32 @@
+# yaml-language-server: $schema=../../../policies/dhf/schemas/requirements.schema.json
+#
+# Software Requirements Specification — IEC 62304 §5.2
+#
+# Instructions:
+#   1. Replace SW-001 with your actual requirements.
+#   2. Set status: draft during initial authoring; active before the first release.
+#   3. Never delete requirements — mark them status: retired instead.
+#   4. For each requirement that implements a risk control, add the RC-### to risk_controls.
+#   5. Run `python scripts/traceability/check_gaps.py --dhf dhf` to check coverage.
+
+version: "1.0"
+requirements:
+
+  - id: SW-001
+    title: "[REPLACE] System shall validate <input> before processing"
+    description: >
+      Replace this with a precise, verifiable requirement.
+      Good requirements are testable: you must be able to write a test that
+      definitively passes or fails against this statement.
+    status: draft          # draft | active | retired
+    parent: SYS-001        # optional — parent system requirement ID
+    risk_controls: []      # e.g. [RC-001] if this req implements a risk control
+    implemented:
+      location: "src/todo.rs"   # relative path to the implementing file
+      symbol: "todo_function"   # function/type name
+    rationale: >
+      Brief explanation of why this requirement exists and any regulatory
+      reference (e.g., "Per ACOG guidelines, 22 weeks is the minimum
+      viable gestational age for this calculation").
+
+  # Add more requirements below. Do NOT delete this stub — retire it instead.

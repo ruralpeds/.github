@@ -1,0 +1,11 @@
+version: "1.0"
+hazards:
+  - id: HZ-001
+    title: "Test hazard"
+    severity: negligible
+    probability: incredible
+    risk_level: acceptable
+    controls:
+      - id: RC-001
+        title: "Orphan control (not cited by any requirement)"
+        type: protective-measure

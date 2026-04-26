@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ruralpeds.github.io/schemas/dhf/hazard-analysis.schema.json",
+  "title": "ISO 14971 Hazard Analysis",
+  "description": "Schema for dhf/risk/hazard-analysis.yaml",
+  "type": "object",
+  "required": ["version", "hazards"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string" },
+    "hazards": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/hazard" }
+    }
+  },
+  "$defs": {
+    "severity": {
+      "type": "string",
+      "enum": ["negligible", "minor", "serious", "critical", "catastrophic"]
+    },
+    "probability": {
+      "type": "string",
+      "enum": ["frequent", "probable", "occasional", "remote", "improbable", "incredible"]
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["unacceptable", "alarp", "acceptable"]
+    },
+    "risk_control": {
+      "type": "object",
+      "required": ["id", "title", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^RC-\\d{3,}$"
+        },
+        "title": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["inherent-safety", "protective-measure", "information-for-safety"]
+        },
+        "description": { "type": "string" },
+        "implemented_in": { "type": "string", "description": "Relative file path" }
+      }
+    },
+    "hazard": {
+      "type": "object",
+      "required": ["id", "title", "severity", "probability", "risk_level", "controls"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^HZ-\\d{3,}$"
+        },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "hazardous_situation": { "type": "string" },
+        "harm": { "type": "string" },
+        "severity": { "$ref": "#/$defs/severity" },
+        "probability": { "$ref": "#/$defs/probability" },
+        "risk_level": { "$ref": "#/$defs/risk_level" },
+        "controls": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/risk_control" },
+          "description": "Risk control measures (RC-### objects)"
+        },
+        "severity_residual": { "$ref": "#/$defs/severity" },
+        "probability_residual": { "$ref": "#/$defs/probability" },
+        "risk_level_residual": { "$ref": "#/$defs/risk_level" },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}
