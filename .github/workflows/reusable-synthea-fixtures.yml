@@ -1,0 +1,244 @@
+name: "Generate Synthetic Patient FHIR Bundles (Synthea)"
+
+# Generate realistic FHIR bundles without PHI for clinical testing.
+#
+# This workflow:
+#   1. Clones Synthea (synth-data-med/synthea)
+#   2. Configures cohorts: 100 neonatal, 100 infant, 50 toddler, 50 school-age
+#   3. Generates deterministic FHIR bundles (seeded RNG for reproducibility)
+#   4. Validates FHIR output (syntax check)
+#   5. Caches fixtures in tests/fixtures/fhir/synthetic/ for test reuse
+#   6. Uploads as workflow artifact (90-day retention)
+#
+# Integration points:
+#   - Called by reusable-fhir-validation.yml (next layer)
+#   - Called by clinical test suites in CI
+#   - Reusable across multiple test workflows
+#
+# Regulatory drivers:
+#   - IEC 62304 §7.3 — Verification with realistic test data
+#   - FDA guidance: use synthetic data (no real PHI) for preclinical validation
+#   - HIPAA: synthetic data has no PHI risk
+
+on:
+  workflow_call:
+    inputs:
+      cohort_neonatal:
+        description: "Number of neonatal patients (age 0-28 days)"
+        required: false
+        type: number
+        default: 100
+      cohort_infant:
+        description: "Number of infant patients (age 29 days - 1 year)"
+        required: false
+        type: number
+        default: 100
+      cohort_toddler:
+        description: "Number of toddler patients (age 1-3 years)"
+        required: false
+        type: number
+        default: 50
+      cohort_school_age:
+        description: "Number of school-age patients (age 4-12 years)"
+        required: false
+        type: number
+        default: 50
+      seed:
+        description: "RNG seed for deterministic generation (default: current week)"
+        required: false
+        type: string
+        default: "reproducible-weekly"
+
+permissions:
+  contents: read
+
+jobs:
+  generate-fixtures:
+    name: Generate Synthea FHIR Bundles
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      fixture_count: ${{ steps.generate.outputs.fixture_count }}
+      fixture_hash: ${{ steps.generate.outputs.fixture_hash }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Clone Synthea
+        run: |
+          echo "=== Cloning Synthea ==="
+          cd /tmp
+          git clone --depth=1 https://github.com/synth-data-med/synthea.git
+          cd synthea
+          ./gradlew build -x test
+          echo "✅ Synthea built"
+
+      - name: Configure Synthea cohorts
+        run: |
+          echo "=== Configuring Synthea Cohorts ==="
+          
+          # Create properties file with cohort configuration
+          cat > /tmp/synthea/src/main/resources/synthea.properties <<'SYNTHEA_PROPERTIES'
+# Clinical test cohorts (deterministic, no real PHI)
+generate.default_state = Massachusetts
+generate.default_city = Boston
+
+# Pediatric/neonatal cohorts
+generate.neonatal_count = ${{ inputs.cohort_neonatal }}
+generate.infant_count = ${{ inputs.cohort_infant }}
+generate.toddler_count = ${{ inputs.cohort_toddler }}
+generate.school_age_count = ${{ inputs.cohort_school_age }}
+
+# Output format
+generate.fhir_output = true
+generate.csv_output = false
+generate.json_output = false
+
+# Deterministic RNG seed
+generate.seed = $(date +%Y-%W)  # Weekly seed (Year-Week)
+
+# Module settings
+exporter.baseDirectory = ./output/fhir
+SYNTHEA_PROPERTIES
+          
+          echo "✅ Cohort configuration set"
+          echo "  - Neonatal: ${{ inputs.cohort_neonatal }}"
+          echo "  - Infant: ${{ inputs.cohort_infant }}"
+          echo "  - Toddler: ${{ inputs.cohort_toddler }}"
+          echo "  - School-age: ${{ inputs.cohort_school_age }}"
+
+      - name: Generate FHIR bundles
+        id: generate
+        run: |
+          echo "=== Generating Synthetic FHIR Bundles ==="
+          
+          cd /tmp/synthea
+          java -jar build/libs/synthea-with-dependencies.jar \
+            -a 0-12 \
+            -s ${{ inputs.seed }} \
+            -p $(({{ inputs.cohort_neonatal }} + {{ inputs.cohort_infant }} + {{ inputs.cohort_toddler }} + {{ inputs.cohort_school_age }})) \
+            Massachusetts 2>&1 | tee /tmp/synthea_output.log
+          
+          echo "✅ FHIR bundles generated"
+          
+          # Count fixtures
+          fixture_count=$(find output/fhir -name "*.json" | wc -l)
+          echo "fixture_count=${fixture_count}" >> $GITHUB_OUTPUT
+          
+          # Hash fixtures for cache busting
+          fixture_hash=$(find output/fhir -name "*.json" -exec md5sum {} \; | md5sum | cut -d' ' -f1)
+          echo "fixture_hash=${fixture_hash}" >> $GITHUB_OUTPUT
+          
+          echo "Generated $fixture_count FHIR resources"
+
+      - name: Validate FHIR syntax
+        run: |
+          echo "=== Validating FHIR Syntax ==="
+          
+          python3 <<'PYTHON_EOF'
+          import json
+          import os
+          
+          valid_count = 0
+          invalid_count = 0
+          
+          for root, dirs, files in os.walk('/tmp/synthea/output/fhir'):
+              for file in files:
+                  if file.endswith('.json'):
+                      filepath = os.path.join(root, file)
+                      try:
+                          with open(filepath, 'r') as f:
+                              data = json.load(f)
+                          if 'resourceType' in data:
+                              valid_count += 1
+                          else:
+                              print(f"⚠️  Missing resourceType: {file}")
+                              invalid_count += 1
+                      except json.JSONDecodeError as e:
+                          print(f"❌ Invalid JSON: {file} — {e}")
+                          invalid_count += 1
+          
+          print(f"\n✅ Validation complete: {valid_count} valid, {invalid_count} invalid")
+          if invalid_count > 0:
+              exit(1)
+          PYTHON_EOF
+
+      - name: Copy fixtures to test directory
+        run: |
+          echo "=== Copying Fixtures to Test Directory ==="
+          
+          mkdir -p tests/fixtures/fhir/synthetic
+          cp -v /tmp/synthea/output/fhir/*.json tests/fixtures/fhir/synthetic/
+          
+          echo "✅ Fixtures copied to tests/fixtures/fhir/synthetic/"
+          ls -lh tests/fixtures/fhir/synthetic/ | head -20
+
+      - name: Generate fixture index
+        run: |
+          echo "=== Generating Fixture Index ==="
+          
+          python3 <<'PYTHON_EOF'
+          import json
+          import os
+          from pathlib import Path
+          
+          # Build index of all fixtures
+          fixtures = {}
+          fixture_dir = Path('tests/fixtures/fhir/synthetic')
+          
+          for json_file in sorted(fixture_dir.glob('*.json')):
+              with open(json_file, 'r') as f:
+                  data = json.load(f)
+              
+              resource_type = data.get('resourceType')
+              if resource_type not in fixtures:
+                  fixtures[resource_type] = []
+              
+              fixtures[resource_type].append({
+                  'file': json_file.name,
+                  'id': data.get('id'),
+                  'size_kb': json_file.stat().st_size / 1024
+              })
+          
+          # Write index
+          index = {
+              'total_resources': sum(len(v) for v in fixtures.values()),
+              'resource_types': list(fixtures.keys()),
+              'fixtures': fixtures
+          }
+          
+          with open('tests/fixtures/fhir/synthetic/INDEX.json', 'w') as f:
+              json.dump(index, f, indent=2)
+          
+          print(f"✅ Index created: {index['total_resources']} resources")
+          print(f"Resource types: {', '.join(index['resource_types'][:5])}...")
+          PYTHON_EOF
+
+      - name: Upload fixtures as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthea-fhir-fixtures-${{ github.run_id }}
+          path: tests/fixtures/fhir/synthetic/
+          retention-days: 90
+
+      - name: Summary
+        run: |
+          echo "=== Synthea Fixture Generation Summary ==="
+          echo "Fixture count: ${{ steps.generate.outputs.fixture_count }}"
+          echo "Fixture hash: ${{ steps.generate.outputs.fixture_hash }}"
+          echo "Cohorts:"
+          echo "  - Neonatal (0-28d): ${{ inputs.cohort_neonatal }}"
+          echo "  - Infant (29d-1y): ${{ inputs.cohort_infant }}"
+          echo "  - Toddler (1-3y): ${{ inputs.cohort_toddler }}"
+          echo "  - School-age (4-12y): ${{ inputs.cohort_school_age }}"
+          echo ""
+          echo "✅ Fixtures ready for FHIR validation and clinical testing"

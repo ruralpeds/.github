@@ -1,0 +1,144 @@
+{
+  "properties": [
+    {
+      "name": "data-classification",
+      "description": "Data classification level (ePHI handling, sensitivity)",
+      "valueType": "single_select",
+      "required": true,
+      "allowedValues": [
+        {
+          "name": "public",
+          "description": "Publicly available; no ePHI, no PII"
+        },
+        {
+          "name": "internal",
+          "description": "Internal use; no ePHI; may contain internal docs/designs"
+        },
+        {
+          "name": "synthetic",
+          "description": "Synthetic test data (Synthea fixtures, mock patients); never real ePHI"
+        },
+        {
+          "name": "phi-capable",
+          "description": "Can process ePHI in principle (e.g., FHIR API framework); not actively used for ePHI today"
+        },
+        {
+          "name": "phi-active",
+          "description": "Actively processes/stores real ePHI in production"
+        }
+      ],
+      "defaultValue": "internal"
+    },
+    {
+      "name": "criticality",
+      "description": "Clinical/business criticality level",
+      "valueType": "single_select",
+      "required": true,
+      "allowedValues": [
+        {
+          "name": "experimental",
+          "description": "Research, prototype, proof-of-concept; not used clinically"
+        },
+        {
+          "name": "reference",
+          "description": "Reference implementation, educational, documentation; not used in clinical decisions"
+        },
+        {
+          "name": "clinical-support",
+          "description": "Supports clinical workflows (e.g., patient data portal, charting UX); non-critical to patient care"
+        },
+        {
+          "name": "clinical-decision",
+          "description": "Clinical decision support (CDS); impacts patient diagnosis/treatment decisions"
+        },
+        {
+          "name": "device",
+          "description": "Medical device software or SaMD; directly impacts patient care/safety"
+        }
+      ],
+      "defaultValue": "experimental"
+    },
+    {
+      "name": "iec62304-class",
+      "description": "IEC 62304 software safety classification (medical devices only)",
+      "valueType": "single_select",
+      "required": true,
+      "allowedValues": [
+        {
+          "name": "not-applicable",
+          "description": "Not a medical device; IEC 62304 not applicable"
+        },
+        {
+          "name": "class-a",
+          "description": "Class A: No injury possible (display-only, informational)"
+        },
+        {
+          "name": "class-b",
+          "description": "Class B: Non-serious injury possible (e.g., dose calculation, alarms)"
+        },
+        {
+          "name": "class-c",
+          "description": "Class C: Death or serious injury possible (e.g., infusion, ventilation)"
+        }
+      ],
+      "defaultValue": "not-applicable"
+    },
+    {
+      "name": "regulated",
+      "description": "Is this software subject to regulatory oversight (FDA, EMA, etc.)?",
+      "valueType": "true_false",
+      "required": true,
+      "defaultValue": false
+    },
+    {
+      "name": "primary-stack",
+      "description": "Primary technology stack / language",
+      "valueType": "single_select",
+      "required": true,
+      "allowedValues": [
+        {
+          "name": "julia",
+          "description": "Julia (scientific computing, simulations)"
+        },
+        {
+          "name": "rust",
+          "description": "Rust (systems, performance-critical, medical devices)"
+        },
+        {
+          "name": "node",
+          "description": "Node.js / TypeScript (web, API)"
+        },
+        {
+          "name": "python",
+          "description": "Python (data science, scripting, analysis)"
+        },
+        {
+          "name": "go",
+          "description": "Go (services, tools, microservices)"
+        },
+        {
+          "name": "content",
+          "description": "Content (docs, education, markdown-based)"
+        },
+        {
+          "name": "polyglot",
+          "description": "Multiple languages / monorepo"
+        }
+      ],
+      "defaultValue": null
+    },
+    {
+      "name": "baa-required",
+      "description": "Does this repo/service require a Business Associate Agreement (HIPAA BAA)?",
+      "valueType": "true_false",
+      "required": true,
+      "defaultValue": false
+    }
+  ],
+  "metadata": {
+    "version": "1.0",
+    "last_updated": "2026-04-24",
+    "source": "ENTERPRISE_ROADMAP.md Part 2.1",
+    "instructions": "Upload these properties via: Organization Settings → Repository → Custom properties. Add each property with the specified type and allowed values."
+  }
+}

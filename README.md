@@ -6,6 +6,19 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 
 | Workflow | Purpose | Call with |
 |----------|---------|-----------|
+| ci-node.yml | Node.js CI: lint, typecheck, test, build, security audit | `uses: timothyhartzog/.github/.github/workflows/ci-node.yml@main` |
+| ci-python.yml | Python CI: ruff, mypy, bandit, pytest with coverage | `uses: timothyhartzog/.github/.github/workflows/ci-python.yml@main` |
+| ci-rust.yml | Rust CI: fmt, clippy, cargo test/audit, tarpaulin coverage | `uses: timothyhartzog/.github/.github/workflows/ci-rust.yml@main` |
+| ci-go.yml | Go CI: golangci-lint, vet, gosec, race-enabled tests | `uses: timothyhartzog/.github/.github/workflows/ci-go.yml@main` |
+| ci-julia.yml | Julia CI: JuliaFormatter, Pkg.test with coverage | `uses: timothyhartzog/.github/.github/workflows/ci-julia.yml@main` |
+| ci-julia-react.yml | Julia + React + Playwright: full-stack CI for Julia projects | `uses: timothyhartzog/.github/.github/workflows/ci-julia-react.yml@main` |
+| e2e-playwright.yml | Playwright E2E: multi-browser, sharding, traces, screenshots | `uses: timothyhartzog/.github/.github/workflows/e2e-playwright.yml@main` |
+| audit-log.yml | Build audit ledger: dates, refs, deps, full provenance | `uses: timothyhartzog/.github/.github/workflows/audit-log.yml@main` |
+| security-scan.yml | SAST (Semgrep), secret detection, SBOM, supply chain | `uses: timothyhartzog/.github/.github/workflows/security-scan.yml@main` |
+| code-quality.yml | CodeQL, dependency review, license compliance, repo hygiene | `uses: timothyhartzog/.github/.github/workflows/code-quality.yml@main` |
+| release.yml | Conventional commit changelog, semver bumps, GitHub releases | `uses: timothyhartzog/.github/.github/workflows/release.yml@main` |
+| container.yml | Docker build, Hadolint, Trivy scan, GHCR push, attestation | `uses: timothyhartzog/.github/.github/workflows/container.yml@main` |
+| review-stamp.yml | Record a manual code review in the audit ledger | `uses: timothyhartzog/.github/.github/workflows/review-stamp.yml@main` |
 | ci-node.yml | Node.js CI: lint, typecheck, test, build, security audit | `uses: ruralpeds/.github/.github/workflows/ci-node.yml@main` |
 | ci-python.yml | Python CI: ruff, mypy, bandit, pytest with coverage | `uses: ruralpeds/.github/.github/workflows/ci-python.yml@main` |
 | ci-rust.yml | Rust CI: fmt, clippy, cargo test/audit, tarpaulin coverage | `uses: ruralpeds/.github/.github/workflows/ci-rust.yml@main` |
@@ -20,6 +33,21 @@ Reusable CI workflows, comprehensive testing, Playwright E2E, audit logging, and
 | reusable-phi-scan.yml | **HIPAA §164.312(b)** — PHI scrubbing scan via gitleaks with healthcare pattern catalog; uploads SARIF to code scanning | `uses: ruralpeds/.github/.github/workflows/reusable-phi-scan.yml@main` |
 | reusable-sbom.yml | **FDA 524B / EO 14028** — CycloneDX + SPDX SBOM generation; license denylist enforcement; commits to `sbom/` | `uses: ruralpeds/.github/.github/workflows/reusable-sbom.yml@main` |
 | sync-rulesets.yml | **Governance-as-code** — applies JSON ruleset files in `policies/rulesets/` to every org repo via GitHub API | runs on schedule (Mon 5 AM UTC) |
+| reusable-slsa.yml | **FDA 524B / NIST SSDF PS.3.2** — SLSA Level 3 build provenance via slsa-github-generator; produces `.intoto.jsonl` signed via Sigstore | `uses: timothyhartzog/.github/.github/workflows/reusable-slsa.yml@main` |
+| reusable-sign-artifact.yml | **21 CFR Part 11 §11.70 / HIPAA §164.312(c)(1)** — cosign keyless artifact signing (OIDC → Fulcio → Rekor); no keys to rotate | `uses: timothyhartzog/.github/.github/workflows/reusable-sign-artifact.yml@main` |
+| reusable-attest.yml | **CISA SSDF Attestation Common Form** — GitHub-native build attestations via `actions/attest-build-provenance`; lighter-weight SLSA alternative | `uses: timothyhartzog/.github/.github/workflows/reusable-attest.yml@main` |
+| review-stamp-v2.yml | **21 CFR Part 11 §11.50, §11.70, §11.200** — electronic signatures with controlled-vocabulary meaning, tree-hash binding, signed git tag, JSONL ledger | `uses: timothyhartzog/.github/.github/workflows/review-stamp-v2.yml@main` |
+| reusable-rtm.yml | **GAMP 5 §4.2 / IEC 62304 §5.2** — Requirements Traceability Matrix — scans PRs/commits/tests/issues for requirement IDs; produces `traceability/rtm.json` and `rtm.md` with gap report | `uses: timothyhartzog/.github/.github/workflows/reusable-rtm.yml@main` |
+| reusable-container-scan.yml | **NIST SSDF RV.1.1 / FDA Cyber** — Dual-scanner (Trivy + Grype) for Docker images, OCI artifacts, and binaries; SARIF to code scanning | `uses: timothyhartzog/.github/.github/workflows/reusable-container-scan.yml@main` |
+| reusable-license-scan.yml | **ISO 13485 §7.2.1 / IP risk** — Deep license analysis beyond SBOM baseline; runtime-vs-dev classification with graduated policy | `uses: timothyhartzog/.github/.github/workflows/reusable-license-scan.yml@main` |
+| reusable-risk-file.yml | **ISO 14971:2019 / IEC 62304 §7** — Aggregates hazard-labeled issues into `risk/hazard-analysis.md` + `risk-summary.json`; compliance-flag enforcement; scaffolds RMP and residual-risk acceptance files | `uses: timothyhartzog/.github/.github/workflows/reusable-risk-file.yml@main` |
+| dependency-eol.yml | **NIST SSDF RV.1.2 / FDA Cyber** — Monthly EOL check via endoflife.date; opens/updates tracking issue when runtime platform cycles approach EOL | runs monthly (1st 10 AM UTC) |
+| vuln-triage.yml | **NIST SSDF RV.2** — Daily Dependabot-alert query with severity-based SLAs (Critical 7d / High 30d / Medium 90d / Low 180d); opens tracking issue on SLA breach | runs daily at 11 AM UTC |
+| origin-label.yml | **FDA GMLP / EU AI Act / NIST AI RMF** — Required status check; verifies each PR carries exactly one `origin:*` label; validates AI session summary for `ai-authored` and `agentic` PRs; enforces PHI/credential negatives | required status check on clinical repos |
+| reusable-mutation.yml | **FDA CSA / IEC 62304 §5.5.3** — Multi-language mutation testing (Rust/cargo-mutants, Python/mutmut, Node/Stryker); scores test adequacy beyond line coverage | `uses: timothyhartzog/.github/.github/workflows/reusable-mutation.yml@main` |
+| reusable-contract.yml | **42 CFR Part 170 / HL7 FHIR US Core** — Validates FHIR resources against US Core IG; validates OpenAPI specs via Redocly CLI | `uses: timothyhartzog/.github/.github/workflows/reusable-contract.yml@main` |
+| reusable-validation-export.yml | **GAMP 5 §4.2 / IEC 62304 §5.8 / 21 CFR 820.30(j)** — Packages SBOM + risk + RTM + docs into validation bundle; dispatches to `Github-workflow` archive via repository_dispatch | `uses: timothyhartzog/.github/.github/workflows/reusable-validation-export.yml@main` |
+| reusable-release.yml | **IEC 62304 §5.8 / release governance** — One-button conventional-commits release: release-please PR → build → SBOM → SLSA → cosign → validation export → audit | `uses: timothyhartzog/.github/.github/workflows/reusable-release.yml@main` |
 
 ## Medical-Software Compliance Features
 
@@ -57,6 +85,28 @@ The baseline ruleset `signed-commits-main.json` enforces:
 - 1+ required reviewer on PR; stale reviews dismissed on push
 - PHI scrubbing scan required as a merge gate
 - Code scanning must pass (blocks high+ findings from phi-scan category)
+
+### Supply-Chain Attestation Trio (P1)
+
+For every release of a clinical repo, four artifacts travel together to form a complete supply-chain evidence package:
+
+- **SBOM** (`reusable-sbom.yml`) — what's in it
+- **SLSA provenance** (`reusable-slsa.yml`) — how it was built
+- **Signatures** (`reusable-sign-artifact.yml`) — this is the real binary
+- **E-signature** (`review-stamp-v2.yml`) — who approved it with what meaning
+
+See `docs/SUPPLY_CHAIN_AND_ESIGNATURE.md` for the full workflow, caller example, verification instructions for hospital partners, and regulatory mapping.
+
+### 21 CFR Part 11 Electronic Signatures (P1)
+
+`review-stamp-v2.yml` upgrades the v1 review-stamp workflow with full 21 CFR Part 11 compliance:
+
+- **Controlled-vocabulary `meaning`** — 10 defined values (verified, approved, risk-accepted, capa-closed, etc.) per §11.50(a)(3)
+- **Tree-hash binding** — signature cryptographically linked to file state per §11.70
+- **Signed Git tag** — first-class tamper-evident record of each signing event
+- **Printed name** — reviewer's real name retrieved from GitHub API per §11.50(a)(1)
+- **MFA enforcement** — delegated to GitHub org 2FA policy per §11.200
+- **JSONL ledger** — `audit-log/esignatures.jsonl` separate from build ledger, streaming-friendly
 
 ### Migrating from PAT to GitHub App
 
@@ -111,6 +161,10 @@ Check if your organization's repos are compliant:
 # Verify all repos in your organization
 ./scripts/verify-audit-logging.sh timothyhartzog compliance-report
 ```
+| security-scan.yml | SAST (Semgrep), secret detection, SBOM, supply chain | `uses: timothyhartzog/.github/.github/workflows/security-scan.yml@main` |
+| code-quality.yml | CodeQL, dependency review, license compliance, repo hygiene | `uses: timothyhartzog/.github/.github/workflows/code-quality.yml@main` |
+| release.yml | Conventional commit changelog, semver bumps, GitHub releases | `uses: timothyhartzog/.github/.github/workflows/release.yml@main` |
+| container.yml | Docker build, Hadolint, Trivy scan, GHCR push, attestation | `uses: timothyhartzog/.github/.github/workflows/container.yml@main` |
 
 ## Features
 
@@ -135,6 +189,39 @@ Check if your organization's repos are compliant:
 - Configurable retries for flaky tests
 - HTML report generation and merging across shards
 
+### Security Scanning (security-scan.yml)
+- **SAST**: Semgrep with OWASP Top 10 + CWE Top 25 rulesets, SARIF upload to GitHub Security
+- **Secret detection**: TruffleHog scans full git history for verified credentials/keys/tokens
+- **Sensitive file detection**: Flags `.env`, `*.pem`, `*.key`, credentials files
+- **SBOM generation**: Syft produces SPDX + CycloneDX bills of materials for every build
+- **Vulnerability scanning**: Grype scans SBOM for known CVEs, fails on Critical severity
+- **Supply chain checks**: Flags unpinned GitHub Actions, missing lockfiles, `.gitignore` gaps
+
+### Code Quality & Compliance (code-quality.yml)
+- **CodeQL**: Deep semantic analysis across JS/TS, Python, Go, Java, C/C++, Ruby — auto-detects languages
+- **Dependency review**: Blocks PRs introducing high-severity vulnerabilities or forbidden licenses
+- **License compliance**: Scans Node, Python, and Rust dependencies against configurable allow/deny lists
+- **Repository hygiene**: Checks for README, LICENSE, SECURITY.md, CODEOWNERS, CI workflows
+- **Code inspection**: Flags large files, debug statements in production code, tech debt markers
+
+### Release Automation (release.yml)
+- Parses conventional commits (`feat:`, `fix:`, `feat!:`) to determine semver bump
+- Auto-generates categorized changelog (breaking changes, features, fixes, contributors)
+- Updates version in `package.json`, `Cargo.toml`, `pyproject.toml`, `VERSION`
+- Creates annotated git tag and GitHub release with changelog body
+- Supports manual override (major/minor/patch), draft releases, prereleases
+- Outputs version, tag, and release URL for downstream jobs
+
+### Container (container.yml)
+- **Hadolint**: Lints Dockerfile for best practices before building
+- **Multi-platform builds**: Supports `linux/amd64`, `linux/arm64`, etc. via QEMU + Buildx
+- **Smart tagging**: Semver tags (`v1`, `v1.2`, `v1.2.3`), branch tags, SHA tags, `latest` on main
+- **GHCR push**: Builds and pushes to `ghcr.io/<org>/<repo>` with GHA layer caching
+- **Build attestation**: SLSA provenance attestation pushed alongside image
+- **Trivy scan**: Scans built image for CVEs, uploads SARIF to GitHub Security tab, fails on critical/high
+- **OCI labels**: Embeds source URL, revision, and build timestamp in image metadata
+
+### Audit Logging
 ### Playwright Audit (`playwright-audit.yml`)
 - Runs weekly — navigates GitHub Actions pages for every org repo
 - Captures screenshots of each repo's CI/Actions status
@@ -143,6 +230,39 @@ Check if your organization's repos are compliant:
 - Local run: `AUDIT_ORG=timothyhartzog COMPLIANCE_JSON=compliance-report/compliance.json npm run audit`
 
 ### Audit Logging (`audit-log.yml`)
+### Security Scanning (security-scan.yml)
+- **SAST**: Semgrep with OWASP Top 10 + CWE Top 25 rulesets, SARIF upload to GitHub Security
+- **Secret detection**: TruffleHog scans full git history for verified credentials/keys/tokens
+- **Sensitive file detection**: Flags `.env`, `*.pem`, `*.key`, credentials files
+- **SBOM generation**: Syft produces SPDX + CycloneDX bills of materials for every build
+- **Vulnerability scanning**: Grype scans SBOM for known CVEs, fails on Critical severity
+- **Supply chain checks**: Flags unpinned GitHub Actions, missing lockfiles, `.gitignore` gaps
+
+### Code Quality & Compliance (code-quality.yml)
+- **CodeQL**: Deep semantic analysis across JS/TS, Python, Go, Java, C/C++, Ruby — auto-detects languages
+- **Dependency review**: Blocks PRs introducing high-severity vulnerabilities or forbidden licenses
+- **License compliance**: Scans Node, Python, and Rust dependencies against configurable allow/deny lists
+- **Repository hygiene**: Checks for README, LICENSE, SECURITY.md, CODEOWNERS, CI workflows
+- **Code inspection**: Flags large files, debug statements in production code, tech debt markers
+
+### Release Automation (release.yml)
+- Parses conventional commits (`feat:`, `fix:`, `feat!:`) to determine semver bump
+- Auto-generates categorized changelog (breaking changes, features, fixes, contributors)
+- Updates version in `package.json`, `Cargo.toml`, `pyproject.toml`, `VERSION`
+- Creates annotated git tag and GitHub release with changelog body
+- Supports manual override (major/minor/patch), draft releases, prereleases
+- Outputs version, tag, and release URL for downstream jobs
+
+### Container (container.yml)
+- **Hadolint**: Lints Dockerfile for best practices before building
+- **Multi-platform builds**: Supports `linux/amd64`, `linux/arm64`, etc. via QEMU + Buildx
+- **Smart tagging**: Semver tags (`v1`, `v1.2`, `v1.2.3`), branch tags, SHA tags, `latest` on main
+- **GHCR push**: Builds and pushes to `ghcr.io/<org>/<repo>` with GHA layer caching
+- **Build attestation**: SLSA provenance attestation pushed alongside image
+- **Trivy scan**: Scans built image for CVEs, uploads SARIF to GitHub Security tab, fails on critical/high
+- **OCI labels**: Embeds source URL, revision, and build timestamp in image metadata
+
+### Audit Logging
 - Every build tracked in `audit-log/ledger.json` per repo
 - Records: **date_created**, **date_modified**, **date_last_reviewed**, commit SHA, author, branch, tag
 - Full references: commit URL, run URL, tree URL, compare URL
@@ -207,6 +327,27 @@ jobs:
       contents: write
 ```
 
+### Julia + React project (standard)
+```yaml
+# .github/workflows/ci.yml — uses the combined Julia+React+Playwright workflow
+name: CI
+on: [push, pull_request]
+jobs:
+  ci:
+    uses: timothyhartzog/.github/.github/workflows/ci-julia-react.yml@main
+    with:
+      julia-version: "1"
+      julia-working-directory: "backend"
+      frontend-working-directory: "frontend"
+      e2e-working-directory: "e2e"
+      e2e-start-command: "bash scripts/dev.sh"
+      e2e-browsers: '["chromium", "firefox", "webkit"]'
+    permissions:
+      contents: write
+```
+
+See [`docs/JULIA_REACT_PROJECT_STANDARD.md`](docs/JULIA_REACT_PROJECT_STANDARD.md) for the complete Julia project standard including Observable JS charts, error handling, and testing requirements.
+
 ### Python project
 ```yaml
 name: CI
@@ -245,6 +386,45 @@ jobs:
     with:
       reviewer: ${{ inputs.reviewer }}
       notes: ${{ inputs.notes }}
+### Security & compliance (every repo should include this)
+```yaml
+name: Security
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 7 * * 1"  # Weekly Monday scan
+jobs:
+  security:
+    uses: timothyhartzog/.github/.github/workflows/security-scan.yml@main
+    permissions:
+      security-events: write
+      contents: read
+  quality:
+    uses: timothyhartzog/.github/.github/workflows/code-quality.yml@main
+    permissions:
+      security-events: write
+      contents: read
+      pull-requests: write
+```
+
+### Release (manual trigger)
+```yaml
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      release-type:
+        type: choice
+        options: [auto, major, minor, patch]
+        default: auto
+jobs:
+  release:
+    uses: timothyhartzog/.github/.github/workflows/release.yml@main
+    with:
+      release-type: ${{ inputs.release-type }}
     permissions:
       contents: write
 ```
@@ -304,3 +484,23 @@ cat audit-log/ledger.json | jq '.review_history'
 cat audit-log/ledger.json | jq '.summary.date_last_reviewed'
 ```
 
+### Container (repos with Dockerfile)
+```yaml
+name: Container
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  container:
+    uses: timothyhartzog/.github/.github/workflows/container.yml@main
+    with:
+      platforms: "linux/amd64,linux/arm64"
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+      security-events: write
+```

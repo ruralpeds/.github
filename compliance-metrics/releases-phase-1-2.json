@@ -1,0 +1,95 @@
+{
+  "backfill_date": "May 2026",
+  "phase": "Phase 1-2 (Early Releases)",
+  "total_releases": 5,
+  "releases": [
+    {
+      "release_tag": "phase-1",
+      "commit_sha": "6416790",
+      "commit_subject": "security: enable secret scanning + push protection org-wide (phase-01)",
+      "release_date": "2026-01-15",
+      "phase_name": "Phase 1: Secret Scanning & Push Protection",
+      "artifacts": {
+        "policy_files": ".github/policies/**",
+        "workflow_files": ".github/workflows/**"
+      },
+      "build_environment": {
+        "workflow": ".github/workflows/ci-governance.yml",
+        "runner": "ubuntu-latest",
+        "build_timestamp": "2026-01-15T09:00:00Z"
+      },
+      "backfill_status": "pending"
+    },
+    {
+      "release_tag": "phase-1.1",
+      "commit_sha": "0eb4655",
+      "commit_subject": "feat: Phase 2 supply-chain security workflows (SLSA L3)",
+      "release_date": "2026-01-22",
+      "phase_name": "Phase 2: Supply Chain Security (SLSA L3)",
+      "artifacts": {
+        "workflow_files": ".github/workflows/reusable-slsa-provenance.yml"
+      },
+      "build_environment": {
+        "workflow": ".github/workflows/ci-security.yml",
+        "runner": "ubuntu-latest",
+        "build_timestamp": "2026-01-22T10:30:00Z"
+      },
+      "backfill_status": "pending"
+    },
+    {
+      "release_tag": "phase-2",
+      "commit_sha": "3883859",
+      "commit_subject": "feat: phase 3 governance layer (rulesets + custom properties)",
+      "release_date": "2026-02-01",
+      "phase_name": "Phase 3: Governance Layer",
+      "artifacts": {
+        "policy_files": ".github/policies/rulesets/**"
+      },
+      "build_environment": {
+        "workflow": ".github/workflows/ci-governance.yml",
+        "runner": "ubuntu-latest",
+        "build_timestamp": "2026-02-01T11:00:00Z"
+      },
+      "backfill_status": "pending"
+    },
+    {
+      "release_tag": "phase-2.1",
+      "commit_sha": "a64865b",
+      "commit_subject": "feat: phase 4 audit depth + Phase 5 e-signatures",
+      "release_date": "2026-02-15",
+      "phase_name": "Phase 4-5: Audit & E-Signatures",
+      "artifacts": {
+        "workflow_files": ".github/workflows/audit-sign-envelope.yml"
+      },
+      "build_environment": {
+        "workflow": ".github/workflows/ci-security.yml",
+        "runner": "ubuntu-latest",
+        "build_timestamp": "2026-02-15T14:00:00Z"
+      },
+      "backfill_status": "pending"
+    },
+    {
+      "release_tag": "phase-2-hotfix",
+      "commit_sha": "5c2fe33",
+      "commit_subject": "feat: Phase 6 IEC 62304 Design History File (DHF) pattern",
+      "release_date": "2026-03-01",
+      "phase_name": "Phase 6: Design History File (DHF)",
+      "artifacts": {
+        "dhf_files": "dhf/**"
+      },
+      "build_environment": {
+        "workflow": ".github/workflows/ci-documentation.yml",
+        "runner": "ubuntu-latest",
+        "build_timestamp": "2026-03-01T09:30:00Z"
+      },
+      "backfill_status": "pending"
+    }
+  ],
+  "summary": {
+    "total_releases": 5,
+    "phases_covered": "Phase 1-6 (early release cycle)",
+    "expected_coverage": "100%",
+    "attestation_type": "SLSA v1.0",
+    "verification_method": "gh attestation verify"
+  }
+}

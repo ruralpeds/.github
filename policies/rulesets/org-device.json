@@ -1,0 +1,121 @@
+{
+  "name": "org-device",
+  "description": "Strictest rules for medical device software (IEC 62304 Class B/C + regulated)",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "repository_property_targeting": {
+      "include": {
+        "repository_property": [
+          {
+            "property_name": "iec62304-class",
+            "property_values": [
+              "class-b",
+              "class-c"
+            ]
+          },
+          {
+            "property_name": "regulated",
+            "property_values": [
+              "true"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "rules": [
+    {
+      "type": "creation",
+      "parameters": {
+        "restriction": "non_empty"
+      }
+    },
+    {
+      "type": "required_signatures",
+      "parameters": {
+        "key_type_set": [
+          "pgp",
+          "ssh"
+        ]
+      }
+    },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "dismiss_stale_reviews": false,
+        "require_code_owner_review": true,
+        "require_last_push_approval": true,
+        "require_review_thread_resolution": true,
+        "required_approving_review_count": 2,
+        "required_review_thread_resolution": true
+      }
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "do_not_enforce_on_create": false,
+        "required_status_checks": [
+          {
+            "context": "ci"
+          },
+          {
+            "context": "PHI scan"
+          },
+          {
+            "context": "SBOM"
+          },
+          {
+            "context": "CodeQL"
+          },
+          {
+            "context": "Scorecard"
+          },
+          {
+            "context": "IEC 62304 traceability"
+          },
+          {
+            "context": "VEX vulnerability assessment"
+          }
+        ],
+        "strict_required_status_checks_policy": true
+      }
+    },
+    {
+      "type": "restrict_pushes",
+      "parameters": {
+        "restrict_to": [
+          "deploy_keys",
+          "github_app"
+        ]
+      }
+    },
+    {
+      "type": "non_fast_forward",
+      "parameters": {}
+    },
+    {
+      "type": "dismiss_stale_reviews",
+      "parameters": {
+        "dismiss_stale_reviews": false
+      }
+    }
+  ],
+  "metadata": {
+    "applies_to": "Repos where (iec62304-class ∈ {class-b, class-c}) OR (regulated = true)",
+    "min_reviewers": 2,
+    "requires_code_owner": true,
+    "requires_signatures": true,
+    "requires_vex": true,
+    "required_checks": [
+      "ci",
+      "PHI scan",
+      "SBOM",
+      "CodeQL",
+      "Scorecard",
+      "IEC 62304 traceability",
+      "VEX vulnerability assessment"
+    ],
+    "comment": "Strictest: 2 reviewers incl. code owner, last-push approval, resolved threads, all security + compliance checks, IEC 62304 validation, VEX document required"
+  }
+}

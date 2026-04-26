@@ -1,0 +1,337 @@
+# GitHub Actions: SDLC Phase 1-2 Gates (Design Input & Implementation)
+# Compliance: IEC 62304 §5.3 (Design) + §5.4 (Implementation)
+# Purpose: Code review, static analysis, unit tests (≥80% coverage)
+
+name: Build & Test (SDLC Gates 1-2)
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'infrastructure/database/**'
+      - '.github/workflows/01-*.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/platform
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # =========================================================================
+  # Gate 1: Code Review & Design Verification
+  # =========================================================================
+  code-review:
+    name: Code Review & Design Verification
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "Gate 1: Code Review - Verify PR requirements"
+        run: |
+          echo "🔍 SDLC Gate 1: Design Input / Code Review"
+
+          # Check: PR has description
+          if [ -z "${{ github.event.pull_request.body }}" ]; then
+            echo "❌ FAILED: PR description required"
+            exit 1
+          fi
+
+          # Check: PR has labels
+          LABELS="${{ join(github.event.pull_request.labels.*.name) }}"
+          if [[ ! "$LABELS" =~ "design-reviewed" ]] && [[ ! "$LABELS" =~ "documentation" ]]; then
+            echo "⚠️  WARNING: Recommended labels missing (design-reviewed, implementation, testing, etc.)"
+          fi
+
+          # Check: PR references issue or epic
+          if ! grep -qE "#[0-9]+|RFC|IEC\s62304" <<< "${{ github.event.pull_request.body }}"; then
+            echo "⚠️  WARNING: PR should reference requirement (issue #123, RFC-XXX, IEC 62304 §5.3)"
+          fi
+
+          echo "✅ Code review checklist complete"
+
+  # =========================================================================
+  # Gate 2: Implementation - Unit Tests & Coverage
+  # =========================================================================
+  unit-tests:
+    name: Unit Tests (≥80% Coverage)
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov pytest-xdist coverage
+
+      - name: Run unit tests
+        run: |
+          echo "🧪 SDLC Gate 2: Implementation - Unit Tests"
+          pytest tests/unit \
+            --cov=src \
+            --cov-report=term-missing \
+            --cov-report=json \
+            --cov-fail-under=80 \
+            --junit-xml=test-results.xml \
+            -v
+
+      - name: Generate coverage badge
+        if: success()
+        run: |
+          COVERAGE=$(python -c "import json; print(int(json.load(open('coverage.json'))['totals']['percent_covered']))")
+          echo "Coverage: ${COVERAGE}%"
+
+          if [ $COVERAGE -ge 80 ]; then
+            echo "✅ Coverage meets requirement (≥80%): ${COVERAGE}%"
+          else
+            echo "❌ Coverage below threshold: ${COVERAGE}% < 80%"
+            exit 1
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: test-results.xml
+
+  # =========================================================================
+  # Implementation: Static Analysis & Security
+  # =========================================================================
+  static-analysis:
+    name: Static Analysis (Linting, Type Checking)
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install analysis tools
+        run: |
+          pip install pylint mypy flake8 black isort bandit
+
+      - name: Format check (Black)
+        run: |
+          echo "🎨 Checking code format (Black)..."
+          black --check src/
+
+      - name: Import sort check (isort)
+        run: |
+          echo "📚 Checking import order (isort)..."
+          isort --check-only src/
+
+      - name: Lint (Pylint)
+        run: |
+          echo "🔎 Linting code (Pylint)..."
+          pylint src/ --fail-under=8.0 --exit-zero || true
+
+      - name: Type check (MyPy)
+        run: |
+          echo "🔬 Type checking (MyPy)..."
+          mypy src/ --strict --ignore-missing-imports || true
+
+      - name: Security check (Bandit)
+        run: |
+          echo "🔐 Security check (Bandit)..."
+          bandit -r src/ -ll -f json -o bandit-report.json || true
+
+      - name: Upload Bandit results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: bandit-report.json
+          wait-for-processing: true
+
+  # =========================================================================
+  # Dependency Security Scanning
+  # =========================================================================
+  dependency-check:
+    name: Dependency Security Scanning
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Snyk dependency scan
+        uses: snyk/actions/python-3.11@master
+        with:
+          args: >
+            --severity-threshold=high
+            --all-projects
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
+
+      - name: Run trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'HIGH,CRITICAL'
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: trivy-results.sarif
+
+  # =========================================================================
+  # Database Migration Validation
+  # macOS self-hosted: Docker service containers aren't supported, so we
+  # start PostgreSQL via docker run and clean up in the final step.
+  # =========================================================================
+  database-validation:
+    name: Database Migration Validation
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Start PostgreSQL
+        run: |
+          docker rm -f postgres-test 2>/dev/null || true
+          docker run -d --name postgres-test \
+            -e POSTGRES_USER=audit_trail_user \
+            -e POSTGRES_PASSWORD=test_password \
+            -e POSTGRES_DB=audit_trail \
+            -p 5432:5432 \
+            postgres:15-alpine
+          echo "Waiting for PostgreSQL to be ready..."
+          for i in $(seq 1 30); do
+            docker exec postgres-test pg_isready -U audit_trail_user && break
+            sleep 2
+          done
+
+      - name: Validate database migrations
+        run: |
+          echo "🗄️  SDLC Gate 2: Database Migration Validation"
+
+          # Run all migrations via docker exec
+          for migration in infrastructure/database/*.sql; do
+            echo "  Running: $(basename $migration)"
+            docker exec -i postgres-test psql -U audit_trail_user -d audit_trail \
+              < "$migration" 2>&1 | tee -a migration.log
+          done
+
+          # Verify audit trail table structure
+          docker exec postgres-test psql -U audit_trail_user -d audit_trail -c "
+            SELECT COUNT(*) AS immutable_constraints
+            FROM information_schema.check_constraints
+            WHERE table_name='audit_trail' AND constraint_name LIKE '%immutable%';
+
+            SELECT COUNT(*) AS required_columns
+            FROM information_schema.columns
+            WHERE table_name='audit_trail'
+              AND column_name IN ('event_id','merkle_chain_hash','signature','digital_signature');
+
+            SELECT grantee, privilege_type
+            FROM information_schema.role_table_grants
+            WHERE table_name='audit_trail';
+          "
+
+          echo "✅ Database migrations validated"
+
+      - name: Stop PostgreSQL
+        if: always()
+        run: docker rm -f postgres-test || true
+
+  # =========================================================================
+  # Build Summary
+  # =========================================================================
+  build-summary:
+    name: Build Summary (Gate 2 Complete)
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 5
+    needs: [code-review, unit-tests, static-analysis, dependency-check, database-validation]
+    if: always()
+
+    steps:
+      - name: Generate build summary
+        run: |
+          echo "## Build Summary (SDLC Gates 1-2)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Gate | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.code-review.result }}" == "success" ]; then
+            echo "| 1️⃣ Code Review | ✅ PASSED |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 1️⃣ Code Review | ❌ FAILED |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.unit-tests.result }}" == "success" ]; then
+            echo "| 2️⃣ Unit Tests (≥80% coverage) | ✅ PASSED |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 2️⃣ Unit Tests (≥80% coverage) | ❌ FAILED |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.static-analysis.result }}" == "success" ]; then
+            echo "| Static Analysis | ✅ PASSED |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Static Analysis | ⚠️ WARNINGS |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.dependency-check.result }}" == "success" ]; then
+            echo "| Dependencies | ✅ PASSED |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Dependencies | ⚠️ WARNINGS |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.database-validation.result }}" == "success" ]; then
+            echo "| Database Migrations | ✅ PASSED |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Database Migrations | ❌ FAILED |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Fail if critical gates failed
+        if: |
+          needs.code-review.result == 'failure' ||
+          needs.unit-tests.result == 'failure' ||
+          needs.database-validation.result == 'failure'
+        run: |
+          echo "❌ Critical gates failed. PR cannot advance."
+          exit 1

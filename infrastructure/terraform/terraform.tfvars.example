@@ -1,0 +1,93 @@
+# Terraform Values: Enterprise Medical Device Platform
+# Copy this file to terraform.tfvars and fill in your values
+# NEVER commit terraform.tfvars with real values to git
+
+# AWS Region
+aws_region = "us-east-1"
+
+# Environment
+environment = "production"
+
+# Project naming
+project_name = "platform"
+
+# Networking
+vpc_cidr                = "10.0.0.0/16"
+private_subnet_cidrs    = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+public_subnet_cidrs     = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+enable_nat_gateway      = true
+
+# Database (RDS)
+db_instance_class       = "db.r6i.xlarge"
+# r6i = memory-optimized for audit trail lookups
+# xlarge = 4 vCPU, 32 GB RAM
+# Estimated ~50GB/year growth; 100GB initial allocation
+
+db_allocated_storage    = 100
+db_storage_type         = "gp3"
+db_iops                 = 3000
+db_throughput           = 125
+db_backup_retention_days = 30
+db_multi_az             = true
+db_engine_version       = "15.3"
+db_enable_encryption    = true
+db_deletion_protection  = true
+
+# KMS
+kms_enable_key_rotation = true
+kms_rotation_period_days = 90
+
+# S3 Backups
+s3_audit_backup_bucket_name = "audit-trail-backups"
+s3_backup_retention_days    = 90
+s3_enable_versioning        = true
+s3_enable_encryption        = true
+
+# EKS Cluster
+eks_node_count           = 3
+eks_node_instance_type   = "t3.2xlarge"
+# t3.2xlarge = 8 vCPU, 32 GB RAM (medical device workloads)
+
+eks_node_disk_size_gb    = 100
+eks_enable_logging       = true
+eks_log_retention_days   = 30
+
+# Monitoring
+enable_prometheus       = true
+enable_grafana          = true
+cloudwatch_log_retention_days = 30
+
+# Security
+enable_security_group_logging = true
+enable_alb_access_logs        = true
+certificate_arn               = "arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+# Get certificate ARN from AWS Certificate Manager
+certificate_domain            = "platform.example.com"
+
+# HIPAA & Compliance
+enable_hipaa_compliance_checks      = true
+audit_trail_verification_enabled    = true
+audit_trail_verification_schedule   = "0 2 * * *"  # 2 AM UTC daily
+
+# FDA
+fda_submission_prepared = false
+fda_submission_date     = "2026-10-15"
+
+# Backup & Disaster Recovery
+backup_enabled          = true
+backup_schedule         = "0 3 * * *"  # 3 AM UTC daily
+rto_minutes             = 60
+rpo_minutes             = 15
+
+# Cost optimization
+enable_spot_instances     = false
+# Never use Spot for critical medical device workloads
+enable_reserved_instances = false
+# Consider Reserved Instances for long-term cost savings
+
+# Additional tags
+additional_tags = {
+  "Team"         = "Platform Engineering"
+  "CostCenter"   = "R&D"
+  "DataClass"    = "PHI"
+}

@@ -1,0 +1,65 @@
+name: Seed Roadmap Issues
+
+# Reads all task files under copilot-tasks/phase-NN-*/task-*.md and, for each
+# one without a corresponding open issue, files an agent-ready issue using the
+# agent-task template. Safe to re-run — it's idempotent.
+
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: "Phase to seed (e.g. 'phase-01', or 'all')"
+        required: true
+        default: "all"
+        type: string
+      dry-run:
+        description: "List what would be created without creating"
+        required: false
+        default: false
+        type: boolean
+      assign-to:
+        description: "Assignee for created issues (e.g. 'copilot' or a username). Leave empty for no assignment."
+        required: false
+        default: ""
+        type: string
+  schedule:
+    # Weekly re-check: catches newly-added task files.
+    - cron: "0 4 * * 1"
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: seed-roadmap
+  cancel-in-progress: false
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: pip install --quiet pyyaml
+
+      - name: Run seed script
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PHASE: ${{ inputs.phase || 'all' }}
+          DRY_RUN: ${{ inputs.dry-run || 'false' }}
+          ASSIGN_TO: ${{ inputs.assign-to || '' }}
+          REPO: ${{ github.repository }}
+        run: |
+          python scripts/seed_issues.py \
+            --phase "$PHASE" \
+            --repo "$REPO" \
+            $([ "$DRY_RUN" = "true" ] && echo "--dry-run") \
+            ${ASSIGN_TO:+--assign-to "$ASSIGN_TO"}
