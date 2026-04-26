@@ -29,7 +29,8 @@ jobs:
   # =========================================================================
   code-review:
     name: Code Review & Design Verification
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 10
     permissions:
       contents: read
       pull-requests: read
@@ -68,7 +69,8 @@ jobs:
   # =========================================================================
   unit-tests:
     name: Unit Tests (≥80% Coverage)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 30
     permissions:
       contents: read
       checks: write
@@ -124,7 +126,8 @@ jobs:
   # =========================================================================
   static-analysis:
     name: Static Analysis (Linting, Type Checking)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 20
     permissions:
       contents: read
       security-events: write
@@ -180,7 +183,8 @@ jobs:
   # =========================================================================
   dependency-check:
     name: Dependency Security Scanning
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 20
     permissions:
       contents: read
       security-events: write
@@ -215,73 +219,73 @@ jobs:
 
   # =========================================================================
   # Database Migration Validation
+  # macOS self-hosted: Docker service containers aren't supported, so we
+  # start PostgreSQL via docker run and clean up in the final step.
   # =========================================================================
   database-validation:
     name: Database Migration Validation
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_USER: audit_trail_user
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_DB: audit_trail
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Start PostgreSQL
+        run: |
+          docker rm -f postgres-test 2>/dev/null || true
+          docker run -d --name postgres-test \
+            -e POSTGRES_USER=audit_trail_user \
+            -e POSTGRES_PASSWORD=test_password \
+            -e POSTGRES_DB=audit_trail \
+            -p 5432:5432 \
+            postgres:15-alpine
+          echo "Waiting for PostgreSQL to be ready..."
+          for i in $(seq 1 30); do
+            docker exec postgres-test pg_isready -U audit_trail_user && break
+            sleep 2
+          done
+
       - name: Validate database migrations
         run: |
           echo "🗄️  SDLC Gate 2: Database Migration Validation"
 
-          # Install PostgreSQL client
-          sudo apt-get install -y postgresql-client
-
-          # Run all migrations
+          # Run all migrations via docker exec
           for migration in infrastructure/database/*.sql; do
             echo "  Running: $(basename $migration)"
-            psql -h localhost -U audit_trail_user -d audit_trail \
-              -f "$migration" 2>&1 | tee -a migration.log
+            docker exec -i postgres-test psql -U audit_trail_user -d audit_trail \
+              < "$migration" 2>&1 | tee -a migration.log
           done
 
           # Verify audit trail table structure
-          psql -h localhost -U audit_trail_user -d audit_trail <<EOF
-          -- Verify immutability constraint
-          SELECT COUNT(*) FROM information_schema.check_constraints
-          WHERE table_name='audit_trail' AND constraint_name LIKE '%immutable%';
+          docker exec postgres-test psql -U audit_trail_user -d audit_trail -c "
+            SELECT COUNT(*) AS immutable_constraints
+            FROM information_schema.check_constraints
+            WHERE table_name='audit_trail' AND constraint_name LIKE '%immutable%';
 
-          -- Verify required columns
-          SELECT COUNT(*) FROM information_schema.columns
-          WHERE table_name='audit_trail' AND column_name IN
-          ('event_id', 'merkle_chain_hash', 'signature', 'digital_signature');
+            SELECT COUNT(*) AS required_columns
+            FROM information_schema.columns
+            WHERE table_name='audit_trail'
+              AND column_name IN ('event_id','merkle_chain_hash','signature','digital_signature');
 
-          -- Verify audit trail access permissions
-          SELECT grantee, privilege_type FROM information_schema.role_table_grants
-          WHERE table_name='audit_trail';
-          EOF
+            SELECT grantee, privilege_type
+            FROM information_schema.role_table_grants
+            WHERE table_name='audit_trail';
+          "
 
           echo "✅ Database migrations validated"
 
-        env:
-          PGHOST: localhost
-          PGUSER: audit_trail_user
-          PGPASSWORD: test_password
-          PGDATABASE: audit_trail
+      - name: Stop PostgreSQL
+        if: always()
+        run: docker rm -f postgres-test || true
 
   # =========================================================================
   # Build Summary
   # =========================================================================
   build-summary:
     name: Build Summary (Gate 2 Complete)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 5
     needs: [code-review, unit-tests, static-analysis, dependency-check, database-validation]
     if: always()
 

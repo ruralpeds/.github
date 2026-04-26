@@ -30,7 +30,8 @@ jobs:
   # =========================================================================
   build:
     name: Build Release Artifact
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 30
     permissions:
       contents: read
       packages: write
@@ -86,7 +87,8 @@ jobs:
   # =========================================================================
   sbom:
     name: Generate SBOM (CycloneDX)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 20
     needs: build
     permissions:
       contents: read
@@ -143,7 +145,8 @@ jobs:
   # =========================================================================
   provenance:
     name: Generate SLSA v1.0 Provenance
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 20
     needs: build
     permissions:
       contents: read
@@ -192,7 +195,8 @@ jobs:
   # =========================================================================
   vulnerability-scan:
     name: Vulnerability Scanning
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 20
     needs: build
     permissions:
       contents: read
@@ -219,7 +223,8 @@ jobs:
   # =========================================================================
   deploy-staging:
     name: Deploy to Staging
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 20
     needs: [build, sbom, provenance, vulnerability-scan]
     if: github.ref == 'refs/heads/main'
     permissions:
@@ -284,7 +289,8 @@ jobs:
   # =========================================================================
   approval-production:
     name: Await Manual Approval for Production
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 60
     needs: [deploy-staging]
     environment:
       name: production
@@ -306,7 +312,8 @@ jobs:
   # =========================================================================
   deploy-production:
     name: Deploy to Production
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 30
     needs: [build, approval-production]
     if: github.ref == 'refs/heads/main'
     permissions:
@@ -382,7 +389,8 @@ jobs:
   # =========================================================================
   release-summary:
     name: Release Summary (Gate 5 Complete)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 5
     needs: [build, sbom, provenance, vulnerability-scan, deploy-staging, deploy-production]
     if: always()
 
