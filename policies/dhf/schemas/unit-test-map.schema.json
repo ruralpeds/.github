@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ruralpeds.github.io/schemas/dhf/unit-test-map.schema.json",
+  "title": "IEC 62304 Unit Test Map",
+  "description": "Schema for dhf/verification/unit-test-map.yaml — maps tests to software requirements",
+  "type": "object",
+  "required": ["version", "tests"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string" },
+    "tests": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/test_entry" }
+    }
+  },
+  "$defs": {
+    "test_entry": {
+      "type": "object",
+      "required": ["id", "title", "verifies"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^UT-\\d{3,}$"
+        },
+        "title": { "type": "string" },
+        "file": { "type": "string", "description": "Relative path to test file" },
+        "symbol": { "type": "string", "description": "Test function or method name" },
+        "verifies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^SW-\\d{3,}$"
+          },
+          "minItems": 1,
+          "description": "SW-### requirement IDs this test verifies"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "retired"],
+          "default": "active"
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

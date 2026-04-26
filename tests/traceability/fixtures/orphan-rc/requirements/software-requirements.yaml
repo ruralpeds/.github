@@ -1,0 +1,5 @@
+version: "1.0"
+requirements:
+  - id: SW-001
+    title: "Test requirement"
+    status: active

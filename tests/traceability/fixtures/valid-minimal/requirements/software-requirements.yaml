@@ -1,0 +1,9 @@
+version: "1.0"
+requirements:
+  - id: SW-001
+    title: "System shall validate gestational age"
+    status: active
+    risk_controls: [RC-001]
+  - id: SW-002
+    title: "System shall log all user actions"
+    status: active

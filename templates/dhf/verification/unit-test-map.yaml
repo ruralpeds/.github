@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=../../../policies/dhf/schemas/unit-test-map.schema.json
+#
+# Unit Test Map — IEC 62304 §5.5, §5.7
+#
+# Maps test functions to the software requirements they verify.
+# Each active SW-NNN with status != draft or retired must have >= 1 entry here.
+#
+# Notes:
+#   - `file` and `symbol` are informational (not validated by check_gaps.py today;
+#     annotate your source code with @requirement("SW-NNN") for code-level tracing).
+#   - Never delete entries — mark them status: retired instead.
+#   - A test may verify multiple requirements.
+
+version: "1.0"
+tests:
+
+  - id: UT-001
+    title: "[REPLACE] Test that <SW-001> is met"
+    file: "tests/test_todo.py"     # relative path to test file
+    symbol: "test_todo_function"   # test function name
+    verifies:
+      - SW-001                     # The requirement this test verifies
+    status: active                 # active | retired
+    notes: >
+      [REPLACE] Brief description of what this test covers and any
+      test environment requirements.
+
+  # add more tests below — one UT-NNN per test function (or per requirement cluster)

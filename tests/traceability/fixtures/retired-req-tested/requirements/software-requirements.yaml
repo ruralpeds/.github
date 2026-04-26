@@ -1,0 +1,8 @@
+version: "1.0"
+requirements:
+  - id: SW-001
+    title: "Active requirement"
+    status: active
+  - id: SW-002
+    title: "Retired requirement"
+    status: retired
