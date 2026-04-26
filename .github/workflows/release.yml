@@ -19,6 +19,14 @@ on:
         description: "Auto-generate changelog from conventional commits"
         type: boolean
         default: true
+      verify-attestations:
+        description: >
+          After the release is created, verify SLSA provenance attestations for
+          any artifacts found in dist/. Fails the release if any artifact lacks
+          a valid attestation. Enable only after the provenance workflow has run
+          in a prior job so the attestation is already in the store.
+        type: boolean
+        default: false
       tag-prefix:
         description: "Version tag prefix"
         type: string
@@ -338,3 +346,32 @@ jobs:
 
           echo "url=$URL" >> "$GITHUB_OUTPUT"
           echo "Release created: $URL"
+
+      - name: Verify attestations
+        if: inputs.verify-attestations
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          ARTIFACTS=$(find dist/ -type f 2>/dev/null | head -50 || true)
+          if [ -z "$ARTIFACTS" ]; then
+            echo "No artifacts in dist/ — skipping attestation verification."
+            exit 0
+          fi
+          FAILED=0
+          while IFS= read -r artifact; do
+            [ -f "$artifact" ] || continue
+            echo "::group::Verifying $artifact"
+            if gh attestation verify "$artifact" --repo "$GITHUB_REPOSITORY"; then
+              echo "✓ $artifact"
+            else
+              echo "::error::Attestation verification failed for $artifact"
+              FAILED=$((FAILED + 1))
+            fi
+            echo "::endgroup::"
+          done <<< "$ARTIFACTS"
+          if [ "$FAILED" -gt 0 ]; then
+            echo "::error::$FAILED artifact(s) failed SLSA attestation verification."
+            exit 1
+          fi
+          echo "All attestations verified successfully."
