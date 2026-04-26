@@ -20,42 +20,47 @@ env:
 jobs:
   # =========================================================================
   # Gate 3: Integration Tests
+  # macOS self-hosted: Docker service containers aren't supported, so we
+  # start PostgreSQL and Redis via docker run and clean up at the end.
   # =========================================================================
   integration-tests:
     name: Integration Tests (API + Database)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 30
     permissions:
       contents: read
       packages: read
 
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_USER: audit_trail_user
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_DB: audit_trail
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Start services (PostgreSQL + Redis)
+        run: |
+          docker rm -f pg-test redis-test 2>/dev/null || true
+
+          docker run -d --name pg-test \
+            -e POSTGRES_USER=audit_trail_user \
+            -e POSTGRES_PASSWORD=test_password \
+            -e POSTGRES_DB=audit_trail \
+            -p 5432:5432 \
+            postgres:15-alpine
+
+          docker run -d --name redis-test \
+            -p 6379:6379 \
+            redis:7-alpine
+
+          echo "Waiting for PostgreSQL..."
+          for i in $(seq 1 30); do
+            docker exec pg-test pg_isready -U audit_trail_user && break
+            sleep 2
+          done
+
+          echo "Waiting for Redis..."
+          for i in $(seq 1 15); do
+            docker exec redis-test redis-cli ping | grep -q PONG && break
+            sleep 2
+          done
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -70,13 +75,10 @@ jobs:
 
       - name: Initialize database schema
         run: |
-          # Run all migrations
           for migration in infrastructure/database/*.sql; do
-            psql -h localhost -U audit_trail_user -d audit_trail \
-              -f "$migration" > /dev/null 2>&1
+            docker exec -i pg-test psql -U audit_trail_user -d audit_trail \
+              < "$migration" > /dev/null 2>&1
           done
-        env:
-          PGPASSWORD: test_password
 
       - name: Run integration tests
         run: |
@@ -103,39 +105,38 @@ jobs:
         run: |
           echo "🔐 Verify audit trail immutability and chain integrity"
 
-          # Test 1: Verify immutability constraint
-          psql -h localhost -U audit_trail_user -d audit_trail <<EOF
-          -- Insert test event
-          INSERT INTO audit_trail (
-            event_id, timestamp, unix_timestamp, user_id, action_type,
-            resource_type, resource_id, event_json, event_hash,
-            signature, signature_timestamp, merkle_chain_hash
-          ) VALUES (
-            'TEST-INT-001', NOW(), EXTRACT(EPOCH FROM NOW())::BIGINT, 'test_user',
-            'integration_test', 'TEST', 'test-id-001',
-            '{"test":"data"}', 'hash123',
-            'signature123', NOW(), 'merkle123'
-          );
+          docker exec pg-test psql -U audit_trail_user -d audit_trail -c "
+            INSERT INTO audit_trail (
+              event_id, timestamp, unix_timestamp, user_id, action_type,
+              resource_type, resource_id, event_json, event_hash,
+              signature, signature_timestamp, merkle_chain_hash
+            ) VALUES (
+              'TEST-INT-001', NOW(), EXTRACT(EPOCH FROM NOW())::BIGINT, 'test_user',
+              'integration_test', 'TEST', 'test-id-001',
+              '{\"test\":\"data\"}', 'hash123',
+              'signature123', NOW(), 'merkle123'
+            );
+          "
 
-          -- Attempt DELETE (should fail)
-          \set QUIET_MESSAGE 1
-          DELETE FROM audit_trail WHERE event_id='TEST-INT-001';
-          \set QUIET_MESSAGE 0
+          # Attempt DELETE (should fail due to immutability constraint)
+          docker exec pg-test psql -U audit_trail_user -d audit_trail -c \
+            "DELETE FROM audit_trail WHERE event_id='TEST-INT-001';" 2>&1 || true
 
-          -- Verify event still exists
-          SELECT COUNT(*) as event_count FROM audit_trail
-          WHERE event_id='TEST-INT-001';
-          EOF
+          # Verify event still exists
+          docker exec pg-test psql -U audit_trail_user -d audit_trail -c \
+            "SELECT COUNT(*) AS event_count FROM audit_trail WHERE event_id='TEST-INT-001';"
 
-        env:
-          PGPASSWORD: test_password
+      - name: Stop services
+        if: always()
+        run: docker rm -f pg-test redis-test || true
 
   # =========================================================================
   # Gate 4: System Tests & Compliance Verification
   # =========================================================================
   system-tests:
     name: System Tests (FHIR, EHR Integration)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 30
     permissions:
       contents: read
       packages: read
@@ -167,15 +168,12 @@ jobs:
         run: |
           echo "📋 FHIR US Core 6.1 Conformance Validation"
 
-          # Test: FHIR patient resource
           python -m pytest tests/system/test_fhir_compliance.py::TestFHIRPatient \
             -v
 
-          # Test: FHIR observation (vitals)
           python -m pytest tests/system/test_fhir_compliance.py::TestFHIRObservation \
             -v
 
-          # Test: FHIR medication
           python -m pytest tests/system/test_fhir_compliance.py::TestFHIRMedication \
             -v
 
@@ -183,11 +181,9 @@ jobs:
         run: |
           echo "🔗 EHR Integration Testing"
 
-          # Test: Export to EHR (FHIR)
           python -m pytest tests/system/test_ehr_integration.py::TestEHRExport \
             -v
 
-          # Test: Import from EHR (OAuth token validation)
           python -m pytest tests/system/test_ehr_integration.py::TestEHRImport \
             -v
 
@@ -203,7 +199,8 @@ jobs:
   # =========================================================================
   compliance-verification:
     name: Compliance Verification (IEC 62304, CFR Part 11, HIPAA)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 15
     permissions:
       contents: read
 
@@ -220,12 +217,10 @@ jobs:
         run: |
           echo "📐 IEC 62304: Design Traceability Matrix"
 
-          # Check that each requirement has corresponding design + test
           python3 <<'EOF'
           import os
           import json
 
-          # Requirements mapping
           requirements = {
             "REQ-AUTH": {
               "design": ["src/auth.py"],
@@ -254,7 +249,6 @@ jobs:
         run: |
           echo "📋 CFR Part 11: Audit Trail Compliance"
 
-          # Check for audit trail features
           python3 <<'EOF'
           import os
 
@@ -281,17 +275,14 @@ jobs:
         run: |
           echo "🔐 HIPAA: Security Rule Compliance"
 
-          # Check encryption configuration
           grep -r "AES-256-GCM" infrastructure/kubernetes infrastructure/terraform \
             && echo "✅ Encryption algorithm verified" \
             || echo "❌ Encryption algorithm not configured"
 
-          # Check access control
           grep -r "REQUIRE_MFA" infrastructure/kubernetes \
             && echo "✅ MFA requirement verified" \
             || echo "❌ MFA not required"
 
-          # Check encryption in transit
           grep -r "TLS\|tls\|https" src/ \
             && echo "✅ TLS configured" \
             || echo "❌ TLS not configured"
@@ -301,7 +292,8 @@ jobs:
   # =========================================================================
   security-scan:
     name: Container Security Scan
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 20
     permissions:
       contents: read
       security-events: write
@@ -332,7 +324,8 @@ jobs:
   # =========================================================================
   verification-summary:
     name: V&V Summary (Gates 3-4 Complete)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macos]
+    timeout-minutes: 5
     needs: [integration-tests, system-tests, compliance-verification]
     if: always()
 
