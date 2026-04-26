@@ -1,0 +1,107 @@
+{
+  "name": "org-phi-active",
+  "description": "HIPAA-specific rules for repos actively processing ePHI",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "repository_property_targeting": {
+      "include": {
+        "repository_property": [
+          {
+            "property_name": "data-classification",
+            "property_values": [
+              "phi-active"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "rules": [
+    {
+      "type": "creation",
+      "parameters": {
+        "restriction": "non_empty"
+      }
+    },
+    {
+      "type": "required_signatures",
+      "parameters": {
+        "key_type_set": [
+          "pgp",
+          "ssh"
+        ]
+      }
+    },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "dismiss_stale_reviews": false,
+        "require_code_owner_review": true,
+        "require_last_push_approval": true,
+        "require_review_thread_resolution": true,
+        "required_approving_review_count": 2,
+        "required_review_thread_resolution": true
+      }
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "do_not_enforce_on_create": false,
+        "required_status_checks": [
+          {
+            "context": "ci"
+          },
+          {
+            "context": "PHI scan"
+          },
+          {
+            "context": "SBOM"
+          },
+          {
+            "context": "CodeQL"
+          },
+          {
+            "context": "Audit log integrity"
+          }
+        ],
+        "strict_required_status_checks_policy": true
+      }
+    },
+    {
+      "type": "restrict_pushes",
+      "parameters": {
+        "restrict_to": [
+          "deploy_keys",
+          "github_app"
+        ]
+      }
+    },
+    {
+      "type": "non_fast_forward",
+      "parameters": {}
+    }
+  ],
+  "metadata": {
+    "applies_to": "Repos where data-classification = phi-active",
+    "min_reviewers": 2,
+    "requires_code_owner": true,
+    "requires_signatures": true,
+    "hipaa_requirements": [
+      "Access control (RBAC, least-privilege)",
+      "Audit logging (immutable, tamper-evident)",
+      "Encryption (TLS 1.3+ in-transit, AES-256 at-rest)",
+      "Integrity controls (HMAC/digital signature)",
+      "Contingency planning (backup/restore RTO ≤ 2 hr)"
+    ],
+    "required_checks": [
+      "ci",
+      "PHI scan",
+      "SBOM",
+      "CodeQL",
+      "Audit log integrity"
+    ],
+    "deployment_protection": "Required for any prod deployment (manual approval)",
+    "comment": "HIPAA-specific: 2 reviewers incl. code owner, PHI scan mandatory, audit log integrity check, deployment requires environment protection"
+  }
+}

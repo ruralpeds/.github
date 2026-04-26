@@ -1,14 +1,86 @@
-name: Test Mac Runner
+name: Test Mac Runners
 
 on:
   workflow_dispatch:
+  schedule:
+    # Run daily at 08:00 UTC to verify runners are healthy
+    - cron: '0 8 * * *'
 
 jobs:
-  test:
+  # -----------------------------------------------------------------------
+  # Mac Studio — always-on primary runner
+  # -----------------------------------------------------------------------
+  test-mac-studio:
+    name: Smoke Test — Mac Studio
     runs-on: [self-hosted, mac-studio]
-    timeout-minutes: 5
+    timeout-minutes: 10
+
     steps:
-      - run: echo "Mac runner works!"
-      - run: gh --version
-      - run: |
+      - name: Runner info
+        run: |
+          echo "Hostname:  $(hostname)"
+          echo "OS:        $(sw_vers -productName) $(sw_vers -productVersion)"
+          echo "Arch:      $(uname -m)"
+          echo "CPU cores: $(sysctl -n hw.logicalcpu)"
+          echo "RAM:       $(( $(sysctl -n hw.memsize) / 1024 / 1024 / 1024 )) GB"
+
+      - name: Verify required tools
+        run: |
+          echo "--- Core tools ---"
+          git --version
+          gh --version
+          python3 --version
+          node --version || echo "node not found"
+          docker --version
+          docker compose version 2>/dev/null || docker-compose --version 2>/dev/null || echo "docker compose not found"
+
+      - name: Verify Docker is running
+        run: |
+          docker info > /dev/null
+          echo "Docker daemon: OK"
+
+      - name: GitHub CLI auth check
+        run: |
           gh repo list ruralpeds --json name --limit 5 --jq '.[].name'
+
+      - name: Self-test complete
+        run: echo "Mac Studio runner OK"
+
+  # -----------------------------------------------------------------------
+  # MacBook Pro — secondary runner (online when lid is open)
+  # -----------------------------------------------------------------------
+  test-macbook-pro:
+    name: Smoke Test — MacBook Pro
+    runs-on: [self-hosted, macbook-pro]
+    timeout-minutes: 10
+
+    steps:
+      - name: Runner info
+        run: |
+          echo "Hostname:  $(hostname)"
+          echo "OS:        $(sw_vers -productName) $(sw_vers -productVersion)"
+          echo "Arch:      $(uname -m)"
+          echo "CPU cores: $(sysctl -n hw.logicalcpu)"
+          echo "RAM:       $(( $(sysctl -n hw.memsize) / 1024 / 1024 / 1024 )) GB"
+
+      - name: Verify required tools
+        run: |
+          echo "--- Core tools ---"
+          git --version
+          gh --version
+          python3 --version
+          node --version || echo "node not found"
+          docker --version
+          docker compose version 2>/dev/null || docker-compose --version 2>/dev/null || echo "docker compose not found"
+
+      - name: Verify Docker is running
+        run: |
+          docker info > /dev/null
+          echo "Docker daemon: OK"
+
+      - name: GitHub CLI auth check
+        run: |
+          gh repo list ruralpeds --json name --limit 5 --jq '.[].name'
+
+      - name: Self-test complete
+        run: echo "MacBook Pro runner OK"
