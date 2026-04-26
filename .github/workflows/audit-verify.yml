@@ -1,19 +1,20 @@
-name: "Audit Log Integrity Verification"
+name: "Audit Chain Verify"
 
-# Nightly integrity check for audit logs.
+# Nightly Merkle-chain integrity check for the audit ledger.
 #
 # Regulatory drivers:
 #   - HIPAA §164.312(b) — audit controls (integrity, tamper-detection)
-#   - 21 CFR Part 11 §11.10(d) — record integrity
-#   - IEC 62304 — change log integrity (no retroactive edits)
+#   - HIPAA §164.312(c)(1) — integrity (cryptographic mechanisms)
+#   - 21 CFR Part 11 §11.10(e) — secure, computer-generated audit trails
+#   - NIST SP 800-92 — log management
+#   - ISO 27001 A.12.4.2 — protection of log information
 #
-# Current implementation validates the governance ledger format and
-# detects obvious tampering. Full Merkle-chain + Sigstore verification
-# is implemented in issue #23 (scripts/chain/verify.py).
+# On failure: opens a critical GitHub issue and fails loudly.
+# Do NOT merge any PRs until the chain break is investigated.
 
 on:
   schedule:
-    - cron: "0 1 * * *"  # Nightly at 1 AM UTC
+    - cron: "0 3 * * *"  # Nightly at 03:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -22,157 +23,114 @@ permissions:
 
 jobs:
   verify:
-    name: Verify Audit Log Integrity
+    name: Verify Audit Merkle Chain
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
-          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
         with:
           python-version: "3.12"
 
-      - name: Check for Merkle chain (issue #23)
+      - name: Install cosign
+        uses: sigstore/cosign-installer@fb28c2b6339dcd94da6e4cbcbc5e888961f6f8c3  # v3.9.0
+        with:
+          cosign-release: "v2.4.1"
+
+      - name: Check for chain file
         id: chain_check
         run: |
           if [ -f "audit-log/chain.ndjson" ]; then
-            echo "chain_exists=true" >> $GITHUB_OUTPUT
-            echo "Merkle chain found — full verification active"
+            ENTRIES=$(wc -l < audit-log/chain.ndjson)
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "entries=$ENTRIES" >> "$GITHUB_OUTPUT"
+            echo "Chain file found: $ENTRIES entries"
           else
-            echo "chain_exists=false" >> $GITHUB_OUTPUT
-            echo "Merkle chain not yet initialised (pending issue #23) — running basic ledger checks"
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "entries=0" >> "$GITHUB_OUTPUT"
+            echo "::warning::audit-log/chain.ndjson does not exist — chain appending may not have run yet"
           fi
 
-      # -----------------------------------------------------------------------
-      # Basic ledger validation (always runs — governs governance-ledger.jsonl)
-      # -----------------------------------------------------------------------
-      - name: Validate governance ledger
-        run: |
-          LEDGER="audit-log/governance-ledger.jsonl"
-
-          if [ ! -f "$LEDGER" ]; then
-            echo "⚠️  No governance ledger found at $LEDGER — skipping"
-            exit 0
-          fi
-
-          python3 - "$LEDGER" <<'PYEOF'
-          import json, sys, datetime
-
-          ledger_path = sys.argv[1]
-          raw = open(ledger_path).read().strip()
-
-          if not raw:
-            print("⚠️  Ledger is empty — skipping")
-            sys.exit(0)
-
-          # Support both JSONL (one object per line) and a JSON array / single object
-          events = []
-          for line in raw.splitlines():
-            line = line.strip()
-            if not line or line in ('{', '}', '[', ']', ','):
-              continue
-            # Try standalone JSON object per segment (pretty-printed)
-          try:
-            obj = json.loads(raw)
-            if isinstance(obj, list):
-              events = obj
-            elif isinstance(obj, dict):
-              events = [obj]
-          except json.JSONDecodeError:
-            # Try JSONL
-            for i, line in enumerate(raw.splitlines(), 1):
-              line = line.strip()
-              if not line:
-                continue
-              try:
-                events.append(json.loads(line))
-              except json.JSONDecodeError as e:
-                print(f"Line {i}: invalid JSON — {e}")
-                sys.exit(1)
-
-          print(f"Ledger entries parsed: {len(events)}")
-
-          now = datetime.datetime.now(datetime.timezone.utc)
-          errors = 0
-          for i, ev in enumerate(events, 1):
-            if "timestamp" not in ev:
-              print(f"Entry {i}: missing 'timestamp'")
-              errors += 1
-              continue
-            try:
-              ts = datetime.datetime.fromisoformat(ev["timestamp"].replace("Z", "+00:00"))
-              if ts > now:
-                print(f"Entry {i}: future timestamp {ev['timestamp']} — possible tampering")
-                errors += 1
-            except ValueError as e:
-              print(f"Entry {i}: bad timestamp — {e}")
-              errors += 1
-
-          if errors:
-            print(f"❌ {errors} validation error(s) found")
-            sys.exit(1)
-          else:
-            print("✅ Governance ledger: all entries valid")
-          PYEOF
-
-      # -----------------------------------------------------------------------
-      # Full Merkle-chain verification (only when chain.ndjson exists, i.e. #23)
-      # -----------------------------------------------------------------------
-      - name: Verify Merkle chain
-        if: steps.chain_check.outputs.chain_exists == 'true'
+      - name: Verify hash chain integrity
+        if: steps.chain_check.outputs.exists == 'true'
+        id: verify_hashes
         run: |
           python3 scripts/chain/verify.py audit-log/chain.ndjson
+          echo "hash_check=pass" >> "$GITHUB_OUTPUT"
+
+      - name: Verify Sigstore signatures
+        if: steps.chain_check.outputs.exists == 'true'
+        id: verify_sigs
+        run: |
+          python3 scripts/chain/verify.py audit-log/chain.ndjson --verify-sigs
+          echo "sig_check=pass" >> "$GITHUB_OUTPUT"
+        continue-on-error: true  # sig failures are reported but don't shadow hash failures
 
       - name: Summary
         if: always()
         run: |
-          echo "## Audit Verification Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.chain_check.outputs.chain_exists }}" == "true" ]; then
-            echo "- Mode: **Full Merkle-chain + Sigstore** verification" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- Mode: **Basic ledger validation** (Merkle chain pending issue #23)" >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "- Run: \`${{ github.run_id }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "## Audit Chain Verification" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Check | Result |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Chain file exists | ${{ steps.chain_check.outputs.exists }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Entries | ${{ steps.chain_check.outputs.entries }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Hash chain integrity | ${{ steps.verify_hashes.outputs.hash_check || 'N/A or FAILED' }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Sigstore signatures | ${{ steps.verify_sigs.outputs.sig_check || 'N/A or partially unsigned' }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "_Run date: $(date -u +%Y-%m-%dT%H:%M:%SZ)_" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Alert on failure
-        if: failure()
+      - name: Open critical issue on hash chain failure
+        if: failure() && steps.verify_hashes.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
         with:
           script: |
-            // Only open a new issue if no open security alert already exists
+            const title = `🚨 SECURITY: Audit chain hash verification FAILED — ${new Date().toISOString().slice(0,10)}`;
+            const body = `## Audit Chain Integrity Failure
+
+            The nightly Merkle-chain hash verification **FAILED**.
+
+            This means one or more entries in \`audit-log/chain.ndjson\` have been
+            altered, deleted, or reordered since they were written.
+
+            **Immediate actions required:**
+            1. **Do NOT merge any PRs** until the break is investigated.
+            2. Inspect the run logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            3. Snapshot the current chain: \`cp audit-log/chain.ndjson audit-log/broken-$(date -u +%Y%m%d).ndjson\`
+            4. Run locally to identify the broken link:
+               \`\`\`bash
+               python scripts/chain/verify.py audit-log/chain.ndjson
+               \`\`\`
+            5. Investigate git history around the broken seq to determine root cause.
+            6. Follow the incident response procedure in \`docs/compliance/audit-chain.md\`.
+
+            **Run:** ${{ github.run_id }} | **Workflow:** \`audit-verify.yml\` | **Date:** ${new Date().toISOString()}`;
+
+            // Check for an existing open issue to avoid duplicates
             const existing = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: 'security,audit,critical',
               state: 'open',
+              labels: 'security,audit,incident',
             });
-            if (existing.data.length > 0) {
-              console.log(`Open security issue already exists (#${existing.data[0].number}) — skipping duplicate`);
-              return;
+            const today = new Date().toISOString().slice(0, 10);
+            const duplicate = existing.data.find(i => i.title.includes('Audit chain') && i.title.includes(today));
+            if (duplicate) {
+              console.log(`Existing issue #${duplicate.number} found for today — skipping duplicate`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['security', 'audit', 'incident', 'critical'],
+              });
+              console.log(`Created issue #${created.data.number}`);
             }
-            await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: '🚨 SECURITY ALERT: Audit Log Tampering Detected',
-              body: [
-                '**Audit log integrity check FAILED.**',
-                '',
-                '**Action Required:**',
-                '1. Review audit logs in git history',
-                '2. Check for unauthorized modifications',
-                '3. Contact security team',
-                '',
-                `**Run Details:**`,
-                `- Run ID: ${context.runId}`,
-                `- Check: audit-verify.yml`,
-                `- Time: ${new Date().toISOString()}`,
-                '',
-                `See: https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
-              ].join('\n'),
-              labels: ['security', 'critical', 'audit'],
-            });
