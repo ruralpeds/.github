@@ -86,6 +86,27 @@ The baseline ruleset `signed-commits-main.json` enforces:
 - PHI scrubbing scan required as a merge gate
 - Code scanning must pass (blocks high+ findings from phi-scan category)
 
+### Org Custom Repository Properties
+
+Every repository carries six metadata properties that drive automated governance decisions — rulesets, audit depth, DHF scaffolding, and more:
+
+| Property | Values | Approval |
+|---|---|---|
+| `data-classification` | `public` / `internal` / `synthetic` / `phi-capable` / `phi-active` | self-serve |
+| `criticality` | `experimental` / `reference` / `clinical-support` / `clinical-decision` / `device` | self-serve |
+| `iec62304-class` | `not-applicable` / `class-a` / `class-b` / `class-c` | clinical-lead |
+| `regulated` | `true` / `false` | clinical-lead |
+| `primary-stack` | `julia` / `rust` / `node` / `python` / `go` / `content` / `polyglot` | self-serve |
+| `baa-required` | `true` / `false` | self-serve |
+
+Set properties interactively:
+```bash
+export GH_TOKEN=$(gh auth token)
+python scripts/set-properties.py ruralpeds/my-repo
+```
+
+See **[`docs/governance/custom-properties.md`](docs/governance/custom-properties.md)** for full documentation including downstream effects, change approval requirements, and the weekly audit workflow (`custom-properties-audit.yml`).
+
 ### Supply-Chain Attestation Trio (P1)
 
 For every release of a clinical repo, four artifacts travel together to form a complete supply-chain evidence package:
@@ -297,9 +318,11 @@ Requires `REPO_SETUP_TOKEN` secret (fine-grained PAT with Contents + PRs + Workf
 
 | Time (UTC Mon) | Workflow | Purpose |
 |---|---|---|
+| 05:00 | sync-rulesets.yml | Apply governance rulesets to all org repos |
 | 06:00 | repo-scanner.yml | Bootstrap missing CI workflows via PRs |
 | 07:00 | check-compliance.yml | Scan all repos, create issue if non-compliant |
 | 08:00 | playwright-audit.yml | Visual audit of org Actions status |
+| 09:00 | custom-properties-audit.yml | Audit repos missing required custom properties |
 
 ## Example Usage
 

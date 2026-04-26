@@ -1,0 +1,123 @@
+# Org-level custom repository property schema
+# Single source of truth — consumed by:
+#   - .github/workflows/custom-properties-audit.yml (compliance checking)
+#   - scripts/set-properties.py (interactive wizard)
+#   - Phase 3 rulesets (target repos by iec62304-class, data-classification)
+#
+# GitHub API ref: PATCH /repos/{owner}/{repo}/properties/values
+# Org definitions: Organization Settings → Custom Properties
+
+version: "1.0"
+last_updated: "2026-04-26"
+
+properties:
+
+  - name: data-classification
+    description: >
+      Data classification level. Controls ePHI handling requirements,
+      BAA scope, and which security rulesets apply.
+    value_type: single_select
+    required: true
+    default: internal
+    allowed_values:
+      - name: public
+        description: Publicly available; no ePHI, no PII
+      - name: internal
+        description: Internal use; no ePHI; may contain internal docs/designs
+      - name: synthetic
+        description: Synthetic test data (Synthea, mock patients); never real ePHI
+      - name: phi-capable
+        description: Can process ePHI in principle; not actively doing so today
+      - name: phi-active
+        description: Actively processes or stores real ePHI in production
+    change_approval: self-serve
+    downstream_effects:
+      phi-active: Triggers HIPAA BAA check; activates PHI-scan workflow
+
+  - name: criticality
+    description: >
+      Clinical and business criticality. Drives audit depth (phase 4),
+      HA requirements (phase 8), and incident response SLA.
+    value_type: single_select
+    required: true
+    default: experimental
+    allowed_values:
+      - name: experimental
+        description: Research, prototype, proof-of-concept; not used clinically
+      - name: reference
+        description: Reference docs, educational content; no clinical decision support
+      - name: clinical-support
+        description: Supports clinical workflows but not on the critical path
+      - name: clinical-decision
+        description: Directly influences clinical decisions (alarms, calculators)
+      - name: device
+        description: Software as a Medical Device (SaMD) under FDA/IEC 62304
+    change_approval: self-serve
+    downstream_effects:
+      clinical-decision: Requires HA configuration (phase 8)
+      device: Requires FDA cybersecurity plan and SBOM
+
+  - name: iec62304-class
+    description: >
+      IEC 62304 software safety classification. Gates DHF scaffold
+      generation (phase 6) and traceability workflow activation.
+    value_type: single_select
+    required: true
+    default: not-applicable
+    allowed_values:
+      - name: not-applicable
+        description: Not a medical device; IEC 62304 not applicable
+      - name: class-a
+        description: "Class A: No injury possible (display-only, informational)"
+      - name: class-b
+        description: "Class B: Non-serious injury possible (alarms, calculators)"
+      - name: class-c
+        description: "Class C: Death or serious injury possible (infusion, ventilation)"
+    change_approval: clinical-lead  # escalated — changing class affects regulatory scope
+    downstream_effects:
+      class-b: Activates reusable-iec62304-traceability.yml
+      class-c: Activates reusable-iec62304-traceability.yml + additional risk controls
+
+  - name: regulated
+    description: >
+      Whether this software is subject to regulatory oversight
+      (FDA, EMA, Health Canada, etc.).
+    value_type: true_false
+    required: true
+    default: "false"
+    change_approval: clinical-lead
+    downstream_effects:
+      "true": Activates SLSA provenance, SBOM attestation, and release gate
+
+  - name: primary-stack
+    description: Primary technology stack / programming language.
+    value_type: single_select
+    required: true
+    default: null
+    allowed_values:
+      - name: julia
+        description: Julia (scientific computing, simulations, PedNeoSim)
+      - name: rust
+        description: Rust (systems, performance-critical, medical devices)
+      - name: node
+        description: Node.js / TypeScript (web, API, React)
+      - name: python
+        description: Python (data science, scripting, analysis)
+      - name: go
+        description: Go (services, CLI tools, microservices)
+      - name: content
+        description: Content (docs, education, markdown-based repos)
+      - name: polyglot
+        description: Multiple languages / monorepo
+    change_approval: self-serve
+
+  - name: baa-required
+    description: >
+      Whether this repo/service requires a HIPAA Business Associate Agreement.
+      Must be true whenever data-classification is phi-active.
+    value_type: true_false
+    required: true
+    default: "false"
+    change_approval: self-serve
+    downstream_effects:
+      "true": BAA must be on file before any production data flows through this service
