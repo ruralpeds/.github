@@ -65,8 +65,8 @@ jobs:
     name: Install & cache
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4
         with:
           node-version: ${{ inputs.node-version }}
           cache: ${{ inputs.package-manager }}
@@ -82,7 +82,7 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         run: npx playwright install --with-deps ${{ join(fromJson(inputs.browsers), ' ') }}
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json', '**/yarn.lock', '**/pnpm-lock.yaml') }}
@@ -98,8 +98,8 @@ jobs:
         browser: ${{ fromJson(inputs.browsers) }}
         shard: ${{ fromJson(format('[{0}]', join(fromJson(format('[{0}]', (inputs.shards == 1 && '1' || inputs.shards == 2 && '1,2' || inputs.shards == 3 && '1,2,3' || '1,2,3,4'))), ','))) }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4
         with:
           node-version: ${{ inputs.node-version }}
           cache: ${{ inputs.package-manager }}
@@ -112,7 +112,7 @@ jobs:
             *)    npm ci ;;
           esac
       - name: Restore Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('**/package-lock.json', '**/yarn.lock', '**/pnpm-lock.yaml') }}
@@ -172,7 +172,7 @@ jobs:
         run: kill "$SERVER_PID" 2>/dev/null || true
       - name: Upload HTML report
         if: inputs.upload-report && always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: playwright-report-${{ matrix.browser }}-shard${{ matrix.shard }}
           path: ${{ inputs.working-directory }}/playwright-report/
@@ -180,7 +180,7 @@ jobs:
           if-no-files-found: ignore
       - name: Upload test traces on failure
         if: inputs.upload-traces && failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: playwright-traces-${{ matrix.browser }}-shard${{ matrix.shard }}
           path: ${{ inputs.working-directory }}/test-results/
@@ -188,7 +188,7 @@ jobs:
           if-no-files-found: ignore
       - name: Upload screenshots on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: playwright-screenshots-${{ matrix.browser }}-shard${{ matrix.shard }}
           path: |
@@ -198,7 +198,7 @@ jobs:
           if-no-files-found: ignore
       - name: Upload videos on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: playwright-videos-${{ matrix.browser }}-shard${{ matrix.shard }}
           path: ${{ inputs.working-directory }}/test-results/**/*.webm
@@ -211,12 +211,12 @@ jobs:
     if: always() && inputs.upload-report
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4
         with:
           node-version: ${{ inputs.node-version }}
       - name: Download all reports
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4
         with:
           pattern: playwright-report-*
           path: all-reports/
@@ -231,7 +231,7 @@ jobs:
             echo "No reports to merge"
           fi
       - name: Upload merged report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: playwright-report-merged
           path: all-reports/

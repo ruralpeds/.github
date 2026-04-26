@@ -65,7 +65,7 @@ jobs:
 
     steps:
       - name: Checkout central repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
         with:
           path: central
 
@@ -84,7 +84,7 @@ jobs:
 
       - name: Checkout target repo
         if: steps.filter.outputs.skip != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
         with:
           repository: ${{ matrix.target }}
           path: target
@@ -93,7 +93,7 @@ jobs:
 
       - name: Set up Python
         if: steps.filter.outputs.skip != 'true'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
         with:
           python-version: '3.12'
 

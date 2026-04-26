@@ -27,7 +27,7 @@ jobs:
     outputs:
       repos: ${{ steps.discover.outputs.repos }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       
       - name: Discover repos
         id: discover
@@ -68,19 +68,19 @@ jobs:
         repo: ${{ fromJson(needs.scan.outputs.repos) }}
     steps:
       - name: Checkout .github (templates)
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
         with:
           path: templates
 
       - name: Checkout target
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
         with:
           repository: ${{ env.GH_OWNER }}/${{ matrix.repo }}
           token: ${{ secrets.REPO_SETUP_TOKEN }}
           path: target
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
         with:
           python-version: "3.12"
 

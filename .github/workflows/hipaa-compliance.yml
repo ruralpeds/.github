@@ -100,7 +100,7 @@ jobs:
     if: ${{ inputs.phi-scan }}
     runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
         with:
           fetch-depth: 0
       - name: Load PHI pattern config
@@ -148,7 +148,7 @@ jobs:
 
       - name: Upload PHI/secret findings
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: phi-scan-${{ env.COMPLIANCE_RUN_ID }}
           path: |
@@ -180,15 +180,15 @@ jobs:
           - lang: ruby
             enable: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - name: CodeQL init
         if: matrix.enable
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@28deaeda66b76a05916b6923827895f2b14ab96f  # v3
         with:
           languages: ${{ matrix.lang }}
       - name: CodeQL analyze
         if: matrix.enable
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@28deaeda66b76a05916b6923827895f2b14ab96f  # v3
         with:
           category: "/language:${{ matrix.lang }}"
 
@@ -205,7 +205,7 @@ jobs:
             --error || echo "SEMGREP_FAIL=1" >> "$GITHUB_ENV"
       - name: Upload Semgrep SARIF
         if: matrix.lang == 'python'
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@28deaeda66b76a05916b6923827895f2b14ab96f  # v3
         with:
           sarif_file: semgrep.sarif
   # ──────────────────────────────────────────────────────────────────
@@ -215,7 +215,7 @@ jobs:
     needs: resolve-runner
     runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
       - name: Trivy filesystem scan
         run: |
@@ -266,7 +266,7 @@ jobs:
 
       - name: Upload Trivy SARIF
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@28deaeda66b76a05916b6923827895f2b14ab96f  # v3
         with:
           sarif_file: trivy.sarif
   # ──────────────────────────────────────────────────────────────────
@@ -279,7 +279,7 @@ jobs:
     outputs:
       artifact-url: ${{ steps.upload.outputs.artifact-url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - name: Install syft
         run: |
           brew list syft >/dev/null 2>&1 || brew install syft
@@ -297,7 +297,7 @@ jobs:
             --output-certificate sbom/cyclonedx.json.crt \
             sbom/cyclonedx.json
       - id: upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: sbom-${{ env.COMPLIANCE_RUN_ID }}
           path: sbom/
@@ -311,7 +311,7 @@ jobs:
     if: ${{ inputs.sbom }}
     runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4
         with:
           name: sbom-${{ env.COMPLIANCE_RUN_ID }}
       - name: Check for disallowed licenses
@@ -331,7 +331,7 @@ jobs:
     needs: resolve-runner
     runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
         with:
           fetch-depth: 0
       - name: Verify last 50 commits are signed
@@ -352,7 +352,7 @@ jobs:
     needs: resolve-runner
     runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - name: Find coverage report
         id: find
         run: |

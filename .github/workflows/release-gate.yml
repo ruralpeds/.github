@@ -74,7 +74,7 @@ jobs:
     needs: resolve-runner
     runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
         with:
           fetch-depth: 0
       - name: Resolve tag SHA
@@ -115,7 +115,7 @@ jobs:
     needs: resolve-runner
     runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
         with:
           ref: ${{ inputs.tag }}
 
@@ -148,7 +148,7 @@ jobs:
     needs: resolve-runner
     runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
         with:
           ref: ${{ inputs.tag }}
       - name: Generate SBOM for tag
@@ -157,7 +157,7 @@ jobs:
           mkdir -p release-artifacts/sbom
           syft . -o cyclonedx-json=release-artifacts/sbom/cyclonedx.json
           syft . -o spdx-json=release-artifacts/sbom/spdx.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: release-sbom-${{ inputs.tag }}
           path: release-artifacts/sbom/
@@ -171,7 +171,7 @@ jobs:
     if: ${{ inputs.fda-class == 'II' || inputs.fda-class == 'III' }}
     runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
         with:
           fetch-depth: 0
       - name: Resolve commit range
@@ -203,7 +203,7 @@ jobs:
     needs: resolve-runner
     runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
         with:
           ref: ${{ inputs.tag }}
       - name: Check for release notes
@@ -226,10 +226,10 @@ jobs:
     outputs:
       manifest-url: ${{ steps.up.outputs.artifact-url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
         with:
           ref: ${{ inputs.tag }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4
         with:
           name: release-sbom-${{ inputs.tag }}
           path: release-artifacts/sbom
@@ -266,7 +266,7 @@ jobs:
             --output-certificate release-artifacts/manifest.json.crt \
             release-artifacts/manifest.json
       - id: up
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: release-manifest-${{ inputs.tag }}
           path: release-artifacts/

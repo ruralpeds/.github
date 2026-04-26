@@ -74,7 +74,7 @@ jobs:
 
       - name: Set up Rust
         if: inputs.language == 'rust'
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@63eb9591781c46a70274cb3ebdf190fce92702e8  # v1
         with:
           toolchain: stable
 
@@ -86,7 +86,7 @@ jobs:
 
       - name: Set up Python
         if: inputs.language == 'python'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
         with:
           python-version: '3.12'
 
@@ -98,7 +98,7 @@ jobs:
 
       - name: Set up Node
         if: inputs.language == 'javascript'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4
         with:
           node-version: '20'
 
@@ -257,7 +257,7 @@ jobs:
           PYTHON_EOF
 
       - name: Upload mutation report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: mutation-report
           path: coverage/mutation.json
