@@ -30,9 +30,9 @@ jobs:
       contents: read
       issues: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
         with:
           python-version: "3.12"
 
@@ -47,7 +47,7 @@ jobs:
             ${{ inputs.fail-on-non-compliant && '--fail-on-non-compliant' || '' }}
 
       - name: Upload compliance report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: compliance-report-${{ github.run_number }}
           path: compliance-report/
@@ -55,7 +55,7 @@ jobs:
 
       - name: Create GitHub issue with compliance summary
         if: (github.event_name == 'schedule' || inputs.create-issue == true) && steps.check.outputs.non_compliant != '0'
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
         with:
           github-token: ${{ secrets.REPO_SETUP_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -96,7 +96,7 @@ check-gap-analysis:
     
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
       - name: Check all org repos for gap analysis
         env:

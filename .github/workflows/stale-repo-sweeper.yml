@@ -32,7 +32,7 @@ jobs:
   sweep:
     runs-on: [self-hosted, mac-studio, arm64]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
       - name: Install deps
         run: python3 -m pip install --user pyyaml python-dateutil

@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
       - name: Start services (PostgreSQL + Redis)
         run: |
@@ -63,7 +63,7 @@ jobs:
           done
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c  # v4
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -96,7 +96,7 @@ jobs:
 
       - name: Upload integration test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v3
         with:
           name: integration-test-results
           path: integration-results.xml
@@ -143,10 +143,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c  # v4
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -189,7 +189,7 @@ jobs:
 
       - name: Upload system test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v3
         with:
           name: system-test-results
           path: system-results.xml
@@ -206,10 +206,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c  # v4
         with:
           python-version: '3.11'
 
@@ -300,14 +300,14 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
       - name: Build Docker image
         run: |
           docker build -t test-image:latest . -f Dockerfile || true
 
       - name: Scan with Trivy
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25  # v0.36.0
         with:
           image-ref: 'test-image:latest'
           format: 'sarif'
@@ -315,7 +315,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
 
       - name: Upload Trivy results
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@28deaeda66b76a05916b6923827895f2b14ab96f  # v3
         with:
           sarif_file: trivy-image-results.sarif
 

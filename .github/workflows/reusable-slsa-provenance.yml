@@ -53,18 +53,18 @@ jobs:
           fetch-depth: 0
 
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4
         with:
           path: artifacts
 
       - name: Generate provenance
         id: attest
-        uses: actions/attest-build-provenance@v1
+        uses: actions/attest-build-provenance@c074443f1aee8d4aeeae555aebba3282517141b2  # v1
         with:
           subject-path: ${{ inputs.artifact-path }}
 
       - name: Upload provenance
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: build-provenance
           path: ${{ steps.attest.outputs.provenance-path }}

@@ -51,7 +51,7 @@ jobs:
       has-build: ${{ steps.check.outputs.has-build }}
       matrix: ${{ steps.matrix.outputs.versions }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - name: Check available scripts
         id: check
         working-directory: ${{ inputs.working-directory }}
@@ -82,8 +82,8 @@ jobs:
     if: needs.detect.outputs.has-lint == 'true' && inputs.run-lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4
         with:
           node-version: ${{ inputs.node-version }}
           cache: ${{ inputs.package-manager }}
@@ -110,8 +110,8 @@ jobs:
     if: needs.detect.outputs.has-typecheck == 'true' && inputs.run-typecheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4
         with:
           node-version: ${{ inputs.node-version }}
           cache: ${{ inputs.package-manager }}
@@ -138,8 +138,8 @@ jobs:
     if: inputs.run-security-audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4
         with:
           node-version: ${{ inputs.node-version }}
           cache: ${{ inputs.package-manager }}
@@ -171,8 +171,8 @@ jobs:
       matrix:
         node-version: ${{ fromJson(needs.detect.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: ${{ inputs.package-manager }}
@@ -194,7 +194,7 @@ jobs:
           esac
       - name: Upload coverage
         if: inputs.upload-coverage && always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: coverage-node-${{ matrix.node-version }}
           path: ${{ inputs.working-directory }}/coverage/
@@ -202,7 +202,7 @@ jobs:
           if-no-files-found: ignore
       - name: Upload test results on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: test-results-node-${{ matrix.node-version }}
           path: |
@@ -217,8 +217,8 @@ jobs:
     if: needs.detect.outputs.has-build == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4
         with:
           node-version: ${{ inputs.node-version }}
           cache: ${{ inputs.package-manager }}
@@ -240,7 +240,7 @@ jobs:
           esac
       - name: Upload build artifacts on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: build-output
           path: |

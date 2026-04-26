@@ -57,7 +57,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Install Rust toolchain (${{ inputs.toolchain }}) + rustfmt
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@be73d7920c329f220ce78e0234b8f96b7ae60248  # stable
         with:
           toolchain: ${{ inputs.toolchain }}
           components: rustfmt
@@ -75,7 +75,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Install Rust toolchain (${{ inputs.toolchain }}) + clippy
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@be73d7920c329f220ce78e0234b8f96b7ae60248  # stable
         with:
           toolchain: ${{ inputs.toolchain }}
           components: clippy
@@ -102,7 +102,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Install Rust toolchain (${{ inputs.toolchain }})
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@be73d7920c329f220ce78e0234b8f96b7ae60248  # stable
         with:
           toolchain: ${{ inputs.toolchain }}
       - name: Restore Rust cache
@@ -148,7 +148,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Install Rust nightly toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@be73d7920c329f220ce78e0234b8f96b7ae60248  # stable
         with:
           toolchain: nightly
       - name: Restore Rust cache (nightly)

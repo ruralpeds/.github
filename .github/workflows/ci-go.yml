@@ -44,7 +44,7 @@ jobs:
       has-tests: ${{ steps.check.outputs.has-tests }}
       matrix: ${{ steps.matrix.outputs.versions }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - name: Check for tests
         id: check
         working-directory: ${{ inputs.working-directory }}
@@ -72,12 +72,12 @@ jobs:
     if: inputs.run-lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed  # v5
         with:
           go-version: ${{ inputs.go-version }}
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84  # v6
         with:
           version: latest
           working-directory: ${{ inputs.working-directory }}
@@ -88,8 +88,8 @@ jobs:
     if: inputs.run-vet
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed  # v5
         with:
           go-version: ${{ inputs.go-version }}
       - name: Run go vet
@@ -101,8 +101,8 @@ jobs:
     if: inputs.run-security
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed  # v5
         with:
           go-version: ${{ inputs.go-version }}
       - name: Install gosec
@@ -124,7 +124,7 @@ jobs:
           fi
       - name: Upload security report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: security-report-go
           path: ${{ inputs.working-directory }}/gosec-report.json
@@ -142,8 +142,8 @@ jobs:
       matrix:
         go-version: ${{ fromJson(needs.detect.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed  # v5
         with:
           go-version: ${{ matrix.go-version }}
       - name: Download dependencies
@@ -170,7 +170,7 @@ jobs:
           fi
       - name: Upload coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: coverage-go-${{ matrix.go-version }}
           path: |

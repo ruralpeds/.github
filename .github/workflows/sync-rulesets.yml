@@ -63,7 +63,7 @@ jobs:
       - name: Generate GitHub App token
         id: app-token
         if: ${{ vars.TH_BOT_APP_ID != '' }}
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@3ff1caaa28b64c9cc276b0f2ebde5d8cd729c4d5  # v1
         with:
           app-id: ${{ vars.TH_BOT_APP_ID }}
           private-key: ${{ secrets.TH_BOT_PRIVATE_KEY }}

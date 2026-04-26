@@ -47,7 +47,7 @@ jobs:
     outputs:
       matrix: ${{ steps.detect.outputs.languages }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - name: Detect languages for CodeQL
         id: detect
         run: |
@@ -119,16 +119,16 @@ jobs:
       matrix:
         language: ${{ fromJson(needs.detect-languages.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@28deaeda66b76a05916b6923827895f2b14ab96f  # v3
         with:
           languages: ${{ matrix.language }}
           queries: +security-extended,security-and-quality
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+        uses: github/codeql-action/autobuild@28deaeda66b76a05916b6923827895f2b14ab96f  # v3
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@28deaeda66b76a05916b6923827895f2b14ab96f  # v3
         with:
           category: "/language:${{ matrix.language }}"
 
@@ -143,9 +143,9 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - name: Dependency review
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@da24556a548ea9f8f4777688ebe3e1feebba9d11  # v4
         with:
           fail-on-severity: high
           deny-licenses: ${{ inputs.forbidden-licenses }}
@@ -160,7 +160,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - name: Check Node.js licenses
         if: hashFiles('package.json') != ''
         working-directory: ${{ inputs.working-directory }}
@@ -234,7 +234,7 @@ jobs:
           fi
       - name: Upload license reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: license-reports
           path: |
@@ -250,7 +250,7 @@ jobs:
     if: inputs.run-repo-hygiene
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - name: Check required files
         run: |
           SCORE=0
