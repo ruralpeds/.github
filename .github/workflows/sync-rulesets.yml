@@ -67,7 +67,7 @@ jobs:
         with:
           app-id: ${{ vars.TH_BOT_APP_ID }}
           private-key: ${{ secrets.TH_BOT_PRIVATE_KEY }}
-          owner: timothyhartzog
+          owner: ${{ github.repository_owner }}
 
       # ── 2. Choose token (App token preferred, fallback to PAT) ─────────────
       - name: Resolve token
@@ -102,9 +102,9 @@ jobs:
           if [ -n "${{ inputs.target-repos }}" ]; then
             echo "${{ inputs.target-repos }}" | tr ',' '\n' | tr -d ' ' > repos.txt
           else
-            gh api --paginate "/orgs/timothyhartzog/repos?per_page=100" \
+            gh api --paginate "/orgs/${{ github.repository_owner }}/repos?per_page=100" \
               --jq '.[] | select(.archived == false and .fork == false) | .name' > repos.txt \
-            || gh api --paginate "/users/timothyhartzog/repos?per_page=100" \
+            || gh api --paginate "/users/${{ github.repository_owner }}/repos?per_page=100" \
               --jq '.[] | select(.archived == false and .fork == false) | .name' > repos.txt
           fi
           echo "Target repo count: $(wc -l < repos.txt)"
@@ -139,17 +139,17 @@ jobs:
               echo "→ $repo"
 
               # Check if the ruleset already exists by name
-              EXISTING=$(gh api "/repos/timothyhartzog/$repo/rulesets" --jq \
+              EXISTING=$(gh api "/repos/${{ github.repository_owner }}/$repo/rulesets" --jq \
                 ".[] | select(.name == \"$RULESET_NAME\") | .id" 2>/dev/null || echo "")
 
               if [ -n "$EXISTING" ]; then
                 ACTION="update"
                 METHOD="PUT"
-                ENDPOINT="/repos/timothyhartzog/$repo/rulesets/$EXISTING"
+                ENDPOINT="/repos/${{ github.repository_owner }}/$repo/rulesets/$EXISTING"
               else
                 ACTION="create"
                 METHOD="POST"
-                ENDPOINT="/repos/timothyhartzog/$repo/rulesets"
+                ENDPOINT="/repos/${{ github.repository_owner }}/$repo/rulesets"
               fi
 
               if [ "$DRY_RUN" = "true" ]; then
