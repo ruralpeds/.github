@@ -1,0 +1,2 @@
+{"$schema": "https://github.com/ruralpeds/.github/blob/main/docs/GAP_ANALYSIS_LIFECYCLE.md#7-event-ledger-build-ledgerjsonl", "$comment": "This file is workflow-owned. Do not edit by hand.", "$created": "2026-04-28T22:06:24Z"}
+{"ts":"2026-04-28T22:06:24Z","event":"audit_drift_detected","gap":null,"actor":"audit-bot","drift_count":2}
