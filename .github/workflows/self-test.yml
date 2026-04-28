@@ -1,0 +1,134 @@
+name: Self-Test (.github org repo)
+
+# Static + functional checks that run on this `.github` repo itself.
+# Without this, a broken workflow YAML or policy JSON could ship to main and
+# break every consumer org-wide before anyone notices.
+#
+# Closes GAP-003 in `.gap-analysis/GAP_ANALYSIS.md`.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: self-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint workflows / YAML / JSON / Markdown
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Go (for actionlint)
+        uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed  # v5.1.0
+        with:
+          go-version: "1.22"
+
+      - name: Install linters
+        run: |
+          set -euo pipefail
+          pip install --quiet "yamllint==1.35.1"
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
+
+      - name: actionlint — every workflow file under .github/workflows/
+        run: |
+          set -euo pipefail
+          actionlint -color
+          # actionlint exits 0 when no issues; non-zero on findings.
+
+      - name: Guard against stray /workflows/ at repo root
+        run: |
+          set -euo pipefail
+          if [ -d workflows ] && find workflows -maxdepth 2 -name '*.yml' -o -name '*.yaml' | grep -q .; then
+            echo "::error::Stray workflow YAML found under /workflows/ — GitHub Actions only loads .github/workflows/. Move or delete these files (see GAP-002)."
+            find workflows -maxdepth 2 \( -name '*.yml' -o -name '*.yaml' \)
+            exit 1
+          fi
+          echo "OK — no stray workflow YAML at repo root."
+
+      - name: yamllint — workflows + rulesets + infra
+        run: |
+          set -euo pipefail
+          yamllint -d "{extends: relaxed, rules: {line-length: disable, truthy: disable, comments: disable, document-start: disable}}" \
+            .github/workflows/ \
+            policies/rulesets/ \
+            $( [ -d infrastructure/kubernetes ] && echo infrastructure/kubernetes ) \
+            $( [ -d infrastructure/prometheus ] && echo infrastructure/prometheus )
+
+      - name: Validate policy JSON (custom-properties + rulesets)
+        run: |
+          set -euo pipefail
+          jq empty policies/custom-properties.json
+          for f in policies/rulesets/*.json; do
+            echo "validating $f"
+            jq empty "$f"
+          done
+
+  warning-only-link-check:
+    # Markdown link-check is flaky (remote hosts, rate limiting). We run it as
+    # an advisory job so a transient 5xx doesn't block merges. Per
+    # `.github/instructions/workflows.instructions.md`, advisory checks live in
+    # a `warning-only-*` job, not as `continue-on-error: true` on a real step.
+    name: Link-check (advisory)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Markdown link-check — user-visible top-level docs
+        run: |
+          set -euo pipefail
+          npx --yes markdown-link-check@3.12.2 \
+            --quiet \
+            --config <(printf '{"timeout":"15s","retryOn429":true,"aliveStatusCodes":[200,206,403]}') \
+            README.md INSTALL.md CONTRIBUTING.md SECURITY.md \
+            docs/WORKFLOW_CATALOG.md \
+            .gap-analysis/README.md \
+            .gap-analysis/GAP_ANALYSIS.md
+
+  test:
+    name: Pytest — scripts/ + tests/
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test deps
+        run: |
+          set -euo pipefail
+          pip install --quiet pytest "ruamel.yaml>=0.18,<0.19" "python-dateutil>=2.8"
+
+      - name: Run pytest
+        env:
+          PYTHONPATH: ${{ github.workspace }}/scripts
+        run: |
+          set -euo pipefail
+          pytest tests/ -q

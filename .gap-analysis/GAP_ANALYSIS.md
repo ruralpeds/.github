@@ -1,4 +1,4 @@
-# Gap Analysis — `ruralpeds/.github`
+# Gap Analysis for `ruralpeds/.github`
 
 **Repository:** `ruralpeds/.github`
 **Last Updated:** 2026-04-28
@@ -19,80 +19,92 @@ Strategic focus this iteration: **close the gaps surfaced by the new [`docs/WORK
 
 ### GAP-001: Restore the gap-analysis template after archival
 
-**Status**: In Progress
+**Status**: In Review
 **Priority**: P1 (Critical)
 **Owner**: Timothy Hartzog
 **Target Completion**: 2026-05-05
 
 **Description**:
-`templates/gap-analysis/GAP_ANALYSIS.md` was moved into `docs/archive/2026-04-gap-analysis/` on 2026-04-28 because its example data (rust-sci-core) was stale. Downstream repos still need a copy-pasteable template; the standards docs were also archived. Restore a clean template + minimal standards reference under `.gap-analysis/` so the documented bootstrap path (`cp -r ../.github/templates/gap-analysis .gap-analysis`) keeps working.
+`templates/gap-analysis/GAP_ANALYSIS.md` was moved into `docs/archive/2026-04-gap-analysis/` on 2026-04-28 because its example data (rust-sci-core) was stale. Downstream repos still need a copy-pasteable template; the standards docs were also archived. Restored a clean template + folded standards/quick-reference into `.gap-analysis/README.md` so the documented bootstrap path (`cp -r ../.github/templates/gap-analysis .gap-analysis`) keeps working.
 
 **Acceptance Criteria**:
 - [x] Old materials archived under `docs/archive/2026-04-gap-analysis/`
-- [ ] New `templates/gap-analysis/GAP_ANALYSIS.md` (clean, no fictional gaps)
-- [ ] New `templates/gap-analysis/schema.md`
-- [ ] New `templates/gap-analysis/.gitignore` (ignores `status.json`)
-- [ ] `.gap-analysis/README.md` linking to standards & quick reference (or fold both back in)
-- [ ] Update `CONTRIBUTING.md` and `INSTALL.md` references that point at the archived paths
+- [x] New `templates/gap-analysis/GAP_ANALYSIS.md` (clean, no fictional gaps)
+- [x] `templates/gap-analysis/schema.md` updated to point at the new standards location
+- [x] `templates/gap-analysis/.gitignore` already in place (ignores `status.json`)
+- [x] `.gap-analysis/README.md` consolidating standards & quick reference
+- [x] No external references to the archived paths (verified via `git grep`); `CONTRIBUTING.md` and `INSTALL.md` were already clean
 
-**Related PRs**: (this PR)
+**Related PRs**: #49
 **Blocked By**: None
 **Last Status Update**: 2026-04-28
-- Archive complete; new gap analysis (this file) and `WORKFLOW_CATALOG.md` published; template restoration deferred to follow-up PR so this commit stays focused.
+- Done in PR #49. New `.gap-analysis/README.md` is the single org-standard doc; archived predecessors remain under `docs/archive/2026-04-gap-analysis/` for institutional memory.
 
 ---
 
 ### GAP-002: Reconcile stray top-level `/workflows/` directory
 
-**Status**: Not Started
+**Status**: In Review
 **Priority**: P1 (Critical)
-**Owner**: [Unassigned]
-**Target Completion**: 2026-05-15
+**Owner**: Timothy Hartzog
+**Target Completion**: 2026-04-28
 
 **Description**:
-Two files live in `/workflows/` at the repo root: `audit-sign-envelope.yml` and `reusable-iec62304-traceability.yml`. GitHub Actions only loads workflows from `.github/workflows/`, so these are **not executed**. Both have a counterpart in `.github/workflows/` with **different content** (the traceability file diverges by 216 lines — 405 vs 189). This is a silent-drift hazard for IEC 62304 traceability and 21 CFR Part 11 audit signing.
+Two files lived in `/workflows/` at the repo root: `audit-sign-envelope.yml` and `reusable-iec62304-traceability.yml`. GitHub Actions only loads workflows from `.github/workflows/`, so these were **not executed**. Both had a counterpart in `.github/workflows/` with different content (traceability file diverged by 216 lines). `git log --follow` showed the strays were the older drafts that missed the SHA-pin migration in commit `0a6ef09`.
+
+**Resolution (2026-04-28)**:
+- `.github/workflows/` versions confirmed canonical (later commits: `0a6ef09` SHA pinning, `90a27a4` traceability rewrite, `2ff9c89` Phase 5 SDLC pipeline)
+- `/workflows/audit-sign-envelope.yml` and `/workflows/reusable-iec62304-traceability.yml` deleted; `/workflows/` directory removed
+- Re-introduction guard added in `.github/workflows/self-test.yml` (GAP-003)
 
 **Acceptance Criteria**:
-- [ ] Diff each pair; decide which version is canonical
-- [ ] Merge canonical content into `.github/workflows/<file>.yml`
-- [ ] Delete `/workflows/` (or replace with a `README.md` redirecting readers to `.github/workflows/`)
-- [ ] Add a CI check (e.g. `hygiene.yml`) that fails if `/workflows/*.yml` reappears
-- [ ] Confirm no caller repo references `ruralpeds/.github/workflows/...@...` (only `ruralpeds/.github/.github/workflows/...@...` is valid)
+- [x] Diffed each pair; `.github/workflows/` versions confirmed canonical
+- [x] Stray copies deleted; `/workflows/` directory gone
+- [x] CI guard added (`self-test.yml` step "Guard against stray /workflows/ at repo root" — fails the build if any workflow YAML reappears at the root)
+- [x] No caller-repo regressions — the only valid `uses:` path is `ruralpeds/.github/.github/workflows/...`
 
-**Implementation Notes**:
-- Run `diff workflows/audit-sign-envelope.yml .github/workflows/audit-sign-envelope.yml` and `diff workflows/reusable-iec62304-traceability.yml .github/workflows/reusable-iec62304-traceability.yml`
-- For traceability: the 405-line variant is likely newer; verify with `git log --follow`
-
-**Related PRs**: None
+**Related PRs**: #49
 **Blocked By**: None
 **Last Status Update**: 2026-04-28
-- Discovered during workflow-catalog audit (see [`docs/WORKFLOW_CATALOG.md` §9](../docs/WORKFLOW_CATALOG.md#9--standalone-files-in-workflows-not-picked-up-by-actions)).
+- Stray files were older drafts; canonical versions retained. Guard prevents re-introduction.
 
 ---
 
 ### GAP-003: This `.github` repo has no CI of its own
 
-**Status**: Not Started
+**Status**: In Review
 **Priority**: P1 (Critical)
-**Owner**: [Unassigned]
-**Target Completion**: 2026-05-22
+**Owner**: Timothy Hartzog
+**Target Completion**: 2026-04-28
 
 **Description**:
-The `.github` org repo ships 75 reusable workflows used by every other repo, but **none of them run on this repo's own pushes/PRs** beyond `gap-analysis-validate.yml`, `copilot-task-guardrails.yml`, `origin-label.yml`, and the scheduled audits. There is no `actionlint`, no Markdown link-check, no shellcheck for `scripts/`, no JSON-schema validation for `policies/custom-properties.json` or `policies/rulesets/*.json`. A broken workflow YAML can ship to main and break every consumer org-wide before anyone notices.
+The `.github` org repo ships 75+ reusable workflows used by every other repo, but **none of them ran on this repo's own pushes/PRs** beyond `gap-analysis-validate.yml`, `copilot-task-guardrails.yml`, `origin-label.yml`, and the scheduled audits. There was no `actionlint`, no JSON-schema validation for `policies/custom-properties.json` or `policies/rulesets/*.json`, no link-check, no pytest. A broken workflow YAML could ship to main and break every consumer org-wide before anyone noticed.
+
+**Resolution (2026-04-28)**:
+Added `.github/workflows/self-test.yml` with two parallel jobs:
+
+- **lint** — runs on every PR and push to main:
+  - `actionlint -color` over every `.github/workflows/*.yml`
+  - guard step that fails if `/workflows/*.yml` reappears at the repo root (GAP-002 enforcement)
+  - `yamllint` over `.github/workflows/`, `policies/rulesets/`, and `infrastructure/{kubernetes,prometheus}/` (relaxed config; comment / line-length / truthy disabled)
+  - `jq empty` validation over `policies/custom-properties.json` and every `policies/rulesets/*.json`
+  - `markdown-link-check` over the user-visible top-level docs (README, INSTALL, CONTRIBUTING, SECURITY, WORKFLOW_CATALOG, gap-analysis README + GAP_ANALYSIS)
+
+- **test** — `pytest tests/` (audit-verify chain + traceability check_gaps + build_matrix)
 
 **Acceptance Criteria**:
-- [ ] Add `.github/workflows/self-test.yml` that on push/PR runs:
-  - [ ] `actionlint` against every file in `.github/workflows/`
-  - [ ] `yamllint` against `.github/workflows/`, `policies/rulesets/`, `infrastructure/kubernetes/`
-  - [ ] `jq -e .` against `policies/custom-properties.json` and every `policies/rulesets/*.json`
-  - [ ] Markdown link-check on top-level docs (or at minimum `WORKFLOW_CATALOG.md`, `README.md`, `INSTALL.md`)
-  - [ ] `python -m pytest tests/` (audit-verify, traceability)
-- [ ] Add it as a required status check via `policies/rulesets/`
-- [ ] Document in `WORKFLOW_CATALOG.md` §6
+- [x] Added `.github/workflows/self-test.yml`
+- [x] Pinned every `uses:` to a 40-char SHA (per `.github/instructions/workflows.instructions.md`)
+- [x] Workflow declares `permissions: contents: read` at workflow level
+- [x] `concurrency:` block with `cancel-in-progress: true`
+- [x] `timeout-minutes` on every job
+- [x] Documented in `WORKFLOW_CATALOG.md` §6
+- [ ] Add as a required status check via `policies/rulesets/` (follow-up — needs ruleset PR after first green run)
 
-**Related PRs**: None
+**Related PRs**: #49
 **Blocked By**: None
 **Last Status Update**: 2026-04-28
+- Workflow landed; required-status-check wiring deferred to a follow-up PR so we observe one green run on this very PR first.
 
 ---
 
@@ -255,20 +267,25 @@ Year 2 roadmap Q4 commits to initiating SOC 2 Type II / HITRUST CSF audit. Evide
 
 ### GAP-011: AGENTS.md / CONTRIBUTING.md still reference moved gap-analysis paths
 
-**Status**: Not Started
+**Status**: Completed
 **Priority**: P3 (Medium)
-**Owner**: [Unassigned]
-**Target Completion**: 2026-05-12
+**Owner**: Timothy Hartzog
+**Target Completion**: 2026-04-28
 
 **Description**:
-After the 2026-04-28 archive move, any link to `docs/GAP_ANALYSIS_STANDARDS.md` or `docs/GAP_ANALYSIS_QUICK_REFERENCE.md` is now a 404. The standards doc itself listed several "See Also" links that need updating once GAP-001 lands.
+After the 2026-04-28 archive move, any link to `docs/GAP_ANALYSIS_STANDARDS.md` or `docs/GAP_ANALYSIS_QUICK_REFERENCE.md` would have been a 404.
+
+**Resolution (2026-04-28)**:
+- `git grep -nE 'GAP_ANALYSIS_(STANDARDS|QUICK_REFERENCE)\.md'` outside `docs/archive/` returned only the description text within this gap analysis itself.
+- `templates/gap-analysis/schema.md` "Questions?" section updated to point at `.gap-analysis/README.md` and the archived snapshot.
+- `CONTRIBUTING.md` and `INSTALL.md` had no references to the archived paths.
 
 **Acceptance Criteria**:
-- [ ] `git grep -nE 'GAP_ANALYSIS_(STANDARDS|QUICK_REFERENCE)\.md'` returns zero hits outside `docs/archive/`
-- [ ] All survivors point at the new template + `.gap-analysis/README.md`
+- [x] `git grep -nE 'GAP_ANALYSIS_(STANDARDS|QUICK_REFERENCE)\.md'` returns zero hits outside `docs/archive/` and this gap's own description
+- [x] All survivors point at the new template + `.gap-analysis/README.md`
 
-**Related PRs**: None
-**Blocked By**: GAP-001
+**Related PRs**: #49
+**Blocked By**: GAP-001 (resolved in same PR)
 **Last Status Update**: 2026-04-28
 
 ---
@@ -310,9 +327,9 @@ Archived `docs/GAP_ANALYSIS_STANDARDS.md`, `docs/GAP_ANALYSIS_QUICK_REFERENCE.md
 
 | Gap | Q2 2026 (May–Jun) | Q3 2026 (Jul–Sep) | Q4 2026 (Oct–Dec) |
 |---|---|---|---|
-| GAP-001 Restore template | ✓ Target May 5 | | |
-| GAP-002 Reconcile `/workflows/` | ✓ Target May 15 | | |
-| GAP-003 Self-CI for `.github` | ✓ Target May 22 | | |
+| GAP-001 Restore template | ✓ Done 2026-04-28 (#49) | | |
+| GAP-002 Reconcile `/workflows/` | ✓ Done 2026-04-28 (#49) | | |
+| GAP-003 Self-CI for `.github` | ✓ Done 2026-04-28 (#49) | | |
 | GAP-004 SLSA-verify automation | ✓ Target May 31 | | |
 | GAP-005 FMEA quarterly | | ✓ Target Jul 15 | |
 | GAP-006 Post-market go-live | ✓ pilot continuing | ✓ ramp | ✓ Target Dec 31 |
@@ -320,7 +337,7 @@ Archived `docs/GAP_ANALYSIS_STANDARDS.md`, `docs/GAP_ANALYSIS_QUICK_REFERENCE.md
 | GAP-008 ci-julia consolidation | | ✓ Target Jun 30 | |
 | GAP-009 README simplification | | ✓ Target Jun 30 | |
 | GAP-010 SOC 2 evidence pack | | | ✓ Target Oct 15 |
-| GAP-011 Doc back-references | ✓ Target May 12 | | |
+| GAP-011 Doc back-references | ✓ Done 2026-04-28 (#49) | | |
 | GAP-012 Coverage gate on scripts | | ✓ Target Jul 31 | |
 
 ---

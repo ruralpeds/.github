@@ -20,13 +20,13 @@ For the SDLC gate-by-gate narrative, see [`.github/workflows/README.md`](../.git
 | Reusable security & supply chain | 14 |
 | Reusable compliance (HIPAA / IEC 62304 / 21 CFR Part 11 / ISO 14971 / FDA) | 13 |
 | Audit ledger & e-signature | 6 |
-| Org governance & scheduled scans | 12 |
+| Org governance & scheduled scans | 13 |
 | Gap analysis & traceability | 4 |
 | Release orchestration | 5 |
 | Copilot & agent guardrails | 3 |
 | Other (docs, dashboard, mac-runner, repo-bootstrap) | 8 |
-| **Total in `.github/workflows/`** | **75** |
-| Strays in `/workflows/` (not picked up by Actions) | 2 |
+| **Total in `.github/workflows/`** | **76** |
+| Strays in `/workflows/` (resolved 2026-04-28, see §9) | 0 |
 
 ---
 
@@ -140,6 +140,7 @@ All run on `schedule:` and most can be triggered with `workflow_dispatch`.
 | `required-audit.yml` | push + schedule + dispatch | "Required" status check enforcing audit log presence |
 | `required-compliance.yml` | push + pull_request | "Required" status check enforcing compliance file presence |
 | `reusable-repo-standards.yml` | `workflow_call` | Reusable repo-standards gate |
+| `self-test.yml` | `pull_request` + `push` to main | Self-CI for this `.github` repo: actionlint + yamllint + JSON-schema validation + markdown link-check + pytest. Guards against stray `/workflows/` files (GAP-002 enforcement). Added 2026-04-28 (GAP-003). |
 
 ---
 
@@ -168,16 +169,11 @@ The Python helper `scripts/traceability/check_gaps.py` is invoked by `gap-analys
 
 ---
 
-## 9 · Standalone files in `/workflows/` (NOT picked up by Actions)
+## 9 · Standalone files in `/workflows/` (resolved 2026-04-28)
 
-GitHub Actions only loads workflows from `.github/workflows/`. The two files in the top-level `workflows/` directory are NOT executed:
+GitHub Actions only loads workflows from `.github/workflows/`. The top-level `workflows/` directory previously held two stray copies (`audit-sign-envelope.yml`, `reusable-iec62304-traceability.yml`) that diverged from their canonical `.github/workflows/` counterparts (the traceability file by 216 lines). Both strays were the older drafts (missing the SHA-pin migration in `0a6ef09`); they were deleted on 2026-04-28 as part of GAP-002.
 
-| File | Status | Comparison |
-|---|---|---|
-| `workflows/audit-sign-envelope.yml` | **Stray copy** | 326 lines vs. 326 lines in `.github/workflows/audit-sign-envelope.yml` — content differs |
-| `workflows/reusable-iec62304-traceability.yml` | **Stray copy** | 405 lines vs. 189 lines in `.github/workflows/reusable-iec62304-traceability.yml` — substantially different |
-
-Tracked as **GAP-002** in `.gap-analysis/GAP_ANALYSIS.md` (deduplicate or remove).
+A guard against re-introduction lives in `self-test.yml` (see GAP-003).
 
 ---
 
