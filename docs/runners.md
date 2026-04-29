@@ -13,7 +13,7 @@ de-registered).
 
 ## Prerequisites
 
-1. **Admin access** to the `ruralpeds` GitHub organisation
+1. **Admin access** to the `ruralpeds` GitHub organization
    (Settings → Actions → Runners).
 2. **Registration token** — generate a fresh one at:
    <https://github.com/organizations/ruralpeds/settings/actions/runners/new>
