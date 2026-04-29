@@ -1,0 +1,66 @@
+name: Gap Analysis Lifecycle
+
+# Per-repo caller. Triggers on branch creation, PR open/edit/close, and merge.
+# All logic lives in the reusable workflow at ruralpeds/.github.
+# Updating the reusable updates every repo at the next event.
+
+on:
+  create:                                # branch or tag creation
+  pull_request:
+    types: [opened, edited, reopened, closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  # ----- branch_opened (only when ref_type=branch and matches gap/...) -----
+  branch_opened:
+    if: github.event_name == 'create' && github.event.ref_type == 'branch' && startsWith(github.event.ref, 'gap/')
+    uses: ruralpeds/.github/.github/workflows/reusable-gap-analysis.yml@main
+    with:
+      event: branch_opened
+      branch_ref: ${{ github.event.ref }}
+      actor: ${{ github.actor }}
+    secrets: inherit
+
+  # ----- pr_opened / pr_edited (excluding closes) -----
+  pr_opened:
+    if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened')
+    uses: ruralpeds/.github/.github/workflows/reusable-gap-analysis.yml@main
+    with:
+      event: pr_opened
+      pr_number: ${{ github.event.pull_request.number }}
+      actor: ${{ github.actor }}
+    secrets: inherit
+
+  pr_edited:
+    if: github.event_name == 'pull_request' && github.event.action == 'edited'
+    uses: ruralpeds/.github/.github/workflows/reusable-gap-analysis.yml@main
+    with:
+      event: pr_edited
+      pr_number: ${{ github.event.pull_request.number }}
+      actor: ${{ github.actor }}
+    secrets: inherit
+
+  # ----- pr_merged -----
+  pr_merged:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    uses: ruralpeds/.github/.github/workflows/reusable-gap-analysis.yml@main
+    with:
+      event: pr_merged
+      pr_number: ${{ github.event.pull_request.number }}
+      merge_sha: ${{ github.event.pull_request.merge_commit_sha }}
+      actor: ${{ github.actor }}
+    secrets: inherit
+
+  # ----- pr_closed_unmerged -----
+  pr_closed_unmerged:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == false
+    uses: ruralpeds/.github/.github/workflows/reusable-gap-analysis.yml@main
+    with:
+      event: pr_closed_unmerged
+      pr_number: ${{ github.event.pull_request.number }}
+      actor: ${{ github.actor }}
+    secrets: inherit

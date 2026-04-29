@@ -1,0 +1,7 @@
+{"$schema": "https://github.com/ruralpeds/.github/blob/main/docs/GAP_ANALYSIS_LIFECYCLE.md#7-event-ledger-build-ledgerjsonl", "$comment": "This file is workflow-owned. Do not edit by hand.", "$created": "2026-04-28T22:06:24Z"}
+{"ts":"2026-04-28T22:06:24Z","event":"audit_drift_detected","gap":null,"actor":"audit-bot","drift_count":2}
+{"ts":"2026-04-28T22:08:41Z","event":"status_changed","gap":"GAP-001","from":"In Progress","to":"In Review","trigger":"pr_opened","branch":"copilot/feat-gap-analysis-rollout","pr":null,"sha":null,"actor":"copilot"}
+{"ts":"2026-04-28T22:08:46Z","event":"status_changed","gap":"GAP-001","from":"In Review","to":"Completed","trigger":"pr_merged","pr":50,"actor":"copilot"}
+{"ts":"2026-04-28T22:08:46Z","event":"pr_merged","gap":"GAP-001","pr":50,"merge_sha":"6bd230c15a8cf397bfd0ee11254c8c7eeccd7e99","actor":"copilot"}
+{"ts":"2026-04-28T22:08:49Z","event":"audit_drift_detected","gap":null,"actor":"audit-bot","drift_count":1}
+{"ts":"2026-04-28T22:10:04Z","event":"audit_drift_detected","gap":null,"actor":"audit-bot","drift_count":1}

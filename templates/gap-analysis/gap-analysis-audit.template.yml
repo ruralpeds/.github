@@ -1,0 +1,21 @@
+name: Gap Analysis Audit
+
+# Per-repo scheduled caller. Runs the audit step in the reusable workflow,
+# which replays the build-ledger and verifies it agrees with GAP_ANALYSIS.md
+# and the actual git branch/PR history. Drift opens a tracking issue.
+
+on:
+  schedule:
+    - cron: "0 13 * * 1"      # Mondays 13:00 UTC (≈ 09:00 ET)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    uses: ruralpeds/.github/.github/workflows/reusable-gap-analysis.yml@main
+    with:
+      event: audit
+    secrets: inherit

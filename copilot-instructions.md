@@ -139,6 +139,85 @@ Error responses must:
 
 ---
 
+### 8. Use the gap-analysis system on every coding session
+
+Every repository under the `ruralpeds` org maintains a `.gap-analysis/`
+directory that is the single source of truth for what is being built, what is
+in progress, and what has been completed. Coding agents are participants in
+this lifecycle, not passive readers.
+
+The full contract for agents lives in
+[`docs/CLAUDE_CODE_GAP_PROTOCOL.md`](docs/CLAUDE_CODE_GAP_PROTOCOL.md). The
+canonical lifecycle specification is
+[`docs/GAP_ANALYSIS_LIFECYCLE.md`](docs/GAP_ANALYSIS_LIFECYCLE.md).
+
+**Mandatory at session start.** Before writing or modifying code in any repo,
+agents must read in order:
+
+1. `.gap-analysis/CLAUDE.md` (per-repo agent contract)
+2. `.gap-analysis/GAP_ANALYSIS.md` (active and completed gaps)
+3. `.gap-analysis/SUGGESTIONS.md` (pending triage queue)
+
+If any of these files are missing, the repo has not been bootstrapped — stop
+and notify the user instead of proceeding with ad-hoc work.
+
+**Branch and commit conventions.** All gap-related work must use:
+
+- branch name `gap/NNN-short-kebab-slug` where `NNN` is the zero-padded gap ID
+- commit messages with footer `Refs: GAP-NNN` (one per gap touched)
+- pull-request titles prefixed with `GAP-NNN: <one-line summary>`
+- pull-request bodies that include `Closes: GAP-NNN` for the primary gap and
+  `Also closes: GAP-MMM, GAP-PPP` for any additional gaps resolved in the
+  same PR
+
+These conventions are not stylistic — the org-level reusable workflow
+`reusable-gap-analysis.yml` parses them to drive automatic status transitions
+and append events to `.gap-analysis/build-ledger.jsonl`.
+
+**Write permissions for agents.** Agents may freely write to:
+
+- `.gap-analysis/SUGGESTIONS.md` — append new triage entries with
+  `sug-YYYY-MM-DD-<author>-NNN` IDs
+- the **Status Updates** bullet list inside an active gap entry in
+  `GAP_ANALYSIS.md` (newest first, dated)
+- the **Acceptance Criteria** checkboxes in the gap the agent is currently
+  working on
+
+Agents must **never** write to:
+
+- `.gap-analysis/build-ledger.jsonl` (workflow-only, append-only ledger)
+- `.gap-analysis/status.json` (workflow-only, regenerated)
+- the **Status** field of any gap (workflow-only — set by branch open, PR open,
+  PR merge events)
+- the **PRs** or **Branch** fields of any gap (workflow-only)
+- any gap in the **Completed Gaps** section (immutable once merged)
+
+**Proposing new work.** When an agent identifies a missing capability, bug,
+debt item, or improvement opportunity, the agent does **not** add it directly
+to `GAP_ANALYSIS.md`. Instead, the agent appends a triage entry to
+`SUGGESTIONS.md` with a brief problem statement, a proposed acceptance
+criterion, and an estimated priority. A human operator promotes triaged
+suggestions to formal `GAP-NNN` entries.
+
+**Anti-patterns that will fail review.**
+
+- Starting work without a corresponding `GAP-NNN` entry in `Backlog` or
+  `In Progress`
+- Editing `Status`, `PRs`, or `Branch` fields by hand
+- Marking a gap `Completed` in a commit (only merge to `main` may do this)
+- Adding new gaps to `GAP_ANALYSIS.md` without going through `SUGGESTIONS.md`
+- Working on multiple unrelated gaps in a single branch (split into separate
+  `gap/NNN-…` branches)
+- Force-pushing or rewriting history on a `gap/*` branch after a PR has been
+  opened (breaks ledger consistency)
+
+The weekly audit job (`gap-analysis-audit.yml`) will surface any drift
+between `GAP_ANALYSIS.md`, `build-ledger.jsonl`, and the git history of
+`main`. Drift caused by manual edits to workflow-managed fields is the most
+common audit failure and is treated as a blocking issue for the next PR.
+
+---
+
 ## Architecture boundaries
 
 | Directory / Module | Owner | Notes |
