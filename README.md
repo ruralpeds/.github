@@ -154,6 +154,7 @@ gh workflow run "Review Stamp" \
 | `sync-copilot-assets.yml` | push | Syncs Copilot asset files across repos |
 | `origin-label.yml` | PR | Enforces `origin:*` label on every PR |
 | `hygiene.yml` | push / PR | General repo hygiene checks |
+| `readme-refresh.yml` | Mon 10:00 UTC / manual | Regenerates README via Copilot (GitHub Models); opens PR for human review |
 
 ### Governance-as-code (`sync-rulesets.yml`)
 
@@ -177,6 +178,7 @@ Ruleset definitions live under version control in `policies/rulesets/*.json`. Th
 | Mon 09:00 | `custom-properties-audit.yml` | Custom properties audit |
 | Daily 11:00 | `vuln-triage.yml` | Vulnerability SLA triage |
 | 1st of month 10:00 | `dependency-eol.yml` | Platform EOL check |
+| Mon 10:00 | `readme-refresh.yml` | Auto-refresh README via Copilot; opens a PR for human review |
 
 ---
 

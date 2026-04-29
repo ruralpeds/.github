@@ -1,0 +1,309 @@
+name: "Refresh README via Copilot"
+# Regenerates README.md by calling the GitHub Models API (GPT-4o) with the
+# current repository state (workflow inventory, directory tree, existing README)
+# and opens a PR so a human reviewer can accept, edit, or discard the result.
+#
+# Triggers:
+#   - Schedule: every Monday at 10:00 UTC (after the main governance sweeps).
+#   - Manual: workflow_dispatch with optional dry-run and model-choice inputs.
+#
+# Required org configuration (same as other org-scanning workflows):
+#   - vars.TH_BOT_APP_ID + secrets.TH_BOT_PRIVATE_KEY  (preferred, short-lived App token)
+#   - secrets.REPO_SETUP_TOKEN                          (PAT fallback during migration)
+#
+# Permissions required:
+#   - contents: write      — to push the PR branch
+#   - pull-requests: write — to open the PR
+#   - models: read         — to call the GitHub Models API via GITHUB_TOKEN
+
+on:
+  schedule:
+    - cron: "0 10 * * 1"  # Mon 10:00 UTC — after sync-rulesets (05:00), repo-scanner (06:00), check-compliance (07:00)
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Dry run — generate README preview but do not open a PR"
+        type: boolean
+        default: false
+      model:
+        description: "GitHub Models model identifier"
+        type: choice
+        options:
+          - gpt-4o
+          - gpt-4o-mini
+        default: gpt-4o
+
+concurrency:
+  group: readme-refresh
+  cancel-in-progress: true
+
+# Minimal default; job elevates only what it needs.
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    name: Regenerate README
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write        # push PR branch
+      pull-requests: write   # open PR
+      models: read           # GitHub Models API via GITHUB_TOKEN
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # ── 2. Obtain a short-lived token (App preferred, PAT fallback) ──────────
+      - name: Generate GitHub App token
+        id: app-token
+        if: ${{ vars.TH_BOT_APP_ID != '' }}
+        uses: actions/create-github-app-token@3ff1caaa28b64c9cc276b0f2ebde5d8cd729c4d5 # v1
+        with:
+          app-id: ${{ vars.TH_BOT_APP_ID }}
+          private-key: ${{ secrets.TH_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Resolve push token
+        id: push-token
+        run: |
+          if [ -n "${{ steps.app-token.outputs.token }}" ]; then
+            echo "token=${{ steps.app-token.outputs.token }}" >> "$GITHUB_OUTPUT"
+            echo "::notice::Using GitHub App installation token (preferred)."
+          elif [ -n "${{ secrets.REPO_SETUP_TOKEN }}" ]; then
+            echo "token=${{ secrets.REPO_SETUP_TOKEN }}" >> "$GITHUB_OUTPUT"
+            echo "::warning::Falling back to REPO_SETUP_TOKEN (PAT). Migrate to GitHub App."
+          else
+            echo "token=${{ github.token }}" >> "$GITHUB_OUTPUT"
+            echo "::notice::Using GITHUB_TOKEN; models: read permission required."
+          fi
+
+      # ── 3. Python + openai SDK ───────────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Install openai SDK
+        run: pip install --quiet "openai>=1.0"
+
+      # ── 4. Gather repo context for the LLM prompt ───────────────────────────
+      - name: Gather repo context
+        id: gather
+        run: |
+          set -euo pipefail
+          {
+            echo "## CURRENT README.md"
+            cat README.md
+            echo ""
+            echo "## WORKFLOW FILENAMES (.github/workflows/)"
+            for f in .github/workflows/*.yml; do basename "$f"; done
+            echo ""
+            echo "## TOP-LEVEL DIRECTORY TREE (max depth 2)"
+            find . -maxdepth 2 \
+              -not -path './.git/*' \
+              -not -path './node_modules/*' \
+              | sort | head -120
+          } > /tmp/repo_context.txt
+          echo "context_bytes=$(wc -c < /tmp/repo_context.txt)" >> "$GITHUB_OUTPUT"
+          echo "Gathered $(wc -c < /tmp/repo_context.txt) bytes of context."
+
+      # ── 5. Call GitHub Models API to regenerate README ──────────────────────
+      - name: Generate updated README
+        env:
+          GITHUB_TOKEN: ${{ steps.push-token.outputs.token }}
+          MODEL: ${{ inputs.model || 'gpt-4o' }}
+        shell: python
+        run: |
+          import os
+          import sys
+          from openai import OpenAI
+
+          client = OpenAI(
+              base_url="https://models.inference.ai.azure.com",
+              api_key=os.environ["GITHUB_TOKEN"],
+          )
+
+          with open("/tmp/repo_context.txt", "r", encoding="utf-8") as f:
+              context = f.read()
+
+          # Build prompt as explicit string concatenation to avoid YAML block-scalar
+          # issues with line continuations that would produce column-0 content.
+          rules = (
+              "Rules:\n"
+              "- Keep the overall structure and professional tone of the existing README.\n"
+              "- Update every workflow table to match the workflows that actually"
+              " exist in `.github/workflows/`.\n"
+              "- Remove references to workflows, files, or sections that no longer exist.\n"
+              "- Do not invent new features or capabilities not evidenced by the context.\n"
+              "- Preserve all important regulatory context, compliance mappings, and"
+              " standard references.\n"
+              "- Preserve the GitHub App Setup section and Example Caller Configs section"
+              " unless clearly outdated.\n"
+              "- Output ONLY the raw Markdown content for README.md - no preamble,"
+              " no code fences wrapping the whole output, no commentary.\n"
+          )
+          prompt = (
+              "You are a technical writer maintaining the README for the"
+              " `ruralpeds/.github` repository.\n\n"
+              "This repository provides reusable GitHub Actions workflows, regulatory"
+              " compliance tooling, audit logging, and governance-as-code for a healthcare"
+              " organization operating under HIPAA, GAMP 5, FDA 524B, 21 CFR Part 11,"
+              " IEC 62304, and ISO 14971.\n\n"
+              "Your task: rewrite README.md so it accurately reflects the repository's"
+              " CURRENT state.\n\n"
+              + rules
+              + "\nCurrent repository context (README, workflow filenames, directory"
+              " tree):\n"
+              + context
+          )
+
+          model = os.environ.get("MODEL", "gpt-4o")
+          print(f"Calling GitHub Models API (model={model}) ...", flush=True)
+
+          response = client.chat.completions.create(
+              model=model,
+              messages=[
+                  {
+                      "role": "system",
+                      "content": (
+                          "You are a precise technical writer for a regulated healthcare"
+                          " software organization. Output only raw Markdown."
+                      ),
+                  },
+                  {"role": "user", "content": prompt},
+              ],
+              temperature=0.2,
+              max_tokens=8192,
+          )
+
+          updated = response.choices[0].message.content.strip()
+
+          # Sanity-guard: reject obviously malformed output.
+          # 500 chars is ~3-4 short paragraphs — far below any real README.
+          # A real README for this repo is 300+ lines; this catches empty/truncated responses.
+          MIN_CHARS = 500
+          if len(updated) < MIN_CHARS or "# " not in updated:
+              print(
+                  "ERROR: Generated README is too short or missing headings -- aborting.",
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          with open("README.md", "w", encoding="utf-8") as f:
+              f.write(updated + "\n")
+
+          print(f"README.md written ({len(updated):,} chars).", flush=True)
+
+      # ── 6. Detect changes ────────────────────────────────────────────────────
+      - name: Detect changes
+        id: changes
+        run: |
+          if git diff --quiet README.md; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "ℹ️ README.md is already up to date — nothing to commit."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "✅ README.md has changed."
+            git diff --stat README.md
+          fi
+
+      # ── 7. Dry-run: show preview and exit without opening a PR ──────────────
+      - name: Dry-run preview
+        if: inputs.dry-run == 'true'
+        run: |
+          echo "=== DRY RUN - first 100 lines of generated README.md ==="
+          head -100 README.md
+          echo ""
+          echo "=== No PR will be opened (dry-run mode). ==="
+
+      # ── 8. Commit and push to a PR branch ───────────────────────────────────
+      - name: Configure git identity
+        if: steps.changes.outputs.changed == 'true' && inputs.dry-run != 'true'
+        run: |
+          git config user.name "ruralpeds-bot[bot]"
+          git config user.email "ruralpeds-bot[bot]@users.noreply.github.com"
+
+      # Write PR body to a temp file using Python so multi-line content stays
+      # within the YAML block-scalar indentation (avoids column-0 line issue).
+      - name: Write PR body
+        if: steps.changes.outputs.changed == 'true' && inputs.dry-run != 'true'
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ACTOR: ${{ github.actor }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          SERVER_URL: ${{ github.server_url }}
+        shell: python
+        run: |
+          import os
+          from datetime import date
+          event = os.environ.get("EVENT_NAME", "workflow_dispatch")
+          actor = os.environ.get("ACTOR", "")
+          today = date.today().isoformat()
+          repo = os.environ.get("REPO", "")
+          run_id = os.environ.get("RUN_ID", "")
+          server = os.environ.get("SERVER_URL", "https://github.com")
+          run_url = f"{server}/{repo}/actions/runs/{run_id}"
+          lines = [
+              "## Summary",
+              "",
+              "Automated README refresh generated by the `readme-refresh.yml` workflow.",
+              f"Triggered by `{event}` on `{today}` (actor: `{actor}`).",
+              f"Run: {run_url}",
+              "",
+              "Review the diff carefully - accept, edit, or close as appropriate.",
+              "",
+              "## Files Changed",
+              "",
+              "- `README.md` - regenerated to reflect current workflow inventory and"
+              " directory structure.",
+              "",
+              "## Security Implications",
+              "",
+              "None; no auth, network, or data-handling change.",
+              "",
+              "## Rollback",
+              "",
+              "Close this PR without merging.",
+          ]
+          with open("/tmp/pr_body.md", "w", encoding="utf-8") as f:
+              f.write("\n".join(lines) + "\n")
+          print("PR body written to /tmp/pr_body.md")
+
+      - name: Push PR branch and open PR
+        if: steps.changes.outputs.changed == 'true' && inputs.dry-run != 'true'
+        env:
+          GH_TOKEN: ${{ steps.push-token.outputs.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Branch is scoped to the ISO week so re-runs in the same week update
+          # the same branch rather than creating duplicate PRs.
+          BRANCH="chore/refresh-readme-$(date +%Y-W%V)"
+
+          # Authenticate git remote with the resolved token.
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+
+          # -B creates the branch if new, or resets it to HEAD if it already exists.
+          git checkout -B "$BRANCH"
+          git add README.md
+          git commit -m "docs: auto-refresh README via Copilot"
+
+          # --force-with-lease is intentional: this is a bot-only PR branch.
+          # No human history is overwritten; the branch is recreated each week.
+          git push origin "$BRANCH" --force-with-lease
+
+          # Open a PR only if one does not already exist for this branch.
+          EXISTING=$(gh pr list --head "$BRANCH" --json url --jq '.[0].url' 2>/dev/null || true)
+          if [ -z "$EXISTING" ]; then
+            gh pr create \
+              --title "docs: auto-refresh README via Copilot" \
+              --body-file /tmp/pr_body.md \
+              --label "documentation" \
+              --head "$BRANCH"
+            echo "PR opened for branch $BRANCH."
+          else
+            echo "PR already exists for $BRANCH: $EXISTING"
+          fi
