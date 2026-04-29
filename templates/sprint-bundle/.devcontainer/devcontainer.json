@@ -4,10 +4,6 @@
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {
       "version": "latest"
-    },
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "version": "latest",
-      "moby": true
     }
   },
   "customizations": {
@@ -57,9 +53,8 @@
   "remoteUser": "vscode",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "mounts": [
-    "source=${localEnv:HOME}/.config/gh,target=/home/vscode/.config/gh,type=bind,readonly",
-    "source=${localWorkspaceFolderBasename}-cargo-cache,target=/home/vscode/.cargo,type=volume",
-    "source=${localWorkspaceFolderBasename}-node-cache,target=/workspaces/${localWorkspaceFolderBasename}/node_modules,type=volume"
+    "source=${localWorkspaceFolderBasename}-cargo-cache,target=/home/vscode/.cargo/registry,type=volume",
+    "source=${localWorkspaceFolderBasename}-cargo-git,target=/home/vscode/.cargo/git,type=volume"
   ],
   "postCreateCommand": "bash .devcontainer/postcreate.sh",
   "postStartCommand": "bash .devcontainer/poststart.sh",
@@ -68,7 +63,7 @@
     "CARGO_INCREMENTAL": "0",
     "RUSTFLAGS": "-D warnings"
   },
-  "forwardPorts": [3000, 5173, 8080, 1420],
+  "forwardPorts": [5173, 8080, 1420],
   "portsAttributes": {
     "5173": { "label": "Vite dev server", "onAutoForward": "openBrowser" },
     "1420": { "label": "Tauri dev",        "onAutoForward": "ignore" }
