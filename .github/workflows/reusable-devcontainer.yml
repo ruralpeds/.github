@@ -1,0 +1,251 @@
+name: "Reusable Dev Container — Claude-embedded"
+# Sets up or updates the org-standard .devcontainer/ configuration in the
+# calling repository, with Claude Code CLI pre-installed.
+#
+# The workflow commits two files:
+#   .devcontainer/devcontainer.json  — VS Code / GitHub Codespaces config
+#   .devcontainer/post-create.sh    — post-create installer (Claude Code + tooling)
+#
+# Callers: uses: ruralpeds/.github/.github/workflows/reusable-devcontainer.yml@main
+#
+# Minimal caller example:
+#
+#   jobs:
+#     devcontainer:
+#       uses: ruralpeds/.github/.github/workflows/reusable-devcontainer.yml@main
+#       with:
+#         container-name: "my-repo dev"
+#       secrets: inherit
+#
+# The calling workflow must grant:
+#   permissions:
+#     contents: write
+#     pull-requests: write
+
+on:
+  workflow_call:
+    inputs:
+      container-name:
+        description: >
+          Display name shown in the VS Code Dev Containers picker
+          (e.g. "Peds dev").
+        type: string
+        default: "ruralpeds dev"
+      language-features:
+        description: >
+          JSON object of devcontainer features to include, merged on top of the
+          base set (node, python, go, rust, github-cli). Pass "{}" to keep only
+          the base set, or provide additional features following the devcontainer
+          feature format, e.g.:
+          '{"ghcr.io/devcontainers-contrib/features/julia:1": {}}'
+        type: string
+        default: "{}"
+      claude-version:
+        description: >
+          Version of @anthropic-ai/claude-code to pin in post-create.sh.
+          Must be ≥ 2.1.123 (last CVE-free release as of 2026-04-29).
+          Run the advisory check before bumping.
+        type: string
+        default: "2.1.123"
+      central-ref:
+        description: "Git ref (branch/tag/SHA) to fetch templates from ruralpeds/.github"
+        type: string
+        default: "main"
+      create-pr:
+        description: >
+          When true (default), commits land on a new branch and a PR is opened.
+          When false, files are committed directly onto the current branch.
+          Set to false only for initial bootstrapping in an empty repo.
+        type: boolean
+        default: true
+      pr-base-branch:
+        description: "Base branch for the pull request (default: main)"
+        type: string
+        default: "main"
+    secrets:
+      # Fine-grained PAT or GitHub App token with contents:write and
+      # pull-requests:write on the calling repo. Falls back to GITHUB_TOKEN
+      # if not supplied (works when the calling workflow grants those permissions
+      # explicitly).
+      token:
+        description: "Token with contents:write + pull-requests:write on the calling repo"
+        required: false
+    outputs:
+      pr-url:
+        description: "URL of the opened PR (empty when create-pr=false or no changes)"
+        value: ${{ jobs.generate.outputs.pr-url }}
+      changed:
+        description: "true if .devcontainer/ files were created or updated"
+        value: ${{ jobs.generate.outputs.changed }}
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    name: Generate dev container config
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      pr-url: ${{ steps.open-pr.outputs.pr-url }}
+      changed: ${{ steps.diff.outputs.changed }}
+    steps:
+      # ── 1. Checkout calling repo ────────────────────────────────────────────
+      - name: Checkout calling repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          token: ${{ secrets.token || github.token }}
+          # Fetch full history so we can detect an existing .devcontainer/ dir
+          fetch-depth: 0
+
+      # ── 2. Checkout central templates ──────────────────────────────────────
+      - name: Checkout central templates
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ruralpeds/.github
+          ref: ${{ inputs.central-ref }}
+          path: _central
+          persist-credentials: false
+
+      # ── 3. Validate claude-version input ───────────────────────────────────
+      - name: Validate claude-version
+        env:
+          CLAUDE_VER: ${{ inputs.claude-version }}
+          MIN_SAFE: "2.1.123"
+        run: |
+          python3 - << 'PYEOF'
+          import os, sys
+          from packaging.version import Version
+          ver = Version(os.environ["CLAUDE_VER"].strip())
+          min_ver = Version(os.environ["MIN_SAFE"].strip())
+          if ver < min_ver:
+              print(f"::error::claude-version {ver} is below the minimum safe version {min_ver}.")
+              print("::error::See GitHub Advisory Database for @anthropic-ai/claude-code CVEs.")
+              sys.exit(1)
+          print(f"claude-version {ver} is >= {min_ver} — ok")
+          PYEOF
+
+      # ── 4. Set up Python (for the generation script) ───────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Install Python helpers
+        run: pip install --quiet packaging
+
+      # ── 5. Generate .devcontainer/ files ───────────────────────────────────
+      - name: Generate .devcontainer files
+        id: generate
+        env:
+          CONTAINER_NAME: ${{ inputs.container-name }}
+          CLAUDE_VERSION: ${{ inputs.claude-version }}
+          EXTRA_FEATURES: ${{ inputs.language-features }}
+          CENTRAL_DIR: _central
+        run: python3 _central/.github/scripts/generate_devcontainer.py
+
+      # ── 6. Detect changes ───────────────────────────────────────────────────
+      - name: Detect changes
+        id: diff
+        run: |
+          git add .devcontainer/
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No changes to .devcontainer/ — nothing to do."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Changes detected in .devcontainer/:"
+            git diff --cached --name-only
+          fi
+
+      # ── 7. Commit ───────────────────────────────────────────────────────────
+      - name: Configure git identity
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create branch for PR
+        id: branch
+        if: steps.diff.outputs.changed == 'true' && inputs.create-pr
+        run: |
+          BRANCH="chore/add-devcontainer-$(date -u +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Commit changes
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          CLAUDE_VER: ${{ inputs.claude-version }}
+        run: |
+          git commit -m "chore: add/update dev container with Claude Code embedded" \
+            -m "Adds the ruralpeds org-standard .devcontainer/ configuration:" \
+            -m "  - devcontainer.json  (VS Code / Codespaces base image + features)" \
+            -m "  - post-create.sh     (Claude Code CLI @${CLAUDE_VER} + org tooling)" \
+            -m "Generated by ruralpeds/.github reusable-devcontainer workflow." \
+            -m "Set ANTHROPIC_API_KEY in your shell or Codespaces secrets to activate Claude Code." \
+            -m "Refs: ruralpeds/.github"
+
+      - name: Push branch
+        if: steps.diff.outputs.changed == 'true' && inputs.create-pr
+        run: git push origin "${{ steps.branch.outputs.branch }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.token || github.token }}
+
+      # ── 8. Open PR ──────────────────────────────────────────────────────────
+      - name: Write PR body
+        if: steps.diff.outputs.changed == 'true' && inputs.create-pr
+        env:
+          CLAUDE_VER: ${{ inputs.claude-version }}
+        run: |
+          cat > /tmp/pr-body.md << EOFBODY
+          ## Summary
+
+          Adds the ruralpeds org-standard .devcontainer/ configuration with
+          Claude Code CLI pre-installed.
+
+          ## Files changed
+
+          - .devcontainer/devcontainer.json  VS Code / Codespaces base image + features
+            (Node 20, Python 3.12, Go 1.23, Rust stable + github-cli).
+          - .devcontainer/post-create.sh     post-create installer: Claude Code
+            @${CLAUDE_VER}, ruff, mypy, prettier, cosign, syft, grype, FHIR validator.
+
+          ## Getting started
+
+          1. Open in GitHub Codespaces or VS Code with the Dev Containers extension.
+          2. Set ANTHROPIC_API_KEY in your Codespaces secrets or local environment.
+          3. Run claude in the terminal.
+
+          ## To opt out of future syncs
+
+          Add AUTO-SYNC-OPT-OUT anywhere in devcontainer.json or post-create.sh.
+
+          ## Rollback
+
+          Delete the .devcontainer/ directory.
+          EOFBODY
+
+      - name: Open pull request
+        id: open-pr
+        if: steps.diff.outputs.changed == 'true' && inputs.create-pr
+        env:
+          GH_TOKEN: ${{ secrets.token || github.token }}
+          PR_BRANCH: ${{ steps.branch.outputs.branch }}
+          PR_BASE: ${{ inputs.pr-base-branch }}
+          CLAUDE_VER: ${{ inputs.claude-version }}
+        run: |
+          PR_URL=$(gh pr create \
+            --head "${PR_BRANCH}" \
+            --base "${PR_BASE}" \
+            --title "chore: add dev container with Claude Code @${CLAUDE_VER}" \
+            --body-file /tmp/pr-body.md)
+          echo "pr-url=${PR_URL}" >> "$GITHUB_OUTPUT"
+          echo "Opened PR: ${PR_URL}"
+
+      - name: Clean up central checkout
+        if: always()
+        run: rm -rf _central

@@ -1,0 +1,148 @@
+name: "Dev Container Sweep — Add Claude to all repos"
+# Propagates the org-standard .devcontainer/ configuration (with Claude Code
+# CLI pre-installed) to every repo listed in the matrix below, opening a PR
+# in each target repository.
+#
+# Runs:
+#   - schedule: every Monday 08:30 UTC (checks for template updates)
+#   - workflow_dispatch: ad-hoc with optional per-repo targeting
+#
+# Requires org secrets:
+#   TH_BOT_APP_ID       — GitHub App ID (preferred over long-lived PAT)
+#   TH_BOT_PRIVATE_KEY  — GitHub App private key
+#   OR
+#   SYNC_PAT            — Fine-grained PAT with contents:write + pull-requests:write
+#                         on every listed target repo (used if App secrets absent)
+#
+# To add a new repo: append to the matrix.target list below.
+# To stop syncing a specific repo: remove it from the matrix.
+# To opt a file out in the target repo: add AUTO-SYNC-OPT-OUT to the file.
+
+on:
+  schedule:
+    - cron: "30 8 * * 1"  # Monday 08:30 UTC
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Sync only this repo (e.g. timothyhartzog/Peds). Leave blank for all."
+        required: false
+        type: string
+      dry-run:
+        description: "Show what would change without opening PRs"
+        required: false
+        type: boolean
+        default: false
+      claude-version:
+        description: "Claude Code version to embed (default: 2.1.123)"
+        required: false
+        type: string
+        default: "2.1.123"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: devcontainer-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    name: "Sync → ${{ matrix.target }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - timothyhartzog/Peds
+          - timothyhartzog/rust-sci-core
+          - timothyhartzog/Patient-simulation-julia
+          - timothyhartzog/modeling
+          - timothyhartzog/Claude-artifacts
+          # Add more target repos here (owner/name format).
+
+    steps:
+      # ── Gate: skip if a per-repo filter was provided ───────────────────────
+      - name: Check target filter
+        id: filter
+        env:
+          FILTER: ${{ inputs.target }}
+          THIS_TARGET: ${{ matrix.target }}
+        run: |
+          if [ -n "$FILTER" ] && [ "$FILTER" != "$THIS_TARGET" ]; then
+            echo "skip=true"  >> "$GITHUB_OUTPUT"
+            echo "Skipping $THIS_TARGET (filter='$FILTER')"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── Obtain GitHub App token (preferred) or fall back to SYNC_PAT ───────
+      - name: Generate App token
+        id: app-token
+        if: steps.filter.outputs.skip != 'true'
+        uses: actions/create-github-app-token@3ff1caaa28b64c9cc276b0f2ebccc4ef2f5e5564 # v2.0.0
+        continue-on-error: true
+        with:
+          app-id: ${{ secrets.TH_BOT_APP_ID }}
+          private-key: ${{ secrets.TH_BOT_PRIVATE_KEY }}
+          repositories: ${{ matrix.target }}
+
+      - name: Resolve sync token
+        id: token
+        if: steps.filter.outputs.skip != 'true'
+        env:
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
+          SYNC_PAT: ${{ secrets.SYNC_PAT }}
+        run: |
+          if [ -n "${APP_TOKEN}" ]; then
+            echo "value=${APP_TOKEN}" >> "$GITHUB_OUTPUT"
+            echo "source=app" >> "$GITHUB_OUTPUT"
+          elif [ -n "${SYNC_PAT}" ]; then
+            echo "value=${SYNC_PAT}" >> "$GITHUB_OUTPUT"
+            echo "source=pat" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Neither TH_BOT_APP_ID/TH_BOT_PRIVATE_KEY nor SYNC_PAT is available."
+            exit 1
+          fi
+
+      # ── Checkout central repo ─────────────────────────────────────────────
+      - name: Checkout central repo
+        if: steps.filter.outputs.skip != 'true'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: central
+          persist-credentials: false
+
+      # ── Checkout target repo ──────────────────────────────────────────────
+      - name: Checkout target repo
+        if: steps.filter.outputs.skip != 'true'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ matrix.target }}
+          path: target
+          token: ${{ steps.token.outputs.value }}
+          fetch-depth: 0
+
+      # ── Set up Python ─────────────────────────────────────────────────────
+      - name: Set up Python
+        if: steps.filter.outputs.skip != 'true'
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Install Python helpers
+        if: steps.filter.outputs.skip != 'true'
+        run: pip install --quiet packaging
+
+      # ── Sync devcontainer files ───────────────────────────────────────────
+      - name: Sync devcontainer config
+        if: steps.filter.outputs.skip != 'true'
+        id: sync
+        env:
+          CENTRAL_DIR: ${{ github.workspace }}/central
+          TARGET_DIR: ${{ github.workspace }}/target
+          TARGET_REPO: ${{ matrix.target }}
+          DRY_RUN: ${{ inputs.dry-run || 'false' }}
+          CLAUDE_VERSION: ${{ inputs.claude-version || '2.1.123' }}
+          GH_TOKEN: ${{ steps.token.outputs.value }}
+        run: python3 central/.github/scripts/sync_devcontainer.py
