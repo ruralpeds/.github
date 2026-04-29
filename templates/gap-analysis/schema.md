@@ -349,8 +349,8 @@ A gap is **Completed** when:
 ## Questions?
 
 Refer to:
-- **Organization standard**: `docs/GAP_ANALYSIS_STANDARDS.md` in `ruralpeds/.github`
-- **Quick reference**: `docs/GAP_ANALYSIS_QUICK_REFERENCE.md`
+- **Organization standard**: [`.gap-analysis/README.md`](../../.gap-analysis/README.md) in `ruralpeds/.github`
+- **Archived 2026-04 standards & quick reference**: [`docs/archive/2026-04-gap-analysis/`](../../docs/archive/2026-04-gap-analysis/)
 - **Workflow automation**: `.github/workflows/gap-analysis-*.yml` in `ruralpeds/.github`
 
 ---
@@ -360,4 +360,4 @@ Refer to:
 | Date | Change | Who |
 |------|--------|-----|
 | 2026-04-23 | Initial schema created | Timothy |
-| | | |
+| 2026-04-28 | Updated references after standards/quick-reference were archived | Claude (claude/update-gap-analysis-6bUTw) |
