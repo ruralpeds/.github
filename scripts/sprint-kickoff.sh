@@ -59,7 +59,7 @@ echo "==> Seeding issues from copilot-tasks/ into $REPO (phase=$PHASE)..."
 GH_TOKEN="$(gh auth token)" python3 "$SEEDER" \
   --phase "$PHASE" \
   --repo "$REPO" \
-  --assignee "copilot-swe-agent" \
+  --assign-to "copilot-swe-agent" \
   $DRY_RUN
 
 echo "==> Done. View issues at: https://github.com/$REPO/issues?q=label%3Aagent-task"
