@@ -43,8 +43,8 @@ jobs:
 
       - name: Run tests
         run: |
-          cp .gap-standard/actions/update-gaps/test_update_gaps.py /tmp/
-          sed -i 's|sys.path.insert(0.*)|sys.path.insert(0, "scripts")|' /tmp/test_update_gaps.py
+          sed 's|sys.path.insert(0.*)|sys.path.insert(0, "scripts")|' \
+            .gap-standard/actions/update-gaps/test_update_gaps.py > /tmp/test_update_gaps.py
           cd scripts && pytest /tmp/test_update_gaps.py -v --tb=short
 
       - name: Lint sweep script
