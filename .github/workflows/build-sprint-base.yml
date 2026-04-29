@@ -20,6 +20,7 @@ permissions:
   attestations: write
   id-token: write
 
+security-events: write
 concurrency:
   group: build-sprint-base
   cancel-in-progress: false
