@@ -1,0 +1,88 @@
+name: Reusable — Gap Lifecycle
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Org-wide reusable workflow — Rural Peds Gap Analysis Standard v1.0
+# Spec: https://github.com/ruralpeds/gap-analysis-standard/blob/main/SPEC.md
+#
+# Call from any ruralpeds consumer repo:
+#
+#   name: Gap Lifecycle
+#   on:
+#     pull_request:
+#       types: [closed]
+#   jobs:
+#     lifecycle:
+#       uses: ruralpeds/.github/.github/workflows/reusable-gap-lifecycle.yml@main
+#       with:
+#         gaps_file: 'GAPS.md'
+#       secrets: inherit
+#
+# On every merged PR this workflow:
+#   1. Scans the PR body for "Closes GAP-NNN" references
+#   2. Moves matching rows from Active → Completed in GAPS.md
+#   3. Commits the updated file back to the default branch
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_call:
+    inputs:
+      gaps_file:
+        description: 'Path to GAPS.md relative to repo root'
+        type: string
+        required: false
+        default: 'GAPS.md'
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  update-gaps:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Fetch update_gaps.py from org scripts
+        run: |
+          curl -fsSL \
+            https://raw.githubusercontent.com/ruralpeds/.github/main/scripts/update_gaps.py \
+            -o update_gaps.py
+
+      - name: Run update_gaps.py
+        id: run
+        run: |
+          MERGED_DATE=$(echo "${{ github.event.pull_request.merged_at }}" | cut -c1-10)
+          python update_gaps.py \
+            --gaps-file "${{ inputs.gaps_file }}" \
+            --pr-body "${{ github.event.pull_request.body }}" \
+            --pr-number "${{ github.event.pull_request.number }}" \
+            --merged-date "$MERGED_DATE"
+
+      - name: Commit updated GAPS.md
+        run: |
+          if git diff --quiet "${{ inputs.gaps_file }}"; then
+            echo "No changes to commit."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add "${{ inputs.gaps_file }}"
+            git commit -m "chore: auto-close gap(s) via PR #${{ github.event.pull_request.number }} [skip ci]"
+            git push
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Gap Lifecycle" >> $GITHUB_STEP_SUMMARY
+          echo "**PR:** #${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}" >> $GITHUB_STEP_SUMMARY
