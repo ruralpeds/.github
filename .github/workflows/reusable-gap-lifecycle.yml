@@ -36,7 +36,7 @@ permissions:
 jobs:
   update-gaps:
     if: github.event.pull_request.merged == true
-    runs-on: [self-hosted, mac-studio]
+    runs-on: [self-hosted, apple-silicon]
 
     steps:
       - name: Checkout repo

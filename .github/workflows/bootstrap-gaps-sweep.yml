@@ -34,7 +34,7 @@ permissions:
 jobs:
   sweep:
     name: Bootstrap Gap Analysis — All Repos
-    runs-on: [self-hosted, mac-studio]
+    runs-on: [self-hosted, apple-silicon]
     timeout-minutes: 30
 
     steps:

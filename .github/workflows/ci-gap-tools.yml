@@ -15,7 +15,7 @@ on:
 jobs:
   test-update-gaps:
     name: pytest — update_gaps.py
-    runs-on: [self-hosted, mac-studio]
+    runs-on: [self-hosted, apple-silicon]
     timeout-minutes: 10
 
     steps:
