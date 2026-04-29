@@ -1,0 +1,44 @@
+name: CI — Gap Tools
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/update_gaps.py'
+      - 'scripts/bootstrap_gaps_sweep.py'
+  pull_request:
+    paths:
+      - 'scripts/update_gaps.py'
+      - 'scripts/bootstrap_gaps_sweep.py'
+  workflow_dispatch:
+
+jobs:
+  test-update-gaps:
+    name: pytest — update_gaps.py
+    runs-on: [self-hosted, mac-studio]
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+
+      - name: Fetch test suite from gap-analysis-standard
+        run: |
+          curl -fsSL \
+            https://raw.githubusercontent.com/ruralpeds/gap-analysis-standard/main/actions/update-gaps/test_update_gaps.py \
+            -o /tmp/test_update_gaps.py
+          # Patch import path to point to local scripts/
+          sed 's|sys.path.insert(0.*)|sys.path.insert(0, "scripts")|' /tmp/test_update_gaps.py > /tmp/test_update_gaps_local.py
+
+      - name: Install pytest
+        run: pip3 install pytest --quiet --break-system-packages 2>/dev/null || pip3 install pytest --quiet
+
+      - name: Run tests
+        run: |
+          cd scripts
+          pytest /tmp/test_update_gaps_local.py -v --tb=short
+
+      - name: Lint sweep script
+        run: |
+          python3 -m py_compile scripts/bootstrap_gaps_sweep.py
+          echo "✓ bootstrap_gaps_sweep.py syntax OK"

@@ -1,0 +1,91 @@
+name: Bootstrap Gaps — Org Sweep
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sweeps every non-archived ruralpeds repo and ensures each has:
+#   - GAPS.md at repo root
+#   - .github/workflows/gaps.yml (calls reusable-gap-lifecycle.yml)
+#   - Gap Analysis block appended to CLAUDE.md (if CLAUDE.md exists)
+#
+# Runs on the Mac Studio self-hosted runner (has gh CLI auth + PAT access).
+# Trigger manually from Actions tab, or schedule as needed.
+#
+# Inputs:
+#   dry_run  — preview what would change without committing anything
+#   repo     — bootstrap a single repo (leave blank for all repos)
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run — show what would change without committing'
+        type: boolean
+        default: false
+        required: false
+      repo:
+        description: 'Single repo name to bootstrap (blank = all repos)'
+        type: string
+        default: ''
+        required: false
+
+permissions:
+  contents: write   # needed to create files in other repos via PAT
+
+jobs:
+  sweep:
+    name: Bootstrap Gap Analysis — All Repos
+    runs-on: [self-hosted, mac-studio]
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout .github repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+
+      - name: Install dependencies
+        run: |
+          pip3 install requests --quiet --break-system-packages 2>/dev/null \
+            || pip3 install requests --quiet
+
+      - name: Run bootstrap sweep
+        env:
+          GH_PAT: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          ARGS="--token $GH_PAT --org ruralpeds"
+
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+
+          if [ -n "${{ inputs.repo }}" ]; then
+            ARGS="$ARGS --repo ${{ inputs.repo }}"
+          fi
+
+          python3 scripts/bootstrap_gaps_sweep.py $ARGS
+
+      - name: Upload sweep report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gap-sweep-report-${{ github.run_number }}
+          path: /tmp/gap_sweep_report.json
+          retention-days: 30
+
+      - name: Print summary
+        if: always()
+        run: |
+          echo "## Gap Bootstrap Sweep" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Runner:** $(hostname)" >> $GITHUB_STEP_SUMMARY
+          echo "**Dry run:** ${{ inputs.dry_run }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Target repo:** ${{ inputs.repo || 'ALL' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f /tmp/gap_sweep_report.json ]; then
+            BOOTSTRAPPED=$(python3 -c "import json; d=json.load(open('/tmp/gap_sweep_report.json')); print(sum(1 for r in d if r['status']=='bootstrapped'))")
+            ALREADY=$(python3 -c "import json; d=json.load(open('/tmp/gap_sweep_report.json')); print(sum(1 for r in d if r['status']=='already_bootstrapped'))")
+            ERRORS=$(python3 -c "import json; d=json.load(open('/tmp/gap_sweep_report.json')); print(sum(1 for r in d if r['status']=='error'))")
+            echo "| Result | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| ✅ Bootstrapped | $BOOTSTRAPPED |" >> $GITHUB_STEP_SUMMARY
+            echo "| ✓ Already done | $ALREADY |" >> $GITHUB_STEP_SUMMARY
+            echo "| ❌ Errors | $ERRORS |" >> $GITHUB_STEP_SUMMARY
+          fi
