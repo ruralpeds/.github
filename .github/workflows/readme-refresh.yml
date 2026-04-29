@@ -18,7 +18,7 @@ name: "Refresh README via Copilot"
 
 on:
   schedule:
-    - cron: "0 10 * * 1"  # Mon 10:00 UTC
+    - cron: "0 10 * * 1"  # Mon 10:00 UTC — after sync-rulesets (05:00), repo-scanner (06:00), check-compliance (07:00)
   workflow_dispatch:
     inputs:
       dry-run:
@@ -182,7 +182,10 @@ jobs:
           updated = response.choices[0].message.content.strip()
 
           # Sanity-guard: reject obviously malformed output.
-          if len(updated) < 500 or "# " not in updated:
+          # 500 chars is ~3-4 short paragraphs — far below any real README.
+          # A real README for this repo is 300+ lines; this catches empty/truncated responses.
+          MIN_CHARS = 500
+          if len(updated) < MIN_CHARS or "# " not in updated:
               print(
                   "ERROR: Generated README is too short or missing headings -- aborting.",
                   file=sys.stderr,
@@ -286,8 +289,7 @@ jobs:
           # -B creates the branch if new, or resets it to HEAD if it already exists.
           git checkout -B "$BRANCH"
           git add README.md
-          # Single-line commit message avoids column-0 content in the YAML block scalar.
-          git commit -m "docs: auto-refresh README via Copilot [skip ci]"
+          git commit -m "docs: auto-refresh README via Copilot"
 
           # --force-with-lease is intentional: this is a bot-only PR branch.
           # No human history is overwritten; the branch is recreated each week.
