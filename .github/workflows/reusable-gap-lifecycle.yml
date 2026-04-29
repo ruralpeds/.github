@@ -29,6 +29,10 @@ on:
         required: false
         default: 'GAPS.md'
 
+concurrency:
+  group: gap-lifecycle-${{ github.repository }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: false  # never cancel mid-write to GAPS.md
+
 permissions:
   contents: write
   pull-requests: read
@@ -37,26 +41,33 @@ jobs:
   update-gaps:
     if: github.event.pull_request.merged == true
     runs-on: [self-hosted, apple-silicon]
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           ref: ${{ github.event.pull_request.base.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Checkout ruralpeds/.github for scripts
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          repository: ruralpeds/.github
+          path: .gap-scripts
+          persist-credentials: false
+
       - name: Run update_gaps.py
         id: run
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_MERGED_AT: ${{ github.event.pull_request.merged_at }}
         run: |
-          curl -fsSL \
-            https://raw.githubusercontent.com/ruralpeds/.github/main/scripts/update_gaps.py \
-            -o /tmp/update_gaps.py
+          MERGED_DATE=$(echo "$PR_MERGED_AT" | cut -c1-10)
 
-          MERGED_DATE=$(echo "${{ github.event.pull_request.merged_at }}" | cut -c1-10)
-
-          python3 /tmp/update_gaps.py \
+          python3 .gap-scripts/scripts/update_gaps.py \
             --gaps-file "${{ inputs.gaps_file }}" \
-            --pr-body "${{ github.event.pull_request.body }}" \
+            --pr-body "$PR_BODY" \
             --pr-number "${{ github.event.pull_request.number }}" \
             --merged-date "$MERGED_DATE"
 
@@ -74,8 +85,13 @@ jobs:
 
       - name: Job summary
         if: always()
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_MERGED_AT: ${{ github.event.pull_request.merged_at }}
         run: |
-          echo "## Gap Lifecycle" >> $GITHUB_STEP_SUMMARY
-          echo "**Runner:** $(hostname) \`[self-hosted, mac-studio]\`" >> $GITHUB_STEP_SUMMARY
-          echo "**PR:** #${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Merged:** ${{ github.event.pull_request.merged_at }}" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Gap Lifecycle"
+            echo "**Runner:** $(hostname) \`[self-hosted, mac-studio]\`"
+            echo "**PR:** #${{ github.event.pull_request.number }} — ${PR_TITLE}"
+            echo "**Merged:** ${PR_MERGED_AT}"
+          } >> "$GITHUB_STEP_SUMMARY"
