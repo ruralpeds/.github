@@ -261,6 +261,30 @@ def main() -> int:
     tasks = discover(args.phase)
     print(f"Discovered {len(tasks)} task file(s) for phase filter {args.phase!r}")
 
+    if not args.dry_run:
+        # Collect every label that will be needed and ensure it exists in the repo.
+        # gh label create --force is idempotent: creates if absent, updates if present.
+        all_labels: set[str] = set()
+        for t in tasks:
+            all_labels.update(t.labels)
+        # Standard label colour map — unknown labels get a neutral grey.
+        colour_map = {
+            "agent-task": "0075ca",
+        }
+        print(f"==> Ensuring {len(all_labels)} label(s) exist in {args.repo}...")
+        for lbl in sorted(all_labels):
+            colour = colour_map.get(lbl, "ededed")
+            try:
+                subprocess.run(
+                    ["gh", "label", "create", lbl,
+                     "--repo", args.repo,
+                     "--color", colour,
+                     "--force"],
+                    check=True, capture_output=True, text=True,
+                )
+            except subprocess.CalledProcessError as e:
+                print(f"[warn] could not ensure label {lbl!r}: {e.stderr.strip()}", file=sys.stderr)
+
     created = 0
     skipped = 0
     for t in tasks:
