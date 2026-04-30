@@ -42,7 +42,7 @@ jobs:
   markdown-lint:
     name: Markdown lint
     if: ${{ inputs.run-markdown-lint }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
     steps:
@@ -67,7 +67,7 @@ jobs:
   link-check:
     name: Link check
     if: ${{ inputs.run-link-check }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
     steps:
@@ -93,7 +93,7 @@ jobs:
   required-docs:
     name: Required docs check
     if: ${{ inputs.run-required-docs-check }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
     steps:

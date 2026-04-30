@@ -44,7 +44,7 @@ jobs:
   dependency-review:
     name: Dependency review
     if: ${{ inputs.run-dependency-review && github.event_name == 'pull_request' }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
       pull-requests: write  # needed to post review comments
@@ -64,7 +64,7 @@ jobs:
   # credential patterns are accidentally committed in changed files.
   secret-scan-advisory:
     name: Secret scan advisory
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
     steps:
@@ -114,7 +114,7 @@ jobs:
   codeql:
     name: "CodeQL (${{ matrix.language }})"
     if: ${{ inputs.run-codeql && fromJson(inputs.codeql-languages)[0] != null }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
       security-events: write  # required for SARIF upload

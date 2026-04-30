@@ -33,7 +33,7 @@ jobs:
   # ── 1. Governance and required file structure ─────────────────────────────────
   governance:
     name: Governance file check
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
     steps:
@@ -52,7 +52,7 @@ jobs:
   audit-events:
     name: Audit events catalog
     if: ${{ inputs.run-audit-events-check }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
     steps:
@@ -74,7 +74,7 @@ jobs:
   pinning-advisory:
     name: Action pinning advisory
     if: ${{ inputs.run-pinning-advisory }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
     steps:

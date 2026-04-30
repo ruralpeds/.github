@@ -58,7 +58,7 @@ permissions:
 jobs:
   phi-scan:
     name: PHI scrubbing scan (${{ inputs.scan-mode }})
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 20
     permissions:
       contents: read

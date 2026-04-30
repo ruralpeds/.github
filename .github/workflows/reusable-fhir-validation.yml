@@ -52,7 +52,7 @@ permissions:
 jobs:
   validate-fhir:
     name: Validate FHIR Resources
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 30
     outputs:
       validation_status: ${{ steps.validate.outputs.validation_status }}
