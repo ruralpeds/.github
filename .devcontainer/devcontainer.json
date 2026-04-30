@@ -1,0 +1,53 @@
+{
+  "name": "ruralpeds/.github tooling",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+
+  "customizations": {
+    "codespaces": {
+      "repositories": {
+        "ruralpeds/rust-sci-core": {
+          "permissions": { "contents": "write", "pull_requests": "write" }
+        },
+        "ruralpeds/Graphmaster": {
+          "permissions": { "contents": "write", "pull_requests": "write" }
+        },
+        "ruralpeds/Cds_core": {
+          "permissions": { "contents": "write", "pull_requests": "write" }
+        },
+        "ruralpeds/Decision-trees-rust": {
+          "permissions": { "contents": "write", "pull_requests": "write" }
+        },
+        "ruralpeds/hospital-economics-rust": {
+          "permissions": { "contents": "write", "pull_requests": "write" }
+        },
+        "ruralpeds/agent-based-modeling": {
+          "permissions": { "contents": "write", "pull_requests": "write" }
+        },
+        "ruralpeds/document_cleaner": {
+          "permissions": { "contents": "write", "pull_requests": "write" }
+        },
+        "ruralpeds/biostatistics-rust": {
+          "permissions": { "contents": "write", "pull_requests": "write" }
+        },
+        "ruralpeds/graph_creation": {
+          "permissions": { "contents": "write", "pull_requests": "write" }
+        },
+        "ruralpeds/Policyforge": {
+          "permissions": { "contents": "write", "pull_requests": "write" }
+        },
+        "ruralpeds/biostatistics-rust": {
+          "permissions": { "contents": "write", "pull_requests": "write" }
+        }
+      }
+    },
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "tamasfe.even-better-toml",
+        "GitHub.vscode-pull-request-github"
+      ]
+    }
+  },
+
+  "postCreateCommand": "gh auth status"
+}
