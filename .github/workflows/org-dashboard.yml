@@ -16,7 +16,7 @@ name: Org Health Dashboard
 
 on:
   schedule:
-    - cron: '0 12 * * *'    # daily at noon UTC
+    - cron: '0 12 */2 * *'   # every other day at noon UTC (content rarely changes daily)
   workflow_dispatch:
   push:
     branches: [main]

@@ -44,12 +44,7 @@ permissions:
 jobs:
   refresh:
     name: Regenerate README
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: write        # push PR branch
-      pull-requests: write   # open PR
-      models: read           # GitHub Models API via GITHUB_TOKEN
+    runs-on: [self-hosted, mac-studio, arm64]
 
     steps:
       # ── 1. Checkout ──────────────────────────────────────────────────────────

@@ -11,6 +11,26 @@ on:
     branches: [main]
   push:
     branches: [main]
+    # Skip linting runs for purely documentary commits; workflow YAML, policy
+    # JSON, and Python scripts still trigger (those are what self-test checks).
+    paths-ignore:
+      - 'docs/**'
+      - 'compliance/**'
+      - 'compliance-metrics/**'
+      - 'copilot-tasks/**'
+      - 'testing/**'
+      - 'audit-log/**'
+      - 'dhf/**'
+      - 'strategy/**'
+      - 'operations/**'
+      - 'operations-runbooks/**'
+      - 'features/**'
+      - 'implementation/**'
+      - 'technical-flows/**'
+      - 'infrastructure/**'
+      - 'profile/**'
+      - '**/*.md'
+      - '**/*.docx'
 
 permissions:
   contents: read
