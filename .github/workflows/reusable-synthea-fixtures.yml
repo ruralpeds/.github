@@ -55,7 +55,7 @@ permissions:
 jobs:
   generate-fixtures:
     name: Generate Synthea FHIR Bundles
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 45
     outputs:
       fixture_count: ${{ steps.generate.outputs.fixture_count }}

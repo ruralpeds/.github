@@ -42,7 +42,7 @@ jobs:
   # ── 0. Pre-flight: detect config and build version matrix ─────────────────────
   detect:
     name: Detect configuration
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
     outputs:
@@ -83,7 +83,7 @@ jobs:
     name: Format check (JuliaFormatter)
     needs: detect
     if: ${{ inputs.run-format-check && needs.detect.outputs.has-project == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
     steps:
@@ -112,7 +112,7 @@ jobs:
     name: "Test (Julia ${{ matrix.julia-version }})"
     needs: detect
     if: ${{ needs.detect.outputs.has-tests == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: ${{ fromJson(inputs.test-timeout-minutes) }}
     permissions:
       contents: read

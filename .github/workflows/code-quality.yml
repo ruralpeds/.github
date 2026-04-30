@@ -138,7 +138,7 @@ jobs:
   dependency-review:
     name: Dependency review
     if: inputs.run-dependency-review && github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
       pull-requests: write
@@ -157,7 +157,7 @@ jobs:
   license-check:
     name: License compliance
     if: inputs.run-license-check
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
@@ -248,7 +248,7 @@ jobs:
   repo-hygiene:
     name: Repository hygiene
     if: inputs.run-repo-hygiene
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - name: Check required files

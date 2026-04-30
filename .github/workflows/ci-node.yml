@@ -43,7 +43,7 @@ on:
 jobs:
   detect:
     name: Detect configuration
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     outputs:
       has-lint: ${{ steps.check.outputs.has-lint }}
       has-typecheck: ${{ steps.check.outputs.has-typecheck }}
@@ -80,7 +80,7 @@ jobs:
     name: Lint
     needs: detect
     if: needs.detect.outputs.has-lint == 'true' && inputs.run-lint
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4
@@ -108,7 +108,7 @@ jobs:
     name: Type check
     needs: detect
     if: needs.detect.outputs.has-typecheck == 'true' && inputs.run-typecheck
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4
@@ -136,7 +136,7 @@ jobs:
     name: Security audit
     needs: detect
     if: inputs.run-security-audit
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4
@@ -164,7 +164,7 @@ jobs:
     name: "Test (Node ${{ matrix.node-version }})"
     needs: detect
     if: needs.detect.outputs.has-test == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: ${{ fromJson(inputs.test-timeout) }}
     strategy:
       fail-fast: false
@@ -215,7 +215,7 @@ jobs:
     name: Build
     needs: [detect, test]
     if: needs.detect.outputs.has-build == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4

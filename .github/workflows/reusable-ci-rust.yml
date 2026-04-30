@@ -51,7 +51,7 @@ jobs:
   fmt:
     name: Rustfmt
     if: ${{ inputs.run-fmt }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
     steps:
@@ -69,7 +69,7 @@ jobs:
   clippy:
     name: Clippy
     if: ${{ inputs.run-clippy }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
     steps:
@@ -95,7 +95,7 @@ jobs:
   # ── 3. Tests (stable) ────────────────────────────────────────────────────────
   test-stable:
     name: "Test (stable)"
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: ${{ fromJson(inputs.test-timeout-minutes) }}
     permissions:
       contents: read
@@ -141,7 +141,7 @@ jobs:
   test-nightly:
     name: "Test (nightly)"
     if: ${{ inputs.run-nightly }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: ${{ fromJson(inputs.test-timeout-minutes) }}
     permissions:
       contents: read
