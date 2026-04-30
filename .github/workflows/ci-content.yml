@@ -21,7 +21,7 @@ permissions:
 jobs:
   lint:
     name: Lint Markdown Content
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
@@ -63,7 +63,7 @@ jobs:
 
   security:
     name: Security Checks
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
@@ -81,7 +81,7 @@ jobs:
 
   sbom:
     name: Generate SBOM
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4

@@ -25,7 +25,7 @@ on:
 jobs:
   compliance-check:
     name: Scan org CI compliance
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
       issues: write
@@ -91,7 +91,7 @@ jobs:
               labels: ['compliance', 'automated'],
             });
 check-gap-analysis:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     name: Check Gap Analysis Adoption
     
     steps:

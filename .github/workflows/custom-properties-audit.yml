@@ -17,15 +17,7 @@ permissions:
 jobs:
   audit:
     name: Audit Custom Properties
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
-
-      - name: Set up Python
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
+    runs-on: [self-hosted, mac-studio, arm64]
         with:
           python-version: "3.12"
 

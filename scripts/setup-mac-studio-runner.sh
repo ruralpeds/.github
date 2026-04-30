@@ -39,7 +39,7 @@ set -euo pipefail
 SCOPE=""; OWNER=""; REPO=""; GROUP=""
 NAME="mac-studio-$(date +%s)"
 TOKEN=""
-LABELS="self-hosted,mac-studio,arm64"
+LABELS="self-hosted,mac-studio,arm64,apple-silicon"
 WORK="_work"
 RUNNER_VERSION="2.319.1"
 

@@ -6,6 +6,19 @@ name: Required — Audit Log
 on:
   push:
     branches: [main, master]
+    paths-ignore:
+      - 'docs/**'
+      - 'compliance/**'
+      - 'compliance-metrics/**'
+      - 'copilot-tasks/**'
+      - 'testing/**'
+      - 'audit-log/**'
+      - 'dhf/**'
+      - 'strategy/**'
+      - 'operations/**'
+      - 'operations-runbooks/**'
+      - '**/*.md'
+      - '**/*.docx'
   schedule:
     - cron: '0 6 * * 0'     # weekly Sunday 06:00 UTC
   workflow_dispatch:

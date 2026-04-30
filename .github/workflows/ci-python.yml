@@ -39,7 +39,7 @@ on:
 jobs:
   detect:
     name: Detect configuration
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     outputs:
       has-tests: ${{ steps.check.outputs.has-tests }}
       matrix: ${{ steps.matrix.outputs.versions }}
@@ -71,7 +71,7 @@ jobs:
     name: Lint
     needs: detect
     if: inputs.run-lint
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
@@ -90,7 +90,7 @@ jobs:
     name: Type check (mypy)
     needs: detect
     if: inputs.run-typecheck
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
@@ -111,7 +111,7 @@ jobs:
     name: Security scan
     needs: detect
     if: inputs.run-security
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
@@ -149,7 +149,7 @@ jobs:
     name: "Test (Python ${{ matrix.python-version }})"
     needs: detect
     if: needs.detect.outputs.has-tests == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: ${{ fromJson(inputs.test-timeout) }}
     strategy:
       fail-fast: false

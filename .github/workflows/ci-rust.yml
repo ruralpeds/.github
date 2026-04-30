@@ -36,7 +36,7 @@ jobs:
   fmt:
     name: Format check
     if: inputs.run-fmt
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - uses: dtolnay/rust-toolchain@be73d7920c329f220ce78e0234b8f96b7ae60248  # stable
@@ -49,7 +49,7 @@ jobs:
   clippy:
     name: Clippy
     if: inputs.run-clippy
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - uses: dtolnay/rust-toolchain@be73d7920c329f220ce78e0234b8f96b7ae60248  # stable
@@ -70,7 +70,7 @@ jobs:
   security-audit:
     name: Security audit
     if: inputs.run-security-audit
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - name: Install cargo-audit
@@ -81,7 +81,7 @@ jobs:
 
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: ${{ fromJson(inputs.test-timeout) }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
@@ -114,7 +114,7 @@ jobs:
   coverage:
     name: Coverage
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - uses: dtolnay/rust-toolchain@be73d7920c329f220ce78e0234b8f96b7ae60248  # stable

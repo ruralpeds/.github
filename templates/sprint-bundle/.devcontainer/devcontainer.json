@@ -1,0 +1,42 @@
+{
+  "name": "ruralpeds sprint runtime",
+  "image": "mcr.microsoft.com/devcontainers/rust:1-bullseye",
+  "runArgs": ["--dns", "8.8.8.8", "--dns", "8.8.4.4"],
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": { "version": "latest" },
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" },
+    "ghcr.io/devcontainers/features/python:1": { "version": "3.11" },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": { "version": "latest", "moby": true }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot","GitHub.copilot-chat","GitHub.vscode-pull-request-github",
+        "GitHub.vscode-github-actions","rust-lang.rust-analyzer","tamasfe.even-better-toml",
+        "serayuzgur.crates","vadimcn.vscode-lldb","julialang.language-julia",
+        "ms-python.python","ms-python.vscode-pylance","dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode","bradlc.vscode-tailwindcss","redhat.vscode-yaml",
+        "yzhang.markdown-all-in-one"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "rust-analyzer.checkOnSave": true,
+        "rust-analyzer.cargo.buildScripts.enable": true,
+        "github.copilot.enable": {"*": true,"yaml": true,"markdown": true},
+        "github.copilot.chat.agent.enabled": true,
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    },
+    "codespaces": { "openFiles": ["AGENTS.md","README.md"] }
+  },
+  "remoteUser": "vscode",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "mounts": [
+    "source=${localWorkspaceFolderBasename}-cargo-cache,target=/home/vscode/.cargo/registry,type=volume",
+    "source=${localWorkspaceFolderBasename}-cargo-git,target=/home/vscode/.cargo/git,type=volume"
+  ],
+  "postCreateCommand": "bash .devcontainer/postcreate.sh 2>&1 | tee /tmp/postcreate.log",
+  "containerEnv": { "RUST_BACKTRACE": "1", "GH_TOKEN": "${localEnv:GH_TOKEN}" },
+  "forwardPorts": [3000, 5173, 8080, 1420],
+  "hostRequirements": { "cpus": 4, "memory": "8gb", "storage": "32gb" }
+}

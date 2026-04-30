@@ -15,7 +15,7 @@ on:
 jobs:
   playwright-audit:
     name: Playwright CI audit
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
       issues: write
@@ -32,6 +32,11 @@ jobs:
 
       - name: Install Node dependencies
         run: npm ci
+
+      - name: Install Playwright browsers (cached on self-hosted)
+        # On self-hosted runners browser binaries persist between runs.
+        # This is a no-op after the first install; --with-deps is macOS-safe.
+        run: npx playwright install chromium --with-deps 2>/dev/null || true
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium

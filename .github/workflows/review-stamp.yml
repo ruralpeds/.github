@@ -27,7 +27,7 @@ on:
 jobs:
   review-stamp:
     name: Stamp code review
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: write
     steps:

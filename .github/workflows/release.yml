@@ -63,7 +63,7 @@ permissions:
 jobs:
   release:
     name: Release
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     outputs:
       version: ${{ steps.version.outputs.new_version }}
       tag: ${{ steps.version.outputs.new_tag }}

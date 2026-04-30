@@ -63,7 +63,7 @@ on:
 jobs:
   install:
     name: Install & cache
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4
@@ -90,7 +90,7 @@ jobs:
   test:
     name: "E2E (${{ matrix.browser }}${{ inputs.shards > 1 && format(', shard {0}/{1}', matrix.shard, inputs.shards) || '' }})"
     needs: install
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: ${{ fromJson(inputs.test-timeout) }}
     strategy:
       fail-fast: false
@@ -209,7 +209,7 @@ jobs:
     name: Merge reports
     needs: test
     if: always() && inputs.upload-report
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4

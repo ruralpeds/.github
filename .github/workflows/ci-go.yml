@@ -39,7 +39,7 @@ on:
 jobs:
   detect:
     name: Detect configuration
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     outputs:
       has-tests: ${{ steps.check.outputs.has-tests }}
       matrix: ${{ steps.matrix.outputs.versions }}
@@ -70,7 +70,7 @@ jobs:
   lint:
     name: Lint
     if: inputs.run-lint
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed  # v5
@@ -86,7 +86,7 @@ jobs:
   vet:
     name: Vet
     if: inputs.run-vet
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed  # v5
@@ -99,7 +99,7 @@ jobs:
   security:
     name: Security scan
     if: inputs.run-security
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed  # v5
@@ -135,7 +135,7 @@ jobs:
     name: "Test (Go ${{ matrix.go-version }})"
     needs: detect
     if: needs.detect.outputs.has-tests == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: ${{ fromJson(inputs.test-timeout) }}
     strategy:
       fail-fast: false

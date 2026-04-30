@@ -1,0 +1,7 @@
+self-hosted-runner:
+  labels:
+    - apple-silicon
+    - mac-studio
+    - macbook-pro
+    - arm64
+    - medical

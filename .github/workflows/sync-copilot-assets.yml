@@ -48,9 +48,7 @@ concurrency:
 jobs:
   sync:
     name: Sync to ${{ matrix.target }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    strategy:
+    runs-on: [self-hosted, mac-studio, arm64]
       fail-fast: false
       matrix:
         target:

@@ -2,7 +2,7 @@ name: Repo Hygiene
 
 on:
   schedule:
-    - cron: '0 6 * * *'   # 06:00 UTC daily
+    - cron: '0 6 * * 1'   # 06:00 UTC Mondays (stale thresholds are 45–90 days; daily was redundant)
   workflow_dispatch:       # allow manual runs from the Actions tab
 
 permissions:

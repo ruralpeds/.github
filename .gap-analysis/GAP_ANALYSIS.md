@@ -1,4 +1,4 @@
-# Gap Analysis — `ruralpeds/.github`
+# Gap Analysis for `ruralpeds/.github`
 
 **Repository:** `ruralpeds/.github`
 **Last Updated:** 2026-04-28

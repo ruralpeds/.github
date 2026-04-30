@@ -47,7 +47,7 @@ permissions:
 jobs:
   mutation-test:
     name: Run Mutation Tests
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 120
     outputs:
       kill_rate: ${{ steps.mutate.outputs.kill_rate }}

@@ -1,0 +1,53 @@
+name: CI — Gap Tools
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/update_gaps.py'
+      - 'scripts/bootstrap_gaps_sweep.py'
+  pull_request:
+    paths:
+      - 'scripts/update_gaps.py'
+      - 'scripts/bootstrap_gaps_sweep.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-gap-tools-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-update-gaps:
+    name: pytest — update_gaps.py
+    runs-on: [self-hosted, apple-silicon]
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Checkout gap-analysis-standard for tests
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          repository: ruralpeds/gap-analysis-standard
+          path: .gap-standard
+          persist-credentials: false
+
+      - name: Install pytest
+        run: pip3 install pytest --quiet --break-system-packages 2>/dev/null || pip3 install pytest --quiet
+
+      - name: Run tests
+        run: |
+          sed 's|sys.path.insert(0.*)|sys.path.insert(0, "scripts")|' \
+            .gap-standard/actions/update-gaps/test_update_gaps.py > /tmp/test_update_gaps.py
+          cd scripts && pytest /tmp/test_update_gaps.py -v --tb=short
+
+      - name: Lint sweep script
+        run: |
+          python3 -m py_compile scripts/bootstrap_gaps_sweep.py
+          echo "✓ bootstrap_gaps_sweep.py syntax OK"
