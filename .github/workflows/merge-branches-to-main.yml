@@ -1,0 +1,174 @@
+# .github/workflows/merge-branches-to-main.yml
+#
+# Merge every non-main branch into main, then delete the branch if the merge
+# succeeded.  Runs on demand only (workflow_dispatch) so it is never triggered
+# accidentally.
+#
+# Branches that cannot be merged conflict-free are skipped; a summary is
+# printed at the end so a human can handle them manually.
+
+name: Merge All Branches to Main
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "List branches and simulate without actually merging or deleting"
+        type: boolean
+        default: true
+      exclude-branches:
+        description: "Additional comma-separated branch names to skip (e.g. dev,staging)"
+        type: string
+        default: ""
+      delete-after-merge:
+        description: "Delete a branch after it has been successfully merged"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write   # required: merge and delete refs
+
+concurrency:
+  group: merge-branches-to-main
+  cancel-in-progress: false   # never cancel a mid-flight merge run
+
+jobs:
+  merge:
+    name: Merge branches → main
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Merge branches and report
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b  # v7
+        env:
+          DRY_RUN: ${{ inputs.dry-run }}
+          DELETE_AFTER_MERGE: ${{ inputs.delete-after-merge }}
+          EXTRA_EXCLUDES: ${{ inputs.exclude-branches }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const dryRun       = process.env.DRY_RUN === 'true';
+            const deleteAfter  = process.env.DELETE_AFTER_MERGE === 'true';
+            const extraExclude = (process.env.EXTRA_EXCLUDES || '')
+              .split(',').map(s => s.trim()).filter(Boolean);
+
+            // Branches that must never be merged or deleted by this workflow.
+            const PROTECTED = new Set([
+              'main',
+              ...extraExclude,
+            ]);
+
+            // ── 1. List all branches ──────────────────────────────────────────
+            const branches = await github.paginate(
+              github.rest.repos.listBranches,
+              { owner: context.repo.owner, repo: context.repo.repo, per_page: 100 }
+            );
+
+            const candidates = branches
+              .map(b => b.name)
+              .filter(name => !PROTECTED.has(name));
+
+            core.info(`Found ${candidates.length} candidate branch(es): ${candidates.join(', ')}`);
+
+            if (candidates.length === 0) {
+              core.notice('No branches to merge — nothing to do.');
+              return;
+            }
+
+            // ── 2. Attempt merges ─────────────────────────────────────────────
+            const merged   = [];
+            const skipped  = [];   // already up-to-date
+            const conflicts = [];
+            const errors   = [];
+
+            for (const branch of candidates) {
+              if (dryRun) {
+                core.info(`[dry-run] Would merge '${branch}' → main`);
+                skipped.push({ branch, reason: 'dry-run' });
+                continue;
+              }
+
+              try {
+                const result = await github.rest.repos.merge({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  base:  'main',
+                  head:  branch,
+                  commit_message: `merge: ${branch} → main [automated]`,
+                });
+
+                if (result.status === 201) {
+                  core.info(`✅ Merged '${branch}' → main (${result.data.sha.slice(0, 8)})`);
+                  merged.push(branch);
+                } else if (result.status === 204) {
+                  core.info(`⏭️  Already up-to-date: '${branch}'`);
+                  skipped.push({ branch, reason: 'already up-to-date' });
+                }
+              } catch (err) {
+                if (err.status === 409) {
+                  core.warning(`⚠️  Merge conflict: '${branch}' — skipped, needs manual resolution`);
+                  conflicts.push(branch);
+                } else {
+                  core.error(`❌ Error merging '${branch}': ${err.message}`);
+                  errors.push({ branch, message: err.message });
+                }
+              }
+            }
+
+            // ── 3. Delete successfully merged branches ────────────────────────
+            const deleted  = [];
+            const notDeleted = [];
+
+            if (deleteAfter && !dryRun) {
+              for (const branch of merged) {
+                try {
+                  await github.rest.git.deleteRef({
+                    owner: context.repo.owner,
+                    repo:  context.repo.repo,
+                    ref:   `heads/${branch}`,
+                  });
+                  core.info(`🗑️  Deleted branch '${branch}'`);
+                  deleted.push(branch);
+                } catch (err) {
+                  core.warning(`Could not delete '${branch}': ${err.message}`);
+                  notDeleted.push({ branch, message: err.message });
+                }
+              }
+            }
+
+            // ── 4. Job summary ────────────────────────────────────────────────
+            const lines = [
+              `## Merge Branches → Main`,
+              ``,
+              `| Result | Count |`,
+              `|--------|-------|`,
+              `| ✅ Merged | ${merged.length} |`,
+              `| 🗑️ Deleted | ${deleted.length} |`,
+              `| ⏭️ Skipped (up-to-date) | ${skipped.filter(s => s.reason !== 'dry-run').length} |`,
+              `| ⚠️ Conflicts (need manual fix) | ${conflicts.length} |`,
+              `| ❌ Errors | ${errors.length} |`,
+              dryRun ? `| 🔍 Dry-run candidates | ${skipped.length} |` : '',
+              ``,
+            ];
+
+            if (merged.length)    lines.push(`### ✅ Merged\n${merged.map(b => `- \`${b}\``).join('\n')}\n`);
+            if (deleted.length)   lines.push(`### 🗑️ Deleted\n${deleted.map(b => `- \`${b}\``).join('\n')}\n`);
+            if (conflicts.length) lines.push(`### ⚠️ Conflicts — manual action required\n${conflicts.map(b => `- \`${b}\``).join('\n')}\n`);
+            if (errors.length)    lines.push(`### ❌ Errors\n${errors.map(e => `- \`${e.branch}\`: ${e.message}`).join('\n')}\n`);
+            if (notDeleted.length) lines.push(`### ⚠️ Not Deleted\n${notDeleted.map(e => `- \`${e.branch}\`: ${e.message}`).join('\n')}\n`);
+            if (dryRun)           lines.push(`### 🔍 Dry-run candidates\n${skipped.map(s => `- \`${s.branch}\``).join('\n')}\n`);
+
+            await core.summary.addRaw(lines.filter(l => l !== '').join('\n')).write();
+
+            // Fail the job if there were errors (not just conflicts)
+            if (errors.length > 0) {
+              core.setFailed(`${errors.length} branch(es) failed to merge with unexpected errors.`);
+            }
