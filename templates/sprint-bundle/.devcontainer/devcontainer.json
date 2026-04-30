@@ -1,84 +1,42 @@
 {
-  "name": "ruralpeds dev",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "args": {
-      "NODE_VERSION": "22",
-      "RUST_VERSION": "stable",
-      "JULIA_VERSION": "1.11.3"
-    }
+  "name": "ruralpeds sprint runtime",
+  "image": "mcr.microsoft.com/devcontainers/rust:1-bullseye",
+  "runArgs": ["--dns", "8.8.8.8", "--dns", "8.8.4.4"],
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": { "version": "latest" },
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" },
+    "ghcr.io/devcontainers/features/python:1": { "version": "3.11" },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": { "version": "latest", "moby": true }
   },
   "customizations": {
     "vscode": {
       "extensions": [
-        "GitHub.copilot",
-        "GitHub.copilot-chat",
-        "GitHub.vscode-pull-request-github",
-        "rust-lang.rust-analyzer",
-        "tauri-apps.tauri-vscode",
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
-        "julialang.language-julia",
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "ms-azuretools.vscode-docker",
-        "redhat.vscode-yaml",
-        "tamasfe.even-better-toml",
-        "bradlc.vscode-tailwindcss",
-        "yzhang.markdown-all-in-one",
-        "GitHub.vscode-github-actions",
-        "skellock.just",
-        "fill-labs.dependi"
+        "GitHub.copilot","GitHub.copilot-chat","GitHub.vscode-pull-request-github",
+        "GitHub.vscode-github-actions","rust-lang.rust-analyzer","tamasfe.even-better-toml",
+        "serayuzgur.crates","vadimcn.vscode-lldb","julialang.language-julia",
+        "ms-python.python","ms-python.vscode-pylance","dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode","bradlc.vscode-tailwindcss","redhat.vscode-yaml",
+        "yzhang.markdown-all-in-one"
       ],
       "settings": {
         "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-          "source.fixAll": "explicit"
-        },
         "rust-analyzer.checkOnSave": true,
-        "rust-analyzer.cargo.targetDir": true,
-        "rust-analyzer.check.command": "clippy",
-        "[python]": { "editor.defaultFormatter": "ms-python.python" },
-        "[rust]": { "editor.defaultFormatter": "rust-lang.rust-analyzer" },
-        "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-        "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-        "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-        "[toml]": { "editor.defaultFormatter": "tamasfe.even-better-toml" },
-        "[markdown]": { "editor.formatOnSave": false },
-        "github.copilot.enable": {
-          "*": true,
-          "yaml": true,
-          "plaintext": false,
-          "markdown": true
-        },
-        "github.copilot.chat.codesearch.enabled": true,
+        "rust-analyzer.cargo.buildScripts.enable": true,
+        "github.copilot.enable": {"*": true,"yaml": true,"markdown": true},
         "github.copilot.chat.agent.enabled": true,
-        "terminal.integrated.defaultProfile.linux": "zsh"
+        "terminal.integrated.defaultProfile.linux": "bash"
       }
-    }
+    },
+    "codespaces": { "openFiles": ["AGENTS.md","README.md"] }
   },
   "remoteUser": "vscode",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "mounts": [
-    "source=${localWorkspaceFolderBasename}-cargo-registry,target=/home/vscode/.cargo/registry,type=volume",
-    "source=${localWorkspaceFolderBasename}-cargo-git,target=/home/vscode/.cargo/git,type=volume",
-    "source=${localWorkspaceFolderBasename}-cargo-target,target=/workspaces/${localWorkspaceFolderBasename}/target,type=volume"
+    "source=${localWorkspaceFolderBasename}-cargo-cache,target=/home/vscode/.cargo/registry,type=volume",
+    "source=${localWorkspaceFolderBasename}-cargo-git,target=/home/vscode/.cargo/git,type=volume"
   ],
-  "postCreateCommand": "bash .devcontainer/postcreate.sh",
-  "postStartCommand": "bash .devcontainer/poststart.sh",
-  "containerEnv": {
-    "RUST_BACKTRACE": "1",
-    "CARGO_INCREMENTAL": "0",
-    "RUSTFLAGS": "-D warnings",
-    "CARGO_NET_RETRY": "3",
-    "RUST_LOG": "info"
-  },
-  "forwardPorts": [3000, 5173, 8080, 1420, 8000],
-  "portsAttributes": {
-    "5173": { "label": "Vite dev", "onAutoForward": "openBrowser" },
-    "3000": { "label": "App",      "onAutoForward": "notify" },
-    "8080": { "label": "API",      "onAutoForward": "notify" },
-    "1420": { "label": "Tauri",    "onAutoForward": "ignore" },
-    "8000": { "label": "Python",   "onAutoForward": "notify" }
-  }
+  "postCreateCommand": "bash .devcontainer/postcreate.sh 2>&1 | tee /tmp/postcreate.log",
+  "containerEnv": { "RUST_BACKTRACE": "1", "GH_TOKEN": "${localEnv:GH_TOKEN}" },
+  "forwardPorts": [3000, 5173, 8080, 1420],
+  "hostRequirements": { "cpus": 4, "memory": "8gb", "storage": "32gb" }
 }
