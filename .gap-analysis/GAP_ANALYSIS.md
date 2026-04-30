@@ -19,7 +19,7 @@ Strategic focus this iteration: **close the gaps surfaced by the new [`docs/WORK
 
 ### GAP-001: Restore the gap-analysis template after archival
 
-**Status**: In Progress
+**Status**: Completed
 **Priority**: P1 (Critical)
 **Owner**: Timothy Hartzog
 **Target Completion**: 2026-05-05
@@ -29,15 +29,17 @@ Strategic focus this iteration: **close the gaps surfaced by the new [`docs/WORK
 
 **Acceptance Criteria**:
 - [x] Old materials archived under `docs/archive/2026-04-gap-analysis/`
-- [ ] New `templates/gap-analysis/GAP_ANALYSIS.md` (clean, no fictional gaps)
-- [ ] New `templates/gap-analysis/schema.md`
-- [ ] New `templates/gap-analysis/.gitignore` (ignores `status.json`)
-- [ ] `.gap-analysis/README.md` linking to standards & quick reference (or fold both back in)
-- [ ] Update `CONTRIBUTING.md` and `INSTALL.md` references that point at the archived paths
+- [x] New `templates/gap-analysis/GAP_ANALYSIS.template.md` (clean, no fictional gaps)
+- [x] New `templates/gap-analysis/schema.md`
+- [x] New `templates/gap-analysis/.gitignore.template` (ignores `status.json`)
+- [ ] `.gap-analysis/README.md` linking to standards & quick reference — deferred to GAP-011
+- [ ] Update `CONTRIBUTING.md` and `INSTALL.md` references — deferred to GAP-011
 
-**Related PRs**: (this PR)
+**Related PRs**: #50
 **Blocked By**: None
 **Last Status Update**: 2026-04-28
+- Status → **Completed** (PR #50 merged @ `6bd230c` by @copilot)
+- Status → **In Review** (workflow: pr_opened — branch `copilot/feat-gap-analysis-rollout` — by @copilot)
 - Archive complete; new gap analysis (this file) and `WORKFLOW_CATALOG.md` published; template restoration deferred to follow-up PR so this commit stays focused.
 
 ---
