@@ -48,7 +48,7 @@ permissions:
 jobs:
   scan:
     name: Vulnerability scan (${{ inputs.target-type || 'auto' }})
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 20
     permissions:
       contents: read
