@@ -36,7 +36,7 @@ jobs:
     if: >
       github.event.action == 'labeled' && github.event.label.name == 'post-market' ||
       github.event.action == 'edited' && contains(toJSON(github.event.issue.labels), '"post-market"')
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 10
 
     steps:

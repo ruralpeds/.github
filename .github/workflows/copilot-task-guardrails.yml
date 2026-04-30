@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   detect-agent:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     outputs:
       is-agent: ${{ steps.check.outputs.is-agent }}
       agent-name: ${{ steps.check.outputs.agent-name }}
@@ -83,7 +83,7 @@ jobs:
   forbidden-paths:
     needs: detect-agent
     if: needs.detect-agent.outputs.is-agent == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -147,7 +147,7 @@ jobs:
   required-compliance-checks-preserved:
     needs: detect-agent
     if: needs.detect-agent.outputs.is-agent == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -185,7 +185,7 @@ jobs:
   pr-description-complete:
     needs: detect-agent
     if: needs.detect-agent.outputs.is-agent == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - name: Verify PR description has all required sections
         env:
@@ -243,7 +243,7 @@ jobs:
       (needs.detect-agent.outputs.repo-class == 'class-b' ||
        needs.detect-agent.outputs.repo-class == 'class-c' ||
        needs.detect-agent.outputs.data-class == 'phi-active')
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - name: Require human-review label
         env:
@@ -257,7 +257,7 @@ jobs:
   audit-log-agent-pr:
     needs: [detect-agent, forbidden-paths, required-compliance-checks-preserved, pr-description-complete]
     if: always() && needs.detect-agent.outputs.is-agent == 'true'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - name: Emit audit event for agent PR
         env:

@@ -38,7 +38,7 @@ permissions:
 jobs:
   check:
     name: Verify origin label
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 3
     if: ${{ github.event.pull_request.draft == false || inputs.required-for-draft }}
     permissions:
