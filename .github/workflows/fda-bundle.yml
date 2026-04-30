@@ -89,14 +89,19 @@ permissions:
 
 jobs:
   resolve-runner:
-    runs-on: ubuntu-latest
+    # Runs on self-hosted to avoid spending ubuntu-latest minutes on a string-parse.
+    runs-on: [self-hosted, mac-studio, arm64]
     outputs:
       labels: ${{ steps.p.outputs.labels }}
     steps:
       - id: p
         run: |
-          IFS=',' read -ra L <<< "${{ inputs.runner-label }}"
-          echo "labels=$(printf '%s\n' "${L[@]}" | jq -Rn '[inputs]' | jq -c .)" >> "$GITHUB_OUTPUT"
+          python3 -c "
+          import json, os
+          labels = '${{ inputs.runner-label }}'.split(',')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write('labels=' + json.dumps(labels) + '\n')
+          "
 
   bundle:
     needs: resolve-runner

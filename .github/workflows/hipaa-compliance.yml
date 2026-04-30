@@ -82,15 +82,19 @@ jobs:
   # 1. Resolve runner label input into a proper array
   # ──────────────────────────────────────────────────────────────────
   resolve-runner:
-    runs-on: ubuntu-latest
+    # Runs on self-hosted to avoid spending ubuntu-latest minutes on a string-parse.
+    runs-on: [self-hosted, mac-studio, arm64]
     outputs:
       labels: ${{ steps.parse.outputs.labels }}
     steps:
       - id: parse
         run: |
-          IFS=',' read -ra LABELS <<< "${{ inputs.runner-label }}"
-          json=$(printf '%s\n' "${LABELS[@]}" | jq -Rn '[inputs]')
-          echo "labels=$(echo "$json" | jq -c .)" >> "$GITHUB_OUTPUT"
+          python3 -c "
+          import json, os, sys
+          labels = '${{ inputs.runner-label }}'.split(',')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write('labels=' + json.dumps(labels) + '\n')
+          "
 
   # ──────────────────────────────────────────────────────────────────
   # 2. PHI / PII scan — custom regex pack for US medical data
@@ -385,7 +389,7 @@ jobs:
     needs: [phi-scan, sast, dependency-scan, sbom-generation,
             license-compliance, signed-commits, coverage-gate]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     outputs:
       status: ${{ steps.summarize.outputs.status }}
     steps:
