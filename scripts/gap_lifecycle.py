@@ -50,12 +50,22 @@ from typing import Optional
 VALID_STATUSES = [
     "Not Started",
     "Backlog",
+    "In the Air",   # branch/PR opened, CI not yet run
+    "Building",     # CI actively running
+    "Committed",    # CI passed, awaiting merge
     "In Progress",
     "Blocked",
     "In Review",
     "Completed",
     "Archived",
 ]
+
+# CI status → gap status mapping for the build-status subcommand
+_CI_STATUS_MAP = {
+    "started": "Building",
+    "passed":  "Committed",
+    "failed":  "In the Air",
+}
 
 VALID_PRIORITIES = ["P0", "P1", "P2", "P3", "P4"]
 
@@ -691,6 +701,56 @@ def cmd_parse(args: argparse.Namespace) -> int:
 
 
 # ----------------------------------------------------------------------------
+# Subcommand: build-status
+# ----------------------------------------------------------------------------
+
+
+def cmd_build_status(args: argparse.Namespace) -> int:
+    """Map a CI lifecycle event (started/passed/failed) to a gap status.
+
+    This is a thin wrapper around cmd_advance that translates the three CI
+    signals into the corresponding gap lifecycle statuses:
+        started → Building
+        passed  → Committed
+        failed  → In the Air
+    """
+    target = _CI_STATUS_MAP.get(args.ci_status)
+    if target is None:
+        print(f"Unknown ci-status '{args.ci_status}'; expected started|passed|failed", file=sys.stderr)
+        return 2
+
+    # Synthesise an advance namespace so we can reuse the existing logic.
+    adv = argparse.Namespace(
+        repo=args.repo,
+        gap=args.gap,
+        to=target,
+        trigger=f"ci_{args.ci_status}",
+        branch=args.branch,
+        pr=args.pr,
+        actor=args.actor,
+        sha=args.sha,
+    )
+    rc = cmd_advance(adv)
+    if rc != 0:
+        return rc
+
+    # Emit a dedicated CI event to the ledger so dashboards can filter it.
+    repo = Path(args.repo).resolve()
+    append_ledger_event(repo, {
+        "event": "ci_status",
+        "gap": args.gap,
+        "ci_status": args.ci_status,
+        "gap_status": target,
+        "branch": args.branch,
+        "pr": int(args.pr) if args.pr else None,
+        "sha": args.sha,
+        "actor": args.actor,
+        "run_id": args.run_id,
+    })
+    return 0
+
+
+# ----------------------------------------------------------------------------
 # CLI
 # ----------------------------------------------------------------------------
 
@@ -757,6 +817,17 @@ def build_parser() -> argparse.ArgumentParser:
     pq = sub.add_parser("parse")
     pq.add_argument("--repo", required=True)
     pq.set_defaults(func=cmd_parse)
+
+    pbs = sub.add_parser("build-status")
+    pbs.add_argument("--repo", required=True)
+    pbs.add_argument("--gap", required=True)
+    pbs.add_argument("--ci-status", required=True, choices=list(_CI_STATUS_MAP))
+    pbs.add_argument("--branch")
+    pbs.add_argument("--pr")
+    pbs.add_argument("--sha")
+    pbs.add_argument("--actor")
+    pbs.add_argument("--run-id")
+    pbs.set_defaults(func=cmd_build_status)
 
     return p
 
