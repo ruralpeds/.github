@@ -1,0 +1,117 @@
+{
+  "__inputs": [
+    { "name": "DS_PROMETHEUS", "label": "Prometheus", "type": "datasource", "pluginId": "prometheus" }
+  ],
+  "title": "Resource Utilization — CPU, Memory, Connections",
+  "uid": "rp-resource-util",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "1m",
+  "time": { "from": "now-3h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "type": "query",
+        "datasource": "${DS_PROMETHEUS}",
+        "query": "label_values(process_cpu_seconds_total, service)",
+        "refresh": 2
+      }
+    ]
+  },
+  "panels": [
+    {
+      "title": "CPU Usage %",
+      "type": "gauge",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "100 * rate(process_cpu_seconds_total{service=\"$service\"}[5m])",
+          "legendFormat": "CPU %"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent", "min": 0, "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 70 },
+              { "color": "red",    "value": 90 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Memory RSS (MB)",
+      "type": "gauge",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "process_resident_memory_bytes{service=\"$service\"} / 1024 / 1024",
+          "legendFormat": "RSS MB"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decmbytes",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green",  "value": null },
+              { "color": "yellow", "value": 768 },
+              { "color": "red",    "value": 1024 }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "title": "Open File Descriptors",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "process_open_fds{service=\"$service\"}",
+          "legendFormat": "FDs"
+        }
+      ]
+    },
+    {
+      "title": "DB Connection Pool",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "expr": "db_pool_size{service=\"$service\"}",
+          "legendFormat": "Pool size"
+        },
+        {
+          "expr": "db_pool_idle{service=\"$service\"}",
+          "legendFormat": "Idle"
+        },
+        {
+          "expr": "db_pool_size{service=\"$service\"} - db_pool_idle{service=\"$service\"}",
+          "legendFormat": "In use"
+        }
+      ]
+    },
+    {
+      "title": "Tokio Thread Pool",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "expr": "tokio_worker_threads_total{service=\"$service\"}",
+          "legendFormat": "Worker threads"
+        },
+        {
+          "expr": "tokio_blocking_threads_total{service=\"$service\"}",
+          "legendFormat": "Blocking threads"
+        }
+      ]
+    }
+  ]
+}

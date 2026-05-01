@@ -58,14 +58,20 @@ permissions:
 jobs:
 
   resolve-runner:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     outputs:
       labels: ${{ steps.p.outputs.labels }}
     steps:
       - id: p
+        env:
+          RUNNER_LABEL: ${{ inputs.runner-label }}
         run: |
-          IFS=',' read -ra L <<< "${{ inputs.runner-label }}"
-          echo "labels=$(printf '%s\n' "${L[@]}" | jq -Rn '[inputs]' | jq -c .)" >> "$GITHUB_OUTPUT"
+          python3 -c "
+import json, os
+labels = [l.strip() for l in os.environ['RUNNER_LABEL'].split(',') if l.strip()]
+with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+    fh.write(f'labels={json.dumps(labels)}\n')
+"
 
   # ──────────────────────────────────────────────────────────────
   # 1. Verify the tagged commit passed the HIPAA compliance workflow

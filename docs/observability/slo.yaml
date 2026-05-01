@@ -1,0 +1,65 @@
+---
+# Service Level Objectives — ruralpeds platform
+# Window: rolling 30 days. Burn-rate alerts defined in alert-rules.yaml.
+# Review cadence: monthly (see docs/metrics/COMPLIANCE_METRICS.md).
+
+version: "1.0"
+updated: "2026-05-01"
+
+defaults:
+  window: 30d
+  error_budget_policy: multi-burn-rate  # see alert-rules.yaml
+
+services:
+
+  - name: fhir-gateway
+    description: "FHIR R4 API gateway (primary patient data interface)"
+    slos:
+      - name: availability
+        objective: 99.9          # 43.8 min/month error budget
+        indicator:
+          metric: http_requests_total
+          good: 'http_requests_total{service="fhir-gateway",status!~"5.."}'
+          total: 'http_requests_total{service="fhir-gateway"}'
+      - name: latency_p95
+        objective: 99.0          # P95 < 500 ms
+        indicator:
+          metric: http_request_duration_ms
+          good: 'http_request_duration_ms_bucket{service="fhir-gateway",path!~"/healthz",le="500"}'
+          total: 'http_request_duration_ms_count{service="fhir-gateway",path!~"/healthz"}'
+
+  - name: phi-scan-service
+    description: "PHI detection service (runs inline on ingest)"
+    slos:
+      - name: availability
+        objective: 99.5
+        indicator:
+          metric: http_requests_total
+          good: 'http_requests_total{service="phi-scan-service",status!~"5.."}'
+          total: 'http_requests_total{service="phi-scan-service"}'
+      - name: latency_p99
+        objective: 95.0          # P99 < 2 000 ms (scan can be slow)
+        indicator:
+          metric: http_request_duration_ms
+          good: 'http_request_duration_ms_bucket{service="phi-scan-service",le="2000"}'
+          total: 'http_request_duration_ms_count{service="phi-scan-service"}'
+
+  - name: audit-log-writer
+    description: "Immutable Merkle-chain audit log writer"
+    slos:
+      - name: availability
+        objective: 99.99         # 4.4 min/month — zero audit gaps allowed
+        indicator:
+          metric: http_requests_total
+          good: 'http_requests_total{service="audit-log-writer",status!~"5.."}'
+          total: 'http_requests_total{service="audit-log-writer"}'
+
+  - name: gap-analysis-api
+    description: "Gap lifecycle API (reads/writes GAPS.md)"
+    slos:
+      - name: availability
+        objective: 99.0
+        indicator:
+          metric: http_requests_total
+          good: 'http_requests_total{service="gap-analysis-api",status!~"5.."}'
+          total: 'http_requests_total{service="gap-analysis-api"}'
