@@ -1,0 +1,323 @@
+---
+# policies/clinical-audit-schema.yaml
+#
+# Clinical Function Audit Registry — Policy & Schema Documentation
+#
+# This document is the normative human-readable policy for the clinical function
+# audit system. It is NOT a machine-validated JSONSchema; it is the single
+# authoritative reference for what the scanner produces and what reviewers must
+# maintain.
+#
+# Regulatory citations:
+#   - GAMP 5 (2022), Chapter 9: Computerized systems used in clinical/scientific
+#     contexts require evidence of fitness for intended use.
+#   - IEC 62304:2006+A1:2015 §5.5: Software units implementing safety-relevant
+#     algorithms must be verified by appropriate test strategy (class B/C).
+#   - 21 CFR 820.30(g) (design validation): Software used in device design must
+#     be validated. Rural-peds tooling may feed clinical decision support.
+#   - ISO 14971:2019 §7: Risk controls implemented in software shall be verified.
+
+policy_version: "1.0"
+effective_date: "2026-05-01"
+owner: "ruralpeds"
+regulatory_citations:
+  - standard: "GAMP 5 (2022)"
+    relevance: >
+      Category 4/5 custom software performing clinical calculations requires
+      documented verification and validation evidence.
+  - standard: "IEC 62304:2006+A1:2015 §5.5"
+    relevance: >
+      Software units must have a defined verification strategy; class B and C
+      units require unit tests and, where feasible, integration/system tests.
+  - standard: "21 CFR 820.30(g)"
+    relevance: >
+      Software used in or influencing device design validation must itself be
+      validated before use in that context.
+  - standard: "ISO 14971:2019 §7"
+    relevance: >
+      Risk control measures implemented as software algorithms must be verified
+      to be implemented correctly and effective.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECTION 1 — What counts as a "clinical function"
+# ─────────────────────────────────────────────────────────────────────────────
+clinical_function_detection:
+  description: >
+    The scanner classifies a function as clinical if ANY of the following
+    criteria are met. The intent is liberal inclusion: it is better to
+    over-flag a utility function for human review than to miss a formula that
+    feeds patient-facing output.
+
+  criteria:
+    doc_comment_markers:
+      description: >
+        Any of the following tags appearing in the function's doc comment
+        (/// in Rust, """docstring""" in Julia) immediately mark it as
+        clinical regardless of module name or function name.
+      tags:
+        - "@clinical"     # explicit clinical intent
+        - "@stat"         # statistical calculation
+        - "@scoring"      # scoring algorithm (e.g. Apgar, SOFA, PELOD-2)
+        - "@validate"     # marks a function that validates clinical input data
+        - "# Clinical"    # freeform section heading in doc comment
+        - "# Statistics"
+
+    module_path_keywords:
+      description: >
+        If the source file's path (relative to repo root) contains any of
+        these substrings (case-insensitive), all public functions in that
+        file are candidates. Private functions are included if they also
+        satisfy a name or doc-comment criterion.
+      keywords:
+        - calc
+        - calculat        # matches "calculation", "calculator"
+        - stat
+        - statistic
+        - clinical
+        - score
+        - scoring
+        - formula
+        - algorithm
+        - metric
+        - dosing
+        - dose
+        - pharmacokinet
+        - biochem
+        - lab
+        - reference       # e.g. reference ranges
+        - vital
+        - growth
+        - pediatric
+        - peds
+        - weight
+        - bmi
+        - cardiac
+        - renal
+        - hepatic
+        - respiratory
+
+    function_name_patterns:
+      description: >
+        If the function name starts with or contains any of these strings
+        (case-insensitive, underscore-separated tokens considered), it is a
+        candidate.
+      patterns:
+        - calculate
+        - compute
+        - estimate
+        - score
+        - derive
+        - predict
+        - percentile
+        - z_score
+        - zscore
+        - normalize
+        - classify
+        - stratify
+        - "risk_"   # prefix: risk_score, risk_stratify, etc.
+
+  language_specifics:
+    Rust:
+      discovery_unit: >
+        A doc comment block (one or more /// lines) immediately followed by
+        a `pub fn` or `fn` declaration. The function signature extends to the
+        first opening brace `{` or, for single-expression functions, to the
+        first `;`.
+      module_detection: >
+        The module path is inferred from the file path relative to `src/`.
+        `mod.rs` files contribute the directory name as the module segment.
+
+    Julia:
+      discovery_unit: >
+        A docstring (triple-quoted """...""") immediately followed by a
+        `function name(...)` declaration, OR a single-line method definition
+        `name(...) = ...` with a preceding docstring.
+      module_detection: >
+        The module name is inferred from the enclosing `module Name ... end`
+        block in the same file, or from the file path if no module block is
+        present.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECTION 2 — Registry file format
+# ─────────────────────────────────────────────────────────────────────────────
+registry_format:
+  file_location: ".clinical-audit/registry.yaml"
+  description: >
+    One registry file per repository. Updated automatically by the scanner
+    on every push, PR, and scheduled sweep. Human reviewers edit only the
+    fields listed under human_owned_fields.
+
+  top_level_fields:
+    version:
+      type: string
+      example: '"1.0"'
+      description: Schema version for forward-compatibility checks.
+    repo:
+      type: string
+      example: '"ruralpeds/peds-calculators"'
+      description: Full owner/repo slug.
+    language:
+      type: string
+      values: [Rust, Julia]
+      description: Primary language detected in the repo.
+    last_scanned:
+      type: date_string
+      example: '"2026-05-01"'
+      description: ISO-8601 date of the most recent scanner run.
+    generator:
+      type: string
+      example: '"clinical_audit_scanner v1.0"'
+      description: Version of the scanner that wrote this file.
+
+  function_entry_fields:
+    id:
+      type: string
+      owner: auto
+      description: >
+        Stable identifier. Normally the bare function name. When two
+        functions in the same repo share a name, the qualified path is used
+        (e.g. "cardiac::calculate_qtc").
+    name:
+      type: string
+      owner: auto
+      description: Unqualified function name as it appears in source.
+    qualified:
+      type: string
+      owner: auto
+      description: Full module path joined with `::` (Rust) or `.` (Julia).
+    file:
+      type: string
+      owner: auto
+      description: Path relative to repo root.
+    line_start:
+      type: integer
+      owner: auto
+      description: 1-based line number of the first doc comment line.
+    category:
+      type: string
+      owner: auto_then_human
+      values:
+        clinical_calculation: >
+          A function that computes a clinical value (dose, lab result
+          interpretation, physiological parameter).
+        statistics: >
+          A function performing a statistical operation whose output may be
+          used in clinical context (percentile, z-score, regression).
+        scoring: >
+          An implementation of a named clinical score (APGAR, PELOD-2,
+          PRISM, SOFA, Ballard, etc.).
+        reference_range: >
+          A function returning or comparing against a clinical reference range.
+        not_clinical: >
+          Scanner false-positive; confirmed by reviewer to have no clinical use.
+
+  date_fields:
+    first_commit:
+      type: date_string_or_null
+      owner: auto
+      description: >
+        Date of the commit that first introduced this file, derived from
+        `git log --follow --diff-filter=A`.
+    last_modified:
+      type: date_string_or_null
+      owner: auto
+      description: >
+        Date of the most recent commit touching this file, derived from
+        `git log --follow -1`.
+    last_reviewed:
+      type: date_string_or_null
+      owner: human
+      description: >
+        ISO-8601 date the function was last reviewed by a human. Set by the
+        `clinical_audit_scanner.py review` subcommand or manually.
+
+  review_fields:
+    description: >
+      All review fields are human-owned. The scanner sets status to "pending"
+      on first discovery and never overwrites a non-pending status.
+    status:
+      lifecycle: "pending → approved | flagged"
+      values:
+        pending: Newly discovered; awaiting human review.
+        approved: >
+          Reviewed and confirmed fit for its intended clinical use. Requires
+          a named reviewer and date.
+        flagged: >
+          Identified as needing remediation. Causes CI to fail when
+          fail_on_flagged is set.
+        not_applicable: >
+          Confirmed out of scope (false-positive detection).
+
+  reference_types:
+    doi:
+      pattern: '10\.\d{4,}/\S+ or https?://doi\.org/\S+'
+      owner: auto
+    pmid:
+      pattern: 'PMID[:\s]+(\d+) or pubmed\.ncbi\.nlm\.nih\.gov/(\d+)'
+      owner: auto
+    standard:
+      pattern: '(ISO|IEC|HIPAA|HL7|FHIR|LOINC|SNOMED|ICD-\d+)\s*[\d\-:]+'
+      owner: auto_and_human
+    book:
+      description: Textbook or monograph citation — must be added manually.
+      owner: human
+    url:
+      description: Arbitrary URL not matching DOI or PMID patterns.
+      owner: auto_and_human
+
+  validation_methods:
+    unit_tests: At least one unit test exercises this function with known inputs.
+    property_tests: Property-based (generative) tests are present.
+    clinical_validation: >
+      Outputs compared against published clinical data, a reference dataset,
+      or a validated comparator tool.
+    peer_review: >
+      Reviewed by a clinician or domain expert who verified the algorithm
+      against its source reference.
+    not_validated: No validation evidence available.
+
+  iec62304_classes:
+    A: No injury or damage to health possible. Unit tests strongly recommended.
+    B: Non-serious injury possible. Unit tests required; structured review recommended.
+    C: >
+      Death or serious injury possible. Unit tests, property tests, and clinical
+      validation all required. Clinician peer review mandatory before approval.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SECTION 3 — Merge / update behaviour
+# ─────────────────────────────────────────────────────────────────────────────
+merge_behaviour:
+  auto_updated_fields:
+    - dates.first_commit
+    - dates.last_modified
+    - validation.test_files
+    - validation.has_tests
+    - signature
+    - line_start
+    - description       # only if was empty string; never overwrites existing
+    - references        # auto-extracted only; manually added refs preserved
+
+  human_preserved_fields:
+    - review.status
+    - review.reviewer
+    - review.reviewed_at
+    - review.notes
+    - validation.last_validated
+    - validation.validation_notes
+    - validation.iec62304_class
+    - validation.method   # preserved unless was "not_validated" and tests found
+    - dates.last_reviewed
+
+  removed_functions:
+    description: >
+      When a function present in the registry is no longer found in the source
+      tree, the scanner sets its category to "removed" and updates last_modified
+      to the scan date. It is never deleted from the registry because its
+      review history and references may be relevant for audit trails.
+
+  stale_review_warning:
+    description: >
+      When the scanner detects that last_modified (from git) is newer than
+      last_reviewed, it emits a GitHub Actions ::warning annotation but does
+      NOT automatically change the review.status field. The reviewer decides
+      whether the change is material.
