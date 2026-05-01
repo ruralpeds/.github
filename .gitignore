@@ -2,3 +2,6 @@
 # Python bytecode
 __pycache__/
 *.pyc
+
+# Node dependencies
+node_modules/
