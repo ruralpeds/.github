@@ -1,0 +1,80 @@
+---
+# PHI/PII field redaction rules for structured logging.
+# Every log emitter must apply these rules before writing to stdout/Loki.
+# Fields are matched by exact key name (case-insensitive) or JSON path.
+
+version: "1.0"
+updated: "2026-05-01"
+standard: "HIPAA § 164.514, 45 CFR § 164.312(a)(2)(iv)"
+
+redaction:
+  mode: replace          # replace | hash | drop
+  replacement: "[REDACTED]"
+  hash_algorithm: hmac_sha256  # keyed hash, not plain SHA-256
+  hash_key_secret: REDACT_HMAC_KEY  # env var / secret name holding the HMAC key
+
+# Exact field names (case-insensitive match on JSON key)
+fields:
+  # HIPAA Safe Harbor identifiers (§ 164.514(b)(2))
+  - key: patient_name
+  - key: patient.name
+  - key: name
+    context: patient       # only when parent object is "patient"
+  - key: mrn
+  - key: medical_record_number
+  - key: ssn
+  - key: social_security_number
+  - key: dob
+  - key: date_of_birth
+  - key: birthdate
+  - key: email
+  - key: phone
+  - key: phone_number
+  - key: fax
+  - key: address
+  - key: street_address
+  - key: zip
+  - key: zip_code
+  - key: geo
+  - key: coordinates
+  - key: latitude
+  - key: longitude
+  - key: ip_address
+  - key: device_id
+  - key: account_number
+  - key: certificate_number
+  - key: license_number
+  - key: vehicle_id
+  - key: url
+    context: patient       # patient portal URLs may contain PHI
+  - key: biometric_id
+  - key: photo
+  - key: full_face_image
+
+# JSON path patterns (applied after exact-key pass)
+patterns:
+  - path: "$.patient.*"           # all fields under patient object
+  - path: "$.subject.identifier"  # FHIR subject identifiers
+  - path: "$.performer.identifier"
+  - path: "$.author.identifier"
+  - path: "$.request.headers.Authorization"
+  - path: "$.request.headers.Cookie"
+
+# Fields that must NEVER be redacted (allowlist overrides patterns above)
+allowlist:
+  - patient_id       # internal UUID — not a HIPAA direct identifier
+  - encounter_id
+  - observation_code # SNOMED/LOINC code, not PHI
+  - service_name
+  - trace_id
+  - span_id
+  - level
+  - timestamp
+  - event
+
+# Audit log exemption: audit-log.yml writes a subset of PHI to the
+# immutable audit chain under a separate HMAC-signed envelope.
+# Those writes bypass redaction and are governed by audit-sign-envelope.yml.
+audit_exemption:
+  workflow: audit-sign-envelope.yml
+  fields: [actor_id, resource_id, action]

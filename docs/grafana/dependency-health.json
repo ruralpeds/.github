@@ -1,0 +1,77 @@
+{
+  "__inputs": [
+    { "name": "DS_PROMETHEUS", "label": "Prometheus", "type": "datasource", "pluginId": "prometheus" }
+  ],
+  "title": "Dependency Health — Circuit Breakers & Bulkheads",
+  "uid": "rp-dependency-health",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-1h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "type": "query",
+        "datasource": "${DS_PROMETHEUS}",
+        "query": "label_values(circuit_breaker_state, service)",
+        "refresh": 2,
+        "includeAll": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "title": "Circuit Breaker States",
+      "type": "table",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "expr": "circuit_breaker_state{service=~\"$service\"}",
+          "legendFormat": "{{service}} → {{dependency}}",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        { "id": "organize", "options": { "renameByName": { "service": "Service", "dependency": "Dependency", "state": "State", "Value": "State Code" } } }
+      ]
+    },
+    {
+      "title": "Circuit Breaker Trips (rate/5m)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "expr": "rate(circuit_breaker_trips_total{service=~\"$service\"}[5m])",
+          "legendFormat": "{{service}} → {{dependency}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops" } }
+    },
+    {
+      "title": "Bulkhead Rejections (rate/5m)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 6, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "expr": "rate(bulkhead_rejected_total{service=~\"$service\"}[5m])",
+          "legendFormat": "{{service}}/{{bulkhead}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops", "color": { "fixedColor": "orange", "mode": "fixed" } } }
+    },
+    {
+      "title": "Retry Attempts (rate/5m)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 6, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "expr": "rate(retry_attempts_total{service=~\"$service\"}[5m])",
+          "legendFormat": "{{service}} attempt {{attempt}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "ops" } }
+    }
+  ]
+}

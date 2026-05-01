@@ -1,0 +1,140 @@
+---
+# Prometheus alert rules — multi-burn-rate SLO alerts
+# Based on Google SRE Workbook Chapter 5 (multi-window, multi-burn-rate).
+# Routing: critical → PagerDuty, warning → Slack #alerts-platform.
+
+groups:
+
+  - name: slo.fhir-gateway.availability
+    rules:
+      # Fast burn: consuming 2% of monthly budget in 1 h (burn rate 14.4x)
+      - alert: FhirGatewayAvailabilityCritical
+        expr: |
+          (
+            1 - (
+              sum(rate(http_requests_total{service="fhir-gateway",status!~"5.."}[1h]))
+              / sum(rate(http_requests_total{service="fhir-gateway"}[1h]))
+            )
+          ) > (14.4 * 0.001)
+          and
+          (
+            1 - (
+              sum(rate(http_requests_total{service="fhir-gateway",status!~"5.."}[5m]))
+              / sum(rate(http_requests_total{service="fhir-gateway"}[5m]))
+            )
+          ) > (14.4 * 0.001)
+        for: 2m
+        labels:
+          severity: critical
+          service: fhir-gateway
+          slo: availability
+          runbook: https://github.com/ruralpeds/.github/blob/main/docs/observability/runbooks/05-service-down.md
+        annotations:
+          summary: "FHIR Gateway: critical availability burn rate"
+          description: "Error rate is {{ $value | humanizePercentage }} — exhausting monthly error budget in < 2 h."
+
+      # Slow burn: consuming 10% of monthly budget in 6 h (burn rate 6x)
+      - alert: FhirGatewayAvailabilityWarning
+        expr: |
+          (
+            1 - (
+              sum(rate(http_requests_total{service="fhir-gateway",status!~"5.."}[6h]))
+              / sum(rate(http_requests_total{service="fhir-gateway"}[6h]))
+            )
+          ) > (6 * 0.001)
+          and
+          (
+            1 - (
+              sum(rate(http_requests_total{service="fhir-gateway",status!~"5.."}[30m]))
+              / sum(rate(http_requests_total{service="fhir-gateway"}[30m]))
+            )
+          ) > (6 * 0.001)
+        for: 15m
+        labels:
+          severity: warning
+          service: fhir-gateway
+          slo: availability
+          runbook: https://github.com/ruralpeds/.github/blob/main/docs/observability/runbooks/01-high-error-rate.md
+        annotations:
+          summary: "FHIR Gateway: elevated error rate"
+          description: "Sustained error rate consuming error budget at {{ $value | humanizePercentage }}."
+
+  - name: slo.fhir-gateway.latency
+    rules:
+      - alert: FhirGatewayLatencyCritical
+        expr: |
+          (
+            histogram_quantile(0.95,
+              rate(http_request_duration_ms_bucket{service="fhir-gateway",path!~"/healthz"}[5m])
+            ) > 500
+          )
+          and
+          (
+            histogram_quantile(0.95,
+              rate(http_request_duration_ms_bucket{service="fhir-gateway",path!~"/healthz"}[1h])
+            ) > 500
+          )
+        for: 5m
+        labels:
+          severity: critical
+          service: fhir-gateway
+          slo: latency_p95
+          runbook: https://github.com/ruralpeds/.github/blob/main/docs/observability/runbooks/04-high-latency.md
+        annotations:
+          summary: "FHIR Gateway: P95 latency > 500 ms"
+          description: "P95 latency is {{ $value }}ms — SLO threshold is 500ms."
+
+  - name: slo.audit-log-writer.availability
+    rules:
+      - alert: AuditLogWriterDown
+        expr: |
+          (
+            1 - (
+              sum(rate(http_requests_total{service="audit-log-writer",status!~"5.."}[5m]))
+              / sum(rate(http_requests_total{service="audit-log-writer"}[5m]))
+            )
+          ) > (14.4 * 0.0001)
+        for: 1m
+        labels:
+          severity: critical
+          service: audit-log-writer
+          slo: availability
+          runbook: https://github.com/ruralpeds/.github/blob/main/docs/observability/runbooks/05-service-down.md
+        annotations:
+          summary: "Audit log writer: availability SLO breach"
+          description: "Audit log writer error rate {{ $value | humanizePercentage }} — HIPAA audit continuity at risk."
+
+  - name: circuit-breaker
+    rules:
+      - alert: CircuitBreakerOpen
+        expr: circuit_breaker_state{state="open"} == 1
+        for: 1m
+        labels:
+          severity: warning
+          runbook: https://github.com/ruralpeds/.github/blob/main/docs/observability/runbooks/03-circuit-breaker-open.md
+        annotations:
+          summary: "Circuit breaker open: {{ $labels.service }} → {{ $labels.dependency }}"
+          description: "Circuit breaker has been open for > 1 min. Upstream dependency may be degraded."
+
+  - name: slo-burn-rate
+    rules:
+      - alert: SloBudgetBurnRateHigh
+        expr: |
+          slo_error_budget_remaining_ratio < 0.10
+        for: 5m
+        labels:
+          severity: warning
+          runbook: https://github.com/ruralpeds/.github/blob/main/docs/observability/runbooks/02-slo-burn-rate.md
+        annotations:
+          summary: "SLO error budget < 10% remaining: {{ $labels.service }}/{{ $labels.slo }}"
+          description: "Only {{ $value | humanizePercentage }} of error budget remains for the rolling window."
+
+# Alert routing (Alertmanager config excerpt — full config in infra repo)
+# route:
+#   group_by: [service, slo]
+#   receiver: slack-platform
+#   routes:
+#     - match:
+#         severity: critical
+#       receiver: pagerduty-primary
+#       continue: true

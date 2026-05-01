@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ruralpeds/.github/blob/main/docs/observability/log-schema.json",
+  "title": "ruralpeds Structured Log Event",
+  "description": "Mandatory schema for every log line emitted by ruralpeds services. Apply policies/logging-redaction.yaml before writing.",
+  "type": "object",
+  "required": ["timestamp", "service", "level", "event", "trace_id"],
+  "additionalProperties": true,
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp"
+    },
+    "service": {
+      "type": "string",
+      "description": "Service name (matches Prometheus job label)"
+    },
+    "level": {
+      "type": "string",
+      "enum": ["TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"]
+    },
+    "event": {
+      "type": "string",
+      "description": "snake_case event identifier, e.g. patient_created"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$",
+      "description": "W3C traceparent trace-id (hex, 128-bit)"
+    },
+    "span_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{16}$",
+      "description": "W3C traceparent parent-id (hex, 64-bit)"
+    },
+    "actor_id": {
+      "type": "string",
+      "description": "Internal user/service UUID — not a HIPAA identifier"
+    },
+    "resource_type": {
+      "type": "string",
+      "description": "FHIR resource type or internal domain object, e.g. Patient, Observation"
+    },
+    "resource_id": {
+      "type": "string",
+      "description": "Internal UUID of the affected resource"
+    },
+    "duration_ms": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Operation duration in milliseconds"
+    },
+    "http": {
+      "type": "object",
+      "properties": {
+        "method":      { "type": "string" },
+        "path":        { "type": "string" },
+        "status":      { "type": "integer" },
+        "request_id":  { "type": "string" }
+      }
+    },
+    "error": {
+      "type": "object",
+      "properties": {
+        "kind":    { "type": "string", "description": "Error type/variant" },
+        "message": { "type": "string" },
+        "stack":   { "type": "string", "description": "Redacted stack trace" }
+      }
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable description (supplements event)"
+    }
+  }
+}
