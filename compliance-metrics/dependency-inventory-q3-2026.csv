@@ -1,0 +1,6 @@
+repo,ecosystem,dependency_name,version_spec,class,tier,license,maintained_status,vulnerability_status,baa_status,notes,observed_at
+"ruralpeds/.github","npm","@playwright/test","^1.44.0","template-infra","requires-review","unknown","unknown","unknown","not-applicable","local repo dependency; external clinical repos pending","2026-05-01T04:43:32Z"
+"ruralpeds/.github","npm","typescript","^5.4.5","template-infra","requires-review","unknown","unknown","unknown","not-applicable","local repo dependency; external clinical repos pending","2026-05-01T04:43:32Z"
+ruralpeds/pedneoSim.jl,julia,pending-discovery,n/a,clinical,requires-review,unknown,unknown,unknown,unknown,run inventory in pedneoSim.jl repository,2026-05-01T04:43:32Z
+ruralpeds/pediatric-cds,mixed,pending-discovery,n/a,clinical,requires-review,unknown,unknown,unknown,unknown,run inventory in pediatric-cds repository,2026-05-01T04:43:32Z
+ruralpeds/audit-service,mixed,pending-discovery,n/a,clinical,requires-review,unknown,unknown,unknown,unknown,run inventory in audit-service repository,2026-05-01T04:43:32Z
