@@ -8,14 +8,23 @@ Reusable GitHub Actions workflows, regulatory compliance tooling, audit logging,
 
 ## Table of Contents
 
-1. [Language CI Workflows](#language-ci-workflows)
-2. [Compliance & Regulatory Workflows](#compliance--regulatory-workflows)
-3. [Audit & Electronic Signatures](#audit--electronic-signatures)
-4. [Org Governance](#org-governance)
-5. [Scheduled Workflows](#scheduled-workflows)
-6. [Org Custom Repository Properties](#org-custom-repository-properties)
-7. [GitHub App Setup](#github-app-setup)
-8. [Example Caller Configs](#example-caller-configs)
+1. [Gap Analysis Status](#gap-analysis-status)
+2. [Language CI Workflows](#language-ci-workflows)
+3. [CI Build Status System](#ci-build-status-system)
+4. [Compliance & Regulatory Workflows](#compliance--regulatory-workflows)
+5. [Audit & Electronic Signatures](#audit--electronic-signatures)
+6. [Org Governance](#org-governance)
+7. [Scheduled Workflows](#scheduled-workflows)
+8. [Org Custom Repository Properties](#org-custom-repository-properties)
+9. [GitHub App Setup](#github-app-setup)
+10. [Example Caller Configs](#example-caller-configs)
+
+---
+
+## Gap Analysis Status
+
+<!-- gap-status-start -->
+<!-- gap-status-end -->
 
 ---
 
@@ -40,6 +49,43 @@ All reusable workflows are called with `uses: ruralpeds/.github/.github/workflow
 - Coverage reports uploaded as artifacts
 - Timeout guards and retry logic on network operations
 - Failed-test artifacts (traces, screenshots, JUnit XML) auto-uploaded
+
+---
+
+## CI Build Status System
+
+Continuously tracks CI build outcomes across all Rust, Julia, and the `.github` org repo itself, translating them into gap lifecycle status changes in real time.
+
+### Gap lifecycle states driven by CI
+
+| CI signal | Gap status | Meaning |
+|-----------|------------|---------|
+| Branch / PR opened (no CI yet) | **In the Air** | Work started, CI not yet run |
+| CI started (`in_progress` / `queued`) | **Building** | CI actively running |
+| CI passed (`success`) | **Committed** | CI green, ready to merge |
+| CI failed (`failure` / `timed_out`) | **In the Air** | Reverted — needs more work |
+
+### Workflows
+
+| Workflow | Purpose |
+|----------|---------|
+| `build-status-sweep.yml` | Scheduled sweep every 30 min — discovers all Rust/Julia repos + `.github`, reads latest CI run per gap branch, fans out to `reusable-build-status.yml` |
+| `reusable-build-status.yml` | Reusable: applies a CI signal to a gap, commits status change + ledger event to the target repo |
+| `reusable-readme-gap-status.yml` | Reusable: embeds a live gap-status table between `<!-- gap-status-start -->` / `<!-- gap-status-end -->` markers in README.md |
+| `ci-gap-status.yml` | Per-repo event-driven caller (this repo watches `"Self-Test (.github org repo)"`) |
+
+### Adding CI gap tracking to a repo
+
+1. Copy the appropriate template to `.github/workflows/ci-gap-status.yml`:
+   - **Rust repos**: `templates/rust/ci-gap-status.template.yml`
+   - **Julia repos**: `templates/julia/ci-gap-status.template.yml`
+   - **Other languages**: `templates/gap-analysis/ci-gap-status.template.yml` (set `workflows:` name manually)
+2. Add gap-status markers to `README.md`:
+   ```markdown
+   <!-- gap-status-start -->
+   <!-- gap-status-end -->
+   ```
+3. The sweep will automatically include the repo once `.gap-analysis/GAP_ANALYSIS.md` exists.
 
 ---
 
@@ -147,7 +193,12 @@ gh workflow run "Review Stamp" \
 | `post-market-tracker.yml` | scheduled | Post-market surveillance issue tracking |
 | `gap-analysis-sync-index.yml` | push / schedule | Generates `.gap-analysis/status.json` and commits it |
 | `gap-analysis-validate.yml` | push / PR | Validates gap-analysis entries |
-| `reusable-gap-lifecycle.yml` | reusable | Gap lifecycle management |
+| `reusable-gap-analysis.yml` | reusable | Gap lifecycle management (branch_opened, pr_opened, pr_merged, etc.) |
+| `reusable-build-status.yml` | reusable | CI signal → gap status + build-ledger event |
+| `reusable-readme-gap-status.yml` | reusable | Embeds live gap-status table into README.md |
+| `build-status-sweep.yml` | every 30 min / manual | Sweeps all Rust/Julia + `.github` repos; updates CI-driven gap statuses and READMEs |
+| `ci-gap-status.yml` | workflow_run / push / PR | Event-driven CI→gap status for this repo (self-test) |
+| `ci-gap-tools.yml` | push / PR on scripts | Syntax + subcommand tests for `gap_lifecycle.py` |
 | `bootstrap-gaps-sweep.yml` | manual | Bulk-seeds gap-analysis entries |
 | `seed-roadmap-issues.yml` | manual | Seeds roadmap issues from `copilot-tasks/` |
 | `copilot-task-guardrails.yml` | PR / push on `agent/*` | Extra compliance checks on agent-authored PRs |
