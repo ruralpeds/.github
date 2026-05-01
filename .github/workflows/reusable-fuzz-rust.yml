@@ -1,0 +1,155 @@
+name: "Reusable Fuzz — Rust"
+# Runs cargo-fuzz targets to discover undefined behaviour, panics, and
+# security-relevant edge cases in Rust crates.
+#
+# Regulatory drivers:
+#   - FDA Computer Software Assurance (Sept 2022) — risk-based test adequacy
+#   - IEC 62304 §5.5 — Software unit verification and integration testing
+#   - ISO 14971 — Risk management (fuzz-found crashes are hazard inputs)
+#
+# Callers: uses: ruralpeds/.github/.github/workflows/reusable-fuzz-rust.yml@main
+#
+# Prerequisites in caller repo:
+#   - A fuzz/ subdirectory created via `cargo fuzz init`
+#   - At least one fuzz target (e.g. fuzz/fuzz_targets/fuzz_parser.rs)
+#   - Optional: seed corpus under fuzz/corpus/<target-name>/
+
+on:
+  workflow_call:
+    inputs:
+      fuzz-target:
+        description: "Name of the fuzz target to run (matches fuzz/fuzz_targets/<name>.rs)"
+        type: string
+        required: true
+      fuzz-duration-seconds:
+        description: "How long to run the fuzzer (seconds). Recommended: 300 for CI, 3600+ for nightly."
+        type: number
+        default: 300
+      working-directory:
+        description: "Directory containing the workspace Cargo.toml"
+        type: string
+        default: "."
+      sanitizers:
+        description: "Comma-separated sanitizers to enable: address, leak, memory, thread (default: address)"
+        type: string
+        default: "address"
+      max-total-time:
+        description: "Hard cap in seconds for the entire fuzzing job (must be > fuzz-duration-seconds)"
+        type: number
+        default: 600
+      upload-corpus:
+        description: "Upload the corpus as an artifact after each run to accumulate coverage over time"
+        type: boolean
+        default: true
+      fail-on-crash:
+        description: "Fail the workflow if cargo-fuzz finds a crash or OOM"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    name: "Fuzz (${{ inputs.fuzz-target }})"
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: ${{ fromJson(inputs.max-total-time) / 60 + 5 }}
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Install Rust nightly toolchain
+        uses: dtolnay/rust-toolchain@be73d7920c329f220ce78e0234b8f96b7ae60248 # stable
+        with:
+          toolchain: nightly
+
+      - name: Restore Rust cache
+        uses: Swatinem/rust-cache@9bdad043e88c75890e36ad3bbc8d27f0090dd609 # v2.7.7
+        with:
+          workspaces: "${{ inputs.working-directory }} -> target"
+
+      - name: Install cargo-fuzz
+        run: cargo install cargo-fuzz --locked --version 0.12.0
+
+      - name: Download previous corpus (if available)
+        uses: actions/download-artifact@95815c38cf2ff2c5f96b1a4eb7f36d7f54c6338 # v4.2.1
+        continue-on-error: true
+        with:
+          name: fuzz-corpus-${{ inputs.fuzz-target }}
+          path: ${{ inputs.working-directory }}/fuzz/corpus/${{ inputs.fuzz-target }}
+
+      - name: Run cargo-fuzz
+        id: fuzz-run
+        working-directory: ${{ inputs.working-directory }}
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+
+          # Build sanitizer flags
+          SANITIZER_FLAGS=""
+          IFS=',' read -ra SANS <<< "${{ inputs.sanitizers }}"
+          for san in "${SANS[@]}"; do
+            san=$(echo "$san" | tr -d ' ')
+            SANITIZER_FLAGS="$SANITIZER_FLAGS --sanitizer $san"
+          done
+
+          mkdir -p fuzz/corpus/${{ inputs.fuzz-target }}
+          mkdir -p fuzz/artifacts/${{ inputs.fuzz-target }}
+
+          echo "Starting fuzzer: ${{ inputs.fuzz-target }} for ${{ inputs.fuzz-duration-seconds }}s"
+          cargo fuzz run ${{ inputs.fuzz-target }} \
+            $SANITIZER_FLAGS \
+            -- \
+            -max_total_time=${{ inputs.fuzz-duration-seconds }} \
+            -artifact_prefix=fuzz/artifacts/${{ inputs.fuzz-target }}/ \
+            fuzz/corpus/${{ inputs.fuzz-target }} \
+            2>&1 | tee fuzz-output.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Check for crashes
+        id: crash-check
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          set -euo pipefail
+          CRASH_COUNT=0
+
+          for crash_file in fuzz/artifacts/${{ inputs.fuzz-target }}/crash-* \
+                            fuzz/artifacts/${{ inputs.fuzz-target }}/oom-* \
+                            fuzz/artifacts/${{ inputs.fuzz-target }}/timeout-* 2>/dev/null; do
+            [ -f "$crash_file" ] && CRASH_COUNT=$((CRASH_COUNT + 1))
+          done
+
+          echo "crash_count=$CRASH_COUNT" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "# Fuzz Results: ${{ inputs.fuzz-target }}"
+            echo ""
+            echo "- **Duration:** ${{ inputs.fuzz-duration-seconds }}s"
+            echo "- **Sanitizers:** ${{ inputs.sanitizers }}"
+            echo "- **Crashes/OOMs found:** $CRASH_COUNT"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$CRASH_COUNT" -gt 0 ] && [ "${{ inputs.fail-on-crash }}" = "true" ]; then
+            echo "::error::cargo-fuzz found $CRASH_COUNT crash/OOM artifact(s). Review the uploaded artifacts."
+            exit 1
+          fi
+
+      - name: Upload crash artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: fuzz-crashes-${{ inputs.fuzz-target }}-${{ github.run_id }}
+          path: ${{ inputs.working-directory }}/fuzz/artifacts/${{ inputs.fuzz-target }}/
+          retention-days: 90
+          if-no-files-found: ignore
+
+      - name: Upload corpus
+        if: ${{ inputs.upload-corpus && always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: fuzz-corpus-${{ inputs.fuzz-target }}
+          path: ${{ inputs.working-directory }}/fuzz/corpus/${{ inputs.fuzz-target }}/
+          retention-days: 90
+          if-no-files-found: ignore
