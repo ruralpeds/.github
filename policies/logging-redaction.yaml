@@ -10,7 +10,8 @@ standard: "HIPAA § 164.514, 45 CFR § 164.312(a)(2)(iv)"
 redaction:
   mode: replace          # replace | hash | drop
   replacement: "[REDACTED]"
-  hash_algorithm: sha256 # used when mode=hash; HMAC key from secret REDACT_HMAC_KEY
+  hash_algorithm: hmac_sha256  # keyed hash, not plain SHA-256
+  hash_key_secret: REDACT_HMAC_KEY  # env var / secret name holding the HMAC key
 
 # Exact field names (case-insensitive match on JSON key)
 fields:

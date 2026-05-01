@@ -12,15 +12,15 @@ groups:
         expr: |
           (
             1 - (
-              rate(http_requests_total{service="fhir-gateway",status!~"5.."}[1h])
-              / rate(http_requests_total{service="fhir-gateway"}[1h])
+              sum(rate(http_requests_total{service="fhir-gateway",status!~"5.."}[1h]))
+              / sum(rate(http_requests_total{service="fhir-gateway"}[1h]))
             )
           ) > (14.4 * 0.001)
           and
           (
             1 - (
-              rate(http_requests_total{service="fhir-gateway",status!~"5.."}[5m])
-              / rate(http_requests_total{service="fhir-gateway"}[5m])
+              sum(rate(http_requests_total{service="fhir-gateway",status!~"5.."}[5m]))
+              / sum(rate(http_requests_total{service="fhir-gateway"}[5m]))
             )
           ) > (14.4 * 0.001)
         for: 2m
@@ -38,15 +38,15 @@ groups:
         expr: |
           (
             1 - (
-              rate(http_requests_total{service="fhir-gateway",status!~"5.."}[6h])
-              / rate(http_requests_total{service="fhir-gateway"}[6h])
+              sum(rate(http_requests_total{service="fhir-gateway",status!~"5.."}[6h]))
+              / sum(rate(http_requests_total{service="fhir-gateway"}[6h]))
             )
           ) > (6 * 0.001)
           and
           (
             1 - (
-              rate(http_requests_total{service="fhir-gateway",status!~"5.."}[30m])
-              / rate(http_requests_total{service="fhir-gateway"}[30m])
+              sum(rate(http_requests_total{service="fhir-gateway",status!~"5.."}[30m]))
+              / sum(rate(http_requests_total{service="fhir-gateway"}[30m]))
             )
           ) > (6 * 0.001)
         for: 15m
@@ -90,8 +90,8 @@ groups:
         expr: |
           (
             1 - (
-              rate(http_requests_total{service="audit-log-writer",status!~"5.."}[5m])
-              / rate(http_requests_total{service="audit-log-writer"}[5m])
+              sum(rate(http_requests_total{service="audit-log-writer",status!~"5.."}[5m]))
+              / sum(rate(http_requests_total{service="audit-log-writer"}[5m]))
             )
           ) > (14.4 * 0.0001)
         for: 1m

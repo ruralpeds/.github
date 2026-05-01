@@ -69,6 +69,7 @@ permissions:
 jobs:
   resolve-runner:
     runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 5
     outputs:
       labels: ${{ steps.parse.outputs.labels }}
     steps:
@@ -77,6 +78,10 @@ jobs:
           RUNNER_LABEL: ${{ inputs.runner-label }}
         run: |
           labels=$(python3 -c "import json,os; L=os.environ.get('RUNNER_LABEL',''); print(json.dumps([x.strip() for x in L.split(',') if x.strip()]))")
+          if [ "$labels" = "[]" ]; then
+            echo "::error::inputs.runner-label parsed to an empty list — check the caller's runner-label value."
+            exit 1
+          fi
           echo "labels=$labels" >> "$GITHUB_OUTPUT"
 
   audit:

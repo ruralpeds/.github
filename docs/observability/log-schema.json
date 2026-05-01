@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/ruralpeds/.github/blob/main/docs/observability/log-schema.json",
   "title": "ruralpeds Structured Log Event",
-  "description": "Mandatory schema for every log line emitted by ruralpeds services. Apply logging-redaction.yaml before writing.",
+  "description": "Mandatory schema for every log line emitted by ruralpeds services. Apply policies/logging-redaction.yaml before writing.",
   "type": "object",
   "required": ["timestamp", "service", "level", "event", "trace_id"],
   "additionalProperties": true,

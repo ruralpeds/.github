@@ -8,8 +8,10 @@
 
 ## Trigger Condition
 
-Critical-level availability alert fired — the service is returning ≥ ~1.4% errors
-(fhir-gateway) or any errors (audit-log-writer), sustained for ≥ 2 minutes.
+Critical-level availability alert fired — the service is returning sustained 5xx
+errors above the configured alert threshold (for `fhir-gateway`, approximately
+1.4%; for `audit-log-writer`, the burn-rate threshold defined by its 99.99% SLO)
+for ≥ 2 minutes.
 
 ---
 
@@ -80,7 +82,7 @@ If `audit-log-writer` is the affected service:
    corrupt the Merkle-chain sequence number.
 4. After recovery, verify chain integrity:
    ```bash
-   python3 scripts/verify_audit_chain.py --from-last-checkpoint
+   python3 scripts/chain/verify.py audit-log/chain.ndjson
    ```
 
 ## Post-Incident
