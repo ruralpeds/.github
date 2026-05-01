@@ -66,12 +66,8 @@ jobs:
         env:
           RUNNER_LABEL: ${{ inputs.runner-label }}
         run: |
-          python3 -c "
-import json, os
-labels = [l.strip() for l in os.environ['RUNNER_LABEL'].split(',') if l.strip()]
-with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-    fh.write(f'labels={json.dumps(labels)}\n')
-"
+          labels=$(python3 -c "import json,os; L=os.environ.get('RUNNER_LABEL',''); print(json.dumps([x.strip() for x in L.split(',') if x.strip()]))")
+          echo "labels=$labels" >> "$GITHUB_OUTPUT"
 
   # ──────────────────────────────────────────────────────────────
   # 1. Verify the tagged commit passed the HIPAA compliance workflow

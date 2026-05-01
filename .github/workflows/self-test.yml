@@ -144,7 +144,7 @@ jobs:
       - name: Install test deps
         run: |
           set -euo pipefail
-          pip install --quiet pytest "ruamel.yaml>=0.18,<0.19" "python-dateutil>=2.8"
+          pip install --quiet pytest "ruamel.yaml>=0.18,<0.19" "python-dateutil>=2.8" "jsonschema>=4.0"
 
       - name: Run pytest
         env:
