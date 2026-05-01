@@ -1,0 +1,129 @@
+name: CI → Gap Status
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TEMPLATE — copy to .github/workflows/ci-gap-status.yml in each Rust repo.
+#
+# Event-driven caller that updates gap lifecycle statuses in real-time as CI
+# runs start, pass, or fail on gap/* branches.
+#
+# Requires org secrets (inherited automatically from ruralpeds org):
+#   TH_BOT_APP_ID        — GitHub App ID
+#   TH_BOT_PRIVATE_KEY   — GitHub App private key
+#
+# No changes needed to this file for standard usage — the GAP ID is extracted
+# automatically from the branch name (gap/NNN-*) or PR title (GAP-NNN: ...).
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  # Fires when a CI workflow on this repo starts or finishes
+  workflow_run:
+    workflows: ["CI"]          # ← replace with the name of your CI workflow
+    types:
+      - requested              # CI started → Building
+      - completed              # CI done    → Committed | In the Air
+    branches:
+      - "gap/**"
+      - "gap-*"
+
+  # Fires when a gap/* branch is pushed (catches new branches before CI runs)
+  push:
+    branches:
+      - "gap/**"
+      - "gap-*"
+
+  # Fires when a PR targeting main/master is opened or its head is updated
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main, master]
+
+jobs:
+  extract-gap-id:
+    name: Extract GAP ID
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      gap_id:    ${{ steps.extract.outputs.gap_id }}
+      ci_status: ${{ steps.map-status.outputs.ci_status }}
+      branch:    ${{ steps.ctx.outputs.branch }}
+      pr_number: ${{ steps.ctx.outputs.pr_number }}
+      sha:       ${{ steps.ctx.outputs.sha }}
+      run_id:    ${{ steps.ctx.outputs.run_id }}
+
+    steps:
+      - name: Resolve event context
+        id: ctx
+        run: |
+          # Determine branch, PR, SHA, run_id depending on trigger type
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            echo "branch=${{ github.event.workflow_run.head_branch }}"   >> "$GITHUB_OUTPUT"
+            echo "sha=${{ github.event.workflow_run.head_sha }}"         >> "$GITHUB_OUTPUT"
+            echo "run_id=${{ github.event.workflow_run.id }}"            >> "$GITHUB_OUTPUT"
+            echo "pr_number="                                             >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "branch=${{ github.head_ref }}"                         >> "$GITHUB_OUTPUT"
+            echo "sha=${{ github.event.pull_request.head.sha }}"         >> "$GITHUB_OUTPUT"
+            echo "run_id=${{ github.run_id }}"                           >> "$GITHUB_OUTPUT"
+            echo "pr_number=${{ github.event.pull_request.number }}"     >> "$GITHUB_OUTPUT"
+          else
+            echo "branch=${{ github.ref_name }}"                         >> "$GITHUB_OUTPUT"
+            echo "sha=${{ github.sha }}"                                  >> "$GITHUB_OUTPUT"
+            echo "run_id=${{ github.run_id }}"                           >> "$GITHUB_OUTPUT"
+            echo "pr_number="                                             >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Extract GAP ID from branch / PR title
+        id: extract
+        env:
+          BRANCH: ${{ steps.ctx.outputs.branch }}
+          PR_TITLE: ${{ github.event.pull_request.title || github.event.workflow_run.name || '' }}
+        run: |
+          gap_id=$(python3 -c "
+          import re, os
+          GAP_RE = re.compile(r'GAP-\d{3,4}')
+          for src in [os.environ.get('BRANCH',''), os.environ.get('PR_TITLE','')]:
+              m = GAP_RE.search(src)
+              if m:
+                  print(m.group(0))
+                  exit(0)
+          print('')
+          ")
+          echo "gap_id=$gap_id" >> "$GITHUB_OUTPUT"
+
+      - name: Map event to CI status signal
+        id: map-status
+        run: |
+          event="${{ github.event_name }}"
+          conclusion="${{ github.event.workflow_run.conclusion }}"
+          wr_status="${{ github.event.workflow_run.status }}"
+
+          if [ "$event" = "push" ]; then
+            # Branch push before CI — signal "in the air" (branch opened)
+            echo "ci_status=failed" >> "$GITHUB_OUTPUT"
+          elif [ "$event" = "pull_request" ]; then
+            # PR opened/updated — CI likely about to start
+            echo "ci_status=started" >> "$GITHUB_OUTPUT"
+          elif [ "$event" = "workflow_run" ]; then
+            if [ "$wr_status" = "in_progress" ] || [ "$wr_status" = "queued" ]; then
+              echo "ci_status=started" >> "$GITHUB_OUTPUT"
+            elif [ "$conclusion" = "success" ]; then
+              echo "ci_status=passed" >> "$GITHUB_OUTPUT"
+            else
+              echo "ci_status=failed" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+  update-gap:
+    name: Update gap status
+    needs: extract-gap-id
+    if: needs.extract-gap-id.outputs.gap_id != ''
+    uses: ruralpeds/.github/.github/workflows/reusable-build-status.yml@main
+    with:
+      target_repo:  ${{ github.repository }}
+      gap_id:       ${{ needs.extract-gap-id.outputs.gap_id }}
+      ci_status:    ${{ needs.extract-gap-id.outputs.ci_status }}
+      branch:       ${{ needs.extract-gap-id.outputs.branch }}
+      pr_number:    ${{ needs.extract-gap-id.outputs.pr_number }}
+      sha:          ${{ needs.extract-gap-id.outputs.sha }}
+      run_id:       ${{ needs.extract-gap-id.outputs.run_id }}
+      actor:        ${{ github.actor }}
+    secrets: inherit
