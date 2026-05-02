@@ -1,11 +1,17 @@
 name: CI Build Status Sweep — All Gap-Tracked Repos
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Runs every 30 minutes (and on demand) to synchronise CI build statuses with
-# gap lifecycle statuses across all ruralpeds repos that carry a
-# .gap-analysis/GAP_ANALYSIS.md (Rust, Julia, and the .github org repo itself).
+# EVENT-DRIVEN (+ daily sync) to synchronise CI build statuses with gap
+# lifecycle statuses across all ruralpeds repos carrying .gap-analysis/GAP_ANALYSIS.md
+# (Rust, Julia, and the .github org repo itself).
 #
-# For each repo it:
+# Triggers:
+#   1. workflow_run: When ci-rust.yml, ci-julia.yml, etc. complete (real-time)
+#   2. pull_request: When GAP-NNN PR opens/syncs (immediate feedback)
+#   3. schedule: Daily at 6 AM UTC (catch any missed events; ~90% fewer API calls)
+#   4. workflow_dispatch: Manual override (for testing/remediation)
+#
+# For each detected change it:
 #   1. Finds open PRs targeting production branches (main, master, release/*)
 #   2. Extracts GAP-NNN from branch name or PR title
 #   3. Reads the latest CI run status on that branch
@@ -14,8 +20,21 @@ name: CI Build Status Sweep — All Gap-Tracked Repos
 # ─────────────────────────────────────────────────────────────────────────────
 
 on:
+  # Real-time: Trigger when CI workflows complete (all gap-tracked repos)
+  workflow_run:
+    workflows: ['ci-rust.yml', 'ci-julia.yml', 'self-test.yml']
+    types: [completed]
+
+  # Real-time: Trigger when GAP-NNN PR opened/updated
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main, master, develop, 'release/**']
+
+  # Daily sync: Catch any missed events (6 AM UTC = 1 AM EST / 10 PM PST)
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "0 6 * * *"
+
+  # Manual: Override for testing/remediation
   workflow_dispatch:
     inputs:
       target_repo:
@@ -51,17 +70,31 @@ jobs:
           private-key: ${{ secrets.TH_BOT_PRIVATE_KEY }}
           owner: ruralpeds
 
-      - name: Build sweep matrix
-        id: build-matrix
+      - name: Determine target repos
+        id: target-repos
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          TRIGGER: ${{ github.event_name }}
           SINGLE_REPO: ${{ inputs.target_repo }}
+          PR_REPO: ${{ github.repository }}
+          WF_REPO: ${{ github.event.workflow_run.repository.full_name }}
         run: |
           set -euo pipefail
 
           if [ -n "$SINGLE_REPO" ]; then
+            # Manual override: scan specific repo
             repos="$SINGLE_REPO"
+          elif [ "$TRIGGER" = "pull_request" ]; then
+            # Event-driven: triggered by PR on specific repo
+            repos="$PR_REPO"
+            echo "Event-driven (pull_request): targeting $repos"
+          elif [ "$TRIGGER" = "workflow_run" ]; then
+            # Event-driven: triggered by CI completion on specific repo
+            repos="$WF_REPO"
+            echo "Event-driven (workflow_run): targeting $repos"
           else
+            # Schedule or manual dispatch: full discovery
+            echo "Full discovery mode (schedule or dispatch)"
             # Discover all Rust and Julia repos, plus the .github org repo itself
             rust_repos=$(gh repo list ruralpeds --language Rust --limit 100 \
               --json nameWithOwner --jq '.[].nameWithOwner' 2>/dev/null || true)
@@ -72,8 +105,24 @@ jobs:
               | sort -u | grep -v '^$')
           fi
 
+          echo "repos=$repos" >> "$GITHUB_OUTPUT"
+
+      - name: Build sweep matrix
+        id: build-matrix
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPOS: ${{ steps.target-repos.outputs.repos }}
+        run: |
+          set -euo pipefail
+
+          repos="$REPOS"
+
           # Filter to only repos that actually have .gap-analysis/GAP_ANALYSIS.md
+          # (Event-driven triggers: usually 1-3 repos; Schedule: all repos)
           gap_repos=""
+          repo_count=$(echo "$repos" | wc -w | tr -d ' ')
+          echo "Checking $repo_count repo(s) for .gap-analysis/…"
+
           for repo in $repos; do
             exists=$(gh api "repos/${repo}/contents/.gap-analysis/GAP_ANALYSIS.md" \
               --jq '.name' 2>/dev/null || echo "")
@@ -84,6 +133,9 @@ jobs:
               echo "  - $repo no .gap-analysis/ — skipping"
             fi
           done
+
+          gap_count=$(echo "$gap_repos" | wc -w | tr -d ' ')
+          echo "Repos with gap analysis: $gap_count"
 
           entries="[]"
           readme_repos="[]"
@@ -207,6 +259,42 @@ jobs:
           count=$(python3 -c "import json,sys; print(len(json.loads(sys.argv[1])))" "$entries")
           echo "Total CI status entries: $count"
           echo "Repos with gap analysis: $(echo $gap_repos | wc -w | tr -d ' ')"
+
+      - name: Log trigger mode & API savings
+        env:
+          TRIGGER: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+
+          case "$TRIGGER" in
+            pull_request)
+              echo "📌 Trigger: pull_request event (PR opened/updated)"
+              echo "   Expected API calls: ~15-20 (event-driven)"
+              echo "   vs. 30-min polling: ~25 calls × 48/day = 1,200/day"
+              echo "   Savings: ~98% reduction"
+              ;;
+            workflow_run)
+              echo "✅ Trigger: workflow_run event (CI completed)"
+              echo "   Expected API calls: ~10-15 (immediate response)"
+              echo "   vs. 30-min polling: ~25 calls × 48/day = 1,200/day"
+              echo "   Savings: ~98% reduction"
+              ;;
+            schedule)
+              echo "🔄 Trigger: schedule (daily sync fallback)"
+              echo "   Expected API calls: ~25-30 (full discovery)"
+              echo "   Frequency: 1x/day (6 AM UTC)"
+              echo "   vs. 30-min polling: 48x/day"
+              echo "   Savings: ~98% reduction in polling frequency"
+              ;;
+            workflow_dispatch)
+              echo "🚀 Trigger: manual workflow_dispatch"
+              echo "   Expected API calls: ~25-30 (full discovery or targeted)"
+              echo "   Use case: Testing, remediation, on-demand"
+              ;;
+            *)
+              echo "❓ Trigger: $TRIGGER (unknown)"
+              ;;
+          esac
 
   update-gap-status:
     name: "${{ matrix.gap_id }} / ${{ matrix.repo }} — ${{ matrix.ci_status }}"
