@@ -31,7 +31,8 @@ from pathlib import Path
 import requests
 
 ORG = "ruralpeds"
-WORKFLOW_CALLER = "ruralpeds/.github/.github/workflows/reusable-gap-lifecycle.yml@main"
+# reusable-gap-lifecycle.yml was removed; all callers now use reusable-gap-analysis.yml
+WORKFLOW_CALLER = "ruralpeds/.github/.github/workflows/reusable-gap-analysis.yml@main"
 SPEC_URL = "https://github.com/ruralpeds/gap-analysis-standard/blob/main/SPEC.md"
 RAW_STD = "https://raw.githubusercontent.com/ruralpeds/gap-analysis-standard/main/templates"
 
@@ -135,17 +136,65 @@ def gaps_md_template(repo_name: str) -> str:
 
 def gaps_yml_content() -> str:
     return f"""\
-name: Gap Lifecycle
+name: Gap Analysis Lifecycle
+
+# Per-repo caller — all logic lives in the reusable workflow at ruralpeds/.github.
 
 on:
+  create:
   pull_request:
-    types: [closed]
+    types: [opened, edited, reopened, closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
 
 jobs:
-  lifecycle:
+  branch_opened:
+    if: github.event_name == 'create' && github.event.ref_type == 'branch' && startsWith(github.event.ref, 'gap/')
     uses: {WORKFLOW_CALLER}
     with:
-      gaps_file: 'GAPS.md'
+      event: branch_opened
+      branch_ref: ${{{{ github.event.ref }}}}
+      actor: ${{{{ github.actor }}}}
+    secrets: inherit
+
+  pr_opened:
+    if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened')
+    uses: {WORKFLOW_CALLER}
+    with:
+      event: pr_opened
+      pr_number: ${{{{ github.event.pull_request.number }}}}
+      actor: ${{{{ github.actor }}}}
+    secrets: inherit
+
+  pr_edited:
+    if: github.event_name == 'pull_request' && github.event.action == 'edited'
+    uses: {WORKFLOW_CALLER}
+    with:
+      event: pr_edited
+      pr_number: ${{{{ github.event.pull_request.number }}}}
+      actor: ${{{{ github.actor }}}}
+    secrets: inherit
+
+  pr_merged:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    uses: {WORKFLOW_CALLER}
+    with:
+      event: pr_merged
+      pr_number: ${{{{ github.event.pull_request.number }}}}
+      merge_sha: ${{{{ github.event.pull_request.merge_commit_sha }}}}
+      actor: ${{{{ github.actor }}}}
+    secrets: inherit
+
+  pr_closed_unmerged:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == false
+    uses: {WORKFLOW_CALLER}
+    with:
+      event: pr_closed_unmerged
+      pr_number: ${{{{ github.event.pull_request.number }}}}
+      actor: ${{{{ github.actor }}}}
     secrets: inherit
 """
 
@@ -159,14 +208,16 @@ CLAUDE_MD_BLOCK = f"""\
 This repo follows the Rural Peds Gap Analysis Standard v1.0.
 Spec: {SPEC_URL}
 
-- **Canonical list:** `GAPS.md` at repo root — read this first at the start of every session.
-- **When starting work:** check the Active table for P0/P1 items before picking up new work.
+- **Canonical list:** `.gap-analysis/GAP_ANALYSIS.md` at repo root — read this first at
+  the start of every session.
+- **When starting work:** check the Active table for P0/P1 gaps before picking up new work.
 - **When completing work:** include `Closes GAP-NNN` in the PR body. The gap-lifecycle
-  action will automatically move the row from Active to Completed on merge.
-- **When adding a gap:** append a new row to the Active table with the next sequential
-  `GAP-NNN` ID. Keep Title ≤60 chars. Fill Priority (P0/P1/P2/P3) and Category
+  workflow automatically moves the row from Active → Completed on merge.
+- **When adding a gap:** open a branch named `gap/NNN-short-title` and push. The workflow
+  will create the row automatically; alternatively add it manually with the next sequential
+  `GAP-NNN` ID, Priority (P0/P1/P2/P3), and Category
   (safety/quality/content/infrastructure/docs/research/teaching/creative/general).
-- **Never edit** the Completed or Abandoned tables manually — the action owns those.
+- **Never edit** the Completed or Abandoned tables manually — the workflow owns those.
 - **Cross-repo refs:** use `ruralpeds/<repo>#GAP-NNN` syntax in the Notes column.
 - **Priority guidance:** P0 = blocking, P1 = this sprint, P2 = next sprint, P3 = backlog.
 """
@@ -176,14 +227,19 @@ def bootstrap_repo(org: str, repo: str, token: str, dry_run: bool) -> dict:
     result = {"repo": repo, "status": "skipped", "actions": []}
 
     # ── Check if already bootstrapped ────────────────────────────────────────
-    existing_workflow = get_file(org, repo, ".github/workflows/gaps.yml", token)
+    # Accept either the modern name (gap-analysis-lifecycle.yml) or the legacy
+    # name (gaps.yml) as evidence the repo has already been bootstrapped.
+    existing_workflow = (
+        get_file(org, repo, ".github/workflows/gap-analysis-lifecycle.yml", token)
+        or get_file(org, repo, ".github/workflows/gaps.yml", token)
+    )
     if existing_workflow:
         result["status"] = "already_bootstrapped"
         return result
 
     if dry_run:
         result["status"] = "would_bootstrap"
-        result["actions"] = ["create GAPS.md", "create .github/workflows/gaps.yml", "append CLAUDE.md block"]
+        result["actions"] = ["create GAPS.md", "create .github/workflows/gap-analysis-lifecycle.yml", "append CLAUDE.md block"]
         return result
 
     # ── Determine default branch ──────────────────────────────────────────────
@@ -210,23 +266,26 @@ def bootstrap_repo(org: str, repo: str, token: str, dry_run: bool) -> dict:
     else:
         result["actions"].append("GAPS.md already exists")
 
-    # ── gaps.yml ──────────────────────────────────────────────────────────────
-    # Re-fetch in case it appeared in a race
-    existing_workflow = get_file(org, repo, ".github/workflows/gaps.yml", token)
+    # ── gap-analysis-lifecycle.yml ────────────────────────────────────────────
+    # Re-fetch in case it appeared in a race; also accept legacy gaps.yml.
+    existing_workflow = (
+        get_file(org, repo, ".github/workflows/gap-analysis-lifecycle.yml", token)
+        or get_file(org, repo, ".github/workflows/gaps.yml", token)
+    )
     if existing_workflow is None:
         ok = put_file(
-            org, repo, ".github/workflows/gaps.yml",
+            org, repo, ".github/workflows/gap-analysis-lifecycle.yml",
             content=gaps_yml_content(),
-            message="chore: add gap lifecycle workflow (gap analysis standard v1.0)",
+            message="chore: add gap analysis lifecycle workflow (gap analysis standard v1.0)",
             token=token,
             branch=default_branch,
         )
         if ok:
-            result["actions"].append("created .github/workflows/gaps.yml")
+            result["actions"].append("created .github/workflows/gap-analysis-lifecycle.yml")
         else:
-            errors.append("gaps.yml create failed")
+            errors.append("gap-analysis-lifecycle.yml create failed")
     else:
-        result["actions"].append("gaps.yml already exists")
+        result["actions"].append("gap-analysis-lifecycle.yml already exists")
 
     # ── CLAUDE.md snippet ─────────────────────────────────────────────────────
     claude_md = get_file(org, repo, "CLAUDE.md", token)
