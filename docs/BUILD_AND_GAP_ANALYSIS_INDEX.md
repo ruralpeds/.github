@@ -19,8 +19,6 @@ This document is the single entry point for build-status and gap-analysis materi
 | [`GAP_ANALYSIS_WORKFLOWS.md`](GAP_ANALYSIS_WORKFLOWS.md) | Automation model for bootstrap, validation, notifications, and release gating |
 | [`GAP_ANALYSIS_LIFECYCLE.md`](GAP_ANALYSIS_LIFECYCLE.md) | Status transitions and expected lifecycle of a gap |
 | [`GAP_ANALYSIS_GOVERNANCE_INTEGRATION.md`](GAP_ANALYSIS_GOVERNANCE_INTEGRATION.md) | How gap analysis ties into governance and compliance workflows |
-| [`GAP_ANALYSIS_QUICK_REFERENCE.md`](GAP_ANALYSIS_QUICK_REFERENCE.md) | Short operational reference for daily use |
-| [`GAP_ANALYSIS_STANDARDS.md`](GAP_ANALYSIS_STANDARDS.md) | Standards-oriented guidance for interpreting gap-analysis controls |
 | [`GAP_ANALYSIS_SLACK_SETUP.md`](GAP_ANALYSIS_SLACK_SETUP.md) | Notification and collaboration setup for gap-analysis operations |
 | [`gap-analysis-metrics.md`](gap-analysis-metrics.md) | Metrics and reporting notes for the gap-analysis system |
 
@@ -50,3 +48,11 @@ The most relevant workflow surfaces in this repository are:
 2. Review [`../.gap-analysis/GAP_ANALYSIS.md`](../.gap-analysis/GAP_ANALYSIS.md) for live work.
 3. Use [`../BUILD_STATUS_SWEEP_EXECUTION_GUIDE.md`](../BUILD_STATUS_SWEEP_EXECUTION_GUIDE.md) for build-status behavior.
 4. Use the documents in this folder for governance, lifecycle, and operational detail.
+
+## Archived and Superseded Documents
+
+The following standalone docs were archived during consolidation because their content overlaps active entry points:
+
+1. [`archive/2026-05-build-gap-analysis/GAP_ANALYSIS_QUICK_REFERENCE.md`](archive/2026-05-build-gap-analysis/GAP_ANALYSIS_QUICK_REFERENCE.md)
+2. [`archive/2026-05-build-gap-analysis/GAP_ANALYSIS_STANDARDS.md`](archive/2026-05-build-gap-analysis/GAP_ANALYSIS_STANDARDS.md)
+3. [`archive/2026-05-build-gap-analysis/README.md`](archive/2026-05-build-gap-analysis/README.md)

@@ -1,0 +1,90 @@
+name: "FDA Post-Clearance Readiness"
+
+# Validates that Q4 2027 post-clearance deployment and surveillance artifacts
+# are present and linked to the operational post-market workflow surfaces.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fda-post-clearance-readiness-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate post-clearance readiness
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Validate post-clearance artifacts
+        run: |
+          set -euo pipefail
+
+          POST_CLEARANCE_PLAN="compliance-metrics/Q4-2027-post-clearance-deployment.md"
+          REVIEW_PLAN="compliance-metrics/Q2-Q3-2027-review-and-clearance.md"
+          SURVEILLANCE_GUIDE="docs/compliance/post-market-surveillance.md"
+          ISSUE_TEMPLATE=".github/ISSUE_TEMPLATE/post-market-event.md"
+          POST_MARKET_WORKFLOW=".github/workflows/post-market-tracker.yml"
+          READINESS_REPORT="/tmp/fda-post-clearance-readiness.txt"
+
+          test -f "$POST_CLEARANCE_PLAN"
+          test -f "$REVIEW_PLAN"
+          test -f "$SURVEILLANCE_GUIDE"
+          test -f "$ISSUE_TEMPLATE"
+          test -f "$POST_MARKET_WORKFLOW"
+
+          grep -q "Post-Clearance Setup" "$POST_CLEARANCE_PLAN"
+          grep -q "Pilot facilities 1-4 operational" "$POST_CLEARANCE_PLAN"
+          grep -q "Year 4 expansion planning finalized" "$POST_CLEARANCE_PLAN"
+          grep -q "Post-Clearance Actions" "$REVIEW_PLAN"
+          grep -q "21 CFR Part 806" "$SURVEILLANCE_GUIDE"
+          grep -q "post-market" "$ISSUE_TEMPLATE"
+
+          {
+            echo "post_clearance_plan=$POST_CLEARANCE_PLAN"
+            echo "review_plan=$REVIEW_PLAN"
+            echo "surveillance_guide=$SURVEILLANCE_GUIDE"
+            echo "issue_template=$ISSUE_TEMPLATE"
+            echo "post_market_workflow=$POST_MARKET_WORKFLOW"
+            echo "clearance_transition=verified"
+            echo "surveillance_readiness=verified"
+            echo "year4_handoff=verified"
+          } | tee "$READINESS_REPORT"
+
+      - name: Upload readiness artifact
+        if: always()
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+        with:
+          name: fda-post-clearance-readiness-${{ github.run_id }}
+          path: |
+            /tmp/fda-post-clearance-readiness.txt
+            compliance-metrics/Q4-2027-post-clearance-deployment.md
+            compliance-metrics/Q2-Q3-2027-review-and-clearance.md
+            docs/compliance/post-market-surveillance.md
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Step summary
+        if: always()
+        run: |
+          {
+            echo "## FDA Post-Clearance Readiness"
+            echo ""
+            echo "| Artifact | Path |"
+            echo "|---|---|"
+            echo "| Post-clearance plan | compliance-metrics/Q4-2027-post-clearance-deployment.md |"
+            echo "| Review-phase handoff | compliance-metrics/Q2-Q3-2027-review-and-clearance.md |"
+            echo "| Surveillance guide | docs/compliance/post-market-surveillance.md |"
+            echo "| Post-market issue template | .github/ISSUE_TEMPLATE/post-market-event.md |"
+            echo "| Post-market tracker | .github/workflows/post-market-tracker.yml |"
+          } >> "$GITHUB_STEP_SUMMARY"

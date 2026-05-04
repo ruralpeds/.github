@@ -120,6 +120,7 @@ Continuously tracks CI build outcomes across all Rust, Julia, and the `.github` 
 | `dependency-audit-inventory.yml` | NIST SSDF / FDA 524B / ISO 13485 | Builds dependency inventory evidence and validates dependency-policy artifacts |
 | `fda-submission-readiness.yml` | FDA 510(k) / 21 CFR Part 11 / IEC 62304 | Validates Q1 submission-planning artifacts, QA checklist coverage, and FDA bundle handoff readiness |
 | `fda-review-monitoring.yml` | FDA 510(k) review / post-market readiness | Validates weekly FDA review monitoring, deficiency-response readiness, and post-clearance handoff artifacts |
+| `fda-post-clearance-readiness.yml` | FDA post-clearance / 21 CFR 806 / IEC 62304 §7.4 | Validates Q4 post-clearance deployment, surveillance readiness, and Year 4 expansion handoff artifacts |
 | `reusable-synthea-fixtures.yml` | HIPAA / test data | Generates synthetic patient fixtures via Synthea |
 | `reusable-chaos-test.yml` | IEC 62304 §5.7 | Chaos/fault-injection testing |
 | `reusable-docs.yml` | IEC 62304 §5.2 | Documentation generation and validation |

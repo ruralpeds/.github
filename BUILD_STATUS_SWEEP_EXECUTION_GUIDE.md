@@ -5,6 +5,25 @@
 
 ---
 
+## Trigger Matrix
+
+| Trigger | When it fires | Primary scope | Notes |
+|---|---|---|---|
+| `pull_request` | PR opened or synchronized on `main`, `master`, `develop`, or `release/**` | Event repo only | Immediate "started" signal for GAP-linked work |
+| `workflow_run` | `ci-rust.yml`, `ci-julia.yml`, or `self-test.yml` completes | Workflow repo only | Converts CI completion into `started`, `passed`, or `failed` |
+| `schedule` | Daily at `0 6 * * *` | Full discovery | Catches missed events and reconciles drift |
+| `workflow_dispatch` | Manual operator run | One repo or all repos | Supports dry-run and README-skip remediation flows |
+
+### Manual inputs
+
+| Input | Purpose |
+|---|---|
+| `target_repo` | Limit the sweep to a single `owner/repo` |
+| `dry_run` | Show intended actions without updating gaps or READMEs |
+| `skip_readme` | Apply gap status changes without refreshing README tables |
+
+---
+
 ## Execution Scenarios
 
 ### Scenario 1: Event-Driven (Pull Request)
@@ -205,6 +224,57 @@ T+35s   ✅ WORKFLOW COMPLETE
            READMEs updated: 4
 ```
 
+### Scenario 4: Manual Remediation (workflow_dispatch)
+
+**Trigger:** Operator runs manual dispatch for a single repo after suspected event drift
+
+```
+Timeline:
+─────────────────────────────────────────────────────────────────
+
+T+0s    Operator triggers workflow_dispatch
+        Inputs:
+          target_repo = "ruralpeds/app"
+          dry_run     = true
+          skip_readme = false
+        │
+        └─→ GitHub Actions triggered: build-status-sweep
+
+T+5s    Job: discover
+        │
+        ├─ Detect manual override
+        │  └─ repos = "ruralpeds/app"
+        │
+        ├─ Check .gap-analysis/GAP_ANALYSIS.md exists
+        │  └─ ✓ targeted repo eligible
+        │
+        └─ Build single-repo matrix
+           └─ Emits candidate status transitions for review
+
+T+10s   Job: update-gap-status
+        │
+        └─ dry_run = true
+           ├─ Calculates intended status transitions
+           ├─ Prints actions instead of mutating .gap-analysis/
+           └─ No commit pushed
+
+T+14s   Job: refresh-readmes
+        │
+        └─ README refresh plan shown, but no repo mutations applied
+
+T+16s   ✅ WORKFLOW COMPLETE
+        │
+        └─ Operator reviews output and reruns with:
+           dry_run = false
+           skip_readme = true|false as needed
+```
+
+**Best use cases:**
+
+1. Reconcile a repo after a missed webhook.
+2. Preview impact before touching multiple gap statuses.
+3. Repair gap state without waiting for the next daily sync.
+
 ---
 
 ## Cost Comparison: Old vs. New
@@ -228,7 +298,20 @@ T+35s   ✅ WORKFLOW COMPLETE
 
 ---
 
+## Implementation Notes
+
+1. The sweep only acts on repos that actually contain `.gap-analysis/GAP_ANALYSIS.md`.
+2. GAP IDs are extracted from either branch names or PR titles using `GAP-\d{3,4}`.
+3. CI signals map to lifecycle states through `reusable-build-status.yml`:
+   - `started` → `Building`
+   - `passed` → `Committed`
+   - `failed` → `In the Air`
+4. README refresh is a separate phase and can be skipped during manual remediation.
+5. The `.github` repo is included in discovery so the org repo's own gap lifecycle stays in sync with `self-test.yml`.
+
+---
+
 **Document Control**
 - Version: 1.0
 - Status: Published
-- Last Updated: 2026-05-02
+- Last Updated: 2026-05-04

@@ -133,9 +133,9 @@ Use **issues** for bugs. Use **gaps** for roadmap.
 - `templates/gap-analysis/schema.md` — repo-specific rules (cadence, ownership, naming, examples)
 - `templates/gap-analysis/.gitignore` — ignores `status.json`
 
-## Archived materials (2026-04-23 baseline)
+## Archived materials
 
-The prior `docs/GAP_ANALYSIS_STANDARDS.md` and `docs/GAP_ANALYSIS_QUICK_REFERENCE.md` were folded into this README on 2026-04-28 and archived under [`docs/archive/2026-04-gap-analysis/`](../docs/archive/2026-04-gap-analysis/) for historical reference.
+The prior `docs/GAP_ANALYSIS_STANDARDS.md` and `docs/GAP_ANALYSIS_QUICK_REFERENCE.md` were folded into this README on 2026-04-28 and archived under [`docs/archive/2026-04-gap-analysis/`](../docs/archive/2026-04-gap-analysis/) for historical reference. During the May 2026 build/gap consolidation, duplicate working copies were removed from `docs/` and archived under [`docs/archive/2026-05-build-gap-analysis/`](../docs/archive/2026-05-build-gap-analysis/).
 
 ## Contact
 
