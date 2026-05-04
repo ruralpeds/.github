@@ -14,6 +14,9 @@ name: "Reusable Fuzz — Rust"
 #   - At least one fuzz target (e.g. fuzz/fuzz_targets/fuzz_parser.rs)
 #   - Optional: seed corpus under fuzz/corpus/<target-name>/
 
+# DISABLED: This workflow was failing 100% of runs and consuming resources.
+# Schedule trigger has been disabled. Use workflow_dispatch for manual testing.
+# Re-enable once issues are fixed.
 on:
   workflow_call:
     inputs:

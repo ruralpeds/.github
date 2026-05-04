@@ -20,6 +20,9 @@ name: "Generate Synthetic Patient FHIR Bundles (Synthea)"
 #   - FDA guidance: use synthetic data (no real PHI) for preclinical validation
 #   - HIPAA: synthetic data has no PHI risk
 
+# DISABLED: This workflow was failing 100% of runs and consuming resources.
+# Schedule trigger has been disabled. Use workflow_dispatch for manual testing.
+# Re-enable once issues are fixed.
 on:
   workflow_call:
     inputs:
