@@ -26,6 +26,8 @@ Reusable GitHub Actions workflows, regulatory compliance tooling, audit logging,
 <!-- gap-status-start -->
 <!-- gap-status-end -->
 
+See [`docs/BUILD_AND_GAP_ANALYSIS_INDEX.md`](docs/BUILD_AND_GAP_ANALYSIS_INDEX.md) for the consolidated build-status and gap-analysis document index.
+
 ---
 
 ## Language CI Workflows
@@ -106,6 +108,7 @@ Continuously tracks CI build outcomes across all Rust, Julia, and the `.github` 
 | `reusable-mutation-test.yml` | IEC 62304 §5.5.3 | Alternate mutation-test entry point |
 | `reusable-contract.yml` | 42 CFR Part 170 / HL7 FHIR US Core | FHIR US Core IG validation; OpenAPI validation via Redocly |
 | `reusable-fhir-validation.yml` | HL7 FHIR | HAPI validator for FHIR resource payloads |
+| `ehr-sandbox-validation.yml` | HL7 FHIR / SMART on FHIR | Dry-run readiness checks plus live Epic/Cerner sandbox smoke validation for EHR integration evidence |
 | `reusable-rtm.yml` | GAMP 5 §4.2 / IEC 62304 §5.2 | Requirements Traceability Matrix — scans PRs/commits/tests for requirement IDs; produces `traceability/rtm.json` and gap report |
 | `reusable-iec62304-traceability.yml` | IEC 62304 §5 | IEC 62304 lifecycle traceability checks |
 | `reusable-risk-file.yml` | ISO 14971:2019 / IEC 62304 §7 | Aggregates hazard-labeled issues into `risk/hazard-analysis.md` + `risk-summary.json` |
@@ -114,6 +117,10 @@ Continuously tracks CI build outcomes across all Rust, Julia, and the `.github` 
 | `reusable-release.yml` | IEC 62304 §5.8 | Full regulated release: release-please → SBOM → SLSA → cosign → validation export → audit |
 | `reusable-secret-scan-report.yml` | HIPAA §164.312(b) | Secret scanning report with SARIF output |
 | `reusable-security.yml` | NIST SSDF | Composite security scan: Semgrep SAST, TruffleHog secrets, Grype CVE |
+| `dependency-audit-inventory.yml` | NIST SSDF / FDA 524B / ISO 13485 | Builds dependency inventory evidence and validates dependency-policy artifacts |
+| `fda-submission-readiness.yml` | FDA 510(k) / 21 CFR Part 11 / IEC 62304 | Validates Q1 submission-planning artifacts, QA checklist coverage, and FDA bundle handoff readiness |
+| `fda-review-monitoring.yml` | FDA 510(k) review / post-market readiness | Validates weekly FDA review monitoring, deficiency-response readiness, and post-clearance handoff artifacts |
+| `fda-post-clearance-readiness.yml` | FDA post-clearance / 21 CFR 806 / IEC 62304 §7.4 | Validates Q4 post-clearance deployment, surveillance readiness, and Year 4 expansion handoff artifacts |
 | `reusable-synthea-fixtures.yml` | HIPAA / test data | Generates synthetic patient fixtures via Synthea |
 | `reusable-chaos-test.yml` | IEC 62304 §5.7 | Chaos/fault-injection testing |
 | `reusable-docs.yml` | IEC 62304 §5.2 | Documentation generation and validation |
@@ -190,6 +197,7 @@ gh workflow run "Review Stamp" \
 | `org-dashboard.yml` | scheduled | Org-wide compliance dashboard |
 | `vuln-triage.yml` | daily 11:00 UTC | Dependabot-alert triage with SLAs (Critical 7d / High 30d / Medium 90d / Low 180d) |
 | `dependency-eol.yml` | 1st of month 10:00 UTC | EOL check via endoflife.date; opens issue when platforms approach end-of-life |
+| `dependency-audit-inventory.yml` | 1st of month 06:00 UTC / manual | Builds dependency inventory evidence for Q3 audit artifacts |
 | `post-market-tracker.yml` | scheduled | Post-market surveillance issue tracking |
 | `gap-analysis-sync-index.yml` | push / schedule | Generates `.gap-analysis/status.json` and commits it |
 | `gap-analysis-validate.yml` | push / PR | Validates gap-analysis entries |
@@ -228,6 +236,7 @@ Ruleset definitions live under version control in `policies/rulesets/*.json`. Th
 | Mon 08:00 | `playwright-audit.yml` | Visual Actions status audit |
 | Mon 09:00 | `custom-properties-audit.yml` | Custom properties audit |
 | Daily 11:00 | `vuln-triage.yml` | Vulnerability SLA triage |
+| 1st of month 06:00 | `dependency-audit-inventory.yml` | Build dependency inventory and policy evidence |
 | 1st of month 10:00 | `dependency-eol.yml` | Platform EOL check |
 | Mon 10:00 | `readme-refresh.yml` | Auto-refresh README via Copilot; opens a PR for human review |
 

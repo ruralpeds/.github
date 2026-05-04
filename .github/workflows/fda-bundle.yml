@@ -87,6 +87,10 @@ permissions:
   id-token: write
   attestations: write
 
+concurrency:
+  group: fda-bundle-${{ github.repository }}-${{ inputs.tag }}
+  cancel-in-progress: true
+
 jobs:
   resolve-runner:
     runs-on: [self-hosted, mac-studio, arm64]
@@ -108,6 +112,7 @@ jobs:
   bundle:
     needs: resolve-runner
     runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
+    timeout-minutes: 45
     outputs:
       url: ${{ steps.up.outputs.artifact-url }}
     steps:
@@ -115,6 +120,29 @@ jobs:
         with:
           ref: ${{ inputs.tag }}
           fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate FDA bundle inputs
+        run: |
+          set -euo pipefail
+
+          case "${{ inputs.device-class }}" in
+            II|III)
+              ;;
+            *)
+              echo "::error::device-class must be II or III"
+              exit 1
+              ;;
+          esac
+
+          case "${{ inputs.submission-type }}" in
+            510k|de-novo|pma)
+              ;;
+            *)
+              echo "::error::submission-type must be one of: 510k, de-novo, pma"
+              exit 1
+              ;;
+          esac
 
       - name: Install tooling
         run: |
@@ -301,4 +329,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload "${{ inputs.tag }}" "fda-bundle-${{ inputs.tag }}.zip" --clobber || true
+          if gh release view "${{ inputs.tag }}" >/dev/null 2>&1; then
+            gh release upload "${{ inputs.tag }}" "fda-bundle-${{ inputs.tag }}.zip" --clobber
+          else
+            echo "::warning::Release ${{ inputs.tag }} not found; skipped release attachment"
+          fi

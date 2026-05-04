@@ -127,6 +127,31 @@ jobs:
             success-rate: 0.01
           EOF
 
+      - name: Validate observability artifacts
+        run: |
+          set -euo pipefail
+
+          TRACE_POLICY_DOC="docs/observability/TRACE_SAMPLING.md"
+          TRACE_DASHBOARD="infrastructure/grafana/04-distributed-tracing-dashboard.json"
+          READINESS_REPORT="/tmp/tempo-readiness-report.txt"
+
+          test -f "$TRACE_POLICY_DOC"
+          test -f "$TRACE_DASHBOARD"
+
+          grep -q "100% sampling" "$TRACE_POLICY_DOC"
+          grep -q "10% sampling" "$TRACE_POLICY_DOC"
+          grep -q "1% baseline sampling" "$TRACE_POLICY_DOC"
+          grep -q "Distributed Tracing - Service Dependencies" "$TRACE_DASHBOARD"
+          grep -q "\"queryType\": \"serviceMap\"" "$TRACE_DASHBOARD"
+
+          {
+            echo "trace_policy_doc=$TRACE_POLICY_DOC"
+            echo "trace_dashboard=$TRACE_DASHBOARD"
+            echo "retention_days=${{ inputs.retention_days || 30 }}"
+            echo "service_map=verified"
+            echo "sampling_policy=verified"
+          } | tee "$READINESS_REPORT"
+
       - name: Verify required CLIs in apply mode
         if: inputs.apply == true
         run: |
@@ -165,23 +190,40 @@ jobs:
             --timeout 10m \
             -f /tmp/tempo-values.yaml
 
+      - name: Upload deployment artifacts
+        if: always()
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+        with:
+          name: deploy-tempo-${{ github.run_id }}
+          path: |
+            /tmp/tempo-readiness-report.txt
+            /tmp/tempo-values.yaml
+            /tmp/trace-sampling-policy.yaml
+          if-no-files-found: ignore
+          retention-days: 30
+
       - name: Step summary
         if: always()
         run: |
-          echo "## Tempo Deployment" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Apply mode | ${{ inputs.apply || false }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Namespace | ${{ inputs.namespace || 'observability' }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Release | ${{ inputs.release_name || 'tempo' }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Retention days | ${{ inputs.retention_days || 30 }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Storage size | ${{ inputs.storage_size || '100Gi' }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Sidecar annotation | ${{ inputs.enable_service_mesh_sidecar || true }} |" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## Tempo Deployment"
+            echo ""
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Apply mode | ${{ inputs.apply || false }} |"
+            echo "| Namespace | ${{ inputs.namespace || 'observability' }} |"
+            echo "| Release | ${{ inputs.release_name || 'tempo' }} |"
+            echo "| Retention days | ${{ inputs.retention_days || 30 }} |"
+            echo "| Storage size | ${{ inputs.storage_size || '100Gi' }} |"
+            echo "| Sidecar annotation | ${{ inputs.enable_service_mesh_sidecar || true }} |"
+            echo "| Trace sampling doc | docs/observability/TRACE_SAMPLING.md |"
+            echo "| Grafana dashboard | infrastructure/grafana/04-distributed-tracing-dashboard.json |"
 
-          if [ "${{ inputs.apply || false }}" = "false" ]; then
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "Dry-run complete. Generated files:" >> "$GITHUB_STEP_SUMMARY"
-            echo "- /tmp/tempo-values.yaml" >> "$GITHUB_STEP_SUMMARY"
-            echo "- /tmp/trace-sampling-policy.yaml" >> "$GITHUB_STEP_SUMMARY"
-          fi
+            if [ "${{ inputs.apply || false }}" = "false" ]; then
+              echo ""
+              echo "Dry-run complete. Generated files:"
+              echo "- /tmp/tempo-values.yaml"
+              echo "- /tmp/trace-sampling-policy.yaml"
+              echo "- /tmp/tempo-readiness-report.txt"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
