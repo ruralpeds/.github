@@ -38,15 +38,12 @@ cat > "$REPORT_FILE" << 'EOF'
 }
 EOF
 
-SCAN_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-
 # Function to check single repo
 check_repo() {
   local repo=$1
   local repo_path="/tmp/audit-check-$RANDOM"
 
   local status="compliant"
-  local details=()
   local checks=()
 
   if [ "$VERBOSE" == "true" ]; then
@@ -108,15 +105,6 @@ check_repo() {
     echo -e "${YELLOW}⚠${NC} CODEOWNERS protection missing (optional)"
     checks+=('{"name": "CODEOWNERS protection", "status": "warning"}')
   fi
-
-  # Get last review date if available
-  LAST_REVIEW="null"
-  if [ -f "$repo_path/audit-log/ledger.json" ]; then
-    LAST_REVIEW=$(jq '.summary.date_last_reviewed' "$repo_path/audit-log/ledger.json" 2>/dev/null || echo "null")
-  fi
-
-  # Build repo entry
-  local checks_json=$(printf '%s\n' "${checks[@]}" | paste -sd ',' -)
 
   # Clean up
   rm -rf "$repo_path"

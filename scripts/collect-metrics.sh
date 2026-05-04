@@ -31,7 +31,7 @@ SHA="${GITHUB_SHA:-unknown}"
 collect_system_metrics() {
     if [[ -f /proc/self/stat ]]; then
         # Linux: parse /proc/self/stat for CPU metrics
-        read -a fields < /proc/self/stat
+        read -r -a fields < /proc/self/stat
         utime=${fields[11]}
         stime=${fields[12]}
         starttime=${fields[19]}
@@ -75,17 +75,17 @@ collect_system_health() {
     echo "\"system_load\": \"$load\", \"system_uptime\": \"$uptime\", \"disk_usage_percent\": $disk_percent"
 }
 
-# Determine job status from environment
-job_status="unknown"
-if [[ "$RUNNER_OS" == "Linux" || "$RUNNER_OS" == "macOS" ]]; then
-    # This will be set by the workflow after the job completes
-    job_status="${JOB_STATUS:-running}"
-fi
-
 # Runner information
 runner_name="${RUNNER_NAME:-unknown}"
 runner_os="${RUNNER_OS:-unknown}"
 runner_arch="${RUNNER_ARCH:-unknown}"
+
+# Determine job status from environment
+job_status="unknown"
+if [[ "$runner_os" == "Linux" || "$runner_os" == "macOS" ]]; then
+    # This will be set by the workflow after the job completes
+    job_status="${JOB_STATUS:-running}"
+fi
 
 # Timestamps
 timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")

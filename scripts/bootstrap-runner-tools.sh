@@ -46,7 +46,10 @@ echo "==> Rust toolchain + audit"
 if ! command -v cargo >/dev/null; then
   rustup-init -y --default-toolchain stable --profile minimal
 fi
-source "$HOME/.cargo/env"
+if [ -f "$HOME/.cargo/env" ]; then
+  # shellcheck source=/dev/null
+  source "$HOME/.cargo/env"
+fi
 cargo install --quiet --locked cargo-audit cargo-deny || true
 
 echo "==> Node audit helpers"

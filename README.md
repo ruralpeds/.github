@@ -11,8 +11,8 @@ Reusable GitHub Actions workflows, regulatory compliance tooling, audit logging,
 1. [Gap Analysis Status](#gap-analysis-status)
 2. [Language CI Workflows](#language-ci-workflows)
 3. [CI Build Status System](#ci-build-status-system)
-4. [Compliance & Regulatory Workflows](#compliance--regulatory-workflows)
-5. [Audit & Electronic Signatures](#audit--electronic-signatures)
+4. [Compliance and Regulatory Workflows](#compliance-and-regulatory-workflows)
+5. [Audit and Electronic Signatures](#audit-and-electronic-signatures)
 6. [Org Governance](#org-governance)
 7. [Scheduled Workflows](#scheduled-workflows)
 8. [Org Custom Repository Properties](#org-custom-repository-properties)
@@ -91,7 +91,7 @@ Continuously tracks CI build outcomes across all Rust, Julia, and the `.github` 
 
 ---
 
-## Compliance & Regulatory Workflows
+## Compliance and Regulatory Workflows
 
 | Workflow | Regulatory mapping | Purpose |
 |----------|--------------------|---------|
@@ -155,7 +155,7 @@ See [`docs/SUPPLY_CHAIN_AND_ESIGNATURE.md`](docs/SUPPLY_CHAIN_AND_ESIGNATURE.md)
 
 ---
 
-## Audit & Electronic Signatures
+## Audit and Electronic Signatures
 
 | Workflow | Purpose |
 |----------|---------|

@@ -428,6 +428,14 @@ $(printf '- \`%s\`\n' "${manuals[@]}")
 "
   fi
 
+  local replacements_section="- \`_none_\`"
+  if [[ ${#replacements[@]} -gt 0 ]]; then
+    replacements_section=""
+    for f in "${replacements[@]}"; do
+      replacements_section+="$(printf -- '- \`%s\` → \`%s\`\n' "$f" "${WORKFLOW_REUSABLE[$f]}")"
+    done
+  fi
+
   local unknown_section=""
   if [[ ${#unknowns[@]} -gt 0 ]]; then
     unknown_section="
@@ -452,7 +460,7 @@ one file rather than every repo.
 ## Changes
 
 ### Replaced with reusable callers
-$(printf '- \`%s\` → \`%s\`\n' $(for f in "${replacements[@]}"; do echo "$f" "${WORKFLOW_REUSABLE[$f]}"; done))
+${replacements_section}
 
 ### Deleted (superseded by org-level workflow)
 $(printf '- \`%s\`\n' "${deletions[@]:-_none_}")

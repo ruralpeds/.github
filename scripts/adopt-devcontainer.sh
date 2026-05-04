@@ -10,8 +10,6 @@
 
 set -euo pipefail
 
-ORG_RAW="https://raw.githubusercontent.com/ruralpeds/.github/main"
-PAT="${GH_TOKEN:-}"
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 REPO_NAME="$(basename "$REPO_ROOT")"
 

@@ -13,12 +13,12 @@
 2. [SDLC Gate Framework](#sdlc-gate-framework)
 3. [Workflow Categories](#workflow-categories)
 4. [Language-Specific CI Workflows](#language-specific-ci-workflows)
-5. [Compliance & Regulatory Workflows](#compliance--regulatory-workflows)
-6. [Audit & Traceability Workflows](#audit--traceability-workflows)
+5. [Compliance and Regulatory Workflows](#compliance-and-regulatory-workflows)
+6. [Audit and Traceability Workflows](#audit-and-traceability-workflows)
 7. [Organization Governance Workflows](#organization-governance-workflows)
-8. [Scheduled & Automation Workflows](#scheduled--automation-workflows)
+8. [Scheduled and Automation Workflows](#scheduled-and-automation-workflows)
 9. [Reusable Workflow Patterns](#reusable-workflow-patterns)
-10. [Gap Analysis & Status Tracking](#gap-analysis--status-tracking)
+10. [Gap Analysis and Status Tracking](#gap-analysis-and-status-tracking)
 11. [Integration Points](#integration-points)
 
 ---
@@ -272,7 +272,7 @@ All language CI workflows follow a consistent pattern:
 
 ---
 
-## Compliance & Regulatory Workflows
+## Compliance and Regulatory Workflows
 
 ### HIPAA & PHI Security
 
@@ -510,7 +510,7 @@ slsa-verifier verify-artifact \
 
 ---
 
-## Audit & Traceability Workflows
+## Audit and Traceability Workflows
 
 ### Electronic Signatures & Envelope
 
@@ -842,7 +842,7 @@ cosign verify-blob \
 
 ---
 
-## Scheduled & Automation Workflows
+## Scheduled and Automation Workflows
 
 ### Scheduled Compliance Checks
 
@@ -977,11 +977,12 @@ cosign verify-blob \
 
 #### `origin-label.yml` (Automated issue/PR origin labeling)
 
-**Purpose:** Auto-label issues and PRs by origin (human, Copilot, Dependabot, etc.)
+**Purpose:** Auto-label issues and PRs by origin (human, Copilot, Claude, Dependabot, etc.)
 
 **Labels applied:**
 - `origin:human` (manually created)
 - `origin:copilot` (Copilot-generated)
+- `origin:claude` (Claude-generated)
 - `origin:dependabot` (Dependabot)
 - `origin:automation` (scheduled workflow)
 - `origin:external` (external contributor)
@@ -1128,7 +1129,7 @@ jobs:
 
 ---
 
-## Gap Analysis & Status Tracking
+## Gap Analysis and Status Tracking
 
 ### Gap Lifecycle
 
