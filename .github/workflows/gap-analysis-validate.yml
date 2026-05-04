@@ -178,45 +178,123 @@ jobs:
           
           echo "✅ Date format validation complete"
 
+      - name: Validate deadline constraints
+        shell: bash
+        run: |
+          set -e
+
+          echo "🔍 Validating deadline constraints for P0/P1 gaps..."
+
+          python3 << 'EOF'
+          import re
+          from datetime import datetime
+
+          with open(".gap-analysis/GAP_ANALYSIS.md", "r") as f:
+              content = f.read()
+
+          # Extract P0/P1 gaps
+          gaps = re.finditer(
+              r"^### ✅?\s?(GAP-\d{3,4}):\s*(.+?)(?=^### (?:✅\s)?GAP-|^## |$)",
+              content,
+              re.MULTILINE | re.DOTALL
+          )
+
+          errors = []
+          for match in gaps:
+              gap_id = match.group(1)
+              block = match.group(0)
+
+              # Extract priority
+              priority_match = re.search(r"^\*\*Priority\*\*:\s*([P0-4])\b", block, re.MULTILINE)
+              priority = priority_match.group(1) if priority_match else "P3"
+
+              # Only check P0 and P1
+              if priority not in ["P0", "P1"]:
+                  continue
+
+              # Extract target date
+              target_match = re.search(r"^\*\*Target Completion\*\*:\s*(.+)$", block, re.MULTILINE)
+              target_str = target_match.group(1).strip() if target_match else None
+
+              if not target_str or target_str.upper() in ("TBD", "NONE", "N/A"):
+                  errors.append(f"❌ {gap_id} ({priority}): Missing target completion date")
+                  continue
+
+              # Parse date
+              date_parsed = None
+              for fmt in ["%Y-%m-%d", "%m/%d/%Y", "%b %d, %Y", "%B %d, %Y"]:
+                  try:
+                      date_parsed = datetime.strptime(target_str.strip(), fmt)
+                      break
+                  except ValueError:
+                      continue
+
+              if not date_parsed:
+                  errors.append(f"❌ {gap_id} ({priority}): Invalid date format: {target_str}")
+                  continue
+
+              # Check if date is in the future
+              if date_parsed <= datetime.now():
+                  errors.append(f"❌ {gap_id} ({priority}): Deadline in the past: {target_str}")
+                  continue
+
+              # Check deadline constraints
+              days_to_deadline = (date_parsed - datetime.now()).days
+
+              if priority == "P0" and days_to_deadline > 14:
+                  errors.append(f"⚠️  {gap_id} (P0): Deadline is {days_to_deadline} days away (should be <= 14)")
+              elif priority == "P1" and days_to_deadline > 30:
+                  errors.append(f"⚠️  {gap_id} (P1): Deadline is {days_to_deadline} days away (should be <= 30)")
+
+          if errors:
+              for error in errors:
+                  print(error)
+              print()
+              print("❌ Some deadline constraints not met (P0 deadline <= 14 days, P1 deadline <= 30 days)")
+              exit(1)
+          else:
+              print("✅ All deadline constraints satisfied")
+          EOF
+
       - name: Check for required gap fields
         shell: bash
         run: |
           set -e
-          
+
           GAP_FILE=".gap-analysis/GAP_ANALYSIS.md"
-          
+
           echo "🔍 Checking for required gap fields..."
-          
+
           # Extract gaps and check for required fields
           python3 << 'EOF'
           import re
-          
+
           with open(".gap-analysis/GAP_ANALYSIS.md", "r") as f:
               content = f.read()
-          
+
           # Split by gap header
           gaps = re.split(r'^### GAP-', content, flags=re.MULTILINE)[1:]
-          
+
           if not gaps:
               print("✅ No gaps to validate (empty repo OK)")
               exit(0)
-          
+
           required_fields = [
               r"\*\*Status\*\*:",
               r"\*\*Priority\*\*:",
               r"\*\*Owner\*\*:",
               r"\*\*Description\*\*:",
           ]
-          
+
           missing_count = 0
           for i, gap in enumerate(gaps, 1):
               gap_id = gap.split("\n")[0].split(":")[0].strip()
-              
+
               for field in required_fields:
                   if not re.search(field, gap):
                       print(f"⚠️  GAP-{gap_id} missing field: {field}")
                       missing_count += 1
-          
+
           if missing_count > 0:
               print(f"⚠️  Found {missing_count} missing fields (review recommended)")
           else:

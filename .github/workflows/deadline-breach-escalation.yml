@@ -1,0 +1,304 @@
+name: "Deadline Breach Escalation"
+
+on:
+  schedule:
+    # Every 12 hours: 06:00 and 18:00 UTC
+    - cron: "0 6 * * *"
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+
+jobs:
+  detect-escalation-worthy-breaches:
+    name: Detect and escalate breaches
+    runs-on: [self-hosted, mac-studio, arm64]
+    permissions:
+      contents: read
+    outputs:
+      escalations_found: ${{ steps.detect.outputs.escalations_found }}
+      critical_count: ${{ steps.detect.outputs.critical_count }}
+      severe_count: ${{ steps.detect.outputs.severe_count }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run breach escalation handler
+        id: detect
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/breach_escalation_handler.py \
+            --token "$GH_TOKEN" \
+            --org ruralpeds \
+            --output-dir /tmp
+
+          # Extract escalation counts from report
+          CRITICAL=$(python3 -c "
+          import json
+          with open('/tmp/escalation-report.json') as f:
+              data = json.load(f)
+              print(data['summary']['critical_escalations'])
+          ")
+
+          SEVERE=$(python3 -c "
+          import json
+          with open('/tmp/escalation-report.json') as f:
+              data = json.load(f)
+              print(data['summary']['severe_escalations'])
+          ")
+
+          ESCALATIONS_FOUND=$((CRITICAL + SEVERE > 0 ? 1 : 0))
+
+          echo "escalations_found=$ESCALATIONS_FOUND" >> $GITHUB_OUTPUT
+          echo "critical_count=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "severe_count=$SEVERE" >> $GITHUB_OUTPUT
+
+      - name: Upload escalation report
+        uses: actions/upload-artifact@v4
+        with:
+          name: escalation-report
+          path: /tmp/escalation-report.json
+          retention-days: 90
+
+  post-escalation-issues:
+    name: Post escalation issues
+    needs: detect-escalation-worthy-breaches
+    if: needs.detect-escalation-worthy-breaches.outputs.escalations_found == '1'
+    runs-on: [self-hosted, mac-studio, arm64]
+    permissions:
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+
+      - name: Download escalation report
+        uses: actions/download-artifact@v4
+        with:
+          name: escalation-report
+          path: /tmp
+
+      - name: Post escalation issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 << 'PYTHON_EOF'
+          import json
+          import subprocess
+          from datetime import datetime
+
+          with open('/tmp/escalation-report.json') as f:
+              report = json.load(f)
+
+          critical_count = report['summary']['critical_escalations']
+          severe_count = report['summary']['severe_escalations']
+          escalations = report['escalations'][:5]  # Top 5
+
+          # Build issue body
+          body = f"""## Deadline Breach Escalation Report
+
+**Generated:** {datetime.now().isoformat()}
+
+### Escalation Summary
+
+- **Critical Escalations:** {critical_count}
+- **Severe Escalations:** {severe_count}
+- **Report:** [Escalation Report](../../actions/runs/${{ github.run_id }})
+
+### Escalation Details
+
+| Gap | Repo | Priority | Overdue | Level | Owner |
+|-----|------|----------|---------|-------|-------|
+"""
+
+          for esc in escalations:
+              gap_id = esc['gap_id']
+              priority = esc['priority']
+              overdue = esc['days_overdue']
+              level = esc['escalation_level'].upper()
+              owner = esc['owner']
+              repo = ""  # Extract from escalations if available
+              body += f"| {gap_id} | {repo} | {priority} | {overdue}d | {level} | @{owner} |\n"
+
+          body += """
+
+### Recommended Actions
+
+1. **Critical escalations:** Notify owners immediately, escalate to managers
+2. **Severe escalations:** Schedule sync meetings with owners within 24 hours
+3. **Review blockers:** Check if gaps are blocked on external dependencies
+4. **Capacity planning:** Consider reallocating work if owners are overloaded
+
+### Next Steps
+
+- Review each escalation in detail
+- Contact gap owners for status updates
+- Escalate to team leads if no progress in 48 hours
+- Update audit log with escalation actions taken
+
+---
+
+*Automated escalation from deadline-breach-escalation workflow*
+"""
+
+          # Create issue
+          cmd = [
+              "gh", "issue", "create",
+              "--title", f"🚨 Deadline Breach Escalation — {critical_count + severe_count} gaps at risk",
+              "--label", "gap-analysis,deadline-escalation,automated",
+              "--body", body
+          ]
+
+          result = subprocess.run(cmd, capture_output=True, text=True)
+          if result.returncode == 0:
+              print(f"✓ Created escalation issue")
+              print(result.stdout)
+          else:
+              print(f"❌ Failed to create issue: {result.stderr}")
+              exit(1)
+
+          PYTHON_EOF
+
+  archive-escalation-log:
+    name: Archive escalation to audit-log
+    needs: detect-escalation-worthy-breaches
+    runs-on: [self-hosted, mac-studio, arm64]
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+
+      - name: Download escalation report
+        uses: actions/download-artifact@v4
+        with:
+          name: escalation-report
+          path: /tmp
+
+      - name: Archive to audit-log
+        run: |
+          mkdir -p audit-log/escalations
+          TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          FILENAME=$(date -u +'%Y-%m-%d-%H%M')
+
+          # Archive the escalation report
+          cp /tmp/escalation-report.json "audit-log/escalations/escalation-${FILENAME}.json"
+
+          # Create audit entry
+          cat > "audit-log/escalations/escalation-${FILENAME}.jsonl" << EOF
+          {"timestamp": "${TIMESTAMP}", "event": "escalation_detected", "report_file": "escalation-${FILENAME}.json", "workflow_run": "${{ github.run_id }}"}
+          EOF
+
+      - name: Commit escalation audit log
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet audit-log/escalations/; then
+            echo "No escalation changes, skipping commit"
+          else
+            git add audit-log/escalations/
+            git commit -m "audit: record deadline breach escalations ($(date -u +'%Y-%m-%d %H:%M UTC'))" || true
+            git push origin main || true
+          fi
+
+  send-slack-notification:
+    name: Send Slack escalation alert
+    needs: detect-escalation-worthy-breaches
+    if: needs.detect-escalation-worthy-breaches.outputs.escalations_found == '1'
+    runs-on: [self-hosted, mac-studio, arm64]
+    permissions:
+      {}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+
+      - name: Download escalation report
+        uses: actions/download-artifact@v4
+        with:
+          name: escalation-report
+          path: /tmp
+
+      - name: Post to Slack
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_COMPLIANCE_ALERTS }}
+        run: |
+          python3 << 'PYTHON_EOF'
+          import json
+          import os
+          import requests
+          from datetime import datetime
+
+          webhook = os.environ.get('SLACK_WEBHOOK_COMPLIANCE_ALERTS')
+          if not webhook:
+              print("⚠️  SLACK_WEBHOOK_COMPLIANCE_ALERTS not set, skipping notification")
+              exit(0)
+
+          with open('/tmp/escalation-report.json') as f:
+              report = json.load(f)
+
+          critical = report['summary']['critical_escalations']
+          severe = report['summary']['severe_escalations']
+          escalations = report['escalations'][:3]
+
+          # Build Slack payload
+          payload = {
+              "blocks": [
+                  {
+                      "type": "section",
+                      "text": {
+                          "type": "mrkdwn",
+                          "text": f"🚨 *Deadline Breach Escalation Alert*\n*Critical:* {critical} | *Severe:* {severe}"
+                      }
+                  },
+                  {"type": "divider"}
+              ]
+          }
+
+          # Add escalation details
+          for esc in escalations:
+              color = "#FF0000" if esc['escalation_level'] == 'critical' else "#FF6600"
+              payload["blocks"].append({
+                  "type": "section",
+                  "text": {
+                      "type": "mrkdwn",
+                      "text": f":alert: *{esc['gap_id']}* ({esc['priority']}) — {esc['days_overdue']}d overdue\nOwner: @{esc['owner']}\n" +
+                              f"Level: {esc['escalation_level'].upper()}\n" +
+                              f"Action: {esc['recommendations'][0] if esc['recommendations'] else 'Review and update'}"
+                  }
+              })
+
+          payload["blocks"].append({"type": "divider"})
+          payload["blocks"].append({
+              "type": "actions",
+              "elements": [
+                  {
+                      "type": "button",
+                      "text": {"type": "plain_text", "text": "View Issue"},
+                      "url": "https://github.com/ruralpeds/.github/issues"
+                  },
+                  {
+                      "type": "button",
+                      "text": {"type": "plain_text", "text": "View Report"},
+                      "url": f"https://github.com/ruralpeds/.github/actions/runs/${{ github.run_id }}"
+                  }
+              ]
+          })
+
+          # Send to Slack
+          response = requests.post(webhook, json=payload, timeout=30)
+          if response.status_code == 200:
+              print("✓ Slack notification sent")
+          else:
+              print(f"❌ Slack notification failed: {response.status_code}")
+              print(response.text)
+
+          PYTHON_EOF

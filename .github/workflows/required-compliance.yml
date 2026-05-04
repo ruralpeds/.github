@@ -41,6 +41,92 @@ on:
       - '**/*.json'
 
 jobs:
+  deadline-compliance:
+    name: Check deadline compliance
+    runs-on: [self-hosted, mac-studio, arm64]
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Check deadline constraints
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 << 'EOF'
+          import os
+          import re
+          from datetime import datetime
+
+          # Check current repo's gap analysis if it exists
+          gap_file = ".gap-analysis/GAP_ANALYSIS.md"
+          if not os.path.exists(gap_file):
+              print("ℹ️  No gap analysis found in this repo")
+              exit(0)
+
+          with open(gap_file, "r") as f:
+              content = f.read()
+
+          # Extract P0/P1 gaps
+          gaps = re.finditer(
+              r"^### ✅?\s?(GAP-\d{3,4}):\s*(.+?)(?=^### (?:✅\s)?GAP-|^## |$)",
+              content,
+              re.MULTILINE | re.DOTALL
+          )
+
+          critical_errors = []
+          for match in gaps:
+              gap_id = match.group(1)
+              block = match.group(0)
+
+              priority_match = re.search(r"^\*\*Priority\*\*:\s*([P0-4])\b", block, re.MULTILINE)
+              priority = priority_match.group(1) if priority_match else "P3"
+
+              if priority not in ["P0", "P1"]:
+                  continue
+
+              target_match = re.search(r"^\*\*Target Completion\*\*:\s*(.+)$", block, re.MULTILINE)
+              target_str = target_match.group(1).strip() if target_match else None
+
+              if not target_str or target_str.upper() in ("TBD", "NONE", "N/A"):
+                  critical_errors.append(f"{gap_id}: Missing target completion date")
+                  continue
+
+              date_parsed = None
+              for fmt in ["%Y-%m-%d", "%m/%d/%Y", "%b %d, %Y", "%B %d, %Y"]:
+                  try:
+                      date_parsed = datetime.strptime(target_str.strip(), fmt)
+                      break
+                  except ValueError:
+                      continue
+
+              if not date_parsed:
+                  critical_errors.append(f"{gap_id}: Invalid date format")
+                  continue
+
+              if date_parsed <= datetime.now():
+                  critical_errors.append(f"{gap_id}: Deadline in the past")
+
+          if critical_errors:
+              print("❌ Deadline compliance check failed:")
+              for error in critical_errors:
+                  print(f"  - {error}")
+              exit(1)
+          else:
+              print("✅ Deadline compliance check passed")
+          EOF
+
   hipaa:
     uses: ./.github/workflows/hipaa-compliance.yml
     with:
