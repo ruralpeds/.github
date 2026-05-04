@@ -1,0 +1,70 @@
+{
+  "high_failure_rate": {
+    "enabled": true,
+    "threshold_percent": 10,
+    "window_minutes": 60,
+    "severity": "critical",
+    "description": "Job failure rate exceeds 10% in 1 hour",
+    "remediation": "See runbook: job-failure-response.md"
+  },
+  "high_queue_depth": {
+    "enabled": true,
+    "threshold_waiting": 20,
+    "severity": "warning",
+    "description": "Queue depth exceeds 20 waiting jobs",
+    "remediation": "See runbook: high-queue-depth-response.md"
+  },
+  "slow_jobs": {
+    "enabled": true,
+    "baseline_multiplier": 2.0,
+    "consecutive_runs": 3,
+    "severity": "warning",
+    "description": "Job duration exceeds 2x historical baseline",
+    "remediation": "See runbook: slow-job-investigation.md"
+  },
+  "runner_unhealthy": {
+    "enabled": true,
+    "min_uptime_percent": 95,
+    "severity": "critical",
+    "description": "Runner uptime below 95% threshold",
+    "remediation": "See runbook: runner-health-recovery.md"
+  },
+  "cost_spike": {
+    "enabled": true,
+    "spike_multiplier": 1.5,
+    "window_hours": 24,
+    "severity": "warning",
+    "description": "Workflow cost exceeds 150% of 7-day average",
+    "remediation": "See runbook: cost-spike-investigation.md"
+  },
+  "low_disk_space": {
+    "enabled": true,
+    "threshold_percent": 90,
+    "severity": "critical",
+    "description": "Disk usage exceeds 90% on runner",
+    "remediation": "See runbook: disk-space-cleanup.md"
+  },
+  "high_memory_usage": {
+    "enabled": true,
+    "threshold_gb": 8,
+    "severity": "warning",
+    "description": "Memory usage exceeds 8GB threshold",
+    "remediation": "See runbook: oom-killer-investigation.md"
+  },
+  "network_timeout": {
+    "enabled": true,
+    "timeout_threshold_percent": 5,
+    "window_hours": 1,
+    "severity": "warning",
+    "description": "Network timeouts exceed 5% of jobs",
+    "remediation": "See runbook: network-timeout-debugging.md"
+  },
+  "ci_degradation": {
+    "enabled": true,
+    "failure_increase_percent": 50,
+    "comparison_window_hours": 24,
+    "severity": "critical",
+    "description": "Overall CI failure rate increased 50% vs 24h average",
+    "remediation": "See runbook: ci-degradation-response.md"
+  }
+}
