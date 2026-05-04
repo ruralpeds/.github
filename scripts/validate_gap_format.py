@@ -251,6 +251,9 @@ class GapValidator:
                         self.warning(f"{priority_code} gap should have a target completion date", gap_id)
                 elif not self._is_valid_date(target):
                     self.warning(f"Target completion date format unclear: '{target}' (prefer YYYY-MM-DD)", gap_id)
+                else:
+                    # Validate deadline constraints for P0/P1
+                    self._validate_deadline_constraints(gap_id, priority_code, target)
 
     def _validate_supporting_files(self):
         """Validate schema.md and other supporting files."""
@@ -288,6 +291,45 @@ class GapValidator:
                 self.info("build-ledger.jsonl is valid JSONL")
             except Exception as e:
                 self.error(f"Failed to read build-ledger.jsonl: {e}")
+
+    def _validate_deadline_constraints(self, gap_id: str, priority: str, target_date_str: str) -> None:
+        """Validate deadline constraints for P0/P1 gaps."""
+        try:
+            # Parse the target date
+            for fmt in ["%Y-%m-%d", "%m/%d/%Y", "%b %d, %Y", "%B %d, %Y"]:
+                try:
+                    target_date = datetime.strptime(target_date_str.strip(), fmt)
+                    break
+                except ValueError:
+                    continue
+            else:
+                return  # Could not parse date, let other validation handle it
+
+            today = datetime.now()
+
+            # Check if date is in the future
+            if target_date <= today:
+                self.error(f"{priority} gap has deadline in the past: {target_date_str}", gap_id)
+                return
+
+            days_to_deadline = (target_date - today).days
+
+            # P0 constraint: deadline must be <= 14 days
+            if priority == "P0":
+                if days_to_deadline > 14:
+                    self.warning(f"P0 gap deadline is {days_to_deadline} days away (ideally <= 14 days)", gap_id)
+                if days_to_deadline > 90:
+                    self.error(f"P0 gap deadline is too far in future ({days_to_deadline} days, max 90)", gap_id)
+
+            # P1 constraint: deadline must be <= 30 days
+            elif priority == "P1":
+                if days_to_deadline > 30:
+                    self.warning(f"P1 gap deadline is {days_to_deadline} days away (ideally <= 30 days)", gap_id)
+                if days_to_deadline > 120:
+                    self.error(f"P1 gap deadline is too far in future ({days_to_deadline} days, max 120)", gap_id)
+
+        except Exception as e:
+            self.warning(f"Could not validate deadline constraints: {e}", gap_id)
 
     def _is_valid_date(self, date_str: str) -> bool:
         """Check if string looks like a valid date."""
