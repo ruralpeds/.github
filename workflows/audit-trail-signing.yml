@@ -13,6 +13,7 @@ on:
 permissions:
   contents: read
   id-token: write  # For OIDC to AWS
+  issues: write
 
 env:
   AUDIT_LOG_DIR: audit-log

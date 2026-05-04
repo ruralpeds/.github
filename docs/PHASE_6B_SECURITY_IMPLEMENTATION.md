@@ -471,7 +471,7 @@ jobs:
    done
    
    # Test retrieval
-   python3 scripts/secret-manager.py --get github-token
+   python3 scripts/secret-manager.py --action get --secret-name github-token
    ```
 
 3. **Enable Encryption** (Day 5-7)
