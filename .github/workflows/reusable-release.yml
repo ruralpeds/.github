@@ -37,7 +37,7 @@ jobs:
   # ── 1. release-please: propose a release PR ────────────────────────────────
   release-please:
     name: Generate release PR
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 5
     permissions:
       contents: write
@@ -60,7 +60,7 @@ jobs:
     name: Build compliance evidence
     needs: release-please
     if: ${{ needs.release-please.outputs.release_created == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 15
     permissions:
       contents: write
@@ -141,7 +141,7 @@ jobs:
   sign:
     needs: [release-please, build-evidence]
     if: ${{ needs.release-please.outputs.release_created == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       id-token: write
       contents: write

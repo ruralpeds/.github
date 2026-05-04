@@ -52,7 +52,7 @@ permissions:
 jobs:
   sign:
     name: Sign Container Image (cosign keyless)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 15
     outputs:
       signed-image: ${{ inputs.image-uri }}

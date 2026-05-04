@@ -50,7 +50,7 @@ concurrency:
 jobs:
   validate:
     name: "Validate ${{ inputs.sandbox_provider || 'epic' }} sandbox"
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 20
 
     steps:

@@ -53,7 +53,7 @@ permissions:
 jobs:
   sign-and-timestamp:
     name: Sign Event & Get RFC 3161 Timestamp
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 15
     outputs:
       jws_compact: ${{ steps.sign.outputs.jws_compact }}

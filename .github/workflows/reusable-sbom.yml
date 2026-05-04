@@ -92,7 +92,7 @@ permissions:
 jobs:
   sbom:
     name: Generate SBOM (${{ inputs.sbom-format }})
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 15
     permissions:
       contents: write   # to commit sbom/ back to the repo

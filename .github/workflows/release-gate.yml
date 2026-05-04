@@ -294,7 +294,7 @@ jobs:
     needs: [verify-compliance, verify-audit, verify-sbom,
             verify-signatures, verify-changelog, build-manifest]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     outputs:
       status: ${{ steps.s.outputs.status }}
     steps:

@@ -79,7 +79,7 @@ jobs:
   # ─────────────────────────────────────────────
   build:
     name: Build & push
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: read
       packages: write

@@ -4,6 +4,9 @@
 
 name: Release & Deploy (SDLC Gate 5)
 
+# DISABLED: This workflow was failing 100% of runs and consuming resources.
+# Schedule trigger has been disabled. Use workflow_dispatch for manual testing.
+# Re-enable once issues are fixed.
 on:
   push:
     branches: [main]

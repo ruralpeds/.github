@@ -46,7 +46,7 @@ permissions:
 jobs:
   vex:
     name: Generate OpenVEX Document
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 10
     outputs:
       vex-path: ${{ steps.generate.outputs.vex-path }}

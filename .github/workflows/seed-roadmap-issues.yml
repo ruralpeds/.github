@@ -4,6 +4,9 @@ name: Seed Roadmap Issues
 # one without a corresponding open issue, files an agent-ready issue using the
 # agent-task template. Safe to re-run — it's idempotent.
 
+# DISABLED: This workflow was failing 100% of runs and consuming resources.
+# Schedule trigger has been disabled. Use workflow_dispatch for manual testing.
+# Re-enable once issues are fixed.
 on:
   workflow_dispatch:
     inputs:
@@ -22,9 +25,9 @@ on:
         required: false
         default: ""
         type: string
-  schedule:
+  # schedule:
     # Weekly re-check: catches newly-added task files.
-    - cron: "0 4 * * 1"
+  # - cron: "0 4 * * 1"
 
 permissions:
   contents: read

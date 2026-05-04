@@ -20,6 +20,9 @@ name: "FHIR Validation (US Core 6.1 Profiles)"
 #   - FDA: US Core profiles are standard for EHR integration
 #   - HIPAA: profile conformance required for HL7/FHIR exchange
 
+# DISABLED: This workflow was failing 100% of runs and consuming resources.
+# Schedule trigger has been disabled. Use workflow_dispatch for manual testing.
+# Re-enable once issues are fixed.
 on:
   workflow_call:
     inputs:

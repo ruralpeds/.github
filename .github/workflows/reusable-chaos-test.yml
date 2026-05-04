@@ -87,7 +87,7 @@ permissions:
 jobs:
   chaos:
     name: "Chaos — ${{ inputs.scenario || 'all' }}"
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 90
     outputs:
       mtbf-days: ${{ steps.report.outputs.mtbf_days }}

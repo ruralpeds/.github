@@ -29,7 +29,7 @@ permissions:
 jobs:
   eol-check:
     name: Check dependency EOL status
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
