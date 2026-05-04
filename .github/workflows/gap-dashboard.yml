@@ -12,6 +12,8 @@ jobs:
   aggregate-gaps:
     name: Aggregate gap statistics
     runs-on: [self-hosted, mac-studio, arm64]
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -63,6 +65,8 @@ jobs:
     name: Generate markdown dashboard
     needs: aggregate-gaps
     runs-on: [self-hosted, mac-studio, arm64]
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -225,6 +229,8 @@ jobs:
     name: Publish summary to GitHub issue
     needs: generate-dashboard
     runs-on: [self-hosted, mac-studio, arm64]
+    permissions:
+      issues: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -338,6 +344,8 @@ jobs:
     name: Archive analytics to audit-log
     needs: aggregate-gaps
     runs-on: [self-hosted, mac-studio, arm64]
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
