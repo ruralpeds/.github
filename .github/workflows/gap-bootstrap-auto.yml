@@ -109,6 +109,8 @@ jobs:
         shell: python
         run: |
           import json
+          import os
+          import sys
 
           try:
               with open('/tmp/gap_bootstrap_report.json', 'r') as f:

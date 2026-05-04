@@ -43,6 +43,10 @@ permissions:
   contents: read
   pull-requests: read
 
+concurrency:
+  group: gap-validation-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate-format:
     name: Validate Gap Analysis Format

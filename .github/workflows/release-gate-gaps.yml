@@ -50,6 +50,10 @@ permissions:
   contents: read
   pull-requests: read
 
+concurrency:
+  group: release-gate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release_gate_gaps:
     name: Release Gate — Gap Analysis
@@ -99,31 +103,38 @@ jobs:
           FORCE_APPROVAL="${{ inputs.force_approval }}"
           APPROVAL_REASON="${{ inputs.approval_reason }}"
 
-          # Build command
-          CMD="python3 .org-github/scripts/gap_release_gate.py \
-            --repo . \
-            --tag '${{ inputs.tag }}' \
-            --json-output /tmp/release-gate-report.json"
+          # Build command as array
+          CMD=(python3 .org-github/scripts/gap_release_gate.py)
+          CMD+=(--repo .)
+          CMD+=(--tag "${{ inputs.tag }}")
+          CMD+=(--json-output /tmp/release-gate-report.json)
 
           if [ "$FORCE_APPROVAL" = "true" ]; then
             if [ -z "$APPROVAL_REASON" ]; then
               echo "::error::force_approval requires approval_reason"
               exit 2
             fi
-            CMD="$CMD --force-approval --approval-reason '$APPROVAL_REASON'"
+            CMD+=(--force-approval)
+            CMD+=(--approval-reason "$APPROVAL_REASON")
           fi
 
           # Execute
-          $CMD
+          "${CMD[@]}"
           EXIT_CODE=$?
 
           # Extract metrics from report
           python3 << 'PYEOF'
           import json
+          import os
           with open('/tmp/release-gate-report.json') as f:
               report = json.load(f)
-              print(f"passed={report['passed']}".lower())
-              print(f"violations_count={len(report['violations'])}")
+              passed = str(report['passed']).lower()
+              violations_count = len(report['violations'])
+
+              # Write to GITHUB_OUTPUT
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+                  out.write(f"gate_passed={passed}\n")
+                  out.write(f"violations_count={violations_count}\n")
           PYEOF
 
           # Save report path for downstream use

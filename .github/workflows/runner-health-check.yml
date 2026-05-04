@@ -6,17 +6,27 @@ on:
     # Run every 6 hours to monitor runner health and disk usage
     - cron: '0 */6 * * *'
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
   # -----------------------------------------------------------------------
   # Monitor self-hosted runner health
   # -----------------------------------------------------------------------
   monitor-runners:
     permissions: {}
+    concurrency:
+      group: runner-health-check-${{ matrix.runner-label.name }}
+      cancel-in-progress: false
     strategy:
       matrix:
         runner-label:
-          - { name: "Mac Studio (Primary)", labels: "self-hosted, mac-studio, arm64" }
-          - { name: "MacBook Pro (Secondary)", labels: "self-hosted, macbook-pro", continue-on-error: true }
+          - { name: "Mac Studio (Primary)", labels: ["self-hosted", "mac-studio", "arm64"] }
+          - { name: "MacBook Pro (Secondary)", labels: ["self-hosted", "macbook-pro"], continue-on-error: true }
       fail-fast: false
 
     name: Check ${{ matrix.runner-label.name }}
