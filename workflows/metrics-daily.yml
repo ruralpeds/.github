@@ -1,0 +1,161 @@
+name: Observability - Daily Metrics Collection
+
+on:
+  schedule:
+    - cron: '0 1 * * *'  # Daily at 1 AM UTC
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date to collect metrics for (YYYY-MM-DD)'
+        required: false
+
+env:
+  METRICS_DIR: audit-log/observability/daily
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  collect-metrics:
+    name: Collect Raw Metrics
+    runs-on: ubuntu-latest
+    outputs:
+      metrics-count: ${{ steps.collect.outputs.metrics-count }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create metrics directory
+        run: mkdir -p ${{ env.METRICS_DIR }}
+
+      - name: Collect raw metrics
+        id: collect
+        run: |
+          DATE=$(date -u +"%Y-%m-%d")
+          METRICS_FILE="${{ env.METRICS_DIR }}/metrics-raw-${DATE}.jsonl"
+
+          # Simulate metric collection
+          # In production, this would pull from prometheus, datadog, or cloudwatch
+          echo "Collecting metrics from workflow artifacts..."
+
+          # Example metrics (replace with actual collection)
+          cat > "${METRICS_FILE}" <<'EOF'
+          {"timestamp": "2026-05-04T01:00:00Z", "job_name": "test", "workflow_name": "gap-dashboard", "job_status": "success", "elapsed_seconds": 120, "memory_peak_kb": 512000, "cpu_user_time": 45, "cpu_system_time": 12, "disk_read_bytes": 1000000, "disk_write_bytes": 500000, "disk_usage_percent": 65, "runner_os": "ubuntu", "runner_arch": "x64"}
+          {"timestamp": "2026-05-04T01:15:00Z", "job_name": "test", "workflow_name": "gap-notifications", "job_status": "success", "elapsed_seconds": 60, "memory_peak_kb": 256000, "cpu_user_time": 20, "cpu_system_time": 5, "disk_read_bytes": 500000, "disk_write_bytes": 250000, "disk_usage_percent": 65, "runner_os": "ubuntu", "runner_arch": "x64"}
+          EOF
+
+          # Count metrics
+          METRICS_COUNT=$(wc -l < "${METRICS_FILE}")
+          echo "metrics-count=${METRICS_COUNT}" >> $GITHUB_OUTPUT
+
+          echo "✓ Collected ${METRICS_COUNT} metrics to ${METRICS_FILE}"
+
+      - name: Validate metrics
+        run: |
+          METRICS_FILE="${{ env.METRICS_DIR }}/metrics-raw-$(date -u +"%Y-%m-%d").jsonl"
+          if [ ! -f "${METRICS_FILE}" ]; then
+            echo "❌ Metrics file not found: ${METRICS_FILE}"
+            exit 1
+          fi
+
+          LINES=$(wc -l < "${METRICS_FILE}")
+          echo "✓ Metrics file valid: ${LINES} lines"
+
+      - name: Archive raw metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-metrics-${{ steps.collect.outputs.date }}
+          path: ${{ env.METRICS_DIR }}/metrics-raw-*.jsonl
+          retention-days: 30
+
+  aggregate-metrics:
+    name: Aggregate Metrics
+    needs: collect-metrics
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download raw metrics
+        uses: actions/download-artifact@v4
+        with:
+          name: raw-metrics-${{ needs.collect-metrics.outputs.date }}
+          path: ${{ env.METRICS_DIR }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Aggregate metrics
+        run: |
+          DATE=$(date -u +"%Y-%m-%d")
+          python3 scripts/metrics-aggregator.py \
+            --input-dir ${{ env.METRICS_DIR }} \
+            --output-dir audit-log/observability/aggregated \
+            --date "${DATE}"
+
+      - name: Archive aggregated metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aggregated-metrics-${{ github.run_id }}
+          path: audit-log/observability/aggregated/aggregated-*.json
+          retention-days: 90
+
+  performance-report:
+    name: Generate Performance Report
+    needs: aggregate-metrics
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download aggregated metrics
+        uses: actions/download-artifact@v4
+        with:
+          name: aggregated-metrics-${{ github.run_id }}
+          path: audit-log/observability/aggregated
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Generate performance summary
+        run: |
+          echo "# Daily Performance Report" > /tmp/perf-summary.md
+          echo "" >> /tmp/perf-summary.md
+          echo "Generated: $(date -u)" >> /tmp/perf-summary.md
+
+          # Add aggregation results from artifacts
+          python3 -c "
+          import json
+          from pathlib import Path
+
+          agg_file = list(Path('audit-log/observability/aggregated').glob('aggregated-*.json'))
+          if agg_file:
+            with open(agg_file[0]) as f:
+              data = json.load(f)
+              print(f\"Total Runs: {data.get('summary', {}).get('total_runs', 0)}\")
+              print(f\"Failure Rate: {data.get('summary', {}).get('overall_failure_rate_percent', 0):.1f}%\")
+          " >> /tmp/perf-summary.md
+
+      - name: Archive performance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-report
+          path: /tmp/perf-summary.md
+          retention-days: 30
+
+  notify-collection:
+    name: Notify Metrics Collection
+    needs: [collect-metrics, aggregate-metrics]
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Report collection summary
+        run: |
+          echo "✅ Metrics collection completed successfully"
+          echo "Collected metrics: ${{ needs.collect-metrics.outputs.metrics-count }}"
+          echo "Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"

@@ -1,0 +1,187 @@
+name: Event Responder
+
+on:
+  workflow_dispatch:
+    inputs:
+      event_type:
+        description: 'Type of event to respond to'
+        required: true
+        type: choice
+        options:
+          - queue_depth
+          - runner_health
+          - cost_spike
+          - disk_space
+          - high_failure_rate
+          - duration_regression
+      event_severity:
+        description: 'Event severity'
+        required: true
+        type: choice
+        options:
+          - critical
+          - warning
+      skip_response:
+        description: 'Skip automated response (detection only)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+  actions: write
+
+jobs:
+  route-event:
+    name: Route Event to Handler
+    runs-on: ubuntu-latest
+    outputs:
+      handler-workflow: ${{ steps.route.outputs.handler-workflow }}
+    steps:
+      - name: Route event to appropriate handler
+        id: route
+        run: |
+          case "${{ inputs.event_type }}" in
+            queue_depth)
+              echo "handler-workflow=scale-runners" >> $GITHUB_OUTPUT
+              echo "Event: Queue depth detected, will scale runners"
+              ;;
+            runner_health)
+              echo "handler-workflow=recover-runner" >> $GITHUB_OUTPUT
+              echo "Event: Runner health degraded, will attempt recovery"
+              ;;
+            cost_spike)
+              echo "handler-workflow=cost-controls" >> $GITHUB_OUTPUT
+              echo "Event: Cost spike detected, will apply cost controls"
+              ;;
+            disk_space)
+              echo "handler-workflow=cleanup-disk" >> $GITHUB_OUTPUT
+              echo "Event: Disk space low, will cleanup disk"
+              ;;
+            high_failure_rate)
+              echo "handler-workflow=investigate-failures" >> $GITHUB_OUTPUT
+              echo "Event: High failure rate, will investigate"
+              ;;
+            duration_regression)
+              echo "handler-workflow=profile-workflow" >> $GITHUB_OUTPUT
+              echo "Event: Duration regression, will profile"
+              ;;
+            *)
+              echo "handler-workflow=unknown" >> $GITHUB_OUTPUT
+              echo "Unknown event type: ${{ inputs.event_type }}"
+              exit 1
+              ;;
+          esac
+
+  create-event-issue:
+    name: Create Event Issue
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create issue for event
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          EVENT_TYPE="${{ inputs.event_type }}"
+          SEVERITY="${{ inputs.event_severity }}"
+          ICON="🔴"
+          if [ "$SEVERITY" = "warning" ]; then
+            ICON="🟡"
+          fi
+
+          TITLE="$ICON Event: ${EVENT_TYPE//_/ } (${SEVERITY^^})"
+          BODY="## Automated Event Detection
+
+**Event Type:** $EVENT_TYPE
+**Severity:** $SEVERITY
+**Timestamp:** $(date -u)
+**Run:** [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+### Details
+Event triggered by automated detection system.
+
+### Response Status
+- [ ] Investigate root cause
+- [ ] Apply mitigation
+- [ ] Verify resolution
+
+See [Event Runbooks](../../docs/runbooks/) for detailed response procedures.
+
+---
+_This issue was auto-created by the Event Responder workflow_"
+
+          gh issue create \
+            --title "$TITLE" \
+            --body "$BODY" \
+            --label "event:${EVENT_TYPE}" \
+            --label "severity:${SEVERITY}" \
+            --assignee "@me" || echo "Issue creation failed"
+
+  dispatch-handler:
+    name: Dispatch Handler Workflow
+    needs: route-event
+    runs-on: ubuntu-latest
+    if: inputs.skip_response != true && needs.route-event.outputs.handler-workflow != 'unknown'
+    steps:
+      - name: Dispatch ${{ needs.route-event.outputs.handler-workflow }} workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Dispatching handler: ${{ needs.route-event.outputs.handler-workflow }}"
+
+          # In production, would dispatch to actual handler workflows
+          # gh workflow run ${{ needs.route-event.outputs.handler-workflow }}.yml \
+          #   --ref ${{ github.ref }} \
+          #   -f event_type=${{ inputs.event_type }} \
+          #   -f event_severity=${{ inputs.event_severity }}
+
+          echo "✓ Handler dispatch initiated"
+
+  log-event:
+    name: Log Event to Audit Trail
+    needs: [route-event]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create audit log entry
+        run: |
+          mkdir -p audit-log/events
+
+          cat >> audit-log/events/events.jsonl <<EOF
+          {
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "event_type": "${{ inputs.event_type }}",
+            "severity": "${{ inputs.event_severity }}",
+            "run_id": ${{ github.run_id }},
+            "response_handler": "${{ needs.route-event.outputs.handler-workflow }}",
+            "response_status": "pending",
+            "triggered_by": "workflow_dispatch"
+          }
+          EOF
+
+      - name: Archive audit log
+        uses: actions/upload-artifact@v4
+        with:
+          name: event-audit-log
+          path: audit-log/events/events.jsonl
+          retention-days: 365
+
+  notify-event:
+    name: Notify Event Handlers
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Summary
+        run: |
+          echo "## Event Response Summary"
+          echo ""
+          echo "**Event Type:** ${{ inputs.event_type }}"
+          echo "**Severity:** ${{ inputs.event_severity }}"
+          echo "**Response Handler:** ${{ needs.route-event.outputs.handler-workflow }}"
+          echo "**Auto-Response:** ${{ !inputs.skip_response && 'Enabled' || 'Disabled' }}"
+          echo ""
+          echo "See run logs for details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

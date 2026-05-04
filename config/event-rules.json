@@ -1,0 +1,105 @@
+{
+  "queue_depth": {
+    "enabled": true,
+    "event_type": "queue_depth",
+    "metric": "queue_depth",
+    "threshold": 20,
+    "window_minutes": 15,
+    "comparison": "greater_than",
+    "action": "scale_runners",
+    "action_params": {
+      "target_replicas": 5,
+      "namespace": "actions-runner-system"
+    },
+    "severity": "warning",
+    "description": "Job queue depth exceeds 20 for 15 minutes",
+    "cooldown_minutes": 10,
+    "max_per_day": 5
+  },
+  "runner_health": {
+    "enabled": true,
+    "event_type": "runner_health",
+    "metric": "runner_uptime_percent",
+    "threshold": 95,
+    "window_minutes": 5,
+    "comparison": "less_than",
+    "action": "recover_runner",
+    "action_params": {
+      "retry_count": 3,
+      "drain_timeout_seconds": 300
+    },
+    "severity": "critical",
+    "description": "Runner uptime drops below 95% threshold",
+    "cooldown_minutes": 30,
+    "max_per_day": 3
+  },
+  "cost_spike": {
+    "enabled": true,
+    "event_type": "cost_spike",
+    "metric": "hourly_cost_ratio",
+    "threshold": 1.5,
+    "window_hours": 1,
+    "comparison": "greater_than",
+    "action": "cost_controls",
+    "action_params": {
+      "reduce_parallelism": true,
+      "cancel_low_priority": true,
+      "control_level": "both"
+    },
+    "severity": "warning",
+    "description": "Hourly cost exceeds 150% of 24-hour rolling average",
+    "cooldown_minutes": 60,
+    "max_per_day": 4
+  },
+  "disk_space": {
+    "enabled": true,
+    "event_type": "disk_space",
+    "metric": "disk_usage_percent",
+    "threshold": 85,
+    "window_minutes": 5,
+    "comparison": "greater_than",
+    "action": "cleanup_disk",
+    "action_params": {
+      "aggressive": false,
+      "target_usage": 75
+    },
+    "severity": "critical",
+    "description": "Disk usage exceeds 85% on runner",
+    "cooldown_minutes": 20,
+    "max_per_day": 10
+  },
+  "high_failure_rate": {
+    "enabled": true,
+    "event_type": "high_failure_rate",
+    "metric": "failure_rate_percent",
+    "threshold": 20,
+    "window_minutes": 60,
+    "comparison": "greater_than",
+    "action": "investigate_failures",
+    "action_params": {
+      "collect_logs": true,
+      "create_issue": true
+    },
+    "severity": "critical",
+    "description": "Job failure rate exceeds 20% in 1-hour window",
+    "cooldown_minutes": 30,
+    "max_per_day": 2
+  },
+  "duration_regression": {
+    "enabled": true,
+    "event_type": "duration_regression",
+    "metric": "duration_regression_detected",
+    "threshold": 2.0,
+    "consecutive_runs": 3,
+    "comparison": "greater_than",
+    "action": "profile_workflow",
+    "action_params": {
+      "profile_duration_seconds": 300,
+      "capture_traces": true
+    },
+    "severity": "warning",
+    "description": "Job duration exceeds 2x baseline for 3+ consecutive runs",
+    "cooldown_minutes": 60,
+    "max_per_day": 3
+  }
+}
