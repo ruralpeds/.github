@@ -1,0 +1,53 @@
+{
+  "roles": {
+    "public": {
+      "description": "Public viewers - summary dashboards only",
+      "permissions": [
+        "read:dashboard-summary"
+      ]
+    },
+    "viewer": {
+      "description": "Authenticated users - read-only access",
+      "permissions": [
+        "read:dashboard",
+        "read:dashboard-summary",
+        "read:api:metrics",
+        "read:api:costs",
+        "read:api:alerts"
+      ]
+    },
+    "editor": {
+      "description": "Team members - can manage alerts and configs",
+      "permissions": [
+        "read:dashboard",
+        "read:dashboard-summary",
+        "read:api:metrics",
+        "read:api:costs",
+        "read:api:alerts",
+        "write:alerts:acknowledge",
+        "write:config:rules"
+      ]
+    },
+    "admin": {
+      "description": "Administrators - full access",
+      "permissions": [
+        "*"
+      ]
+    }
+  },
+  "mappings": {
+    "github-org:ruralpeds": "admin",
+    "github-team:ruralpeds/platform": "admin",
+    "github-team:ruralpeds/sre": "editor",
+    "github-team:ruralpeds/devops": "editor",
+    "default-authenticated": "viewer",
+    "public": "public"
+  },
+  "notes": {
+    "evaluation": "First matching rule wins. Check org first, then teams, then default.",
+    "example-1": "User in @ruralpeds org gets admin role",
+    "example-2": "User in @ruralpeds/sre team gets editor role (supersedes viewer)",
+    "example-3": "Authenticated users not in any mapping get viewer role",
+    "example-4": "Unauthenticated users get public role (summary only)"
+  }
+}

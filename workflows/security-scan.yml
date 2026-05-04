@@ -1,0 +1,304 @@
+name: Security - Weekly Vulnerability Scan
+
+on:
+  schedule:
+    - cron: '0 2 * * 0'  # Weekly Sunday 2 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  scan-python:
+    name: Scan Python Dependencies
+    runs-on: ubuntu-latest
+    outputs:
+      critical-found: ${{ steps.audit.outputs.critical-found }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install pip-audit
+        run: |
+          pip install pip-audit
+
+      - name: Create output directory
+        run: |
+          mkdir -p audit-log/security
+
+      - name: Scan Python dependencies
+        id: audit
+        run: |
+          echo "🔍 Scanning Python dependencies for CVEs..."
+
+          # Collect all requirements files
+          REQS=$(find . -name "requirements*.txt" -o -name "setup.py" -o -name "pyproject.toml" | grep -v ".git" | head -20)
+
+          if [ -z "$REQS" ]; then
+            echo "⚠️  No Python requirement files found"
+            echo "critical-found=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Run pip-audit
+          pip-audit --desc > /tmp/python-audit.txt 2>&1 || true
+
+          # Check results
+          cat /tmp/python-audit.txt
+
+          # Count critical/high severity
+          CRITICAL=$(grep -c "CRITICAL" /tmp/python-audit.txt || echo "0")
+          HIGH=$(grep -c "HIGH" /tmp/python-audit.txt || echo "0")
+
+          echo ""
+          echo "Results:"
+          echo "  Critical: $CRITICAL"
+          echo "  High: $HIGH"
+
+          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+            echo "critical-found=true" >> $GITHUB_OUTPUT
+          else
+            echo "critical-found=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Save report
+          cp /tmp/python-audit.txt audit-log/security/python-audit.txt
+
+      - name: Archive Python audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-audit-report
+          path: audit-log/security/python-audit.txt
+          retention-days: 90
+
+  scan-containers:
+    name: Scan Container Images with Trivy
+    runs-on: ubuntu-latest
+    outputs:
+      critical-found: ${{ steps.trivy.outputs.critical-found }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        id: trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'json'
+          output: '/tmp/trivy-report.json'
+
+      - name: Process Trivy results
+        run: |
+          mkdir -p audit-log/security
+
+          if [ -f /tmp/trivy-report.json ]; then
+            # Count critical vulnerabilities
+            python3 -c "
+            import json
+            with open('/tmp/trivy-report.json') as f:
+              data = json.load(f)
+
+            critical_count = 0
+            for result in data.get('Results', []):
+              for vuln in result.get('Misconfigurations', []) + result.get('Vulnerabilities', []):
+                if vuln.get('Severity') == 'CRITICAL':
+                  critical_count += 1
+
+            print(f'Critical vulnerabilities: {critical_count}')
+
+            # Save report
+            with open('audit-log/security/trivy-report.json', 'w') as f:
+              json.dump(data, f, indent=2)
+            "
+          fi
+
+      - name: Check Trivy results
+        id: trivy
+        run: |
+          if [ -f /tmp/trivy-report.json ]; then
+            CRITICAL=$(python3 -c "
+            import json
+            with open('/tmp/trivy-report.json') as f:
+              data = json.load(f)
+            count = sum(1 for r in data.get('Results', []) for v in r.get('Vulnerabilities', []) if v.get('Severity') == 'CRITICAL')
+            print('true' if count > 0 else 'false')
+            ")
+            echo "critical-found=$CRITICAL" >> $GITHUB_OUTPUT
+          else
+            echo "critical-found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Archive Trivy report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: audit-log/security/trivy-report.json
+          retention-days: 90
+
+  scan-iac:
+    name: Scan Infrastructure as Code with Checkov
+    runs-on: ubuntu-latest
+    outputs:
+      critical-found: ${{ steps.checkov.outputs.critical-found }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Checkov IaC scanner
+        id: checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: config/
+          framework: yaml,kubernetes,dockerfile
+          output_format: json
+          output_file_path: /tmp/checkov-report.json
+
+      - name: Process Checkov results
+        run: |
+          mkdir -p audit-log/security
+
+          if [ -f /tmp/checkov-report.json ]; then
+            cp /tmp/checkov-report.json audit-log/security/checkov-report.json
+
+            python3 -c "
+            import json
+            with open('audit-log/security/checkov-report.json') as f:
+              data = json.load(f)
+
+            # Count failures by severity
+            critical_checks = data.get('summary', {}).get('failed', 0)
+            print(f'Failed IaC checks: {critical_checks}')
+            "
+          fi
+
+      - name: Evaluate Checkov severity
+        id: checkov
+        run: |
+          if [ -f /tmp/checkov-report.json ]; then
+            FAILED=$(python3 -c "
+            import json
+            with open('/tmp/checkov-report.json') as f:
+              data = json.load(f)
+            print('true' if data.get('summary', {}).get('failed', 0) > 10 else 'false')
+            ")
+            echo "critical-found=$FAILED" >> $GITHUB_OUTPUT
+          else
+            echo "critical-found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Archive Checkov report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkov-report
+          path: audit-log/security/checkov-report.json
+          retention-days: 90
+
+  create-security-issues:
+    name: Create Issues for Critical Vulnerabilities
+    needs: [scan-python, scan-containers, scan-iac]
+    runs-on: ubuntu-latest
+    if: |
+      needs.scan-python.outputs.critical-found == 'true' ||
+      needs.scan-containers.outputs.critical-found == 'true' ||
+      needs.scan-iac.outputs.critical-found == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Python CVE issue
+        if: needs.scan-python.outputs.critical-found == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "🔴 CRITICAL: Python dependencies have CVEs" \
+            --label "security" \
+            --label "critical" \
+            --body "Python dependency scan detected CRITICAL or HIGH severity CVEs.
+
+**Scan Results:**
+See artifact: python-audit-report
+
+**Action Required:**
+1. Review vulnerable packages
+2. Update to patched versions
+3. Test compatibility
+4. Merge security updates ASAP
+
+Scan Date: $(date -u)
+Workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Create container vulnerability issue
+        if: needs.scan-containers.outputs.critical-found == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "🔴 Container images have CRITICAL vulnerabilities" \
+            --label "security" \
+            --label "critical" \
+            --body "Container image scan (Trivy) detected CRITICAL vulnerabilities.
+
+**Scan Results:**
+See artifact: trivy-report
+
+**Action Required:**
+1. Review vulnerable layers
+2. Update base images
+3. Rebuild and test
+4. Deploy patches within 24 hours
+
+Scan Date: $(date -u)
+Workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Create IaC misconfiguration issue
+        if: needs.scan-iac.outputs.critical-found == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "🟠 Infrastructure configuration issues detected" \
+            --label "security" \
+            --label "high" \
+            --body "Infrastructure as Code scan (Checkov) found security misconfigurations.
+
+**Scan Results:**
+See artifact: checkov-report
+
+**Action Required:**
+1. Review failing checks
+2. Update configurations to pass checks
+3. Document exceptions if needed
+4. Re-run scan to verify fixes
+
+Scan Date: $(date -u)
+Workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+  notify-scan-complete:
+    name: Notify Scan Completion
+    needs: [scan-python, scan-containers, scan-iac]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Report scan status
+        run: |
+          echo "✅ Security vulnerability scan completed"
+          echo ""
+          echo "Scans Performed:"
+          echo "  • Python dependencies (pip-audit)"
+          echo "  • Container images (Trivy)"
+          echo "  • Infrastructure code (Checkov)"
+          echo ""
+          echo "Results Summary:"
+          echo "  Python Critical: ${{ needs.scan-python.outputs.critical-found }}"
+          echo "  Container Critical: ${{ needs.scan-containers.outputs.critical-found }}"
+          echo "  IaC Issues: ${{ needs.scan-iac.outputs.critical-found }}"
+          echo ""
+          echo "Scan Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
