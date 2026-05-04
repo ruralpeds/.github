@@ -1,0 +1,123 @@
+{
+  "version": "1.0",
+  "description": "Standardized runner matrix definitions for all workflows",
+  "last_updated": "2026-05-04",
+  "runners": {
+    "mac-studio-primary": {
+      "name": "Mac Studio (Primary)",
+      "labels": ["self-hosted", "mac-studio", "arm64"],
+      "timeout_minutes": 60,
+      "arch": "arm64",
+      "os": "macOS",
+      "specs": {
+        "cpu": "Apple Silicon M2 Max",
+        "cores": 12,
+        "memory_gb": 32
+      },
+      "disk_min_gb": 50,
+      "reliability_target": "99%",
+      "cost_per_hour": 0.0,
+      "notes": "Primary Mac runner for high-priority workflows. Runs gap-dashboard, deadline enforcement, etc."
+    },
+    "macbook-pro-secondary": {
+      "name": "MacBook Pro (Secondary)",
+      "labels": ["self-hosted", "macbook-pro"],
+      "timeout_minutes": 45,
+      "arch": "intel",
+      "os": "macOS",
+      "specs": {
+        "cpu": "Intel i7",
+        "cores": 8,
+        "memory_gb": 16
+      },
+      "disk_min_gb": 30,
+      "reliability_target": "95%",
+      "cost_per_hour": 0.0,
+      "notes": "Secondary runner for non-critical workflows. Auto-scale target: 2-3 instances."
+    },
+    "github-hosted-ubuntu": {
+      "name": "GitHub-Hosted Ubuntu",
+      "labels": ["ubuntu-latest"],
+      "timeout_minutes": 360,
+      "arch": "x86_64",
+      "os": "ubuntu-22.04",
+      "specs": {
+        "cpu": "2 vCPU",
+        "cores": 2,
+        "memory_gb": 7
+      },
+      "disk_min_gb": 14,
+      "reliability_target": "99.9%",
+      "cost_per_hour": 0.008,
+      "notes": "GitHub-hosted runner for lightweight jobs. Good for CI/linting. Cost-effective."
+    }
+  },
+  "workflow_assignments": {
+    "gap-dashboard": {
+      "primary": "mac-studio-primary",
+      "fallback": "macbook-pro-secondary",
+      "reason": "Heavy computation (cross-repo aggregation) requires Mac runner"
+    },
+    "deadline-breach-notification": {
+      "primary": "mac-studio-primary",
+      "reason": "Org-wide breach detection requires strong runner"
+    },
+    "runner-health-check": {
+      "primary": "mac-studio-primary",
+      "secondary": "macbook-pro-secondary",
+      "reason": "Monitors all runners, runs on each"
+    },
+    "hipaa-compliance": {
+      "primary": "mac-studio-primary",
+      "reason": "Security-critical workload"
+    },
+    "test-*": {
+      "primary": "macbook-pro-secondary",
+      "fallback": "github-hosted-ubuntu",
+      "reason": "Tests can use cheaper runners with fallback"
+    },
+    "ci-*": {
+      "primary": "github-hosted-ubuntu",
+      "reason": "CI jobs are lightweight, use GitHub-hosted to save costs"
+    }
+  },
+  "scaling_policies": {
+    "macbook-pro-secondary": {
+      "min_instances": 1,
+      "max_instances": 3,
+      "scale_up_threshold": {
+        "queued_jobs": 2,
+        "wait_time_seconds": 300
+      },
+      "scale_down_threshold": {
+        "idle_minutes": 15
+      },
+      "auto_scale": true
+    }
+  },
+  "health_checks": {
+    "interval_minutes": 6,
+    "required_tools": [
+      "git",
+      "gh",
+      "python3",
+      "docker"
+    ],
+    "thresholds": {
+      "disk_percent_warn": 80,
+      "disk_percent_critical": 90,
+      "memory_percent_warn": 85,
+      "memory_percent_critical": 95,
+      "response_time_seconds": 30
+    }
+  },
+  "maintenance": {
+    "frequency": "daily",
+    "tasks": [
+      "disk_cleanup (remove old caches)",
+      "log_rotation (compress logs > 7 days)",
+      "tool_update_check (notify if tools outdated)",
+      "docker_prune (remove unused images/containers)"
+    ]
+  }
+}
