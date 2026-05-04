@@ -110,7 +110,7 @@ Phase 5 builds on Phases 4A-4C by implementing advanced automation features: Kub
 
 **Deliverables:**
 - `scripts/event-detector.py` — Event detection engine
-- `.github/workflows/event-responder.yml` — Automated reactions
+- Prototype event-responder workflow (retired during GAP-002 cleanup) — automated reactions design
 - `docs/event-driven-patterns.md` — Design patterns
 - Examples: Auto-scale on queue depth, alert on cost spike
 

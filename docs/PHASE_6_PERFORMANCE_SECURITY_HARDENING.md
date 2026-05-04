@@ -293,7 +293,7 @@ Public → Viewer (summary only)
 **Solution**: Automated scanning and patching
 
 **Components**:
-- `workflows/security-scan.yml`: Weekly CVE scan
+- `.github/workflows/security-scan.yml`: Weekly CVE scan
   - Scan Python dependencies (pip-audit)
   - Scan container images (trivy)
   - Scan IaC (checkov)

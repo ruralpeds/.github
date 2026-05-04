@@ -27,7 +27,7 @@ Phase 6B implements the first 5 security hardening components for enterprise-gra
 **Files:**
 - `scripts/audit-log-signer.py` (200 lines)
 - `scripts/audit-log-verifier.py` (180 lines)
-- `workflows/audit-trail-signing.yml`
+- Prototype audit-trail-signing workflow retired during GAP-002 cleanup
 
 **Features:**
 - HMAC-SHA256 signatures on each audit entry
@@ -69,7 +69,7 @@ python3 scripts/audit-log-verifier.py \
 
 **File:**
 - `scripts/secret-manager.py` (150 lines)
-- `workflows/secret-rotation.yml`
+- Prototype secret-rotation workflow retired during GAP-002 cleanup
 
 **Features:**
 - AWS Secrets Manager integration
@@ -190,7 +190,7 @@ python3 services/auth-service.py \
 ### 4. Vulnerability Scanning
 
 **File:**
-- `workflows/security-scan.yml`
+- `.github/workflows/security-scan.yml`
 
 **Scanners:**
 - `pip-audit` (Python dependencies)
@@ -359,4 +359,3 @@ Before deploying Phase 6B:
 
 **Branch:** `claude/phase-6-hardening`  
 **Next PR:** Phase 6A (Performance Optimization)
-

@@ -115,7 +115,7 @@ Workflow-Level Metrics:
 - Add metrics collection to:
   - gap-dashboard.yml
   - deadline-breach-notification.yml
-  - batch-job-executor-kubernetes.yml
+  - validated Kubernetes batch workflows if reintroduced
   - cost-metrics-daily.yml
   - cost-attribution-daily.yml
   - All 50+ other workflows
@@ -148,7 +148,7 @@ Workflow-Level Metrics:
 - Prometheus: `audit-log/metrics/metrics.txt` (compatible format)
 
 #### 2.3: Create Daily Aggregation Workflow
-- Workflow: `.github/workflows/metrics-daily.yml`
+- Workflow concept: prototype `metrics-daily.yml` was retired during GAP-002 cleanup
 - Trigger: Daily at 04:00 UTC (after collection)
 - Jobs:
   1. aggregate-metrics: Run metrics-aggregator.py
@@ -264,7 +264,7 @@ Alert Rule 6: Low Disk Space
   5. Send notifications (Slack, email, GitHub issues)
 
 #### 4.3: Create Alert Workflow
-- Workflow: `.github/workflows/observability-alerts.yml`
+- Workflow concept: prototype `observability-alerts.yml` was retired during GAP-002 cleanup
 - Trigger: Every 15 minutes (frequent checks)
 - Jobs:
   1. detect-alerts: Run alert-detector.py
@@ -490,7 +490,7 @@ Usage:
 ## Workflows
 
 ### Workflow 1: Daily Metrics Collection
-**File:** `.github/workflows/metrics-daily.yml` (~200 lines)
+**Status:** Prototype workflow retired during GAP-002 cleanup
 
 ```yaml
 name: Observability — Daily Metrics
@@ -512,7 +512,7 @@ jobs:
 ---
 
 ### Workflow 2: Alert Detection (Frequent)
-**File:** `.github/workflows/observability-alerts.yml` (~180 lines)
+**Status:** Prototype workflow retired during GAP-002 cleanup
 
 ```yaml
 name: Observability — Alert Detection
@@ -535,7 +535,7 @@ jobs:
 ---
 
 ### Workflow 3: Dashboard Generation
-**File:** `.github/workflows/observability-dashboards.yml` (~150 lines)
+**Status:** Prototype workflow retired during GAP-002 cleanup
 
 ```yaml
 name: Observability — Generate Dashboards
@@ -855,10 +855,10 @@ runbooks/
 - [ ] `alert-detector.py` (300 lines)
 - [ ] `dashboard-generator.py` (350 lines)
 
-### Workflows (3 files, ~530 lines)
-- [ ] `metrics-daily.yml` (200 lines)
-- [ ] `observability-alerts.yml` (180 lines)
-- [ ] `observability-dashboards.yml` (150 lines)
+### Workflow Prototypes (retired during GAP-002 cleanup)
+- [ ] `metrics-daily.yml` (prototype, not shipped)
+- [ ] `observability-alerts.yml` (prototype, not shipped)
+- [ ] `observability-dashboards.yml` (prototype, not shipped)
 
 ### Configuration (2 files, ~200 lines)
 - [ ] `config/alert-rules.json` (alert definitions)

@@ -136,7 +136,7 @@ class EventDetector:
 - `_evaluate_rule()`: Test single rule condition
 - `_get_metric()`: Extract metric value with lookback window
 
-### 2. Event Responder Workflow (`event-responder.yml`)
+### 2. Event Responder Workflow (prototype retired during GAP-002 cleanup)
 
 ```yaml
 on:
@@ -411,7 +411,7 @@ jobs:
 **Output**: JSON event list
 
 ### Event Responder Workflow
-**File**: `.github/workflows/event-responder.yml`  
+**Status**: Prototype workflow retired during GAP-002 cleanup  
 **Structure**: dispatch-based with routing to sub-workflows  
 **Sub-workflows**: scale-runners, recover-runner, cost-controls, cleanup-disk
 

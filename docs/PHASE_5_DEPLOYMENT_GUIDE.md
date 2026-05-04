@@ -52,13 +52,8 @@ Week 4: Hardening, monitoring, incident response training
 
 4. **Test Parallelization**
    ```bash
-   # Trigger test workflow
-   gh workflow run batch-job-executor-kubernetes.yml
-   
-   # Monitor execution
-   gh run list --workflow batch-job-executor-kubernetes.yml
-   
-   # Watch pod scaling
+   # The prototype batch-job-executor-kubernetes workflow was retired during GAP-002 cleanup.
+   # Validate runner scaling through live runner status and pod activity instead.
    kubectl get pods -n actions-runner-system -w
    ```
 
@@ -176,10 +171,8 @@ git revert <commit-hash>
 
 1. **Enable Metrics Collection**
    ```bash
-   # Add metrics-daily.yml to scheduled workflows
-   # Schedule: Daily at 1 AM UTC
-   
-   # Test metrics collection
+   # The prototype metrics/alert/dashboard workflows were retired during GAP-002 cleanup.
+   # Test metrics collection through the scripts directly until a validated workflow is reintroduced.
    bash scripts/collect-metrics.sh > /tmp/test-metrics.json
    cat /tmp/test-metrics.json | jq '.'
    ```
@@ -194,13 +187,8 @@ git revert <commit-hash>
 
 3. **Deploy Observability Workflows**
    ```bash
-   # These run on schedule
-   # - metrics-daily.yml: Daily at 1 AM
-   # - observability-alerts.yml: Every 15 min
-   # - observability-dashboards.yml: Every 30 min
-   
-   # Verify workflows created
-   gh workflow list --all
+   # The observability workflow prototypes were retired during GAP-002 cleanup.
+   # Reintroduce them only as validated `.github/workflows/*` automation.
    ```
 
 4. **Validate Dashboards**
@@ -263,24 +251,14 @@ git revert <commit-hash>
 
 3. **Deploy Event Responder Workflow**
    ```bash
-   # Verify workflow exists
-   gh workflow list | grep event-responder
-   
-   # Test manual dispatch
-   gh workflow run event-responder.yml \
-     -f event_type=queue_depth \
-     -f event_severity=warning
+   # The prototype event-responder workflow was retired during GAP-002 cleanup.
+   # Validate the responder logic through its scripts/tests before reintroducing workflow automation.
    ```
 
 4. **Enable Auto-Response Workflows**
    ```bash
-   # Verify workflows exist
-   gh workflow list | grep auto-
-   
-   # These will be triggered by event-responder
-   # - auto-scale-runners.yml
-   # - auto-cost-controls.yml
-   # - auto-cleanup-disk.yml
+   # The prototype auto-response workflows were retired during GAP-002 cleanup.
+   # Reintroduce them only as validated `.github/workflows/*` automation.
    ```
 
 ### Success Criteria

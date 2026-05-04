@@ -1,6 +1,6 @@
 # Workflow Catalog — `ruralpeds/.github`
 
-> **Generated:** 2026-04-28 · **Source of truth:** `.github/workflows/` (75 files) + `workflows/` (2 files)
+> **Generated:** 2026-04-28 · **Source of truth:** `.github/workflows/` (108 files)
 > **Owner:** Timothy Hartzog (@timothyhartzog)
 > **Refresh cadence:** Quarterly, or on any net add/remove of a workflow
 
@@ -25,8 +25,8 @@ For the SDLC gate-by-gate narrative, see [`.github/workflows/README.md`](../.git
 | Release orchestration | 5 |
 | Copilot & agent guardrails | 3 |
 | Other (docs, dashboard, mac-runner, repo-bootstrap) | 8 |
-| **Total in `.github/workflows/`** | **75** |
-| Strays in `/workflows/` (not picked up by Actions) | 2 |
+| **Total in `.github/workflows/`** | **108** |
+| Strays in `/workflows/` (not picked up by Actions) | 0 |
 
 ---
 
@@ -134,6 +134,7 @@ All run on `schedule:` and most can be triggered with `workflow_dispatch`.
 | `hygiene.yml` | schedule + dispatch | Repo hygiene check (README, LICENSE, SECURITY, etc.) |
 | `sync-copilot-assets.yml` | schedule + push + dispatch | Syncs Copilot assets to target repos per `copilot-assets-targets.json` |
 | `test-mac-runner.yml` | schedule + dispatch | Validates macOS runner availability |
+| `workflow-path-hygiene.yml` | push + pull_request on workflow paths | Fails if workflow YAML exists outside `.github/workflows/` |
 | `origin-label.yml` | `pull_request`, `workflow_call` | FDA GMLP / EU AI Act — required `origin:*` label on every PR |
 | `copilot-task-guardrails.yml` | `pull_request` | Agent PR guardrails (size limits, paths, AI session summary) |
 | `copilot-setup-steps.yml` | `workflow_dispatch` | Bootstraps Copilot assets in a repo |
@@ -168,16 +169,15 @@ The Python helper `scripts/traceability/check_gaps.py` is invoked by `gap-analys
 
 ---
 
-## 9 · Standalone files in `/workflows/` (NOT picked up by Actions)
+## 9 · Top-level `workflows/` directory status
 
-GitHub Actions only loads workflows from `.github/workflows/`. The two files in the top-level `workflows/` directory are NOT executed:
+GitHub Actions only loads workflows from `.github/workflows/`. GAP-002
+reconciled the stray top-level `workflows/` directory by deleting stale
+prototype YAML files and duplicate copies, then adding
+`workflow-path-hygiene.yml` so top-level workflow YAML cannot reappear
+unnoticed.
 
-| File | Status | Comparison |
-|---|---|---|
-| `workflows/audit-sign-envelope.yml` | **Stray copy** | 326 lines vs. 326 lines in `.github/workflows/audit-sign-envelope.yml` — content differs |
-| `workflows/reusable-iec62304-traceability.yml` | **Stray copy** | 405 lines vs. 189 lines in `.github/workflows/reusable-iec62304-traceability.yml` — substantially different |
-
-Tracked as **GAP-002** in `.gap-analysis/GAP_ANALYSIS.md` (deduplicate or remove).
+Tracked as **GAP-002** in `.gap-analysis/GAP_ANALYSIS.md`.
 
 ---
 

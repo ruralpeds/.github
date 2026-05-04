@@ -27,7 +27,7 @@ This document is the single entry point for build-status and gap-analysis materi
 | Path | Purpose |
 |---|---|
 | [`../.gap-analysis/build-ledger.jsonl`](../.gap-analysis/build-ledger.jsonl) | Append-only build-status ledger for gap transitions |
-| [`../workflows/gap-dashboard.yml`](../workflows/gap-dashboard.yml) | Dashboard workflow for gap-status reporting surfaces |
+| [`../.github/workflows/gap-dashboard.yml`](../.github/workflows/gap-dashboard.yml) | Dashboard workflow for gap-status reporting surfaces |
 | [`../scripts/gap_lifecycle.py`](../scripts/gap_lifecycle.py) | Core lifecycle automation for gap status transitions |
 | [`../scripts/consolidate_gap_analysis.py`](../scripts/consolidate_gap_analysis.py) | Consolidation helper for gap-analysis data |
 | [`../scripts/aggregate_gaps.py`](../scripts/aggregate_gaps.py) | Aggregates gap records for reporting |

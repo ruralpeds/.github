@@ -263,7 +263,7 @@ class BuildComparison:
         return comparison
 ```
 
-### 4. Optimization Workflow (`container-optimization.yml`)
+### 4. Optimization Workflow (prototype retired during GAP-002 cleanup)
 
 ```yaml
 name: Container Optimization Pipeline

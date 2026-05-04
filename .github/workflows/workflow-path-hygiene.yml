@@ -1,0 +1,31 @@
+name: Workflow Path Hygiene
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - "workflows/**"
+  push:
+    paths:
+      - ".github/workflows/**"
+      - "workflows/**"
+
+permissions:
+  contents: read
+
+jobs:
+  no-top-level-workflows:
+    name: Reject top-level workflows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Fail if workflow YAML exists outside .github/workflows
+        run: |
+          set -euo pipefail
+          if find workflows -type f \( -name '*.yml' -o -name '*.yaml' \) | grep -q .; then
+            echo "::error::Workflow files must live under .github/workflows/. Move or delete top-level workflows/ YAML files."
+            find workflows -type f \( -name '*.yml' -o -name '*.yaml' \) -print
+            exit 1
+          fi

@@ -55,11 +55,11 @@ Strategic focus this iteration: **close the gaps surfaced by the new [`docs/WORK
 Two files live in `/workflows/` at the repo root: `audit-sign-envelope.yml` and `reusable-iec62304-traceability.yml`. GitHub Actions only loads workflows from `.github/workflows/`, so these are **not executed**. Both have a counterpart in `.github/workflows/` with **different content** (the traceability file diverges by 216 lines — 405 vs 189). This is a silent-drift hazard for IEC 62304 traceability and 21 CFR Part 11 audit signing.
 
 **Acceptance Criteria**:
-- [ ] Diff each pair; decide which version is canonical
-- [ ] Merge canonical content into `.github/workflows/<file>.yml`
-- [ ] Delete `/workflows/` (or replace with a `README.md` redirecting readers to `.github/workflows/`)
-- [ ] Add a CI check (e.g. `hygiene.yml`) that fails if `/workflows/*.yml` reappears
-- [ ] Confirm no caller repo references `ruralpeds/.github/workflows/...@...` (only `ruralpeds/.github/.github/workflows/...@...` is valid)
+- [x] Diff each pair; decide which version is canonical
+- [x] Merge canonical content into `.github/workflows/<file>.yml`
+- [x] Delete `/workflows/` (or replace with a `README.md` redirecting readers to `.github/workflows/`)
+- [x] Add a CI check (e.g. `hygiene.yml`) that fails if `/workflows/*.yml` reappears
+- [x] Confirm no caller repo references `ruralpeds/.github/workflows/...@...` (only `ruralpeds/.github/.github/workflows/...@...` is valid)
 
 **Implementation Notes**:
 - Run `diff workflows/audit-sign-envelope.yml .github/workflows/audit-sign-envelope.yml` and `diff workflows/reusable-iec62304-traceability.yml .github/workflows/reusable-iec62304-traceability.yml`
@@ -68,6 +68,7 @@ Two files live in `/workflows/` at the repo root: `audit-sign-envelope.yml` and 
 **Related PRs**: None
 **Blocked By**: None
 **Last Status Update**: 2026-04-28
+- GAP-002 scope had drifted beyond the original two-file note: the current repo had thirteen YAML files under the top-level `workflows/` directory, including two stale duplicates and eleven unshippable prototype workflows. Removed the stray YAML set, updated docs that still pointed at `workflows/...`, and added `workflow-path-hygiene.yml` so top-level workflow YAML now fails CI.
 - Discovered during workflow-catalog audit (see [`docs/WORKFLOW_CATALOG.md` §9](../docs/WORKFLOW_CATALOG.md#9--standalone-files-in-workflows-not-picked-up-by-actions)).
 
 ---

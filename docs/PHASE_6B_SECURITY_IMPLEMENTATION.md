@@ -101,11 +101,10 @@ class AuditLogVerifier:
         return results
 ```
 
-**Workflow: `workflows/audit-trail-signing.yml`**
-- Runs daily
-- Signs all new audit entries
-- Verifies integrity of entire trail
-- Alerts on tampering detected
+**Workflow status:** Prototype workflow retired during GAP-002 cleanup
+- The active implementation surface is the signer/verifier scripts above
+- No shipped `.github/workflows/audit-trail-signing.yml` workflow currently exists
+- Any future automation should be reintroduced under `.github/workflows/` with validation coverage
 
 ### Success Criteria
 - [ ] All audit entries signed
@@ -186,12 +185,9 @@ aws secretsmanager create-secret --name slack-webhook-token
 aws secretsmanager create-secret --name pagerduty-token
 ```
 
-**Workflow: `workflows/secret-rotation.yml`**
-- Runs monthly
-- Rotates GitHub token
-- Rotates database credentials
-- Updates all references
-- Verifies connectivity
+**Workflow status:** Prototype workflow retired during GAP-002 cleanup
+- Secret rotation remains a design target, not an active shipped workflow in this repo
+- Any future automation should be reintroduced under `.github/workflows/` with validation coverage
 
 ### Success Criteria
 - [ ] All secrets in Secrets Manager
@@ -372,7 +368,7 @@ Weekly automated scanning with CVE detection and issue creation.
 
 ### Implementation
 
-**`workflows/security-scan.yml`**
+**`.github/workflows/security-scan.yml`**
 ```yaml
 name: Security Scan
 
@@ -460,7 +456,7 @@ jobs:
    ```bash
    python3 scripts/audit-log-signer.py --input audit-log/events.jsonl
    python3 scripts/audit-log-verifier.py --input audit-log/events.jsonl
-   gh workflow run audit-trail-signing.yml
+   # No shipped audit-trail-signing workflow currently exists in this repo
    ```
 
 2. **Configure Secrets Manager** (Day 3-5)

@@ -453,9 +453,8 @@ gh run view <RUN_ID>
 gh api /orgs/ruralpeds/actions/runners \
   --jq '.runners[] | {name, status, busy, labels}'
 
-# 2. Check workflow labels match runner labels
-cat .github/workflows/batch-job-executor-kubernetes.yml | grep "runs-on"
-# Expected: "runs-on: [self-hosted, kubernetes, linux-x64]"
+# 2. Check any active Kubernetes batch workflow labels match runner labels
+# Note: the prototype batch-job-executor-kubernetes workflow was retired during GAP-002 cleanup
 
 # 3. Verify runner sees jobs (check logs)
 kubectl logs -n github-actions -l app=github-actions-runner -f
@@ -504,31 +503,15 @@ cat /tmp/gap-results-test.json | jq '.summary'
 ### Test 2: Parallel Execution via Workflow (15-20 minutes)
 
 ```bash
-# Trigger batch-job-executor workflow
-gh workflow run batch-job-executor-kubernetes.yml \
-  --ref main
-
-# Monitor workflow progress
-gh run watch $(gh run list --workflow=batch-job-executor-kubernetes.yml -1 --json databaseId --jq .[].databaseId)
-
-# Expected: All 4 pods complete in ~12-15 minutes
-
-# Verify merged results
-gh run download $(gh run list --workflow=batch-job-executor-kubernetes.yml -1 --json databaseId --jq .[].databaseId) \
-  -n gap-dashboard-merged
-
-# Check final statistics
+# Prototype batch-job-executor workflow retired during GAP-002 cleanup.
+# Use direct script execution or a future validated workflow replacement for this test path.
 cat gap-results/org-dashboard-gaps.json | jq '.summary'
 ```
 
 ### Test 3: Performance Measurement (1 minute)
 
 ```bash
-# Check metrics from last run
-gh run download $(gh run list --workflow=batch-job-executor-kubernetes.yml -1 --json databaseId --jq .[].databaseId) \
-  -n kubernetes-metrics
-
-# View performance metrics
+# Check metrics from the current execution context or future validated workflow replacement
 cat kubernetes-metrics/kubernetes-metrics.json | jq '.'
 
 # Expected output:

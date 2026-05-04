@@ -100,7 +100,7 @@ cost_center: "engineering" | "devops" | "research"
 #### 1.3: Update CI/CD Baseline
 - Update `gap-dashboard.yml` with cost tags
 - Update `deadline-breach-notification.yml` with cost tags
-- Update `batch-job-executor-kubernetes.yml` with cost tags
+- If a validated Kubernetes batch workflow is reintroduced, add cost tags there as well
 - Example:
 ```yaml
 env:
