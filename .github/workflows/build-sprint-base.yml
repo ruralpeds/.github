@@ -42,7 +42,7 @@ jobs:
   tag-major-version:
     name: Tag major version (v1)
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       packages: write
     steps:
@@ -72,7 +72,7 @@ jobs:
   smoke-test:
     name: Smoke test
     needs: [build, tag-major-version]
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - uses: actions/checkout@v4
       - name: Pull and probe sprint-base

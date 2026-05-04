@@ -56,7 +56,7 @@ permissions:
 jobs:
   provenance:
     name: SLSA v1.0 Provenance
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 15
     outputs:
       attestation-url: ${{ steps.attest.outputs.attestation-url }}

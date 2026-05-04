@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   backfill-provenance:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - name: Checkout
         uses: actions/checkout@v4

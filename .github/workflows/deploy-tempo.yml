@@ -72,7 +72,7 @@ concurrency:
 jobs:
   deploy:
     name: "Tempo deploy"
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 25
     steps:
       - name: Checkout

@@ -231,7 +231,7 @@ jobs:
 
   verify:
     name: Verify Bootstrap Integrity
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     needs: bootstrap
     if: always()
 

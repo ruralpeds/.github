@@ -46,7 +46,7 @@ permissions:
 jobs:
   validate-format:
     name: Validate Gap Analysis Format
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 10
 
     steps:
@@ -250,7 +250,7 @@ jobs:
 
   schema-enforcement:
     name: Enforce Gap Schema
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     if: always()
     timeout-minutes: 5
 
@@ -323,7 +323,7 @@ jobs:
 
   report:
     name: Validation Report
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     needs: [validate-format, schema-enforcement]
     if: always()
     timeout-minutes: 5

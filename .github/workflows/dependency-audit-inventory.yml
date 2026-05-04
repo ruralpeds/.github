@@ -18,7 +18,7 @@ concurrency:
 jobs:
   generate:
     name: Generate dependency inventory
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 15
 
     steps:

@@ -42,7 +42,7 @@ concurrency:
 jobs:
   lint:
     name: Lint workflows / YAML / JSON / Markdown
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 10
     steps:
       - name: Checkout
@@ -106,7 +106,7 @@ jobs:
     # `.github/instructions/workflows.instructions.md`, advisory checks live in
     # a `warning-only-*` job, not as `continue-on-error: true` on a real step.
     name: Link-check (advisory)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 5
     continue-on-error: true
     steps:
@@ -128,7 +128,7 @@ jobs:
 
   test:
     name: Pytest — scripts/ + tests/
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 10
     steps:
       - name: Checkout

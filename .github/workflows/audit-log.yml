@@ -35,7 +35,7 @@ on:
 jobs:
   audit:
     name: Generate audit entry
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     permissions:
       contents: write
       id-token: write   # for Sigstore keyless OIDC signing of chain entries

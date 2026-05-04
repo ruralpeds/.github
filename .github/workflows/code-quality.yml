@@ -43,7 +43,7 @@ jobs:
   detect-languages:
     name: Detect CodeQL languages
     if: inputs.run-codeql
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     outputs:
       matrix: ${{ steps.detect.outputs.languages }}
     steps:
@@ -108,7 +108,7 @@ jobs:
     name: "CodeQL (${{ matrix.language }})"
     needs: detect-languages
     if: inputs.run-codeql && needs.detect-languages.outputs.matrix != '[]'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 30
     permissions:
       security-events: write

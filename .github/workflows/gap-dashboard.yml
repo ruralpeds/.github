@@ -11,7 +11,7 @@ on:
 jobs:
   aggregate-gaps:
     name: Aggregate gap statistics
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -62,7 +62,7 @@ jobs:
   generate-dashboard:
     name: Generate markdown dashboard
     needs: aggregate-gaps
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -224,7 +224,7 @@ jobs:
   publish-to-issue:
     name: Publish summary to GitHub issue
     needs: generate-dashboard
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -337,7 +337,7 @@ jobs:
   archive-analytics:
     name: Archive analytics to audit-log
     needs: aggregate-gaps
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, mac-studio, arm64]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
