@@ -1,14 +1,14 @@
 # Gap Analysis Metrics & Trends
 
-**Status:** Auto-generated daily by [`.github/workflows/gap-dashboard.yml`](.github/workflows/gap-dashboard.yml)
-**Last Updated:** 2026-05-04 (placeholder — updates daily at 07:00 UTC)
+**Status:** Auto-generated weekly by [`.github/workflows/gap-dashboard.yml`](../.github/workflows/gap-dashboard.yml)
+**Last Updated:** 2026-05-04 (placeholder — updates weekly on Monday at 07:00 UTC)
 **Owner:** Timothy Hartzog (@timothyhartzog)
 
 ---
 
 ## Overview
 
-This document tracks gap analysis metrics, trends, and bottlenecks across the ruralpeds organization. It is generated automatically every morning at 07:00 UTC and includes:
+This document tracks gap analysis metrics, trends, and bottlenecks across the ruralpeds organization. It is generated automatically every Monday at 07:00 UTC and includes:
 
 - **Completion % by repo** — which teams are most on-track?
 - **Gap age distribution** — which gaps are getting stale?
@@ -247,7 +247,7 @@ These gaps lack a designated owner and may stall:
 
 ## Links & Resources
 
-- **Gap Analysis System:** [`.gap-analysis/README.md`](.gap-analysis/README.md)
+- **Gap Analysis System:** [`.gap-analysis/README.md`](../.gap-analysis/README.md)
 - **Full Dashboard:** [Gap Analysis Dashboard](./gap-analysis-dashboard.md)
 - **Live Dashboard Issue:** [📊 Gap Analysis Dashboard](../../issues) (pinned)
 - **Workflow Definition:** [`.github/workflows/gap-dashboard.yml`](.github/workflows/gap-dashboard.yml)
