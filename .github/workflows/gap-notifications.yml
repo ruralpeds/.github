@@ -13,8 +13,11 @@ name: Gap Analysis — Notifications
 
 on:
   schedule:
-    # Every day at 8 AM UTC (gap aging check)
-    - cron: "0 8 * * *"
+    # Weekly on Monday at 8:30 AM UTC (cost optimization: batch notifications)
+    # Changed from daily (30 runs/month) to weekly (4 runs/month)
+    # Staggered 30 min to avoid UTC 08:00 collision with playwright-audit & sync-copilot-assets
+    # Savings: 26 runs/month (~$1/month) | Risk: LOW (batched weekly digest sufficient)
+    - cron: "30 8 * * 1"
 
   push:
     branches:
