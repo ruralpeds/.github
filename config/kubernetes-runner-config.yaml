@@ -1,0 +1,368 @@
+# Kubernetes Runner Configuration for GitHub Actions
+#
+# Deployment: GitHub Actions Runner on Kubernetes
+# Namespace: github-actions
+# Replicas: Managed by GitHub Actions (dynamic scaling)
+#
+# Usage: Deploy on Kubernetes cluster with:
+#   kubectl apply -f config/kubernetes-runner-config.yaml
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: github-actions
+  labels:
+    name: github-actions
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runner-config
+  namespace: github-actions
+data:
+  runner-name: "k8s-runner"
+  organization: "ruralpeds"
+  repository: ".github"
+  # GitHub will inject GITHUB_TOKEN as secret
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: github-actions-runner
+  namespace: github-actions
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: github-actions-runner
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+subjects:
+  - kind: ServiceAccount
+    name: github-actions-runner
+    namespace: github-actions
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-actions-runner
+  namespace: github-actions
+  labels:
+    app: github-actions-runner
+spec:
+  replicas: 1  # GitHub Actions will manage replicas dynamically
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: github-actions-runner
+  template:
+    metadata:
+      labels:
+        app: github-actions-runner
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      serviceAccountName: github-actions-runner
+      containers:
+      - name: runner
+        image: ghcr.io/actions/actions-runner:latest
+        imagePullPolicy: Always
+        env:
+        # GitHub Actions will inject these
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: github-token
+              key: token
+        - name: GITHUB_REPOSITORY
+          value: "ruralpeds/.github"
+        - name: GITHUB_ORGANIZATION
+          value: "ruralpeds"
+        - name: RUNNER_LABELS
+          value: "self-hosted,kubernetes,linux-x64"
+        - name: RUNNER_WORKDIR
+          value: "/runner/_work"
+        - name: RUNNER_ALLOW_RUNASROOT
+          value: "true"
+        resources:
+          requests:
+            cpu: "2"
+            memory: "4Gi"
+            ephemeral-storage: "20Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+            ephemeral-storage: "40Gi"
+        volumeMounts:
+        - name: runner-work
+          mountPath: /runner/_work
+        - name: docker-sock
+          mountPath: /var/run/docker.sock
+        - name: temp
+          mountPath: /tmp
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "test -f /runner/.runner"
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          timeoutSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "test -f /runner/.runner"
+          initialDelaySeconds: 15
+          periodSeconds: 30
+      volumes:
+      - name: runner-work
+        emptyDir: {}
+      - name: docker-sock
+        hostPath:
+          path: /var/run/docker.sock
+          type: Socket
+      - name: temp
+        emptyDir:
+          sizeLimit: 10Gi
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - github-actions-runner
+              topologyKey: kubernetes.io/hostname
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: runner-service
+  namespace: github-actions
+  labels:
+    app: github-actions-runner
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: metrics
+  selector:
+    app: github-actions-runner
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: runner-hpa
+  namespace: github-actions
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: github-actions-runner
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 2
+        periodSeconds: 30
+      selectPolicy: Max
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: runner-pdb
+  namespace: github-actions
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: github-actions-runner
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: github-actions-quota
+  namespace: github-actions
+spec:
+  hard:
+    requests.cpu: "20"
+    requests.memory: "40Gi"
+    requests.ephemeral-storage: "200Gi"
+    limits.cpu: "40"
+    limits.memory: "80Gi"
+    limits.ephemeral-storage: "400Gi"
+    pods: "10"
+  scopeSelector:
+    matchExpressions:
+    - operator: In
+      scopeName: PriorityClass
+      values: ["default"]
+
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: runner-limits
+  namespace: github-actions
+spec:
+  limits:
+  - default:
+      cpu: "2"
+      memory: "4Gi"
+    defaultRequest:
+      cpu: "1"
+      memory: "2Gi"
+    min:
+      cpu: "100m"
+      memory: "128Mi"
+    max:
+      cpu: "4"
+      memory: "8Gi"
+    type: Container
+  - max:
+      cpu: "4"
+      memory: "8Gi"
+    min:
+      cpu: "100m"
+      memory: "128Mi"
+    type: Pod
+
+---
+# Network Policy: Restrict traffic to GitHub API only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: runner-network-policy
+  namespace: github-actions
+spec:
+  podSelector:
+    matchLabels:
+      app: github-actions-runner
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: github-actions
+  egress:
+  # Allow DNS
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow GitHub API
+  - to:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+  # Allow artifact storage
+  - to:
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 5000
+
+---
+# ConfigMap: Monitoring & alerting rules
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runner-alerts
+  namespace: github-actions
+data:
+  alerting-rules.yaml: |
+    groups:
+    - name: github-actions-runner
+      interval: 30s
+      rules:
+      - alert: RunnerDown
+        expr: up{job="github-actions-runner"} == 0
+        for: 5m
+        annotations:
+          summary: "GitHub Actions runner is down"
+      - alert: HighMemoryUsage
+        expr: container_memory_usage_bytes{pod=~"github-actions-runner.*"} > 7000000000
+        for: 2m
+        annotations:
+          summary: "GitHub Actions runner memory usage > 7GB"
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total{pod=~"github-actions-runner.*"}[5m]) > 3.5
+        for: 5m
+        annotations:
+          summary: "GitHub Actions runner CPU usage > 3.5 cores"
+      - alert: JobQueueDepth
+        expr: github_actions_job_queue_depth > 50
+        for: 10m
+        annotations:
+          summary: "GitHub Actions job queue > 50 jobs (consider scaling)"
+
+# Deployment instructions:
+# 1. Create GitHub token secret:
+#    kubectl create secret generic github-token \
+#      --from-literal=token=$GITHUB_TOKEN \
+#      -n github-actions
+#
+# 2. Apply this configuration:
+#    kubectl apply -f config/kubernetes-runner-config.yaml
+#
+# 3. Verify deployment:
+#    kubectl get pods -n github-actions
+#    kubectl logs -n github-actions -l app=github-actions-runner
+#
+# 4. Use in workflows with:
+#    runs-on: [self-hosted, kubernetes, linux-x64]
