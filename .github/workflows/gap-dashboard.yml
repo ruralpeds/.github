@@ -394,3 +394,53 @@ jobs:
             git commit -m "audit: archive daily gap analysis ($(date -u +'%Y-%m-%d %H:%M UTC'))"
             git push origin main
           fi
+
+  sync-deadline-compliance:
+    name: Sync deadline compliance index
+    needs: aggregate-gaps
+    runs-on: [self-hosted, mac-studio, arm64]
+    permissions:
+      contents: write
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run gap sync coordinator
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/gap_sync_coordinator.py \
+            --token "$GH_TOKEN" \
+            --org ruralpeds \
+            --output /tmp/gap-sync-index.json
+
+      - name: Archive sync index
+        run: |
+          mkdir -p audit-log/daily
+          DATE=$(date -u +'%Y-%m-%d')
+          cp /tmp/gap-sync-index.json audit-log/daily/sync-index-${DATE}.json
+
+      - name: Commit sync index
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet audit-log/daily/sync-index-*.json 2>/dev/null; then
+            echo "Sync index unchanged, skipping commit"
+          else
+            git add audit-log/daily/sync-index-*.json
+            git commit -m "audit: update gap sync index ($(date -u +'%Y-%m-%d %H:%M UTC'))" || true
+            git push origin main || true
+          fi
