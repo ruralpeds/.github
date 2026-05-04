@@ -10,11 +10,13 @@ This document describes the automated workflows for bootstrapping and validating
 
 ## Overview
 
-The Gap Analysis system uses three automated workflows to maintain consistency across ~70 Rust and Julia repositories:
+The Gap Analysis system uses five automated workflows to maintain consistency across ~70 Rust and Julia repositories:
 
 1. **gap-bootstrap-auto.yml** — Monthly discovery and bootstrap of new repos
 2. **gap-validate.yml** — Format and schema validation in each repo's CI
 3. **reusable-gap-schema-check.yml** — Reusable schema validation for repo CI pipelines
+4. **gap-notifications.yml** — Daily aging checks + event-driven notifications
+5. **release-gate-gaps.yml** — Reusable release gate enforcement
 
 ---
 
@@ -359,9 +361,250 @@ For questions or issues with the workflow:
 
 ---
 
+---
+
+## 4. Gap Notifications Workflow
+
+**File:** `.github/workflows/gap-notifications.yml`  
+**Runs in:** `ruralpeds/.github` repository  
+**Triggers:**
+- Scheduled: Every day at 8 AM UTC
+- Event-driven: Any push/PR modifying `.gap-analysis/GAP_ANALYSIS.md`
+
+### Purpose
+
+Monitors gap aging and sends Slack notifications for:
+- Gaps with last status update > 30 days old
+- P0/P1 gaps in "In Progress" status > 60 days
+- Gaps in "Blocked" status > 90 days without resolution
+
+### Configuration
+
+Requires secret: `SLACK_WEBHOOK_URL`
+- Set up in `Settings > Secrets and Variables > Actions`
+- Use a Slack webhook for `#gap-analysis-alerts` channel
+
+### How It Works
+
+1. **Daily Schedule:** Runs `gap_aging_check.py` on all repos
+2. **Event Trigger:** Detects when GAP_ANALYSIS.md changes
+3. **Analysis:** Identifies gaps exceeding age thresholds
+4. **Notification:** Sends Slack message with aging gap details
+
+### Slack Message Format
+
+Example message for aging gaps:
+
+```
+:hourglass_flowing_sand: Gaps Aging Beyond Threshold
+
+Repository: ruralpeds/some-repo
+
+• GAP-042
+  Type: last_update_stale | Days: 45 (threshold: 30)
+  Last status update was 45 days ago (2026-03-20)
+
+• GAP-081
+  Type: in_progress_long | Days: 75 (threshold: 60)
+  P1 gap in progress for 75 days (since 2026-02-19)
+```
+
+---
+
+## 5. Release Gate (Gap Analysis) Workflow
+
+**File:** `.github/workflows/release-gate-gaps.yml`  
+**Type:** Reusable workflow  
+**Called by:** Individual repo release workflows
+
+### Purpose
+
+Enforces gap-analysis compliance before allowing releases. Blocks releases if:
+- **P0 gaps exist** (any status except Completed/Archived)
+- **P1 gaps** have no target completion date or date > 30 days away
+- **Any active gap** has no owner assigned
+- **Any active gap** is in "Blocked" status
+
+### Configuration in Release Workflow
+
+Add to your repo's release workflow:
+
+```yaml
+jobs:
+  check-gaps:
+    uses: ruralpeds/.github/.github/workflows/release-gate-gaps.yml@main
+    with:
+      tag: ${{ github.ref_name }}
+      force_approval: false
+      approval_reason: ""
+    secrets:
+      bot_token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+### Inputs
+
+| Input | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `tag` | string | Yes | — | Release tag (e.g., `v1.2.3`) |
+| `force_approval` | boolean | No | `false` | Bypass gate violations with approval |
+| `approval_reason` | string | No | `""` | Reason for force approval |
+
+### Outputs
+
+| Output | Description |
+|--------|-------------|
+| `gate_passed` | Boolean: true if all checks passed |
+| `violations_count` | Number of policy violations found |
+| `report_file` | Path to JSON audit report |
+
+### Force Approval (Audit Trail)
+
+For emergency releases that violate policies:
+
+```yaml
+  check-gaps:
+    uses: ruralpeds/.github/.github/workflows/release-gate-gaps.yml@main
+    with:
+      tag: ${{ github.ref_name }}
+      force_approval: true
+      approval_reason: "Emergency hotfix for production issue #1234"
+```
+
+The audit trail is recorded in:
+- Workflow logs
+- JSON report artifact (30-day retention)
+- Slack notification (if configured)
+
+### Artifacts
+
+Release gate generates audit report artifact:
+- **Name:** `release-gate-report`
+- **Path:** `/tmp/release-gate-report.json`
+- **Retention:** 30 days
+
+### Example Report
+
+```json
+{
+  "repo": "/home/user/.github",
+  "tag": "v1.0.0",
+  "passed": false,
+  "timestamp": "2026-05-04T06:25:00Z",
+  "total_gaps": 11,
+  "violations": [
+    {
+      "gap_id": "GAP-042",
+      "gap_title": "Implement QuadraticSpline",
+      "violation_type": "p1_overdue",
+      "message": "P1 gap target completion date (2026-06-15) is > 30 days away",
+      "severity": "error"
+    }
+  ],
+  "force_approved": false,
+  "approval_reason": null,
+  "actor": "alice",
+  "sha": "6bd230c..."
+}
+```
+
+---
+
+## 6. Supporting Scripts
+
+### gap_release_gate.py
+
+Enforces release gate policies. Callable locally or from CI.
+
+```bash
+# Check release compliance
+python3 scripts/gap_release_gate.py --repo . --tag v1.0.0
+
+# Force approve with reason (audit trail)
+python3 scripts/gap_release_gate.py \
+  --repo . --tag v1.0.0 \
+  --force-approval \
+  --approval-reason "Emergency patch for CVE-2026-1234"
+
+# Save JSON report
+python3 scripts/gap_release_gate.py \
+  --repo . --tag v1.0.0 \
+  --json-output /tmp/gate-report.json
+```
+
+### gap_aging_check.py
+
+Identifies gaps aging beyond thresholds.
+
+```bash
+# Check for aging gaps
+python3 scripts/gap_aging_check.py --repo .
+
+# Save JSON report
+python3 scripts/gap_aging_check.py \
+  --repo . \
+  --json-output /tmp/aging-report.json
+```
+
+Exit code: Always 0 (returns findings, not errors)
+
+### gap_notifications.py
+
+Sends Slack notifications for gap events.
+
+```bash
+# Notify about aging gaps
+python3 scripts/gap_notifications.py \
+  --repo my-repo \
+  --event aging_gaps \
+  --aging-file /tmp/aging-report.json \
+  --slack-webhook https://hooks.slack.com/...
+
+# Notify about release blockers
+python3 scripts/gap_notifications.py \
+  --repo my-repo \
+  --event release_blockers \
+  --violations-file /tmp/gate-report.json
+```
+
+### gap_ownership.py
+
+Suggests ownership for unassigned gaps.
+
+```bash
+# Suggest ownership
+python3 scripts/gap_ownership.py --repo .
+
+# Auto-assign high-confidence suggestions
+python3 scripts/gap_ownership.py --repo . --mode assign --auto
+
+# Save suggestions as JSON
+python3 scripts/gap_ownership.py \
+  --repo . \
+  --json-output /tmp/ownership-suggestions.json
+```
+
+---
+
+## Setup Checklist
+
+- [ ] Configure `SLACK_WEBHOOK_URL` secret in `ruralpeds/.github`
+  - Go to Settings > Secrets and Variables > Actions
+  - Create new repository secret named `SLACK_WEBHOOK_URL`
+  - Value: Your Slack webhook URL for `#gap-analysis-alerts` channel
+- [ ] Verify `gap-notifications.yml` is in `.github/workflows/`
+- [ ] Verify `release-gate-gaps.yml` is in `.github/workflows/`
+- [ ] Each repo calling release gate has SLACK_WEBHOOK_URL secret (or inherits from org)
+- [ ] Test release gate in dry-run mode on a branch release
+
+---
+
 ## See Also
 
 - [GAP_ANALYSIS_LIFECYCLE.md](GAP_ANALYSIS_LIFECYCLE.md) — Full lifecycle standard
 - [CONTRIBUTING.md](../CONTRIBUTING.md) — Contributing guidelines
 - `scripts/gap_lifecycle.py` — CLI for gap status transitions
+- `scripts/gap_release_gate.py` — Release gate enforcement
+- `scripts/gap_aging_check.py` — Aging gap detection
+- `scripts/gap_notifications.py` — Slack notifications
+- `scripts/gap_ownership.py` — Ownership suggestions
 - `.github/templates/gap-analysis/` — Template files
