@@ -2,10 +2,11 @@ name: "Gap Analysis Dashboard"
 
 on:
   schedule:
-    # Weekly on Monday at 7 AM UTC (cost optimization: gap dashboard is weekly reporting)
+    # Weekly on Monday at 7:30 AM UTC (cost optimization: gap dashboard is weekly reporting)
+    # Staggered 30 minutes later to reduce peak load congestion with other Monday tasks
     # Changed from daily (30 runs/month) to weekly (4 runs/month)
     # Savings: 26 runs/month (~$1/month) | Risk: LOW (dashboard is aggregate, not real-time)
-    - cron: "0 7 * * 1"
+    - cron: "30 7 * * 1"
   workflow_dispatch:
 
 jobs:

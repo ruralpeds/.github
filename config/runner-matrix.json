@@ -68,8 +68,8 @@
       "reason": "Monitors all runners, runs on each"
     },
     "hipaa-compliance": {
-      "primary": "mac-studio-primary",
-      "reason": "Security-critical workload"
+      "primary": "github-hosted-ubuntu",
+      "reason": "Linting/scanning job, no Mac-specific needs. Cost optimization: 90% cheaper on GitHub-hosted"
     },
     "test-*": {
       "primary": "macbook-pro-secondary",
@@ -79,6 +79,18 @@
     "ci-*": {
       "primary": "github-hosted-ubuntu",
       "reason": "CI jobs are lightweight, use GitHub-hosted to save costs"
+    },
+    "required-compliance": {
+      "primary": "github-hosted-ubuntu",
+      "reason": "Compliance checks are compatible with GitHub-hosted. Cost optimization: 90% savings"
+    },
+    "check-*": {
+      "primary": "github-hosted-ubuntu",
+      "reason": "Check jobs are lightweight, GitHub-hosted sufficient"
+    },
+    "audit-*": {
+      "primary": "github-hosted-ubuntu",
+      "reason": "Audit jobs don't require Mac runner. Cost optimization"
     }
   },
   "scaling_policies": {

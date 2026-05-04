@@ -5,8 +5,8 @@ name: Deadline Breach Notification
 
 on:
   schedule:
-    # Run daily at 06:00 UTC (early morning, before business hours)
-    - cron: '0 6 * * *'
+    # Run daily at 05:30 UTC (staggered earlier to reduce peak load congestion)
+    - cron: '30 5 * * *'
   workflow_dispatch:
     inputs:
       slack_webhook:
