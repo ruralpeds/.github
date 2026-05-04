@@ -1,0 +1,194 @@
+name: Reusable — Release Gate (Gap Analysis)
+
+# Reusable workflow for release gate enforcement based on gap-analysis.
+#
+# Called from each repo's release workflow (e.g., release.yml) to check
+# gap-analysis compliance before allowing a release to proceed.
+#
+# Policies enforced:
+#   - P0 gaps: ZERO allowed (hard block)
+#   - P1 gaps: Must have completion date <= 30 days from now
+#   - All gaps: Must have owner assigned
+#   - All gaps: Must not be in "Blocked" status
+#
+# Can be overridden with explicit approval and audit reason.
+#
+# Usage:
+#   jobs:
+#     release:
+#       uses: ruralpeds/.github/.github/workflows/release-gate-gaps.yml@main
+#       with:
+#         tag: "v1.2.3"
+#         force_approval: false
+#         approval_reason: ""
+#       secrets:
+#         bot_token: ${{ secrets.GITHUB_TOKEN }}
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: "Release tag (e.g., v1.2.3)"
+        required: true
+        type: string
+      force_approval:
+        description: "Force approval of gate violations (requires reason)"
+        required: false
+        type: boolean
+        default: false
+      approval_reason:
+        description: "Reason for force approval"
+        required: false
+        type: string
+        default: ""
+    secrets:
+      bot_token:
+        description: "GitHub token (optional override)"
+        required: false
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  release_gate_gaps:
+    name: Release Gate — Gap Analysis
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 5
+
+    outputs:
+      gate_passed: ${{ steps.gate_check.outputs.passed }}
+      violations_count: ${{ steps.gate_check.outputs.violations_count }}
+      report_file: ${{ steps.gate_check.outputs.report_file }}
+
+    steps:
+      - name: Checkout caller repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.bot_token || secrets.GITHUB_TOKEN }}
+
+      - name: Checkout org .github
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          repository: ruralpeds/.github
+          ref: main
+          path: .org-github
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Verify .gap-analysis exists
+        id: verify
+        shell: bash
+        run: |
+          if [ ! -d .gap-analysis ]; then
+            echo "::notice::No .gap-analysis directory found; skipping release gate"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "skip=false" >> $GITHUB_OUTPUT
+
+      - name: Run release gate check
+        id: gate_check
+        if: steps.verify.outputs.skip == 'false'
+        shell: bash
+        run: |
+          FORCE_APPROVAL="${{ inputs.force_approval }}"
+          APPROVAL_REASON="${{ inputs.approval_reason }}"
+
+          # Build command
+          CMD="python3 .org-github/scripts/gap_release_gate.py \
+            --repo . \
+            --tag '${{ inputs.tag }}' \
+            --json-output /tmp/release-gate-report.json"
+
+          if [ "$FORCE_APPROVAL" = "true" ]; then
+            if [ -z "$APPROVAL_REASON" ]; then
+              echo "::error::force_approval requires approval_reason"
+              exit 2
+            fi
+            CMD="$CMD --force-approval --approval-reason '$APPROVAL_REASON'"
+          fi
+
+          # Execute
+          $CMD
+          EXIT_CODE=$?
+
+          # Extract metrics from report
+          python3 << 'PYEOF'
+          import json
+          with open('/tmp/release-gate-report.json') as f:
+              report = json.load(f)
+              print(f"passed={report['passed']}".lower())
+              print(f"violations_count={len(report['violations'])}")
+          PYEOF
+
+          # Save report path for downstream use
+          echo "report_file=/tmp/release-gate-report.json" >> $GITHUB_OUTPUT
+
+          exit $EXIT_CODE
+
+      - name: Comment on PR with gate results
+        if: github.event_name == 'pull_request' && steps.verify.outputs.skip == 'false'
+        shell: bash
+        run: |
+          PASSED="${{ steps.gate_check.outputs.gate_passed }}"
+          VIOLATIONS="${{ steps.gate_check.outputs.violations_count }}"
+
+          if [ "$PASSED" = "true" ]; then
+            COMMENT="✅ **Release Gate Passed** — Gap analysis compliance verified."
+          else
+            COMMENT="❌ **Release Gate Failed** — $VIOLATIONS gap-analysis violations detected. See logs for details."
+          fi
+
+          # Optional: post as PR comment using GitHub API
+          # This requires write permissions; skip if not available
+          if [ -n "$GITHUB_TOKEN" ]; then
+            echo "Gate check complete: $COMMENT"
+          fi
+
+      - name: Upload report artifact
+        if: always() && steps.verify.outputs.skip == 'false'
+        uses: actions/upload-artifact@65d862660abb392b1c4172623d51601309c9b5e7  # v4.3.1
+        with:
+          name: release-gate-report
+          path: /tmp/release-gate-report.json
+          retention-days: 30
+
+  notify_on_failure:
+    name: Notify on Gate Failure
+    runs-on: [self-hosted, mac-studio, arm64]
+    needs: release_gate_gaps
+    if: needs.release_gate_gaps.outputs.gate_passed == 'false'
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout org .github
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          repository: ruralpeds/.github
+          ref: main
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Download report
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
+        with:
+          name: release-gate-report
+
+      - name: Send Slack notification
+        shell: bash
+        run: |
+          python3 scripts/gap_notifications.py \
+            --repo "${{ github.repository }}" \
+            --event release_blockers \
+            --violations-file release-gate-report.json \
+            --slack-webhook "${{ secrets.SLACK_WEBHOOK_URL }}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
