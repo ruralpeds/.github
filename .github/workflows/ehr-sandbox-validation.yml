@@ -71,10 +71,37 @@ jobs:
         if: inputs.dry_run == true
         run: |
           echo "Running in dry-run mode. No external API calls will be made."
-          echo "Checklist:"
-          echo "1) Validate mapping rules exist in docs/ehr-integration/FHIR_MAPPING.md"
-          echo "2) Validate sandbox plan exists in docs/ehr-integration/SANDBOX_VALIDATION_PLAN.md"
-          echo "3) Confirm test matrix EHR-01..EHR-10"
+
+      - name: Validate mapping and sandbox plan
+        run: |
+          set -euo pipefail
+
+          MAPPING_DOC="docs/ehr-integration/FHIR_MAPPING.md"
+          SANDBOX_PLAN="docs/ehr-integration/SANDBOX_VALIDATION_PLAN.md"
+          READINESS_REPORT="/tmp/ehr-readiness-report.txt"
+
+          test -f "$MAPPING_DOC"
+          test -f "$SANDBOX_PLAN"
+
+          for resource in Patient Observation DocumentReference DiagnosticReport Encounter; do
+            grep -q "### .*${resource}" "$MAPPING_DOC"
+          done
+
+          grep -q "## SMART on FHIR Security Requirements" "$MAPPING_DOC"
+          grep -q "## Audit Event Contract" "$MAPPING_DOC"
+
+          for test_id in EHR-01 EHR-02 EHR-03 EHR-04 EHR-05 EHR-06 EHR-07 EHR-08 EHR-09 EHR-10; do
+            grep -q "$test_id" "$SANDBOX_PLAN"
+          done
+
+          {
+            echo "mapping_doc=$MAPPING_DOC"
+            echo "sandbox_plan=$SANDBOX_PLAN"
+            echo "resource_count=5"
+            echo "test_matrix_count=10"
+            echo "smart_on_fhir=verified"
+            echo "audit_contract=verified"
+          } | tee "$READINESS_REPORT"
 
       - name: Validate required runtime inputs
         if: inputs.dry_run == false
@@ -86,6 +113,15 @@ jobs:
             echo "::error::base_url is required when dry_run=false"
             exit 1
           fi
+
+          case "$BASE_URL" in
+            https://*)
+              ;;
+            *)
+              echo "::error::base_url must use https"
+              exit 1
+              ;;
+          esac
 
           if [ -z "$SMART_FHIR_TOKEN" ]; then
             echo "::error::SMART_FHIR_TOKEN secret is required when dry_run=false"
@@ -100,7 +136,7 @@ jobs:
         run: |
           set -e
 
-          HEALTH_CODE=$(curl -sS -o /tmp/capability.json -w "%{http_code}" \
+          HEALTH_CODE=$(curl --proto '=https' --tlsv1.3 -sS -o /tmp/capability.json -w "%{http_code}" \
             -H "Authorization: Bearer $SMART_FHIR_TOKEN" \
             -H "Accept: application/fhir+json" \
             "$BASE_URL/metadata")
@@ -110,7 +146,7 @@ jobs:
             exit 1
           fi
 
-          PATIENT_CODE=$(curl -sS -o /tmp/patient-search.json -w "%{http_code}" \
+          PATIENT_CODE=$(curl --proto '=https' --tlsv1.3 -sS -o /tmp/patient-search.json -w "%{http_code}" \
             -H "Authorization: Bearer $SMART_FHIR_TOKEN" \
             -H "Accept: application/fhir+json" \
             "$BASE_URL/Patient?_count=1")
@@ -120,7 +156,7 @@ jobs:
             exit 1
           fi
 
-          OBS_CODE=$(curl -sS -o /tmp/observation-search.json -w "%{http_code}" \
+          OBS_CODE=$(curl --proto '=https' --tlsv1.3 -sS -o /tmp/observation-search.json -w "%{http_code}" \
             -H "Authorization: Bearer $SMART_FHIR_TOKEN" \
             -H "Accept: application/fhir+json" \
             "$BASE_URL/Observation?_count=1")
@@ -136,6 +172,7 @@ jobs:
         with:
           name: ehr-sandbox-validation-${{ github.run_id }}
           path: |
+            /tmp/ehr-readiness-report.txt
             /tmp/capability.json
             /tmp/patient-search.json
             /tmp/observation-search.json
@@ -145,14 +182,20 @@ jobs:
       - name: Step summary
         if: always()
         run: |
-          echo "## EHR Sandbox Validation" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Provider | ${{ inputs.sandbox_provider || 'epic' }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Dry run | ${{ inputs.dry_run || true }} |" >> "$GITHUB_STEP_SUMMARY"
-          if [ "${{ inputs.dry_run || true }}" = "false" ]; then
-            echo "| Metadata endpoint | checked |" >> "$GITHUB_STEP_SUMMARY"
-            echo "| Patient search | checked |" >> "$GITHUB_STEP_SUMMARY"
-            echo "| Observation search | checked |" >> "$GITHUB_STEP_SUMMARY"
-          fi
+          {
+            echo "## EHR Sandbox Validation"
+            echo ""
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Provider | ${{ inputs.sandbox_provider || 'epic' }} |"
+            echo "| Dry run | ${{ inputs.dry_run || true }} |"
+            echo "| Mapping doc | docs/ehr-integration/FHIR_MAPPING.md |"
+            echo "| Sandbox plan | docs/ehr-integration/SANDBOX_VALIDATION_PLAN.md |"
+            echo "| Resource mappings checked | 5 |"
+            echo "| Test matrix checked | EHR-01..EHR-10 |"
+            if [ "${{ inputs.dry_run || true }}" = "false" ]; then
+              echo "| Metadata endpoint | checked |"
+              echo "| Patient search | checked |"
+              echo "| Observation search | checked |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
