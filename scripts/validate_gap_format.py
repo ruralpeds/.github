@@ -213,6 +213,7 @@ class GapValidator:
                 "status": "Status",
                 "priority": "Priority",
                 "owner": "Owner",
+                "target_completion": "Target Completion",
             }
 
             for field_key, field_name in required_fields.items():
@@ -234,18 +235,20 @@ class GapValidator:
                     self.error(f"Invalid priority '{priority}'. Valid: {', '.join(VALID_PRIORITIES)}", gap_id)
 
             # Validate P0/P1 requirements
-            if "priority" in fields and fields["priority"] in ["P0", "P1"]:
-                priority = fields["priority"]
+            if "priority" in fields:
+                priority = fields["priority"].strip()
+                priority_code = priority.split()[0] if priority else ""
 
-                # Must have owner
-                owner = fields.get("owner", "").strip()
-                if not owner or owner == "[Unassigned]" or owner == "Unassigned":
-                    self.warning(f"{priority} gap should have an assigned owner", gap_id)
+                if priority_code in ["P0", "P1"]:
+                    # Must have owner
+                    owner = fields.get("owner", "").strip()
+                    if not owner or owner == "[Unassigned]" or owner == "Unassigned":
+                        self.warning(f"{priority_code} gap should have an assigned owner", gap_id)
 
-                # Must have target completion date
-                target = fields.get("target_completion", "").strip()
-                if not target or target in ["TBD", "TBD", "None", "N/A"]:
-                    self.warning(f"{priority} gap should have a target completion date", gap_id)
+                    # Must have target completion date
+                    target = fields.get("target_completion", "").strip()
+                    if not target or target in ["TBD", "None", "N/A"]:
+                        self.warning(f"{priority_code} gap should have a target completion date", gap_id)
                 elif not self._is_valid_date(target):
                     self.warning(f"Target completion date format unclear: '{target}' (prefer YYYY-MM-DD)", gap_id)
 

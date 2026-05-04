@@ -23,6 +23,7 @@ Environment:
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import os
 import re
@@ -217,13 +218,21 @@ def suggest_ownership(repo: Path) -> list[OwnershipSuggestion]:
             pass
 
         # Second choice: gap description might mention file paths
-        if gap.description:
-            # Look for file patterns that match CODEOWNERS
-            for pattern, owner in codeowners.items():
-                if pattern in gap.description.lower():
-                    suggested = owner
-                    reason = f"Matches CODEOWNERS pattern '{pattern}'"
-                    confidence = 0.7
+        if gap.description and codeowners:
+            # Extract potential file paths from description (basic heuristic)
+            # Look for paths that look like file/directory names
+            potential_paths = re.findall(r'\b([\w\-./]+\.[\w]+|[\w\-./]+/)\b', gap.description.lower())
+
+            # Try to match extracted paths against CODEOWNERS patterns
+            for potential_path in potential_paths:
+                for pattern, owner in codeowners.items():
+                    # Use fnmatch for proper glob pattern matching
+                    if fnmatch.fnmatch(potential_path, pattern.lower()):
+                        suggested = owner
+                        reason = f"Gap mentions path '{potential_path}' which matches CODEOWNERS pattern '{pattern}'"
+                        confidence = 0.6
+                        break
+                if suggested:
                     break
 
         # Fallback: use primary maintainer

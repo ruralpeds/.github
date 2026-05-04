@@ -176,14 +176,18 @@ def notify_new_p0_p1_gaps(repo: str, gaps: list[Gap], webhook_url: Optional[str]
             }
         )
 
+    # Derive priority label from all gaps (e.g., "P0/P1", "P0", "P1")
+    priorities = sorted(set(g.priority for g in p0_p1_gaps), reverse=True)
+    priority_label = "/".join(priorities)
+
     payload = {
-        "text": f"New {gap.priority} gaps in {repo}",
+        "text": f"New {priority_label} gaps in {repo}",
         "blocks": [
             {
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f":warning: New {gap.priority} Gaps Detected",
+                    "text": f":warning: New {priority_label} Gaps Detected",
                 },
             },
             {

@@ -60,7 +60,7 @@ SKIP_REPOS = {
 # Regex patterns for parsing GAP_ANALYSIS.md
 GAP_HEADER_RE = re.compile(r"^### ✅?\s?(GAP-\d{3,4}):\s*(.+)$", re.MULTILINE)
 STATUS_RE = re.compile(r"^\*\*Status\*\*:\s*(.+)$", re.MULTILINE)
-PRIORITY_RE = re.compile(r"^\*\*Priority\*\*:\s*\(([P0-4])\b")
+PRIORITY_RE = re.compile(r"^\*\*Priority\*\*:\s*([P0-4])\b")
 OWNER_RE = re.compile(r"^\*\*Owner\*\*:\s*(.+)$", re.MULTILINE)
 TARGET_COMPLETION_RE = re.compile(r"^\*\*Target Completion\*\*:\s*(.+)$", re.MULTILINE)
 
@@ -149,8 +149,9 @@ def get_file_content(org: str, repo: str, path: str, token: str) -> Optional[str
     data = r.json()
     if isinstance(data, list):
         return None  # It's a directory
-    # Fetch raw content
-    raw_r = requests.get(data["download_url"], timeout=30)
+    # Fetch raw content with auth headers for private repos
+    headers = {"Authorization": f"Bearer {token}"}
+    raw_r = requests.get(data["download_url"], headers=headers, timeout=30)
     raw_r.raise_for_status()
     return raw_r.text
 
@@ -169,8 +170,8 @@ def parse_gap_from_block(repo: str, block_text: str) -> Optional[Gap]:
     status_match = re.search(r"^\*\*Status\*\*:\s*(.+)$", block_text, re.MULTILINE)
     status = status_match.group(1).strip() if status_match else "Unknown"
 
-    # Extract priority
-    priority_match = re.search(r"^\*\*Priority\*\*:\s*\(([P0-4])\b", block_text)
+    # Extract priority (format: **Priority**: P0 (Blocker) or similar)
+    priority_match = re.search(r"^\*\*Priority\*\*:\s*([P0-4])\b", block_text, re.MULTILINE)
     priority = priority_match.group(1) if priority_match else "P3"
 
     # Extract owner
@@ -194,33 +195,6 @@ def parse_gap_from_block(repo: str, block_text: str) -> Optional[Gap]:
 
 def parse_gaps_from_md(repo: str, content: str) -> list[Gap]:
     """Parse all gaps from GAP_ANALYSIS.md content."""
-    gaps = []
-    # Split by gap headers
-    blocks = re.split(r"^### ✅?\s?GAP-\d{3,4}:", content, flags=re.MULTILINE)
-
-    for i, block in enumerate(blocks[1:], 1):
-        # Reconstruct the block with the header
-        full_block = re.search(r"^### ✅?\s?GAP-\d{3,4}:", content, re.MULTILINE)
-        # Find the nth occurrence
-        pos = 0
-        for j in range(i):
-            pos = content.find("### ", pos)
-            pos = content.find("GAP-", pos)
-            if j < i - 1:
-                pos = content.find("### ", pos + 1)
-
-        # Find the next gap header or end of content
-        next_pos = content.find("### GAP-", pos + 5)
-        if next_pos == -1:
-            full_block_text = content[pos:]
-        else:
-            full_block_text = content[pos:next_pos]
-
-        gap = parse_gap_from_block(repo, full_block_text)
-        if gap:
-            gaps.append(gap)
-
-    # Better approach: extract gaps directly
     gaps = []
     for match in re.finditer(r"^### ✅?\s?(GAP-\d{3,4}):\s*(.+?)(?=^### (?:✅\s)?GAP-|^## |^$)", content, re.MULTILINE | re.DOTALL):
         block_text = match.group(0)
