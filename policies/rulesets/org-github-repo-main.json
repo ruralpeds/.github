@@ -1,0 +1,56 @@
+{
+  "name": "org-github-repo-main",
+  "description": "Repo-specific main-branch governance for ruralpeds/.github. Adds .github-only required checks without applying them org-wide.",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": [
+        "refs/heads/main"
+      ],
+      "exclude": []
+    },
+    "repository_property_targeting": {
+      "include": {
+        "repository_property": [
+          {
+            "property_name": "governance-profile",
+            "property_values": [
+              "org-github-repo"
+            ]
+          }
+        ]
+      },
+      "exclude": {}
+    }
+  },
+  "rules": [
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": true,
+        "do_not_enforce_on_create": false,
+        "required_status_checks": [
+          {
+            "context": "Self-Test (.github org repo)"
+          },
+          {
+            "context": "Verify origin label"
+          },
+          {
+            "context": "Validate agent branch PR"
+          }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "applies_to": "Only repositories where governance-profile = org-github-repo, currently ruralpeds/.github",
+    "required_checks": [
+      "Self-Test (.github org repo)",
+      "Verify origin label",
+      "Validate agent branch PR"
+    ],
+    "comment": "Companion to org-wide main-branch protections. Keeps repo-specific required checks out of shared rulesets."
+  }
+}

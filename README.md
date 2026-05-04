@@ -11,8 +11,8 @@ Reusable GitHub Actions workflows, regulatory compliance tooling, audit logging,
 1. [Gap Analysis Status](#gap-analysis-status)
 2. [Language CI Workflows](#language-ci-workflows)
 3. [CI Build Status System](#ci-build-status-system)
-4. [Compliance & Regulatory Workflows](#compliance--regulatory-workflows)
-5. [Audit & Electronic Signatures](#audit--electronic-signatures)
+4. [Compliance and Regulatory Workflows](#compliance-and-regulatory-workflows)
+5. [Audit and Electronic Signatures](#audit-and-electronic-signatures)
 6. [Org Governance](#org-governance)
 7. [Scheduled Workflows](#scheduled-workflows)
 8. [Org Custom Repository Properties](#org-custom-repository-properties)
@@ -91,7 +91,7 @@ Continuously tracks CI build outcomes across all Rust, Julia, and the `.github` 
 
 ---
 
-## Compliance & Regulatory Workflows
+## Compliance and Regulatory Workflows
 
 | Workflow | Regulatory mapping | Purpose |
 |----------|--------------------|---------|
@@ -125,7 +125,7 @@ Continuously tracks CI build outcomes across all Rust, Julia, and the `.github` 
 | `reusable-chaos-test.yml` | IEC 62304 §5.7 | Chaos/fault-injection testing |
 | `reusable-docs.yml` | IEC 62304 §5.2 | Documentation generation and validation |
 | `reusable-repo-standards.yml` | NIST SSDF | Repo hygiene: README, CODEOWNERS, SECURITY.md, CI workflow checks |
-| `origin-label.yml` | FDA GMLP / EU AI Act / NIST AI RMF | Required status check — verifies `origin:*` label; validates AI session summary for `ai-authored` and `agentic` PRs |
+| `origin-label.yml` | FDA GMLP / EU AI Act / NIST AI RMF | Required status check — verifies `origin:*` label; auto-assigns clear Copilot/Claude/human origins; validates AI session summary for AI-origin PRs |
 | `hipaa-compliance.yml` | HIPAA | Composite HIPAA compliance check |
 | `required-compliance.yml` | IEC 62304 | Required compliance gate for regulated repos |
 | `required-audit.yml` | 21 CFR Part 11 | Required audit-log check gate |
@@ -155,7 +155,7 @@ See [`docs/SUPPLY_CHAIN_AND_ESIGNATURE.md`](docs/SUPPLY_CHAIN_AND_ESIGNATURE.md)
 
 ---
 
-## Audit & Electronic Signatures
+## Audit and Electronic Signatures
 
 | Workflow | Purpose |
 |----------|---------|
@@ -209,7 +209,8 @@ gh workflow run "Review Stamp" \
 | `ci-gap-tools.yml` | push / PR on scripts | Syntax + subcommand tests for `gap_lifecycle.py` |
 | `bootstrap-gaps-sweep.yml` | manual | Bulk-seeds gap-analysis entries |
 | `seed-roadmap-issues.yml` | manual | Seeds roadmap issues from `copilot-tasks/` |
-| `copilot-task-guardrails.yml` | PR / push on `agent/*` | Extra compliance checks on agent-authored PRs |
+| `copilot-task-guardrails.yml` | PR | Extra compliance checks on agent-authored PRs |
+| `agent-branch-guardrails.yml` | PR | Enforces branch naming, PR title, ownership block, and origin-label alignment |
 | `sync-copilot-assets.yml` | push | Syncs Copilot asset files across repos |
 | `origin-label.yml` | PR | Enforces `origin:*` label on every PR |
 | `hygiene.yml` | push / PR | General repo hygiene checks |
@@ -244,7 +245,7 @@ Ruleset definitions live under version control in `policies/rulesets/*.json`. Th
 
 ## Org Custom Repository Properties
 
-Every repository carries six metadata properties that drive automated governance decisions — rulesets, audit depth, DHF scaffolding, and more:
+Every repository carries seven metadata properties that drive automated governance decisions — rulesets, audit depth, DHF scaffolding, and more:
 
 | Property | Values | Approval |
 |---|---|---|
@@ -254,6 +255,7 @@ Every repository carries six metadata properties that drive automated governance
 | `regulated` | `true` / `false` | clinical-lead |
 | `primary-stack` | `julia` / `rust` / `node` / `python` / `go` / `content` / `polyglot` | self-serve |
 | `baa-required` | `true` / `false` | self-serve |
+| `governance-profile` | `org-github-repo` | org-admin |
 
 Set properties interactively:
 ```bash

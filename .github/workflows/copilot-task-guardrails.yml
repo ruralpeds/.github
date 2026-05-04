@@ -34,6 +34,7 @@ jobs:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
           AUTHOR: ${{ github.event.pull_request.user.login }}
           LABELS: ${{ toJson(github.event.pull_request.labels) }}
+          BODY: ${{ github.event.pull_request.body }}
         run: |
           set -euo pipefail
           is_agent=false
@@ -54,10 +55,24 @@ jobs:
               is_agent=true; agent_name="codex";;
           esac
 
-          # Label check
-          if echo "$LABELS" | grep -qE '"name":"agent:(copilot|claude-code|codex|cursor)"'; then
+          # Origin / agent label check
+          if echo "$LABELS" | grep -qE '"name":"origin:(copilot|claude)"'; then
+            is_agent=true
+            agent_name=$(echo "$LABELS" | grep -oE 'origin:(copilot|claude)' | head -1 | cut -d: -f2)
+          elif echo "$LABELS" | grep -qE '"name":"agent:(copilot|claude-code|codex|cursor)"'; then
             is_agent=true
             agent_name=$(echo "$LABELS" | grep -oE 'agent:[a-z-]+' | head -1 | cut -d: -f2)
+          fi
+
+          if printf '%s\n' "$BODY" | grep -Eiq '^[[:space:]]*primary_agent:[[:space:]]*(copilot|claude)([[:space:]]|$)'; then
+            is_agent=true
+            agent_name=$(printf '%s\n' "$BODY" | sed -nE 's/^[[:space:]]*primary_agent:[[:space:]]*(copilot|claude).*/\1/ip' | head -1)
+          fi
+
+          # PR ownership block check
+          if printf '%s\n' "$BODY" | grep -Eiq '^[[:space:]]*primary_agent:[[:space:]]*(copilot|claude)([[:space:]]|$)'; then
+            is_agent=true
+            agent_name=$(printf '%s\n' "$BODY" | sed -nE 's/^[[:space:]]*primary_agent:[[:space:]]*(copilot|claude).*/\1/ip' | head -1)
           fi
 
           # Repo custom property lookup (best-effort; falls back to "unknown")
@@ -69,10 +84,12 @@ jobs:
           data_class=$(echo "$props" | jq -r '.[] | select(.property_name=="data-classification") | .value' 2>/dev/null || echo "unknown")
           set -e
 
-          echo "is-agent=$is_agent"           >> "$GITHUB_OUTPUT"
-          echo "agent-name=$agent_name"       >> "$GITHUB_OUTPUT"
-          echo "repo-class=${repo_class:-unknown}" >> "$GITHUB_OUTPUT"
-          echo "data-class=${data_class:-unknown}" >> "$GITHUB_OUTPUT"
+          {
+            echo "is-agent=$is_agent"
+            echo "agent-name=$agent_name"
+            echo "repo-class=${repo_class:-unknown}"
+            echo "data-class=${data_class:-unknown}"
+          } >> "$GITHUB_OUTPUT"
 
           echo "## Agent detection"
           echo "- is_agent: $is_agent"
@@ -216,7 +233,7 @@ jobs:
             for s in "${missing[@]}"; do
               printf '- %s\n' "$s" >> /tmp/pr-desc.md
             done
-            printf '\nSee `.github/copilot-instructions.md` for the exact template.\n' >> /tmp/pr-desc.md
+            printf '\nSee .github/copilot-instructions.md for the exact template.\n' >> /tmp/pr-desc.md
             gh pr comment "$PR_NUMBER" --body-file /tmp/pr-desc.md
             gh pr edit "$PR_NUMBER" --add-label "blocked:pr-description-incomplete"
             exit 1
@@ -228,9 +245,7 @@ jobs:
     if: needs.detect-agent.outputs.is-agent == 'true'
     uses: ./.github/workflows/reusable-phi-scan.yml
     with:
-      scan-scope: "diff"
-      base-sha: ${{ github.event.pull_request.base.sha }}
-      head-sha: ${{ github.event.pull_request.head.sha }}
+      scan-mode: "diff"
     permissions:
       contents: read
       security-events: write
@@ -284,7 +299,9 @@ jobs:
           cat /tmp/audit-event.json
           # Persisting to the Merkle chain is the responsibility of the audit-log workflow.
           # We emit a job summary instead so it's visible in Actions logs.
-          echo "### Agent PR audit event" >> "$GITHUB_STEP_SUMMARY"
-          echo '```json'                    >> "$GITHUB_STEP_SUMMARY"
-          cat /tmp/audit-event.json         >> "$GITHUB_STEP_SUMMARY"
-          echo '```'                        >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### Agent PR audit event"
+            echo '```json'
+            cat /tmp/audit-event.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
