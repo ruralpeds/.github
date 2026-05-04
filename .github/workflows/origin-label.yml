@@ -53,9 +53,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          PR_JSON=$(gh pr view "$PR_NUMBER" --json labels,headRefName,author,body,authorAssociation)
+          PR_JSON=$(gh pr view "$PR_NUMBER" --json labels,headRefName,author,body)
           COUNT=$(echo "$PR_JSON" | jq '[.labels[].name | select(startswith("origin:"))] | length')
           if [ "$COUNT" -gt 0 ]; then
             echo "::notice::Origin label already present; skipping auto-assignment."
@@ -64,7 +65,7 @@ jobs:
 
           BRANCH=$(echo "$PR_JSON" | jq -r '.headRefName')
           AUTHOR=$(echo "$PR_JSON" | jq -r '.author.login')
-          ASSOCIATION=$(echo "$PR_JSON" | jq -r '.authorAssociation')
+          ASSOCIATION=$(gh api "repos/$REPO/pulls/$PR_NUMBER" --jq '.author_association')
           BODY=$(echo "$PR_JSON" | jq -r '.body // ""')
           LABEL=""
 
