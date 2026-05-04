@@ -259,7 +259,10 @@ class AuthService:
 
             return claims
 
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, ValueError) as e:
+            # Catch both JSON decode errors and base64 decode errors
+            if "Token expired" in str(e):
+                raise
             raise ValueError("Invalid token claims")
 
 

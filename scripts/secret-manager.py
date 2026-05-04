@@ -44,6 +44,11 @@ class SecretManager:
         """
         Retrieve secret from Secrets Manager.
 
+        SECURITY: This method returns the actual secret value. Output should be:
+        - Captured in CI/CD environment variables (which support masking)
+        - Never logged to stdout/stderr in CI
+        - Marked as sensitive in GitHub Actions with ::add-mask::
+
         Args:
             secret_name: Name of secret to retrieve
             version_id: Optional specific version to retrieve
@@ -88,23 +93,23 @@ class SecretManager:
             Response dict with ARN and VersionId
         """
         try:
-            params = {
-                "Name": secret_name,
-                "SecretString": secret_value
-            }
-            if description:
-                params["Description"] = description
-
             # Check if secret exists
             try:
                 self.client.describe_secret(SecretId=secret_name)
                 # Secret exists, update it
-                response = self.client.update_secret(**params)
-                print(f"✅ Updated secret '{secret_name}'")
+                response = self.client.update_secret(
+                    SecretId=secret_name,
+                    SecretString=secret_value
+                )
+                # Log operation, not the secret value
             except self.client.exceptions.ResourceNotFoundException:
                 # Secret doesn't exist, create it
-                response = self.client.create_secret(**params)
-                print(f"✅ Created secret '{secret_name}'")
+                response = self.client.create_secret(
+                    Name=secret_name,
+                    SecretString=secret_value,
+                    Description=description
+                )
+                # Log operation, not the secret value
 
             return {
                 "arn": response.get("ARN"),
@@ -218,6 +223,8 @@ def main():
 
         if args.action == "get":
             value = manager.get_secret(args.secret_name, args.version_id)
+            # Output secret value to stdout for use in scripts
+            # Note: Be cautious with output to avoid exposing secrets in logs
             print(value)
 
         elif args.action == "put":

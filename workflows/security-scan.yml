@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
   issues: write
+  security-events: write
 
 jobs:
   scan-python:
@@ -37,16 +38,16 @@ jobs:
           echo "🔍 Scanning Python dependencies for CVEs..."
 
           # Collect all requirements files
-          REQS=$(find . -name "requirements*.txt" -o -name "setup.py" -o -name "pyproject.toml" | grep -v ".git" | head -20)
+          REQS=$(find . -name "requirements*.txt" | grep -v ".git" | head -20)
 
           if [ -z "$REQS" ]; then
-            echo "⚠️  No Python requirement files found"
+            echo "⚠️  No requirements.txt files found"
             echo "critical-found=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          # Run pip-audit
-          pip-audit --desc > /tmp/python-audit.txt 2>&1 || true
+          # Run pip-audit against each requirements file
+          pip-audit --desc $(echo "$REQS" | xargs -I {} echo "-r {}") > /tmp/python-audit.txt 2>&1 || true
 
           # Check results
           cat /tmp/python-audit.txt
@@ -81,13 +82,13 @@ jobs:
     name: Scan Container Images with Trivy
     runs-on: ubuntu-latest
     outputs:
-      critical-found: ${{ steps.trivy.outputs.critical-found }}
+      critical-found: ${{ steps.trivy_results.outputs.critical-found }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Run Trivy vulnerability scanner
         id: trivy
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.18.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -120,7 +121,7 @@ jobs:
           fi
 
       - name: Check Trivy results
-        id: trivy
+        id: trivy_results
         run: |
           if [ -f /tmp/trivy-report.json ]; then
             CRITICAL=$(python3 -c "
@@ -153,7 +154,7 @@ jobs:
 
       - name: Run Checkov IaC scanner
         id: checkov
-        uses: bridgecrewio/checkov-action@master
+        uses: bridgecrewio/checkov-action@v1.1208
         with:
           directory: config/
           framework: yaml,kubernetes,dockerfile
