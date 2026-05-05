@@ -44,6 +44,9 @@ jobs:
     name: Lint workflows / YAML / JSON / Markdown
     runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 10
+    env:
+      AGENT_TOOLSDIRECTORY: ${{ github.workspace }}/.toolcache
+      RUNNER_TOOL_CACHE: ${{ github.workspace }}/.toolcache
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
@@ -85,11 +88,18 @@ jobs:
       - name: yamllint — workflows + rulesets + infra
         run: |
           set -euo pipefail
+          lint_targets=(
+            .github/workflows/
+            policies/rulesets/
+          )
+          if [ -d infrastructure/kubernetes ]; then
+            lint_targets+=(infrastructure/kubernetes)
+          fi
+          if [ -d infrastructure/prometheus ]; then
+            lint_targets+=(infrastructure/prometheus)
+          fi
           yamllint -d "{extends: relaxed, rules: {line-length: disable, truthy: disable, comments: disable, document-start: disable}}" \
-            .github/workflows/ \
-            policies/rulesets/ \
-            $( [ -d infrastructure/kubernetes ] && echo infrastructure/kubernetes ) \
-            $( [ -d infrastructure/prometheus ] && echo infrastructure/prometheus )
+            "${lint_targets[@]}"
 
       - name: Validate policy JSON (custom-properties + rulesets)
         run: |
@@ -130,6 +140,9 @@ jobs:
     name: Pytest — scripts/ + tests/
     runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 10
+    env:
+      AGENT_TOOLSDIRECTORY: ${{ github.workspace }}/.toolcache
+      RUNNER_TOOL_CACHE: ${{ github.workspace }}/.toolcache
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2

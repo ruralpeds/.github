@@ -346,6 +346,7 @@ Branch naming, PR titles, and origin labels are documented, but neither Copilot 
 **Related PRs**: None
 **Blocked By**: None
 **Last Status Update**: 2026-05-04
+- 2026-05-05: Added follow-up CI unblock fixes on the GAP-014 branch after PR #78 surfaced runtime issues: PR metadata enforcement now has the required ownership/session-summary blocks on the live PR, `gap-validate.yml` now uses the current pinned `actions/setup-python` SHA, `self-test.yml` uses a writable tool cache on self-hosted runners, and `build-status-sweep.yml` falls back to repo-scoped discovery when TH_BOT app secrets are absent.
 - Added `.github/PULL_REQUEST_TEMPLATE.md`, created `agent-branch-guardrails.yml`, taught `origin-label.yml` and `copilot-task-guardrails.yml` to understand the new ownership metadata path, required `Validate agent branch PR` in the repo-specific ruleset, and documented the policy. Targeted actionlint, yamllint, ruleset JSON, gap-format, and markdown-link-check validation passed for the GAP-014 surfaces.
 - Promoted from `sug-2026-05-04-copilot-002` to prevent Copilot and Claude from sharing branches or opening malformed gap PRs.
 
