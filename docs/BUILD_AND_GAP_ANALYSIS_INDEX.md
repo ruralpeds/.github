@@ -7,6 +7,7 @@ This document is the single entry point for build-status and gap-analysis materi
 | Area | Document | Purpose |
 |---|---|---|
 | Live build status | [`../BUILD.md`](../BUILD.md) | Auto-generated view of every feature in this repo: planned / approved / building / built / blocked |
+| Build mgmt user guide | [`BUILD_MANAGEMENT_USER_GUIDE.md`](BUILD_MANAGEMENT_USER_GUIDE.md) | How to use the build-management system end-to-end (install, edit, order a gap analysis) |
 | Build manifest | [`../.build/manifest.yaml`](../.build/manifest.yaml) | Source of truth for `BUILD.md` (humans add features, automation flips status) |
 | Build mgmt template | [`../templates/build-management/`](../templates/build-management/) | Drop-in scaffold for downstream repos (run `scripts/install-build-management.sh`) |
 | Live gap backlog | [`../.gap-analysis/GAP_ANALYSIS.md`](../.gap-analysis/GAP_ANALYSIS.md) | Current repository gap inventory, priorities, owners, and status notes |
