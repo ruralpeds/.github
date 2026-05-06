@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ruralpeds/.github/blob/main/templates/build-management/.build/schema.json",
+  "title": "Build Manifest",
+  "description": "Source-of-truth schema for .build/manifest.yaml. Validated by reusable-build-manifest.yml.",
+  "type": "object",
+  "required": ["version", "repo", "features"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "repo": { "type": "string", "pattern": "^[^/]+/[^/]+$" },
+    "last_updated": { "type": "string", "format": "date" },
+    "maintainers": { "type": "array", "items": { "type": "string" } },
+    "features": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/feature" }
+    }
+  },
+  "$defs": {
+    "feature": {
+      "type": "object",
+      "required": ["id", "name", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^FEAT-[0-9]{3,}$" },
+        "name": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["planned", "approved", "building", "built", "blocked"]
+        },
+        "priority": { "type": "string", "enum": ["P0", "P1", "P2", "P3"] },
+        "owner": { "type": ["string", "null"] },
+        "gap_ref": {
+          "type": ["string", "null"],
+          "pattern": "^GAP-[0-9]{3,}$"
+        },
+        "pr": { "type": ["integer", "null"] },
+        "branch": { "type": ["string", "null"] },
+        "built_at": { "type": ["string", "null"], "format": "date-time" },
+        "acceptance": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

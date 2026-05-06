@@ -1,0 +1,64 @@
+name: Build Manifest — CI Lifecycle Caller
+
+# Per-repo caller for ruralpeds/.github/.github/workflows/reusable-build-manifest.yml.
+# Extracts FEAT-NNN from the branch name or PR title and signals the manifest
+# updater on each CI lifecycle change.
+
+on:
+  workflow_run:
+    workflows: ["CI"]              # rename to match this repo's primary CI workflow
+    types: [requested, completed]
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  signal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      feature_id: ${{ steps.extract.outputs.feature_id }}
+      ci_status: ${{ steps.extract.outputs.ci_status }}
+    steps:
+      - name: Extract FEAT-NNN and CI status
+        id: extract
+        env:
+          BRANCH: ${{ github.head_ref || github.event.workflow_run.head_branch }}
+          TITLE: ${{ github.event.pull_request.title }}
+          EVENT: ${{ github.event_name }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        run: |
+          fid=""
+          if [[ "$BRANCH" =~ FEAT-([0-9]+) ]]; then fid="FEAT-${BASH_REMATCH[1]}"; fi
+          if [[ -z "$fid" && "$TITLE" =~ FEAT-([0-9]+) ]]; then fid="FEAT-${BASH_REMATCH[1]}"; fi
+
+          status="started"
+          if [[ "$EVENT" == "workflow_run" ]]; then
+            case "$CONCLUSION" in
+              success) status="passed" ;;
+              failure|cancelled|timed_out) status="failed" ;;
+              *) status="started" ;;
+            esac
+          fi
+
+          echo "feature_id=$fid" >> "$GITHUB_OUTPUT"
+          echo "ci_status=$status" >> "$GITHUB_OUTPUT"
+          echo "Detected feature_id=$fid status=$status"
+
+  update:
+    needs: signal
+    if: needs.signal.outputs.feature_id != ''
+    uses: ruralpeds/.github/.github/workflows/reusable-build-manifest.yml@main
+    with:
+      target_repo: ${{ github.repository }}
+      feature_id: ${{ needs.signal.outputs.feature_id }}
+      ci_status: ${{ needs.signal.outputs.ci_status }}
+      branch: ${{ github.head_ref || github.event.workflow_run.head_branch }}
+      pr_number: ${{ github.event.pull_request.number }}
+      sha: ${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha }}
+    secrets:
+      TH_BOT_APP_ID: ${{ secrets.TH_BOT_APP_ID }}
+      TH_BOT_PRIVATE_KEY: ${{ secrets.TH_BOT_PRIVATE_KEY }}

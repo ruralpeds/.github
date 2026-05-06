@@ -1,0 +1,172 @@
+name: Reusable — Update .build/manifest.yaml on CI lifecycle
+
+# Translates a CI lifecycle signal (started/passed/failed) into a manifest
+# status transition for the FEAT-NNN referenced by branch name or PR title.
+#
+# Branch / title patterns recognised:
+#   feat/FEAT-NNN-*     →  feature ID = FEAT-NNN
+#   feature:FEAT-NNN    →  feature ID = FEAT-NNN  (label form, passed via input)
+#
+# Status transitions:
+#   started  →  building
+#   passed   →  built (sets built_at = now, persists pr / branch)
+#   failed   →  approved  (rolled back; building is reserved for in-flight CI)
+
+on:
+  workflow_call:
+    inputs:
+      target_repo:
+        description: "Owner/repo holding the .build/manifest.yaml to update"
+        type: string
+        required: true
+      feature_id:
+        description: "FEAT-NNN identifier"
+        type: string
+        required: true
+      ci_status:
+        description: "started | passed | failed"
+        type: string
+        required: true
+      branch:
+        type: string
+        required: false
+        default: ""
+      pr_number:
+        type: string
+        required: false
+        default: ""
+      sha:
+        type: string
+        required: false
+        default: ""
+    secrets:
+      TH_BOT_APP_ID:
+        required: true
+      TH_BOT_PRIVATE_KEY:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  update-manifest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.TH_BOT_APP_ID }}
+          private-key: ${{ secrets.TH_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ inputs.target_repo }}
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          repository: ${{ inputs.target_repo }}
+          token: ${{ steps.app-token.outputs.token }}
+          path: target
+          fetch-depth: 0
+
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet "ruamel.yaml>=0.18,<0.19" "jsonschema>=4.0"
+
+      - name: Apply transition
+        working-directory: target
+        env:
+          FEATURE_ID: ${{ inputs.feature_id }}
+          CI_STATUS: ${{ inputs.ci_status }}
+          BRANCH: ${{ inputs.branch }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          SHA: ${{ inputs.sha }}
+        run: |
+          python - <<'PY'
+          import datetime as dt
+          import os
+          import sys
+          from ruamel.yaml import YAML
+
+          path = ".build/manifest.yaml"
+          if not os.path.exists(path):
+              print(f"::warning::{path} not found in target repo; skipping.")
+              sys.exit(0)
+
+          yaml = YAML()
+          yaml.preserve_quotes = True
+          with open(path) as f:
+              data = yaml.load(f)
+
+          fid = os.environ["FEATURE_ID"]
+          ci  = os.environ["CI_STATUS"]
+          status_map = {"started": "building", "passed": "built", "failed": "approved"}
+          if ci not in status_map:
+              sys.exit(f"unknown ci_status: {ci}")
+          new_status = status_map[ci]
+
+          features = data.get("features", [])
+          target = next((f for f in features if f.get("id") == fid), None)
+          if target is None:
+              print(f"::warning::{fid} not in manifest; nothing to do.")
+              sys.exit(0)
+
+          old = target.get("status")
+          target["status"] = new_status
+          if os.environ.get("BRANCH"):
+              target["branch"] = os.environ["BRANCH"]
+          if os.environ.get("PR_NUMBER"):
+              try:
+                  target["pr"] = int(os.environ["PR_NUMBER"])
+              except ValueError:
+                  pass
+          if new_status == "built":
+              target["built_at"] = dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+          data["last_updated"] = dt.date.today().isoformat()
+
+          with open(path, "w") as f:
+              yaml.dump(data, f)
+          print(f"{fid}: {old} -> {new_status}")
+          PY
+
+      - name: Append ledger event
+        working-directory: target
+        env:
+          FEATURE_ID: ${{ inputs.feature_id }}
+          CI_STATUS: ${{ inputs.ci_status }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          SHA: ${{ inputs.sha }}
+        run: |
+          mkdir -p .gap-analysis
+          python - <<'PY'
+          import datetime as dt, json, os
+          rec = {
+              "ts": dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "event": "manifest_status_changed",
+              "feature": os.environ["FEATURE_ID"],
+              "ci_status": os.environ["CI_STATUS"],
+              "pr": os.environ.get("PR_NUMBER") or None,
+              "sha": os.environ.get("SHA") or None,
+          }
+          with open(".gap-analysis/build-ledger.jsonl", "a") as f:
+              f.write(json.dumps(rec) + "\n")
+          PY
+
+      - name: Commit and push
+        working-directory: target
+        run: |
+          if git diff --quiet; then
+            echo "No manifest change."; exit 0
+          fi
+          git config user.name "build-bot"
+          git config user.email "build-bot@users.noreply.github.com"
+          git add .build/manifest.yaml .gap-analysis/build-ledger.jsonl
+          git commit -m "chore(build): ${FEATURE_ID:-feature} -> ${CI_STATUS:-update} via reusable-build-manifest"
+          git push
+        env:
+          FEATURE_ID: ${{ inputs.feature_id }}
+          CI_STATUS: ${{ inputs.ci_status }}

@@ -1,0 +1,33 @@
+# .build/manifest.yaml — source of truth for this repo's build status.
+#
+# DO NOT regenerate BUILD.md by hand. The build-md-render.yml workflow does that.
+# Humans edit this file to add features or change owners. Automation flips
+# `status` and `built_at` when CI passes.
+#
+# Schema: see .build/schema.json (validated by reusable-build-manifest.yml).
+
+version: 1
+repo: ruralpeds/REPO_NAME           # replace on bootstrap
+last_updated: 2026-05-06             # ISO-8601; auto-bumped by render workflow
+maintainers:
+  - timothyhartzog
+
+# ───────────────────────────────────────────────────────────────────────────
+# Features. Add new entries with status: planned. Automation does the rest.
+# ───────────────────────────────────────────────────────────────────────────
+features:
+  - id: FEAT-001
+    name: Example feature — replace me
+    description: >
+      One-paragraph description of the feature, scoped tightly enough that
+      "built" has an unambiguous meaning.
+    status: planned                  # planned | approved | building | built | blocked
+    priority: P2                     # P0..P3
+    owner: timothyhartzog
+    gap_ref: null                    # GAP-NNN if there's an open gap blocking this
+    pr: null                         # populated when a PR opens
+    branch: null
+    built_at: null                   # ISO-8601 when CI confirms built
+    acceptance:
+      - Tests cover the feature
+      - Documented in README

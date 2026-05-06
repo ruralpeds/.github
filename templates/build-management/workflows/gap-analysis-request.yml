@@ -1,0 +1,107 @@
+name: Gap Analysis — Order
+
+# Order a gap analysis. Diffs BUILD.md / .build/manifest.yaml against this
+# repo's roadmap docs, proposes new GAP-NNN entries and FEAT-NNN entries, and
+# opens a PR. Approval = merge.
+
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: "Free-text scope (e.g. 'Q3 FHIR ingestion roadmap')"
+        required: true
+        type: string
+      roadmap_paths:
+        description: "Comma-separated paths to scan for proposed features"
+        required: false
+        type: string
+        default: "ENTERPRISE_ROADMAP.md,YEAR_2_ROADMAP.md,YEAR_2_Q3_2026_ROADMAP.md,docs/roadmap.md"
+      reviewers:
+        description: "Comma-separated GitHub handles to request review from"
+        required: false
+        type: string
+        default: ""
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  guard:
+    # Only run for /gap-analysis comments by repo collaborators, or for direct dispatch
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.issue && contains(github.event.comment.body, '/gap-analysis'))
+    runs-on: ubuntu-latest
+    outputs:
+      scope: ${{ steps.scope.outputs.scope }}
+      reviewers: ${{ steps.scope.outputs.reviewers }}
+    steps:
+      - id: scope
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "scope=${{ inputs.scope }}" >> "$GITHUB_OUTPUT"
+            echo "reviewers=${{ inputs.reviewers }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "scope=Issue #${{ github.event.issue.number }}: ${{ github.event.issue.title }}" >> "$GITHUB_OUTPUT"
+            echo "reviewers=${{ github.event.issue.user.login }}" >> "$GITHUB_OUTPUT"
+          fi
+
+  propose:
+    needs: guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet "ruamel.yaml>=0.18,<0.19"
+
+      - name: Fetch analyzer from .github
+        run: |
+          mkdir -p .build-tools
+          curl -fsSL https://raw.githubusercontent.com/ruralpeds/.github/main/scripts/propose_gap_analysis.py \
+            -o .build-tools/propose_gap_analysis.py
+
+      - name: Generate proposal
+        env:
+          SCOPE: ${{ needs.guard.outputs.scope }}
+          ROADMAP_PATHS: ${{ inputs.roadmap_paths || 'ENTERPRISE_ROADMAP.md,YEAR_2_ROADMAP.md,YEAR_2_Q3_2026_ROADMAP.md,docs/roadmap.md' }}
+        run: |
+          python .build-tools/propose_gap_analysis.py \
+            --scope "$SCOPE" \
+            --roadmap-paths "$ROADMAP_PATHS" \
+            --manifest .build/manifest.yaml \
+            --gap-doc .gap-analysis/GAP_ANALYSIS.md
+
+      - name: Open PR
+        uses: peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e  # v7.0.8
+        with:
+          branch: gap-analysis/auto-${{ github.run_id }}
+          title: "gap-analysis: ${{ needs.guard.outputs.scope }}"
+          body: |
+            **Automated gap-analysis proposal**
+
+            Scope: ${{ needs.guard.outputs.scope }}
+            Triggered by: @${{ github.actor }}
+
+            This PR proposes additions to:
+
+            - `.gap-analysis/GAP_ANALYSIS.md` — new `GAP-NNN` entries
+            - `.build/manifest.yaml` — new `FEAT-NNN` entries (status: `planned`)
+
+            **Approval = merge.** On merge, `build-md-render.yml` regenerates
+            `BUILD.md` and a post-merge job promotes the new features to
+            `approved`.
+          commit-message: "gap-analysis: propose ${{ needs.guard.outputs.scope }}"
+          reviewers: ${{ needs.guard.outputs.reviewers }}
+          labels: gap-analysis,automated

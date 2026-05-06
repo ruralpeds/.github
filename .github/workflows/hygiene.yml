@@ -3,6 +3,11 @@ name: Repo Hygiene
 on:
   schedule:
     - cron: '0 6 * * 1'   # 06:00 UTC Mondays (stale thresholds are 45–90 days; daily was redundant)
+  pull_request:
+    branches: [main]
+    paths:
+      - 'workflows/**'
+      - '.github/workflows/**'
   workflow_dispatch:       # allow manual runs from the Actions tab
 
 permissions:
@@ -11,6 +16,21 @@ permissions:
   contents: write
 
 jobs:
+  block-stray-workflows-dir:
+    name: Block stray top-level /workflows/ directory
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - name: Fail if /workflows/*.yml exists
+        run: |
+          if compgen -G "workflows/*.yml" > /dev/null || compgen -G "workflows/*.yaml" > /dev/null; then
+            echo "::error::A top-level /workflows/ directory has reappeared. GitHub Actions only loads .github/workflows/. See GAP-002."
+            ls -la workflows/ || true
+            exit 1
+          fi
+          echo "OK: no stray workflows directory."
+
   stale:
     runs-on: [self-hosted, mac-studio, arm64]
     steps:

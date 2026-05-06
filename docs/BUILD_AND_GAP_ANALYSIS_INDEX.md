@@ -6,6 +6,9 @@ This document is the single entry point for build-status and gap-analysis materi
 
 | Area | Document | Purpose |
 |---|---|---|
+| Live build status | [`../BUILD.md`](../BUILD.md) | Auto-generated view of every feature in this repo: planned / approved / building / built / blocked |
+| Build manifest | [`../.build/manifest.yaml`](../.build/manifest.yaml) | Source of truth for `BUILD.md` (humans add features, automation flips status) |
+| Build mgmt template | [`../templates/build-management/`](../templates/build-management/) | Drop-in scaffold for downstream repos (run `scripts/install-build-management.sh`) |
 | Live gap backlog | [`../.gap-analysis/GAP_ANALYSIS.md`](../.gap-analysis/GAP_ANALYSIS.md) | Current repository gap inventory, priorities, owners, and status notes |
 | Gap standard | [`../.gap-analysis/README.md`](../.gap-analysis/README.md) | Organization standard for `.gap-analysis/` structure and workflow |
 | Gap schema | [`../.gap-analysis/schema.md`](../.gap-analysis/schema.md) | Repo-specific rules for gap tracking and validation |
@@ -27,7 +30,8 @@ This document is the single entry point for build-status and gap-analysis materi
 | Path | Purpose |
 |---|---|
 | [`../.gap-analysis/build-ledger.jsonl`](../.gap-analysis/build-ledger.jsonl) | Append-only build-status ledger for gap transitions |
-| [`../workflows/gap-dashboard.yml`](../workflows/gap-dashboard.yml) | Dashboard workflow for gap-status reporting surfaces |
+| [`../.github/workflows/gap-dashboard.yml`](../.github/workflows/gap-dashboard.yml) | Dashboard workflow for gap-status reporting surfaces |
+| [`../.github/workflows/gap-dashboard-aggregate.yml`](../.github/workflows/gap-dashboard-aggregate.yml) | Daily ubuntu-hosted gap-status aggregation (relocated from `/workflows/`) |
 | [`../scripts/gap_lifecycle.py`](../scripts/gap_lifecycle.py) | Core lifecycle automation for gap status transitions |
 | [`../scripts/consolidate_gap_analysis.py`](../scripts/consolidate_gap_analysis.py) | Consolidation helper for gap-analysis data |
 | [`../scripts/aggregate_gaps.py`](../scripts/aggregate_gaps.py) | Aggregates gap records for reporting |
