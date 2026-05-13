@@ -4,14 +4,17 @@
 # (with $GH_TOKEN exported from a GitHub App or PAT).
 #
 # Usage:
-#   scripts/cost_killswitch.sh --target codeql-heavy
+#   scripts/cost_killswitch.sh --target rust-sci-core-extras
 #   scripts/cost_killswitch.sh --target all --dry-run
 #
 # Targets:
-#   codeql-heavy           Disable CodeQL in biostatistics-rust, rust-sci-core, Peds
 #   rust-sci-core-extras   Disable bench/copilot/validation-parity in rust-sci-core
 #   cancel-running         Cancel in-progress + queued runs in top-burning repos
-#   all                    Run all three of the above
+#   all                    Run all of the above
+#
+# Note: disabling CodeQL or other required security controls is intentionally
+# NOT a preset here. CodeQL is a non-bypassable compliance check; tune its
+# triggers (push -> schedule + PR) in the workflow file instead.
 
 set -euo pipefail
 
@@ -32,7 +35,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "$TARGET" ]]; then
-  echo "::error::--target is required (codeql-heavy | rust-sci-core-extras | cancel-running | all)" >&2
+  echo "::error::--target is required (rust-sci-core-extras | cancel-running | all)" >&2
   exit 2
 fi
 
@@ -77,14 +80,6 @@ cancel_active_runs() {
   done
 }
 
-do_codeql_heavy() {
-  echo "== Target: codeql-heavy =="
-  for repo in biostatistics-rust rust-sci-core Peds; do
-    disable_workflow "$repo" "CodeQL"
-    disable_workflow "$repo" "codeql.yml"
-  done
-}
-
 do_rust_sci_core_extras() {
   echo "== Target: rust-sci-core-extras =="
   for wf in "bench.yml" "validation-parity.yml" "copilot" "copilot-pull-request-reviewer"; do
@@ -101,11 +96,13 @@ do_cancel_running() {
 }
 
 case "$TARGET" in
-  codeql-heavy)         do_codeql_heavy ;;
+  codeql-heavy)
+    echo "::error::codeql-heavy was removed. CodeQL is a non-bypassable security control;" >&2
+    echo "::error::tune its triggers in the workflow file instead of disabling it." >&2
+    exit 2 ;;
   rust-sci-core-extras) do_rust_sci_core_extras ;;
   cancel-running)       do_cancel_running ;;
   all)
-    do_codeql_heavy
     do_rust_sci_core_extras
     do_cancel_running
     ;;

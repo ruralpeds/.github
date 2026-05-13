@@ -3,11 +3,14 @@ name: "Cost Killswitch"
 # Manually triggered kill-switch for GitHub Actions cost runaways.
 # Disables high-cost workflows across the ruralpeds org based on chosen preset.
 #
-# Auth (same pattern as sync-rulesets.yml):
-#   - vars.TH_BOT_APP_ID + secrets.TH_BOT_PRIVATE_KEY   (preferred, App token)
-#   - secrets.REPO_SETUP_TOKEN                          (PAT fallback)
+# Auth: GitHub App token only.
+#   - vars.TH_BOT_APP_ID + secrets.TH_BOT_PRIVATE_KEY (required)
 #
-# The App / PAT must have:
+# Per .github/instructions/workflows.instructions.md, org-wide dispatch
+# automation must use a GitHub App token, never a long-lived PAT. The job
+# fails closed if App credentials are unavailable.
+#
+# The App must have:
 #   - actions: write on every target repo
 #   - administration: read to list workflows
 
@@ -45,10 +48,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+        with:
+          persist-credentials: false
+
+      - name: Require App credentials
+        run: |
+          if [ -z "${{ vars.TH_BOT_APP_ID }}" ] || [ -z "${{ secrets.TH_BOT_PRIVATE_KEY }}" ]; then
+            echo "::error::App credentials missing. Configure both vars.TH_BOT_APP_ID and secrets.TH_BOT_PRIVATE_KEY."
+            echo "::error::This workflow performs org-wide control-plane actions; PAT fallback is not permitted."
+            exit 1
+          fi
 
       - name: Generate GitHub App token
         id: app-token
-        if: ${{ vars.TH_BOT_APP_ID != '' }}
         uses: actions/create-github-app-token@3ff1caaa28b64c9cc276b0f2ebde5d8cd729c4d5  # v1
         with:
           app-id: ${{ vars.TH_BOT_APP_ID }}
@@ -57,16 +69,8 @@ jobs:
 
       - name: Export token
         run: |
-          if [ -n "${{ steps.app-token.outputs.token }}" ]; then
-            echo "GH_TOKEN=${{ steps.app-token.outputs.token }}" >> "$GITHUB_ENV"
-            echo "::notice::Using GitHub App installation token"
-          elif [ -n "${{ secrets.REPO_SETUP_TOKEN }}" ]; then
-            echo "GH_TOKEN=${{ secrets.REPO_SETUP_TOKEN }}" >> "$GITHUB_ENV"
-            echo "::warning::Falling back to REPO_SETUP_TOKEN (PAT)."
-          else
-            echo "::error::No token available. Configure TH_BOT_APP_ID+TH_BOT_PRIVATE_KEY or REPO_SETUP_TOKEN."
-            exit 1
-          fi
+          echo "GH_TOKEN=${{ steps.app-token.outputs.token }}" >> "$GITHUB_ENV"
+          echo "::notice::Using GitHub App installation token"
 
       - name: Run killswitch
         env:
