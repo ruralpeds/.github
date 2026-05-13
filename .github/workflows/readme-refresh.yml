@@ -17,8 +17,10 @@ name: "Refresh README via Copilot"
 #   - models: read         — to call the GitHub Models API via GITHUB_TOKEN
 
 on:
-  schedule:
-    - cron: "0 10 * * 1"  # Mon 10:00 UTC — after sync-rulesets (05:00), repo-scanner (06:00), check-compliance (07:00)
+  # Schedule disabled — README refreshes run on-demand via workflow_dispatch
+  # (uses GitHub Models API which can add billing surprises).
+  # schedule:
+  #   - cron: "0 10 * * 1"
   workflow_dispatch:
     inputs:
       dry-run:

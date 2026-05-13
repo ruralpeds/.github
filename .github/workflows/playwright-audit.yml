@@ -1,9 +1,9 @@
 name: "Playwright Audit"
 
 on:
-  schedule:
-    # Every Monday at 8 AM UTC (after compliance check at 7 AM)
-    - cron: "0 8 * * 1"
+  # Schedule disabled — visual audits run on-demand via workflow_dispatch.
+  # schedule:
+  #   - cron: "0 8 * * 1"
   workflow_dispatch:
     inputs:
       org:

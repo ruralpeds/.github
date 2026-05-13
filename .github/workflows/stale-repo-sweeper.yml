@@ -8,7 +8,8 @@ name: Stale Repo Sweeper
 
 on:
   schedule:
-    - cron: '0 9 * * 1'     # Mondays 09:00 UTC
+    - cron: '0 9 1 * *'     # Monthly on the 1st 09:00 UTC (was weekly Mondays;
+                             # stale threshold is 180 days, monthly cadence is sufficient)
   workflow_dispatch:
     inputs:
       dry-run:

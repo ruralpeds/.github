@@ -30,9 +30,10 @@ on:
     types: [opened, synchronize]
     branches: [main, master, develop, 'release/**']
 
-  # Daily sync: Catch any missed events (6 AM UTC = 1 AM EST / 10 PM PST)
+  # Weekly sync: Catch any missed events (Mon 6 AM UTC). Was daily — event-driven
+  # triggers (workflow_run + pull_request) cover real-time updates; weekly is sufficient.
   schedule:
-    - cron: "0 6 * * *"
+    - cron: "0 6 * * 1"
 
   # Manual: Override for testing/remediation
   workflow_dispatch:

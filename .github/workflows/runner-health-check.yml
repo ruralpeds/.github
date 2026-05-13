@@ -3,8 +3,9 @@ name: Runner Health Check
 on:
   workflow_dispatch:
   schedule:
-    # Run every 6 hours to monitor runner health and disk usage
-    - cron: '0 */6 * * *'
+    # Run daily at 06:00 UTC to monitor runner health and disk usage
+    # (was every 6 hours; daily is sufficient for disk/health trends)
+    - cron: '0 6 * * *'
 
 permissions:
   contents: read

@@ -13,7 +13,7 @@ name: Clinical Audit Sweep
 
 on:
   schedule:
-    - cron: "30 6 * * 1"   # Monday 06:30 UTC
+    - cron: "30 6 1 * *"   # Monthly on the 1st 06:30 UTC (was weekly Mondays)
   workflow_dispatch:
     inputs:
       target_repo:

@@ -2,10 +2,10 @@ name: Test Mac Runners
 
 on:
   workflow_dispatch:
-  schedule:
-    # Weekly Monday check — runners are implicitly exercised by real workflow jobs daily;
-    # explicit smoke test weekly is sufficient and reduces queue noise.
-    - cron: '0 7 * * 1'
+  # Schedule disabled — runners are implicitly exercised by daily workflow jobs;
+  # smoke test now runs on-demand via workflow_dispatch.
+  # schedule:
+  #   - cron: '0 7 * * 1'
 
 jobs:
   # -----------------------------------------------------------------------

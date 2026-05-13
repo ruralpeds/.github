@@ -9,6 +9,25 @@ name: Self-Test (.github org repo)
 on:
   pull_request:
     branches: [main]
+    # Same paths-ignore as push — skip self-test on purely documentary PRs.
+    paths-ignore:
+      - 'docs/**'
+      - 'compliance/**'
+      - 'compliance-metrics/**'
+      - 'copilot-tasks/**'
+      - 'testing/**'
+      - 'audit-log/**'
+      - 'dhf/**'
+      - 'strategy/**'
+      - 'operations/**'
+      - 'operations-runbooks/**'
+      - 'features/**'
+      - 'implementation/**'
+      - 'technical-flows/**'
+      - 'infrastructure/**'
+      - 'profile/**'
+      - '**/*.md'
+      - '**/*.docx'
   push:
     branches: [main]
     # Skip linting runs for purely documentary commits; workflow YAML, policy

@@ -11,6 +11,10 @@ on:
       - '.gap-analysis/GAP_ANALYSIS.md'
       - '.gap-analysis/schema.md'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   validate:
     runs-on: [self-hosted, mac-studio, arm64]
