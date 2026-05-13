@@ -4,11 +4,12 @@
 
 name: Release & Deploy (SDLC Gate 5)
 
-# Auto-deploy on push disabled — was failing 100% and burning runner minutes.
-# Re-enable the `push: branches: [main]` trigger after fixing root cause.
-# For now, runs on tag pushes and manual dispatch only.
+# DISABLED: This workflow was failing 100% of runs and consuming resources.
+# Schedule trigger has been disabled. Use workflow_dispatch for manual testing.
+# Re-enable once issues are fixed.
 on:
   push:
+    branches: [main]
     tags: ['v*']
   workflow_dispatch:
     inputs:
@@ -20,10 +21,6 @@ on:
         options:
           - staging
           - production
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
 
 env:
   REGISTRY: ghcr.io
