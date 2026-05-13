@@ -23,7 +23,6 @@ on:
         required: true
         default: "all"
         options:
-          - codeql-heavy
           - rust-sci-core-extras
           - cancel-running
           - all
@@ -68,8 +67,13 @@ jobs:
           owner: ${{ github.repository_owner }}
 
       - name: Export token
+        env:
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          echo "GH_TOKEN=${{ steps.app-token.outputs.token }}" >> "$GITHUB_ENV"
+          # Mask explicitly so any future debug output redacts the token, in
+          # addition to the implicit masking provided by create-github-app-token.
+          echo "::add-mask::$APP_TOKEN"
+          echo "GH_TOKEN=$APP_TOKEN" >> "$GITHUB_ENV"
           echo "::notice::Using GitHub App installation token"
 
       - name: Run killswitch
