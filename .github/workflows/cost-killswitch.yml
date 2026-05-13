@@ -1,0 +1,102 @@
+name: "Cost Killswitch"
+
+# Manually triggered kill-switch for GitHub Actions cost runaways.
+# Disables high-cost workflows across the ruralpeds org based on chosen preset.
+#
+# Auth (same pattern as sync-rulesets.yml):
+#   - vars.TH_BOT_APP_ID + secrets.TH_BOT_PRIVATE_KEY   (preferred, App token)
+#   - secrets.REPO_SETUP_TOKEN                          (PAT fallback)
+#
+# The App / PAT must have:
+#   - actions: write on every target repo
+#   - administration: read to list workflows
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Preset to apply"
+        type: choice
+        required: true
+        default: "all"
+        options:
+          - codeql-heavy
+          - rust-sci-core-extras
+          - cancel-running
+          - all
+      dry_run:
+        description: "Dry run (print actions only, do not disable/cancel)"
+        type: boolean
+        required: false
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cost-killswitch
+  cancel-in-progress: false
+
+jobs:
+  killswitch:
+    name: Apply ${{ inputs.target }} (dry_run=${{ inputs.dry_run }})
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+
+      - name: Generate GitHub App token
+        id: app-token
+        if: ${{ vars.TH_BOT_APP_ID != '' }}
+        uses: actions/create-github-app-token@3ff1caaa28b64c9cc276b0f2ebde5d8cd729c4d5  # v1
+        with:
+          app-id: ${{ vars.TH_BOT_APP_ID }}
+          private-key: ${{ secrets.TH_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Export token
+        run: |
+          if [ -n "${{ steps.app-token.outputs.token }}" ]; then
+            echo "GH_TOKEN=${{ steps.app-token.outputs.token }}" >> "$GITHUB_ENV"
+            echo "::notice::Using GitHub App installation token"
+          elif [ -n "${{ secrets.REPO_SETUP_TOKEN }}" ]; then
+            echo "GH_TOKEN=${{ secrets.REPO_SETUP_TOKEN }}" >> "$GITHUB_ENV"
+            echo "::warning::Falling back to REPO_SETUP_TOKEN (PAT)."
+          else
+            echo "::error::No token available. Configure TH_BOT_APP_ID+TH_BOT_PRIVATE_KEY or REPO_SETUP_TOKEN."
+            exit 1
+          fi
+
+      - name: Run killswitch
+        env:
+          ORG: ${{ github.repository_owner }}
+        run: |
+          args=(--target "${{ inputs.target }}")
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            args+=(--dry-run)
+          fi
+          bash scripts/cost_killswitch.sh "${args[@]}" | tee killswitch.log
+
+      - name: Summarize
+        if: always()
+        run: |
+          {
+            echo "## Cost Killswitch — ${{ inputs.target }}"
+            echo ""
+            echo "- dry_run: \`${{ inputs.dry_run }}\`"
+            echo "- triggered by: @${{ github.actor }}"
+            echo ""
+            echo "### Output"
+            echo '```'
+            cat killswitch.log 2>/dev/null || echo "(no output)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: killswitch-log-${{ github.run_number }}
+          path: killswitch.log
+          retention-days: 30
