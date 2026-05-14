@@ -1,0 +1,17 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: [self-hosted, macos]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run basic script
+        run: echo "Running on a local Mac runner!"
