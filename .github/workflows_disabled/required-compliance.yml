@@ -1,0 +1,55 @@
+# ruralpeds/.github/.github/workflows/required-compliance.yml
+# Registered as an org-level required workflow.
+# See docs/org-required-workflows.md for registration steps.
+
+name: Required — Compliance
+
+on:
+  # PRs always get the full compliance gate — no exceptions.
+  pull_request:
+    branches: [main, master]
+
+  # Direct pushes to main/master skip the compliance run when the diff is
+  # purely documentary (docs, markdown, copilot task files, audit logs, etc.).
+  # Source code, workflow YAML, policy JSON, and Dockerfiles still trigger.
+  push:
+    branches: [main, master]
+    paths:
+      - 'src/**'
+      - '**.rs'
+      - '**.jl'
+      - '**.py'
+      - '**.go'
+      - '**.ts'
+      - '**.tsx'
+      - '**.js'
+      - '**.jsx'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'Project.toml'
+      - 'Manifest.toml'
+      - 'requirements*.txt'
+      - 'pyproject.toml'
+      - 'go.mod'
+      - 'go.sum'
+      - 'package.json'
+      - 'package-lock.json'
+      - '*.dockerfile'
+      - '**/Dockerfile*'
+      - '.github/workflows/**'
+      - 'policy/**'
+      - '**/*.json'
+
+jobs:
+  hipaa:
+    uses: ./.github/workflows/hipaa-compliance.yml
+    with:
+      language: mixed
+      phi-scan: true
+      sbom: true
+      coverage-threshold: 70
+      fda-class: none
+      runner-label: 'self-hosted,mac-studio,arm64'
+      fail-on: high
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

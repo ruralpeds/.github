@@ -1,0 +1,108 @@
+name: "Reusable SLSA Provenance Attestation"
+
+# Generates a SLSA v1.0 provenance attestation for build artifacts via
+# GitHub's native Attestations API (actions/attest-build-provenance).
+#
+# Regulatory drivers:
+#   - NIST SP 800-218 (SSDF v1.1) — PO.3, PS.3.2
+#   - SLSA v1.0 Framework — Build Level 3
+#   - FDA Section 524B — supply-chain risk management (Cyber Devices)
+#   - Executive Order 14028 §4 — software transparency
+#
+# Callers: uses: ruralpeds/.github/.github/workflows/reusable-slsa-provenance.yml@main
+#
+# Permissions required on the calling workflow:
+#   id-token: write       # OIDC token for keyless signing
+#   attestations: write   # write to GitHub Attestations API
+
+on:
+  workflow_call:
+    inputs:
+      subject-path:
+        description: >
+          Glob pattern(s) of artifact files to attest (e.g. 'dist/*.tar.gz').
+          Files must already exist on the runner when this job starts.
+          If artifact-name is also provided, artifacts are downloaded first.
+        type: string
+        required: true
+      artifact-name:
+        description: >
+          Name of a workflow artifact (uploaded by a previous job) to download
+          before attesting. Leave blank if the files are already in the workspace
+          (e.g. same job, or restored from cache).
+        type: string
+        default: ""
+      upload-bundle:
+        description: "Upload the attestation bundle as a workflow artifact"
+        type: boolean
+        default: true
+      bundle-retention-days:
+        description: "Days to retain the attestation bundle artifact"
+        type: number
+        default: 90
+    outputs:
+      attestation-url:
+        description: "URL to the attestation in the GitHub UI"
+        value: ${{ jobs.provenance.outputs.attestation-url }}
+      bundle-path:
+        description: "Path to the on-disk attestation bundle (within the job)"
+        value: ${{ jobs.provenance.outputs.bundle-path }}
+
+permissions:
+  contents: read
+  id-token: write        # required for OIDC signing via Sigstore/Fulcio
+  attestations: write    # required to publish to GitHub Attestations API
+
+jobs:
+  provenance:
+    name: SLSA v1.0 Provenance
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 15
+    outputs:
+      attestation-url: ${{ steps.attest.outputs.attestation-url }}
+      bundle-path: ${{ steps.attest.outputs.bundle-path }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Download artifacts
+        if: inputs.artifact-name != ''
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: dist/
+
+      - name: Attest build provenance
+        id: attest
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be  # v2.4.0
+        with:
+          subject-path: ${{ inputs.subject-path }}
+
+      - name: Upload attestation bundle
+        if: inputs.upload-bundle
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v4.4.0
+        with:
+          name: slsa-provenance-bundle
+          path: ${{ steps.attest.outputs.bundle-path }}
+          retention-days: ${{ inputs.bundle-retention-days }}
+          if-no-files-found: warn
+
+      - name: Provenance summary
+        run: |
+          echo "## SLSA Provenance Attestation" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Subject | \`${{ inputs.subject-path }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Attestation URL | ${{ steps.attest.outputs.attestation-url }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Commit | \`${{ github.sha }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Workflow | \`${{ github.workflow }}\` run #\`${{ github.run_id }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Verify locally:" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`bash" >> "$GITHUB_STEP_SUMMARY"
+          echo "gh attestation verify <artifact> --repo ${{ github.repository }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "_Signed via Sigstore keyless OIDC → Fulcio CA → Rekor transparency log._" >> "$GITHUB_STEP_SUMMARY"

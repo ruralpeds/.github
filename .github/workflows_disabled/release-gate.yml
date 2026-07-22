@@ -1,0 +1,323 @@
+# .github/workflows/release-gate.yml
+# Reusable workflow: Release Gate
+# Host in:   ruralpeds/.github/.github/workflows/release-gate.yml
+# Callable:  from any repo's release workflow.
+#
+# Purpose:
+#   Before a tag / release is allowed to publish, confirm that:
+#     1. The tagged commit passed the HIPAA compliance workflow
+#     2. AUDIT.yaml exists and is fresh (tighter window than normal — 30 days)
+#     3. SBOM was generated for the tagged commit
+#     4. For FDA Class II+ repos: every commit since the previous tag is signed
+#     5. CHANGELOG / release notes are present
+#   Outputs a release manifest that's attached to the GitHub release.
+
+name: Release Gate (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Tag being released (e.g., v1.2.0)'
+        required: true
+        type: string
+      previous-tag:
+        description: 'Previous tag (for commit-range verification). Leave empty to auto-detect.'
+        required: false
+        type: string
+        default: ''
+      fda-class:
+        description: 'none | I | II | III'
+        required: false
+        type: string
+        default: 'none'
+      max-audit-age-days:
+        description: 'Max AUDIT.yaml age at release time (stricter than normal)'
+        required: false
+        type: number
+        default: 30
+      runner-label:
+        description: 'Runner labels, comma-separated'
+        required: false
+        type: string
+        default: 'self-hosted,mac-studio,arm64'
+    outputs:
+      release-manifest-url:
+        description: 'Artifact URL for the signed release manifest'
+        value: ${{ jobs.build-manifest.outputs.manifest-url }}
+      release-status:
+        description: 'pass | fail'
+        value: ${{ jobs.summary.outputs.status }}
+
+permissions:
+  contents: write        # create release, upload assets
+  actions:  read         # read run history for compliance check
+  id-token: write
+  attestations: write
+
+jobs:
+
+  resolve-runner:
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 5
+    outputs:
+      labels: ${{ steps.p.outputs.labels }}
+    steps:
+      - id: p
+        env:
+          RUNNER_LABEL: ${{ inputs.runner-label }}
+        run: |
+          labels=$(python3 -c "import json,os; L=os.environ.get('RUNNER_LABEL',''); print(json.dumps([x.strip() for x in L.split(',') if x.strip()]))")
+          if [ "$labels" = "[]" ]; then
+            echo "::error::inputs.runner-label parsed to an empty list — check the caller's runner-label value."
+            exit 1
+          fi
+          echo "labels=$labels" >> "$GITHUB_OUTPUT"
+
+  # ──────────────────────────────────────────────────────────────
+  # 1. Verify the tagged commit passed the HIPAA compliance workflow
+  # ──────────────────────────────────────────────────────────────
+  verify-compliance:
+    needs: resolve-runner
+    runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+        with:
+          fetch-depth: 0
+      - name: Resolve tag SHA
+        id: sha
+        run: |
+          sha=$(git rev-list -n 1 "${{ inputs.tag }}")
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Check compliance run status on tagged SHA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha='${{ steps.sha.outputs.sha }}'
+          echo "Looking for 'Required — Compliance' run on commit $sha"
+
+          # Query check-runs on the tagged commit
+          status=$(gh api "repos/${{ github.repository }}/commits/$sha/check-runs" \
+              --jq '[.check_runs[] | select(.name | contains("Compliance"))]
+                    | sort_by(.completed_at) | reverse | .[0].conclusion' || echo null)
+
+          echo "Latest compliance conclusion: $status"
+          case "$status" in
+            success|null)
+              # null = workflow never ran; allow only if explicitly skipped
+              if [ "$status" = "null" ]; then
+                echo "::error::No compliance run found on tagged commit $sha"
+                exit 1
+              fi ;;
+            *)
+              echo "::error::Compliance run did not succeed on tagged commit (got: $status)"
+              exit 1 ;;
+          esac
+
+  # ──────────────────────────────────────────────────────────────
+  # 2. Verify AUDIT.yaml is present and fresh
+  # ──────────────────────────────────────────────────────────────
+  verify-audit:
+    needs: resolve-runner
+    runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+        with:
+          ref: ${{ inputs.tag }}
+
+      - name: Check freshness
+        run: |
+          if [ ! -f .github/AUDIT.yaml ]; then
+            echo "::error::.github/AUDIT.yaml missing — run the audit workflow first."
+            exit 1
+          fi
+          python3 -m pip install --user pyyaml python-dateutil
+          python3 <<PY
+          import yaml, sys
+          from datetime import datetime, timezone, timedelta
+          from dateutil.parser import parse
+
+          doc = yaml.safe_load(open('.github/AUDIT.yaml'))
+          last = parse(doc['metadata']['last_reviewed'])
+          age = (datetime.now(timezone.utc) - last).days
+          limit = ${{ inputs.max-audit-age-days }}
+          if age > limit:
+              print(f"::error::AUDIT.yaml last_reviewed is {age}d old (max {limit}d at release).")
+              sys.exit(1)
+          print(f"AUDIT.yaml fresh: last_reviewed {age}d ago (≤ {limit}d).")
+          PY
+
+  # ──────────────────────────────────────────────────────────────
+  # 3. Verify SBOM exists for tagged commit
+  # ──────────────────────────────────────────────────────────────
+  verify-sbom:
+    needs: resolve-runner
+    runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+        with:
+          ref: ${{ inputs.tag }}
+      - name: Generate SBOM for tag
+        run: |
+          brew list syft >/dev/null 2>&1 || brew install syft
+          mkdir -p release-artifacts/sbom
+          syft . -o cyclonedx-json=release-artifacts/sbom/cyclonedx.json
+          syft . -o spdx-json=release-artifacts/sbom/spdx.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: release-sbom-${{ inputs.tag }}
+          path: release-artifacts/sbom/
+          retention-days: 2555
+
+  # ──────────────────────────────────────────────────────────────
+  # 4. Verify signed commits (Class II+ only)
+  # ──────────────────────────────────────────────────────────────
+  verify-signatures:
+    needs: resolve-runner
+    if: ${{ inputs.fda-class == 'II' || inputs.fda-class == 'III' }}
+    runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+        with:
+          fetch-depth: 0
+      - name: Resolve commit range
+        id: range
+        run: |
+          prev='${{ inputs.previous-tag }}'
+          if [ -z "$prev" ]; then
+            prev=$(git describe --tags --abbrev=0 "${{ inputs.tag }}^" 2>/dev/null || echo "")
+          fi
+          if [ -n "$prev" ]; then
+            echo "range=${prev}..${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "range=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Verify all commits signed in range
+        run: |
+          unsigned=$(git log --pretty='%G? %H' ${{ steps.range.outputs.range }} \
+                     | awk '$1 != "G" && $1 != "U" { print $2 }')
+          if [ -n "$unsigned" ]; then
+            echo "::error::Unsigned commits in release range (21 CFR Part 11):"
+            echo "$unsigned"
+            exit 1
+          fi
+
+  # ──────────────────────────────────────────────────────────────
+  # 5. Verify release notes / CHANGELOG
+  # ──────────────────────────────────────────────────────────────
+  verify-changelog:
+    needs: resolve-runner
+    runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+        with:
+          ref: ${{ inputs.tag }}
+      - name: Check for release notes
+        run: |
+          v='${{ inputs.tag }}'
+          if [ -f CHANGELOG.md ] && grep -q "$v\|${v#v}" CHANGELOG.md; then
+            echo "Found entry for $v in CHANGELOG.md"
+          elif [ -f "RELEASE_NOTES/${v}.md" ]; then
+            echo "Found RELEASE_NOTES/${v}.md"
+          else
+            echo "::warning::No CHANGELOG entry or RELEASE_NOTES/${v}.md — release notes will be auto-generated."
+          fi
+
+  # ──────────────────────────────────────────────────────────────
+  # 6. Build signed release manifest
+  # ──────────────────────────────────────────────────────────────
+  build-manifest:
+    needs: [resolve-runner, verify-compliance, verify-audit, verify-sbom, verify-changelog]
+    runs-on: ${{ fromJson(needs.resolve-runner.outputs.labels) }}
+    outputs:
+      manifest-url: ${{ steps.up.outputs.artifact-url }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4
+        with:
+          name: release-sbom-${{ inputs.tag }}
+          path: release-artifacts/sbom
+      - name: Build manifest.json
+        run: |
+          cat > release-artifacts/manifest.json <<EOF
+          {
+            "repository":   "${{ github.repository }}",
+            "tag":          "${{ inputs.tag }}",
+            "commit_sha":   "${{ github.sha }}",
+            "fda_class":    "${{ inputs.fda-class }}",
+            "built_at":     "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "built_by":     "${{ github.actor }}",
+            "run_id":       "${{ github.run_id }}",
+            "artifacts": {
+              "sbom_cyclonedx": "$(sha256sum release-artifacts/sbom/cyclonedx.json | awk '{print $1}')",
+              "sbom_spdx":      "$(sha256sum release-artifacts/sbom/spdx.json      | awk '{print $1}')",
+              "audit_yaml":     "$(sha256sum .github/AUDIT.yaml                    | awk '{print $1}')"
+            },
+            "gates_passed": {
+              "compliance":   "${{ needs.verify-compliance.result }}",
+              "audit_fresh":  "${{ needs.verify-audit.result }}",
+              "sbom":         "${{ needs.verify-sbom.result }}",
+              "changelog":    "${{ needs.verify-changelog.result }}"
+            }
+          }
+          EOF
+          cp .github/AUDIT.yaml release-artifacts/
+      - name: Sign manifest
+        run: |
+          brew list cosign >/dev/null 2>&1 || brew install cosign
+          cosign sign-blob --yes \
+            --output-signature release-artifacts/manifest.json.sig \
+            --output-certificate release-artifacts/manifest.json.crt \
+            release-artifacts/manifest.json
+      - id: up
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: release-manifest-${{ inputs.tag }}
+          path: release-artifacts/
+          retention-days: 2555
+      - name: Attach to GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd release-artifacts
+          for f in manifest.json manifest.json.sig manifest.json.crt AUDIT.yaml sbom/*; do
+            gh release upload "${{ inputs.tag }}" "$f" --clobber
+          done
+
+  # ──────────────────────────────────────────────────────────────
+  # 7. Summary
+  # ──────────────────────────────────────────────────────────────
+  summary:
+    needs: [verify-compliance, verify-audit, verify-sbom,
+            verify-signatures, verify-changelog, build-manifest]
+    if: always()
+    runs-on: [self-hosted, mac-studio, arm64]
+    outputs:
+      status: ${{ steps.s.outputs.status }}
+    steps:
+      - id: s
+        run: |
+          status=pass
+          for r in '${{ needs.verify-compliance.result }}' \
+                   '${{ needs.verify-audit.result }}' \
+                   '${{ needs.verify-sbom.result }}' \
+                   '${{ needs.verify-signatures.result }}' \
+                   '${{ needs.verify-changelog.result }}' \
+                   '${{ needs.build-manifest.result }}'; do
+            [ "$r" = "failure" ] && status=fail
+          done
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Release Gate — ${{ inputs.tag }} — $status"
+            echo "| Gate | Result |"
+            echo "|---|---|"
+            echo "| Compliance run | ${{ needs.verify-compliance.result }} |"
+            echo "| Audit fresh    | ${{ needs.verify-audit.result }} |"
+            echo "| SBOM           | ${{ needs.verify-sbom.result }} |"
+            echo "| Signatures     | ${{ needs.verify-signatures.result }} |"
+            echo "| Changelog      | ${{ needs.verify-changelog.result }} |"
+            echo "| Manifest       | ${{ needs.build-manifest.result }} |"
+          } >> "$GITHUB_STEP_SUMMARY"

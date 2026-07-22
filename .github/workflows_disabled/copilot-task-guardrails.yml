@@ -1,0 +1,307 @@
+name: Agent PR Guardrails
+
+# Runs on every PR. If the PR is from an agent (detected by label or branch
+# prefix), enforces the additional guardrails from AGENTS.md that are hard
+# to encode in a pre-commit hook or a human's head.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, edited]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: agent-guardrails-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  detect-agent:
+    runs-on: [self-hosted, mac-studio, arm64]
+    outputs:
+      is-agent: ${{ steps.check.outputs.is-agent }}
+      agent-name: ${{ steps.check.outputs.agent-name }}
+      repo-class: ${{ steps.check.outputs.repo-class }}
+      data-class: ${{ steps.check.outputs.data-class }}
+    steps:
+      - name: Check if PR is from an agent
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          LABELS: ${{ toJson(github.event.pull_request.labels) }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          is_agent=false
+          agent_name="none"
+
+          # Branch prefix check
+          if [[ "$HEAD_REF" =~ ^agent/ ]]; then
+            is_agent=true
+          fi
+
+          # Author check (known agent accounts)
+          case "$AUTHOR" in
+            copilot|github-copilot|github-copilot[bot]|copilot-swe-agent[bot])
+              is_agent=true; agent_name="copilot";;
+            claude-code|claude-code[bot])
+              is_agent=true; agent_name="claude-code";;
+            codex-bot|codex-bot[bot])
+              is_agent=true; agent_name="codex";;
+          esac
+
+          # Origin / agent label check
+          if echo "$LABELS" | grep -qE '"name":"origin:(copilot|claude)"'; then
+            is_agent=true
+            agent_name=$(echo "$LABELS" | grep -oE 'origin:(copilot|claude)' | head -1 | cut -d: -f2)
+          elif echo "$LABELS" | grep -qE '"name":"agent:(copilot|claude-code|codex|cursor)"'; then
+            is_agent=true
+            agent_name=$(echo "$LABELS" | grep -oE 'agent:[a-z-]+' | head -1 | cut -d: -f2)
+          fi
+
+          if printf '%s\n' "$BODY" | grep -Eiq '^[[:space:]]*primary_agent:[[:space:]]*(copilot|claude)([[:space:]]|$)'; then
+            is_agent=true
+            agent_name=$(printf '%s\n' "$BODY" | sed -nE 's/^[[:space:]]*primary_agent:[[:space:]]*(copilot|claude).*/\1/ip' | head -1)
+          fi
+
+          # PR ownership block check
+          if printf '%s\n' "$BODY" | grep -Eiq '^[[:space:]]*primary_agent:[[:space:]]*(copilot|claude)([[:space:]]|$)'; then
+            is_agent=true
+            agent_name=$(printf '%s\n' "$BODY" | sed -nE 's/^[[:space:]]*primary_agent:[[:space:]]*(copilot|claude).*/\1/ip' | head -1)
+          fi
+
+          # Repo custom property lookup (best-effort; falls back to "unknown")
+          repo_class="unknown"
+          data_class="unknown"
+          set +e
+          props=$(gh api "repos/${GITHUB_REPOSITORY}/properties/values" 2>/dev/null || echo "[]")
+          repo_class=$(echo "$props" | jq -r '.[] | select(.property_name=="iec62304-class") | .value' 2>/dev/null || echo "unknown")
+          data_class=$(echo "$props" | jq -r '.[] | select(.property_name=="data-classification") | .value' 2>/dev/null || echo "unknown")
+          set -e
+
+          {
+            echo "is-agent=$is_agent"
+            echo "agent-name=$agent_name"
+            echo "repo-class=${repo_class:-unknown}"
+            echo "data-class=${data_class:-unknown}"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "## Agent detection"
+          echo "- is_agent: $is_agent"
+          echo "- agent_name: $agent_name"
+          echo "- repo_class: $repo_class"
+          echo "- data_class: $data_class"
+
+  forbidden-paths:
+    needs: detect-agent
+    if: needs.detect-agent.outputs.is-agent == 'true'
+    runs-on: [self-hosted, mac-studio, arm64]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Enforce AGENTS.md §4.3 forbidden paths
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          # Read authorized exceptions from the issue body
+          issue_num=$(gh pr view "$PR_NUMBER" --json body -q '.body' | grep -oP '#\K[0-9]+' | head -1 || echo "")
+          task_authorized=""
+          if [ -n "$issue_num" ]; then
+            task_authorized=$(gh issue view "$issue_num" --json body -q '.body' | grep -oP 'authorizes?:\s*\K[^\s,]+' | tr '\n' '|' || echo "")
+          fi
+
+          # Absolutely forbidden (AGENTS.md §4.3)
+          FORBIDDEN=(
+            'audit-log/'
+            'dhf/risk/'
+            'dhf/classification.md'
+            '.github/workflows/audit-log.yml'
+            '.github/workflows/audit-verify.yml'
+            '.github/workflows/sync-rulesets.yml'
+            'policies/rulesets/'
+            'AGENTS.md'
+            '.github/copilot-instructions.md'
+            '.github/apps/'
+          )
+
+          changed=$(git diff --name-only "$BASE_SHA"..."$HEAD_SHA")
+          echo "Changed files:"
+          echo "$changed"
+
+          violations=""
+          for path in "${FORBIDDEN[@]}"; do
+            if echo "$changed" | grep -qE "^${path//\//\\/}"; then
+              if [ -n "$task_authorized" ] && [[ "$task_authorized" == *"${path}"* ]]; then
+                echo "::notice::Task explicitly authorizes modification of $path"
+              else
+                violations="${violations}- \`$path\` (forbidden by AGENTS.md §4.3)\n"
+              fi
+            fi
+          done
+
+          if [ -n "$violations" ]; then
+            echo -e "❌ Forbidden path violations:\n$violations" | tee /tmp/violations.md
+            gh pr comment "$PR_NUMBER" --body-file /tmp/violations.md
+            gh pr edit "$PR_NUMBER" --add-label "blocked:forbidden-path"
+            exit 1
+          fi
+
+          echo "✅ No forbidden-path violations."
+
+  required-compliance-checks-preserved:
+    needs: detect-agent
+    if: needs.detect-agent.outputs.is-agent == 'true'
+    runs-on: [self-hosted, mac-studio, arm64]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Ensure required-check workflows are not weakened
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+
+          REQUIRED=(
+            '.github/workflows/reusable-phi-scan.yml'
+            '.github/workflows/reusable-sbom.yml'
+            '.github/workflows/audit-log.yml'
+            '.github/workflows/reusable-codeql.yml'
+            '.github/workflows/reusable-scorecard.yml'
+          )
+
+          fail=0
+          for wf in "${REQUIRED[@]}"; do
+            if git diff "$BASE_SHA"..."$HEAD_SHA" -- "$wf" | grep -qE '^\+.*(continue-on-error:\s*true|if:\s*false)'; then
+              echo "::error::$wf has been weakened (continue-on-error:true or if:false added)."
+              fail=1
+            fi
+          done
+
+          if [ $fail -eq 1 ]; then
+            exit 1
+          fi
+          echo "✅ Required compliance workflows not weakened."
+
+  pr-description-complete:
+    needs: detect-agent
+    if: needs.detect-agent.outputs.is-agent == 'true'
+    runs-on: [self-hosted, mac-studio, arm64]
+    steps:
+      - name: Verify PR description has all required sections
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          body=$(gh pr view "$PR_NUMBER" --json body -q '.body')
+          required=(
+            '## Summary'
+            '## Files Changed'
+            '## Acceptance Criteria'
+            '## Tests'
+            '## Audit Events'
+            '## Security Implications'
+            '## Standards Touched'
+            '## Rollback'
+            '## Agent Self-Check'
+          )
+          missing=()
+          for section in "${required[@]}"; do
+            if ! grep -qF "$section" <<<"$body"; then
+              missing+=("$section")
+            fi
+          done
+          if [ ${#missing[@]} -gt 0 ]; then
+            printf '❌ PR description is missing required sections:\n' > /tmp/pr-desc.md
+            for s in "${missing[@]}"; do
+              printf '- %s\n' "$s" >> /tmp/pr-desc.md
+            done
+            printf '\nSee .github/copilot-instructions.md for the exact template.\n' >> /tmp/pr-desc.md
+            gh pr comment "$PR_NUMBER" --body-file /tmp/pr-desc.md
+            gh pr edit "$PR_NUMBER" --add-label "blocked:pr-description-incomplete"
+            exit 1
+          fi
+          echo "✅ PR description has all required sections."
+
+  phi-scan-on-diff:
+    needs: detect-agent
+    if: needs.detect-agent.outputs.is-agent == 'true'
+    uses: ./.github/workflows/reusable-phi-scan.yml
+    with:
+      scan-mode: "diff"
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+
+  class-bc-needs-human:
+    needs: detect-agent
+    if: >
+      needs.detect-agent.outputs.is-agent == 'true' &&
+      (needs.detect-agent.outputs.repo-class == 'class-b' ||
+       needs.detect-agent.outputs.repo-class == 'class-c' ||
+       needs.detect-agent.outputs.data-class == 'phi-active')
+    runs-on: [self-hosted, mac-studio, arm64]
+    steps:
+      - name: Require human-review label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          gh pr edit "$PR_NUMBER" --add-label "review:human-required"
+          echo "🔒 Class B/C or phi-active repo: human review required. Auto-merge disabled."
+
+  audit-log-agent-pr:
+    needs: [detect-agent, forbidden-paths, required-compliance-checks-preserved, pr-description-complete]
+    if: always() && needs.detect-agent.outputs.is-agent == 'true'
+    runs-on: [self-hosted, mac-studio, arm64]
+    steps:
+      - name: Emit audit event for agent PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          AGENT: ${{ needs.detect-agent.outputs.agent-name }}
+          REPO_CLASS: ${{ needs.detect-agent.outputs.repo-class }}
+          DATA_CLASS: ${{ needs.detect-agent.outputs.data-class }}
+        run: |
+          set -euo pipefail
+          jq -n \
+            --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg event "agent.pr.guardrails_evaluated" \
+            --arg pr "$PR_NUMBER" \
+            --arg agent "$AGENT" \
+            --arg repo_class "$REPO_CLASS" \
+            --arg data_class "$DATA_CLASS" \
+            --arg forbidden "${{ needs.forbidden-paths.result }}" \
+            --arg required_check "${{ needs.required-compliance-checks-preserved.result }}" \
+            --arg desc_check "${{ needs.pr-description-complete.result }}" \
+            '{timestamp:$ts, event:$event, pr:$pr, agent:$agent, repo_class:$repo_class, data_class:$data_class,
+              checks:{forbidden_paths:$forbidden, required_checks_preserved:$required_check, pr_description:$desc_check}}' \
+            > /tmp/audit-event.json
+          cat /tmp/audit-event.json
+          # Persisting to the Merkle chain is the responsibility of the audit-log workflow.
+          # We emit a job summary instead so it's visible in Actions logs.
+          {
+            echo "### Agent PR audit event"
+            echo '```json'
+            cat /tmp/audit-event.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

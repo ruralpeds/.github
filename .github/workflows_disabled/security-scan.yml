@@ -1,0 +1,318 @@
+name: "Security Scan"
+
+on:
+  workflow_call:
+    inputs:
+      run-semgrep:
+        description: "Run Semgrep SAST"
+        type: boolean
+        default: true
+      run-secret-detection:
+        description: "Run secret/credential detection"
+        type: boolean
+        default: true
+      run-sbom:
+        description: "Generate SBOM (Software Bill of Materials)"
+        type: boolean
+        default: true
+      run-supply-chain:
+        description: "Run supply chain checks (pinned actions, checksums)"
+        type: boolean
+        default: true
+      semgrep-rules:
+        description: "Semgrep rule sets (space-separated)"
+        type: string
+        default: "p/default p/owasp-top-ten p/cwe-top-25"
+      fail-on-secret:
+        description: "Fail workflow if secrets are detected"
+        type: boolean
+        default: true
+      working-directory:
+        description: "Working directory"
+        type: string
+        default: "."
+
+jobs:
+  # ─────────────────────────────────────────────
+  # SAST — Static Application Security Testing
+  # ─────────────────────────────────────────────
+  semgrep:
+    name: "SAST (Semgrep)"
+    if: inputs.run-semgrep
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 15
+    permissions:
+      security-events: write
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - name: Run Semgrep
+        working-directory: ${{ inputs.working-directory }}
+        env:
+          SEMGREP_RULES: ${{ inputs.semgrep-rules }}
+        run: |
+          semgrep ci \
+            --json --output semgrep-results.json \
+            --sarif --sarif-output semgrep-results.sarif \
+            2>&1 || SCAN_EXIT=$?
+
+          # Parse results
+          if [ -f semgrep-results.json ]; then
+            python3 -c "
+          import json, sys
+          r = json.load(open('semgrep-results.json'))
+          results = r.get('results', [])
+          errors = [x for x in results if x.get('extra', {}).get('severity') == 'ERROR']
+          warnings = [x for x in results if x.get('extra', {}).get('severity') == 'WARNING']
+          print(f'Findings: {len(results)} total, {len(errors)} errors, {len(warnings)} warnings')
+          for finding in errors[:10]:
+              path = finding.get('path', '?')
+              line = finding.get('start', {}).get('line', '?')
+              msg = finding.get('extra', {}).get('message', '?')[:120]
+              print(f'  ::error file={path},line={line}::{msg}')
+          if errors:
+              sys.exit(1)
+          "
+          fi
+      - name: Upload SARIF to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@28deaeda66b76a05916b6923827895f2b14ab96f  # v3
+        with:
+          sarif_file: ${{ inputs.working-directory }}/semgrep-results.sarif
+        continue-on-error: true
+      - name: Upload scan results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: semgrep-results
+          path: |
+            ${{ inputs.working-directory }}/semgrep-results.json
+            ${{ inputs.working-directory }}/semgrep-results.sarif
+          retention-days: 30
+          if-no-files-found: ignore
+
+  # ─────────────────────────────────────────────
+  # Secret Detection — credentials, keys, tokens
+  # ─────────────────────────────────────────────
+  secret-detection:
+    name: Secret detection
+    if: inputs.run-secret-detection
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+        with:
+          fetch-depth: 0
+      - name: Install TruffleHog
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh | sh -s -- -b /usr/local/bin
+      - name: Scan for secrets in git history
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          trufflehog git file://. \
+            --only-verified \
+            --json \
+            --fail \
+            > trufflehog-results.json 2>&1 || SCAN_EXIT=$?
+
+          FINDINGS=$(wc -l < trufflehog-results.json 2>/dev/null || echo 0)
+          echo "Verified secrets found: $FINDINGS"
+
+          if [ "$FINDINGS" -gt 0 ] && [ "${{ inputs.fail-on-secret }}" = "true" ]; then
+            echo "::error::TruffleHog found $FINDINGS verified secrets in git history"
+            # Show detector types without exposing secrets
+            python3 -c "
+          import json
+          with open('trufflehog-results.json') as f:
+              for line in f:
+                  if line.strip():
+                      r = json.loads(line)
+                      det = r.get('DetectorName', 'unknown')
+                      src = r.get('SourceMetadata', {}).get('Data', {}).get('Git', {}).get('file', '?')
+                      print(f'  ::error::{det} credential detected in {src}')
+          " 2>/dev/null || true
+            exit 1
+          fi
+      - name: Scan for high-entropy strings and patterns
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          # Check common secret file patterns
+          DANGEROUS_FILES=""
+          for pattern in ".env" ".env.local" ".env.production" "credentials.json" \
+                         "service-account*.json" "*.pem" "*.key" "id_rsa" "id_ed25519" \
+                         ".npmrc" ".pypirc" ".docker/config.json"; do
+            FOUND=$(find . -name "$pattern" -not -path "./.git/*" 2>/dev/null)
+            if [ -n "$FOUND" ]; then
+              DANGEROUS_FILES="$DANGEROUS_FILES\n$FOUND"
+            fi
+          done
+
+          if [ -n "$DANGEROUS_FILES" ]; then
+            echo "::warning::Potentially sensitive files committed:"
+            echo -e "$DANGEROUS_FILES" | while read -r f; do
+              [ -n "$f" ] && echo "  - $f"
+            done
+          fi
+      - name: Upload detection results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: secret-detection-results
+          path: ${{ inputs.working-directory }}/trufflehog-results.json
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # ─────────────────────────────────────────────
+  # SBOM — Software Bill of Materials
+  # ─────────────────────────────────────────────
+  sbom:
+    name: Generate SBOM
+    if: inputs.run-sbom
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - name: Install Syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+      - name: Generate SBOM (SPDX)
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          syft dir:. \
+            --output spdx-json=sbom-spdx.json \
+            --output cyclonedx-json=sbom-cyclonedx.json \
+            2>&1
+
+          # Summary
+          python3 -c "
+          import json
+          spdx = json.load(open('sbom-spdx.json'))
+          pkgs = spdx.get('packages', [])
+          print(f'SBOM generated: {len(pkgs)} packages cataloged')
+          # Group by type
+          types = {}
+          for p in pkgs:
+              t = p.get('externalRefs', [{}])[0].get('referenceType', 'unknown') if p.get('externalRefs') else 'unknown'
+              types[t] = types.get(t, 0) + 1
+          for t, c in sorted(types.items()):
+              print(f'  {t}: {c}')
+          " 2>/dev/null || echo "SBOM generated"
+      - name: Scan SBOM for vulnerabilities
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+          grype sbom:sbom-spdx.json \
+            --output json \
+            --file grype-vuln-results.json \
+            2>&1 || true
+
+          # Report critical/high vulns
+          if [ -f grype-vuln-results.json ]; then
+            python3 -c "
+          import json, sys
+          r = json.load(open('grype-vuln-results.json'))
+          matches = r.get('matches', [])
+          critical = [m for m in matches if m.get('vulnerability', {}).get('severity') == 'Critical']
+          high = [m for m in matches if m.get('vulnerability', {}).get('severity') == 'High']
+          print(f'Vulnerabilities: {len(matches)} total, {len(critical)} critical, {len(high)} high')
+          for v in critical[:5]:
+              vid = v['vulnerability']['id']
+              pkg = v.get('artifact', {}).get('name', '?')
+              ver = v.get('artifact', {}).get('version', '?')
+              print(f'  ::error::CRITICAL {vid} in {pkg}@{ver}')
+          if critical:
+              print('::error::Critical vulnerabilities found in dependencies')
+              sys.exit(1)
+          " 2>/dev/null || true
+          fi
+      - name: Upload SBOM
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: sbom
+          path: |
+            ${{ inputs.working-directory }}/sbom-spdx.json
+            ${{ inputs.working-directory }}/sbom-cyclonedx.json
+            ${{ inputs.working-directory }}/grype-vuln-results.json
+          retention-days: 90
+          if-no-files-found: ignore
+
+  # ─────────────────────────────────────────────
+  # Supply Chain — action pinning, lockfile check
+  # ─────────────────────────────────────────────
+  supply-chain:
+    name: Supply chain checks
+    if: inputs.run-supply-chain
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - name: Check GitHub Actions pinning
+        run: |
+          echo "Checking workflow files for unpinned actions..."
+          UNPINNED=0
+          for file in $(find .github/workflows -name "*.yml" -o -name "*.yaml" 2>/dev/null); do
+            while IFS= read -r line; do
+              # Match "uses: org/repo@ref" but flag @v* (tag) vs @sha (pinned)
+              if echo "$line" | grep -qE '^\s*uses:\s+[^/]+/[^@]+@'; then
+                REF=$(echo "$line" | grep -oE '@[^ ]+' | head -1)
+                if echo "$REF" | grep -qE '^@v[0-9]'; then
+                  ACTION=$(echo "$line" | grep -oE 'uses:\s+\S+' | sed 's/uses:\s*//')
+                  echo "::warning file=$file::Unpinned action: $ACTION (use SHA instead of tag)"
+                  UNPINNED=$((UNPINNED + 1))
+                fi
+              fi
+            done < "$file"
+          done
+          echo "Found $UNPINNED unpinned actions"
+          # Warn but don't fail — gives repos time to migrate
+          if [ "$UNPINNED" -gt 0 ]; then
+            echo "::warning::$UNPINNED GitHub Actions use version tags instead of SHA pins"
+          fi
+      - name: Check for lockfile presence
+        run: |
+          HAS_LOCKFILE=false
+          for lockfile in package-lock.json yarn.lock pnpm-lock.yaml Cargo.lock go.sum Gemfile.lock \
+                          poetry.lock Pipfile.lock composer.lock Manifest.toml; do
+            if [ -f "$lockfile" ]; then
+              echo "Found lockfile: $lockfile"
+              HAS_LOCKFILE=true
+            fi
+          done
+
+          # Check if there's a package manager that SHOULD have a lockfile
+          NEEDS_LOCKFILE=false
+          for manifest in package.json Cargo.toml go.mod Gemfile pyproject.toml composer.json; do
+            if [ -f "$manifest" ]; then
+              NEEDS_LOCKFILE=true
+              break
+            fi
+          done
+
+          if [ "$NEEDS_LOCKFILE" = "true" ] && [ "$HAS_LOCKFILE" = "false" ]; then
+            echo "::error::Package manifest found but no lockfile committed — this is a supply chain risk"
+            exit 1
+          fi
+      - name: Check for .gitignore coverage
+        run: |
+          if [ ! -f .gitignore ]; then
+            echo "::warning::No .gitignore file — secrets and build artifacts may be committed"
+          else
+            MISSING=""
+            for pattern in ".env" "node_modules" "__pycache__" ".DS_Store" "*.pyc"; do
+              if ! grep -qF "$pattern" .gitignore 2>/dev/null; then
+                # Only warn if the pattern is relevant
+                case "$pattern" in
+                  node_modules) [ -f package.json ] && MISSING="$MISSING $pattern" ;;
+                  __pycache__|*.pyc) ([ -f pyproject.toml ] || [ -f setup.py ] || [ -f requirements.txt ]) && MISSING="$MISSING $pattern" ;;
+                  *) MISSING="$MISSING $pattern" ;;
+                esac
+              fi
+            done
+            if [ -n "$MISSING" ]; then
+              echo "::warning::Consider adding to .gitignore:$MISSING"
+            fi
+          fi

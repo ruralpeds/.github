@@ -1,0 +1,169 @@
+name: Reusable — README Gap Status Refresh
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Reads .gap-analysis/GAP_ANALYSIS.md from the target repo and embeds a
+# current gap-status summary table between these markers in README.md:
+#
+#   <!-- gap-status-start -->
+#   <!-- gap-status-end -->
+#
+# If the markers are absent the workflow exits cleanly (no-op).
+# Called by build-status-sweep.yml after gap statuses are updated.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_call:
+    inputs:
+      target_repo:
+        description: "Owner/repo to update (e.g. ruralpeds/fhir-gateway)"
+        type: string
+        required: true
+    secrets:
+      TH_BOT_APP_ID:
+        required: true
+      TH_BOT_PRIVATE_KEY:
+        required: true
+
+jobs:
+  refresh-readme:
+    name: "Refresh README gap table — ${{ inputs.target_repo }}"
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 10
+
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.TH_BOT_APP_ID }}
+          private-key: ${{ secrets.TH_BOT_PRIVATE_KEY }}
+          owner: ruralpeds
+          repositories: ${{ inputs.target_repo }}
+
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.target_repo }}
+          token: ${{ steps.app-token.outputs.token }}
+          path: target-repo
+
+      - name: Checkout ruralpeds/.github scripts
+        uses: actions/checkout@v4
+        with:
+          repository: ruralpeds/.github
+          token: ${{ steps.app-token.outputs.token }}
+          path: dot-github
+          sparse-checkout: scripts
+
+      - name: Check README markers exist
+        id: check
+        run: |
+          if ! grep -q '<!-- gap-status-start -->' target-repo/README.md 2>/dev/null; then
+            echo "has_markers=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::README.md has no gap-status markers — skipping refresh."
+          else
+            echo "has_markers=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate gap status table
+        if: steps.check.outputs.has_markers == 'true'
+        id: generate
+        run: |
+          python3 - target-repo dot-github/scripts/gap_lifecycle.py > /tmp/gap_table.md <<'PYEOF'
+          import json, subprocess, sys
+          from pathlib import Path
+          from datetime import date
+
+          repo_dir   = sys.argv[1]
+          script     = sys.argv[2]
+
+          result = subprocess.run(
+              ['python3', script, 'parse', '--repo', repo_dir],
+              capture_output=True, text=True
+          )
+          if result.returncode != 0:
+              print(f"parse failed: {result.stderr}", file=sys.stderr)
+              sys.exit(1)
+
+          gaps = json.loads(result.stdout)
+          if not gaps:
+              print("_No gaps defined yet._")
+              sys.exit(0)
+
+          STATUS_EMOJI = {
+              'Not Started':  '⬜',
+              'Backlog':      '📋',
+              'In the Air':   '🌬️',
+              'Building':     '🔨',
+              'Committed':    '✅',
+              'In Progress':  '🔄',
+              'Blocked':      '🚫',
+              'In Review':    '👀',
+              'Completed':    '✔️',
+              'Archived':     '🗄️',
+          }
+          PRIORITY_LABEL = {'P0': '🔴 P0', 'P1': '🟠 P1', 'P2': '🟡 P2',
+                            'P3': '🟢 P3', 'P4': '⚪ P4'}
+
+          lines = [
+              f"_Last updated: {date.today().isoformat()} by [build-status-sweep](../../actions/workflows/build-status-sweep.yml)_",
+              "",
+              "| Gap | Title | Status | Priority | Target |",
+              "|-----|-------|--------|----------|--------|",
+          ]
+          for g in sorted(gaps, key=lambda x: x.get('id', '')):
+              gid    = g.get('id', '')
+              title  = (g.get('title') or '').replace('|', '\\|')[:60]
+              status = g.get('status') or 'Not Started'
+              emoji  = STATUS_EMOJI.get(status, '❓')
+              pri    = PRIORITY_LABEL.get(g.get('priority') or '', g.get('priority') or '—')
+              target = g.get('target_completion') or '—'
+              lines.append(f"| {gid} | {title} | {emoji} {status} | {pri} | {target} |")
+
+          print('\n'.join(lines))
+          PYEOF
+
+      - name: Embed table into README
+        if: steps.check.outputs.has_markers == 'true'
+        run: |
+          python3 - target-repo/README.md /tmp/gap_table.md <<'PYEOF'
+          import sys
+          from pathlib import Path
+
+          readme_path = Path(sys.argv[1])
+          table_path  = Path(sys.argv[2])
+
+          readme = readme_path.read_text()
+          table  = table_path.read_text().strip()
+
+          START = '<!-- gap-status-start -->'
+          END   = '<!-- gap-status-end -->'
+
+          s = readme.find(START)
+          e = readme.find(END)
+          if s == -1 or e == -1 or e < s:
+              print("Markers not found or malformed; no-op.")
+              sys.exit(0)
+
+          new_readme = (
+              readme[:s + len(START)]
+              + '\n' + table + '\n'
+              + readme[e:]
+          )
+          readme_path.write_text(new_readme)
+          print(f"README updated ({len(table)} chars of gap table embedded).")
+          PYEOF
+
+      - name: Commit and push README update
+        if: steps.check.outputs.has_markers == 'true'
+        run: |
+          cd target-repo
+          git config user.name  "ruralpeds-bot[bot]"
+          git config user.email "ruralpeds-bot[bot]@users.noreply.github.com"
+          git add README.md
+          if git diff --cached --quiet; then
+            echo "README gap table already up to date — no commit needed."
+            exit 0
+          fi
+          git commit -m "docs(gap): refresh gap status table in README"
+          git push

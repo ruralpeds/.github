@@ -1,0 +1,99 @@
+name: "Build sprint-base image"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "templates/sprint-base.Dockerfile"
+      - ".github/workflows/build-sprint-base.yml"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Override version tag (e.g. v1, v1.1, v2)"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  packages: write
+  attestations: write
+  id-token: write
+  security-events: write
+concurrency:
+  group: build-sprint-base
+  cancel-in-progress: false
+
+jobs:
+  build:
+    uses: ./.github/workflows/container.yml
+    with:
+      dockerfile: templates/sprint-base.Dockerfile
+      context: templates
+      image-name: sprint-base
+      platforms: linux/amd64,linux/arm64
+      push: true
+      run-trivy: true
+      trivy-severity: CRITICAL,HIGH
+      trivy-ignore-unfixed: true
+      run-hadolint: true
+      tag-strategy: all
+
+  tag-major-version:
+    name: Tag major version (v1)
+    needs: build
+    runs-on: [self-hosted, mac-studio, arm64]
+    permissions:
+      packages: write
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Apply v1 tag (or override)
+        env:
+          OVERRIDE: ${{ inputs.version }}
+          DIGEST:   ${{ needs.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          IMAGE="ghcr.io/${{ github.repository_owner }}/sprint-base"
+          TARGET="${OVERRIDE:-v1}"
+          echo "Re-tagging $IMAGE@$DIGEST as $IMAGE:$TARGET"
+          docker buildx imagetools create \
+            --tag "$IMAGE:$TARGET" \
+            "$IMAGE@$DIGEST"
+          echo "Done. Pinned reference: $IMAGE:$TARGET"
+          echo "Digest: $DIGEST"
+
+  smoke-test:
+    name: Smoke test
+    needs: [build, tag-major-version]
+    runs-on: [self-hosted, mac-studio, arm64]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - name: Pull and probe sprint-base
+        run: |
+          set -euo pipefail
+          IMAGE="ghcr.io/${{ github.repository_owner }}/sprint-base:v1"
+          echo "::group::Pull"
+          docker pull "$IMAGE"
+          echo "::endgroup::"
+          echo "::group::Toolchain probes"
+          docker run --rm "$IMAGE" bash -lc '
+            set -e
+            echo "rustc:    $(rustc --version)"
+            echo "cargo:    $(cargo --version)"
+            echo "wasm-pack: $(wasm-pack --version)"
+            echo "node:     $(node --version)"
+            echo "pnpm:     $(pnpm --version)"
+            echo "python:   $(python3 --version)"
+            echo "uv:       $(uv --version)"
+            echo "julia:    $(julia --version)"
+            echo "gh:       $(gh --version | head -n1)"
+            rustup target list --installed | grep -q wasm32-unknown-unknown
+          '
+          echo "::endgroup::"

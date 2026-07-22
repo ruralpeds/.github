@@ -1,0 +1,47 @@
+# .github/workflows/stale-repo-sweeper.yml
+# Standalone scheduled workflow — lives in ruralpeds/.github
+# Walks all org repos, checks AUDIT.yaml freshness, opens an issue in any
+# stale repo (if one isn't already open), and posts a summary comment on a
+# pinned tracking issue in the .github repo itself.
+
+name: Stale Repo Sweeper
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'     # Mondays 09:00 UTC
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Report only, do not open issues'
+        type: boolean
+        default: false
+      stale-days:
+        description: 'Days before considered stale'
+        type: number
+        default: 180
+      overdue-days:
+        description: 'Days before considered overdue (urgent)'
+        type: number
+        default: 365
+
+permissions:
+  contents: read
+  issues:   write
+
+jobs:
+  sweep:
+    runs-on: [self-hosted, mac-studio, arm64]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+
+      - name: Install deps
+        run: python3 -m pip install --user pyyaml python-dateutil
+
+      - name: Sweep stale repos
+        env:
+          GH_TOKEN:     ${{ github.token }}
+          ORG:          ruralpeds
+          DRY_RUN:      ${{ inputs.dry-run || 'false' }}
+          STALE_DAYS:   ${{ inputs.stale-days || 180 }}
+          OVERDUE_DAYS: ${{ inputs.overdue-days || 365 }}
+        run: python3 scripts/stale_sweeper.py

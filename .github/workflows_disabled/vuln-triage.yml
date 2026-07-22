@@ -1,0 +1,223 @@
+name: "Vulnerability Triage & SLA Enforcement"
+# Monitors Dependabot alerts on the calling repo and enforces triage SLAs.
+# Opens or updates a tracking issue when alerts are past SLA.
+#
+# Regulatory drivers:
+#   - NIST SSDF RV.1 — Identify and confirm vulnerabilities on an ongoing basis
+#   - NIST SSDF RV.2 — Assess, prioritize, and remediate vulnerabilities
+#   - FDA Cybersecurity Premarket Guidance (Sept 2023) — vulnerability management
+#   - HIPAA §164.308(a)(1)(ii)(B) — risk management
+#
+# SLA definitions (configurable):
+#   - Critical (CVSS 9.0+): 7 days
+#   - High (7.0–8.9):       30 days
+#   - Medium (4.0–6.9):     90 days
+#   - Low (0.1–3.9):        180 days
+#
+# Runs daily at 11:00 UTC and on workflow_dispatch.
+
+on:
+  schedule:
+    - cron: "0 11 * * 1,3,5"  # Mon/Wed/Fri at 11:00 UTC — SLA tracks days, daily was redundant
+  workflow_dispatch:
+    inputs:
+      sla-critical-days:
+        description: "SLA days for CRITICAL severity"
+        type: number
+        default: 7
+      sla-high-days:
+        description: "SLA days for HIGH severity"
+        type: number
+        default: 30
+      sla-medium-days:
+        description: "SLA days for MEDIUM severity"
+        type: number
+        default: 90
+      sla-low-days:
+        description: "SLA days for LOW severity"
+        type: number
+        default: 180
+
+permissions:
+  contents: read
+  issues: write
+  security-events: read
+
+jobs:
+  triage:
+    name: Triage vulnerability alerts
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Query Dependabot alerts
+        id: query
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SLA_CRITICAL: ${{ inputs.sla-critical-days || 7 }}
+          SLA_HIGH: ${{ inputs.sla-high-days || 30 }}
+          SLA_MEDIUM: ${{ inputs.sla-medium-days || 90 }}
+          SLA_LOW: ${{ inputs.sla-low-days || 180 }}
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          import os, json, sys, urllib.request, urllib.error
+          from datetime import datetime, timezone, timedelta
+          from pathlib import Path
+
+          slas = {
+              "critical": int(os.environ["SLA_CRITICAL"]),
+              "high":     int(os.environ["SLA_HIGH"]),
+              "medium":   int(os.environ["SLA_MEDIUM"]),
+              "low":      int(os.environ["SLA_LOW"]),
+          }
+          repo = os.environ["GITHUB_REPOSITORY"]
+          token = os.environ["GH_TOKEN"]
+
+          alerts = []
+          page = 1
+          while True:
+              url = f"https://api.github.com/repos/{repo}/dependabot/alerts?state=open&per_page=100&page={page}"
+              try:
+                  req = urllib.request.Request(url, headers={
+                      "Authorization": f"Bearer {token}",
+                      "Accept": "application/vnd.github+json",
+                  })
+                  with urllib.request.urlopen(req, timeout=15) as r:
+                      items = json.loads(r.read())
+              except urllib.error.HTTPError as e:
+                  if e.code == 404:
+                      print("::warning::Dependabot alerts not enabled on this repo (404). Enable Dependabot security updates in repo settings.")
+                      sys.exit(0)
+                  if e.code == 403:
+                      print("::warning::No permission to read Dependabot alerts (403). Grant 'security-events: read' permission or use a PAT.")
+                      sys.exit(0)
+                  raise
+              except urllib.error.URLError as e:
+                  print(f"::warning::Network error: {e}")
+                  sys.exit(0)
+              if not items: break
+              alerts.extend(items)
+              if len(items) < 100: break
+              page += 1
+
+          print(f"Fetched {len(alerts)} open Dependabot alert(s)")
+
+          now = datetime.now(timezone.utc)
+          rows = []
+          breached = []
+
+          for alert in alerts:
+              severity = ((alert.get("security_advisory") or {}).get("severity") or "").lower()
+              created = alert.get("created_at")
+              created_dt = datetime.fromisoformat(created.replace("Z", "+00:00")) if created else now
+              age_days = (now - created_dt).days
+              sla = slas.get(severity, 90)
+              breach_days = age_days - sla
+              package = ((alert.get("dependency") or {}).get("package") or {}).get("name", "?")
+              cve = ((alert.get("security_advisory") or {}).get("cve_id")) or ((alert.get("security_advisory") or {}).get("ghsa_id"))
+              summary = (alert.get("security_advisory") or {}).get("summary", "")[:100]
+              url = alert.get("html_url", "")
+
+              row = {
+                  "alert_number": alert.get("number"),
+                  "severity": severity,
+                  "package": package,
+                  "cve": cve,
+                  "age_days": age_days,
+                  "sla_days": sla,
+                  "breach_days": breach_days,
+                  "summary": summary,
+                  "url": url,
+              }
+              rows.append(row)
+              if breach_days > 0:
+                  breached.append(row)
+
+          # Write report
+          rpt = ["# Vulnerability Triage Report", ""]
+          rpt.append(f"**Repository:** `{repo}`  ")
+          rpt.append(f"**Generated:** {now.isoformat()}  ")
+          rpt.append(f"**Total open alerts:** {len(alerts)}  ")
+          rpt.append(f"**SLA-breached:** {len(breached)}")
+          rpt.append("")
+          rpt.append("## SLA policy")
+          rpt.append("")
+          rpt.append("| Severity | Triage SLA |")
+          rpt.append("|---|---|")
+          for sev, days in slas.items():
+              rpt.append(f"| {sev.upper()} | {days} days |")
+          rpt.append("")
+
+          if breached:
+              rpt.append(f"## ❌ SLA-breached alerts ({len(breached)})")
+              rpt.append("")
+              rpt.append("| # | Severity | Package | Age | SLA | Over by | CVE/GHSA |")
+              rpt.append("|---|---|---|---|---|---|---|")
+              for r in sorted(breached, key=lambda x: -x["breach_days"]):
+                  rpt.append(
+                      f"| [{r['alert_number']}]({r['url']}) | {r['severity'].upper()} | {r['package']} | "
+                      f"{r['age_days']}d | {r['sla_days']}d | **+{r['breach_days']}d** | {r['cve']} |"
+                  )
+              rpt.append("")
+
+          within = [r for r in rows if r["breach_days"] <= 0]
+          if within:
+              rpt.append(f"## ✅ Within SLA ({len(within)})")
+              rpt.append("")
+              rpt.append("| # | Severity | Package | Age | Remaining |")
+              rpt.append("|---|---|---|---|---|")
+              for r in sorted(within, key=lambda x: x["breach_days"]):
+                  rpt.append(
+                      f"| [{r['alert_number']}]({r['url']}) | {r['severity'].upper()} | {r['package']} | "
+                      f"{r['age_days']}d | {-r['breach_days']}d |"
+                  )
+              rpt.append("")
+
+          Path("vuln-triage-report.md").write_text("\n".join(rpt))
+          Path("vuln-triage.json").write_text(json.dumps({
+              "generated_at": now.isoformat(),
+              "total_alerts": len(alerts),
+              "breached": len(breached),
+              "rows": rows,
+          }, indent=2))
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("\n".join(rpt))
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"total_alerts={len(alerts)}\n")
+              f.write(f"breached_count={len(breached)}\n")
+          PY
+
+      - name: Open / update SLA-breach tracking issue
+        if: ${{ steps.query.outputs.breached_count != '0' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TITLE="[VULN TRIAGE] ${{ steps.query.outputs.breached_count }} alert(s) past SLA"
+          EXISTING=$(gh issue list --label "vuln-sla-breach" --state open --json number,title \
+            --jq '.[] | .number' | head -1)
+
+          if [ -n "$EXISTING" ]; then
+            # Update title and body via comment + edit
+            gh issue edit "$EXISTING" --title "$TITLE" --body-file vuln-triage-report.md
+            echo "Updated issue #$EXISTING"
+          else
+            gh issue create \
+              --title "$TITLE" \
+              --label "vuln-sla-breach,security,p0,needs-remediation" \
+              --body-file vuln-triage-report.md
+          fi
+
+      - name: Upload triage artifact
+        if: always()
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+        with:
+          name: vuln-triage-${{ github.run_id }}
+          path: |
+            vuln-triage-report.md
+            vuln-triage.json
+          retention-days: 90
+          if-no-files-found: ignore

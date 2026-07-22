@@ -1,0 +1,40 @@
+# ruralpeds/.github/.github/workflows/required-audit.yml
+# Registered as an org-level required workflow.
+
+name: Required — Audit Log
+
+on:
+  push:
+    branches: [main, master]
+    paths-ignore:
+      - 'docs/**'
+      - 'compliance/**'
+      - 'compliance-metrics/**'
+      - 'copilot-tasks/**'
+      - 'testing/**'
+      - 'audit-log/**'
+      - 'dhf/**'
+      - 'strategy/**'
+      - 'operations/**'
+      - 'operations-runbooks/**'
+      - '**/*.md'
+      - '**/*.docx'
+  schedule:
+    - cron: '0 6 * * 0'     # weekly Sunday 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      mark-reviewed:
+        description: 'Mark this repo as reviewed today'
+        type: boolean
+        default: false
+
+jobs:
+  audit:
+    uses: ./.github/workflows/repo-audit.yml
+    with:
+      review-interval-days: 180
+      classification: library         # overridden by per-repo caller if present
+      require-sources: false
+      runner-label: 'self-hosted,mac-studio,arm64'
+      mark-reviewed: ${{ inputs.mark-reviewed == true }}
+      reviewer: ${{ github.actor }}

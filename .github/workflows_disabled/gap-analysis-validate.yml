@@ -1,0 +1,272 @@
+name: Validate Gap Analysis
+
+on:
+  pull_request:
+    paths:
+      - '.gap-analysis/GAP_ANALYSIS.md'
+      - '.gap-analysis/schema.md'
+  push:
+    branches: [main]
+    paths:
+      - '.gap-analysis/GAP_ANALYSIS.md'
+      - '.gap-analysis/schema.md'
+
+jobs:
+  validate:
+    runs-on: [self-hosted, mac-studio, arm64]
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+
+      - name: Validate GAP_ANALYSIS.md structure
+        shell: bash
+        run: |
+          set -e
+          
+          if [ ! -f ".gap-analysis/GAP_ANALYSIS.md" ]; then
+            echo "❌ .gap-analysis/GAP_ANALYSIS.md not found"
+            exit 1
+          fi
+          
+          GAP_FILE=".gap-analysis/GAP_ANALYSIS.md"
+          
+          # Check for required sections
+          echo "🔍 Checking required sections..."
+          if ! grep -q "^# Gap Analysis for" "$GAP_FILE"; then
+            echo "❌ Missing title (should start with '# Gap Analysis for')"
+            exit 1
+          fi
+          
+          if ! grep -q "^## Overview" "$GAP_FILE"; then
+            echo "⚠️  Recommended: add '## Overview' section"
+          fi
+          
+          if ! grep -q "^## Active Gaps" "$GAP_FILE"; then
+            echo "❌ Missing '## Active Gaps' section"
+            exit 1
+          fi
+          
+          echo "✅ Required sections present"
+
+      - name: Validate gap IDs are unique
+        shell: bash
+        run: |
+          set -e
+          
+          GAP_FILE=".gap-analysis/GAP_ANALYSIS.md"
+          
+          echo "🔍 Checking gap ID uniqueness..."
+          
+          # Extract all gap IDs
+          gap_ids=$(grep "^### GAP-" "$GAP_FILE" | sed 's/.*GAP-/GAP-/; s/:.*//' | sort)
+          
+          if [ -z "$gap_ids" ]; then
+            echo "⚠️  No gaps found (this is OK for empty repos)"
+          else
+            # Check for duplicates
+            duplicates=$(echo "$gap_ids" | uniq -d)
+            if [ -n "$duplicates" ]; then
+              echo "❌ Duplicate gap IDs found:"
+              echo "$duplicates"
+              exit 1
+            fi
+            
+            echo "✅ All gap IDs are unique"
+            echo "Found gaps: $gap_ids" | head -5
+          fi
+
+      - name: Validate status values
+        shell: bash
+        run: |
+          set -e
+          
+          GAP_FILE=".gap-analysis/GAP_ANALYSIS.md"
+          VALID_STATUSES="Not Started|Backlog|In Progress|Blocked|In Review|Completed|Archived"
+          
+          echo "🔍 Validating status values..."
+          
+          # Check for invalid status values
+          invalid=$(grep -E "^\*\*Status\*\*:" "$GAP_FILE" | \
+            grep -v -E "($VALID_STATUSES)" || true)
+          
+          if [ -n "$invalid" ]; then
+            echo "❌ Invalid status values found:"
+            echo "$invalid"
+            echo ""
+            echo "Valid statuses: $VALID_STATUSES"
+            exit 1
+          fi
+          
+          echo "✅ All status values are valid"
+
+      - name: Validate priority values
+        shell: bash
+        run: |
+          set -e
+          
+          GAP_FILE=".gap-analysis/GAP_ANALYSIS.md"
+          VALID_PRIORITIES="P0|P1|P2|P3|P4"
+          
+          echo "🔍 Validating priority values..."
+          
+          # Check for invalid priority values
+          invalid=$(grep -E "^\*\*Priority\*\*:" "$GAP_FILE" | \
+            grep -v -E "($VALID_PRIORITIES)" || true)
+          
+          if [ -n "$invalid" ]; then
+            echo "❌ Invalid priority values found:"
+            echo "$invalid"
+            echo ""
+            echo "Valid priorities: P0, P1, P2, P3, P4"
+            exit 1
+          fi
+          
+          echo "✅ All priority values are valid"
+
+      - name: Validate P0/P1 gaps have owners and target dates
+        shell: bash
+        run: |
+          set -e
+          
+          GAP_FILE=".gap-analysis/GAP_ANALYSIS.md"
+          
+          echo "🔍 Validating P0/P1 gap requirements..."
+          
+          # Extract P0/P1 gaps and check for owners + target dates
+          awk '
+            /^### GAP-/ { gap=$0; gap_id=$3; }
+            /^\*\*Priority\*\*: (P0|P1)/ {
+              priority=$0;
+              in_p0p1=1;
+              next;
+            }
+            in_p0p1 && /^\*\*Owner\*\*:/ {
+              owner=$0;
+              if (owner ~ /\[Unassigned\]/) {
+                print "⚠️  " gap " has no owner (P0/P1 should be assigned)";
+              }
+            }
+            in_p0p1 && /^\*\*Target Completion\*\*:/ {
+              target=$0;
+              if (target ~ /TBD|TBD|None/) {
+                print "⚠️  " gap " has no target date (P0/P1 should have deadline)";
+              }
+              in_p0p1=0;
+            }
+          ' "$GAP_FILE"
+          
+          echo "✅ P0/P1 gap validation complete (warnings OK)"
+
+      - name: Validate target completion dates format
+        shell: bash
+        run: |
+          set -e
+          
+          GAP_FILE=".gap-analysis/GAP_ANALYSIS.md"
+          
+          echo "🔍 Validating date formats..."
+          
+          # Check for YYYY-MM-DD format (simple validation)
+          invalid=$(grep -E "^\*\*Target Completion\*\*:" "$GAP_FILE" | \
+            grep -v -E "[0-9]{4}-[0-9]{2}-[0-9]{2}|TBD" || true)
+          
+          if [ -n "$invalid" ]; then
+            echo "⚠️  Target completion dates should be YYYY-MM-DD or TBD:"
+            echo "$invalid"
+          fi
+          
+          echo "✅ Date format validation complete"
+
+      - name: Check for required gap fields
+        shell: bash
+        run: |
+          set -e
+          
+          GAP_FILE=".gap-analysis/GAP_ANALYSIS.md"
+          
+          echo "🔍 Checking for required gap fields..."
+          
+          # Extract gaps and check for required fields
+          python3 << 'EOF'
+          import re
+          
+          with open(".gap-analysis/GAP_ANALYSIS.md", "r") as f:
+              content = f.read()
+          
+          # Split by gap header
+          gaps = re.split(r'^### GAP-', content, flags=re.MULTILINE)[1:]
+          
+          if not gaps:
+              print("✅ No gaps to validate (empty repo OK)")
+              exit(0)
+          
+          required_fields = [
+              r"\*\*Status\*\*:",
+              r"\*\*Priority\*\*:",
+              r"\*\*Owner\*\*:",
+              r"\*\*Description\*\*:",
+          ]
+          
+          missing_count = 0
+          for i, gap in enumerate(gaps, 1):
+              gap_id = gap.split("\n")[0].split(":")[0].strip()
+              
+              for field in required_fields:
+                  if not re.search(field, gap):
+                      print(f"⚠️  GAP-{gap_id} missing field: {field}")
+                      missing_count += 1
+          
+          if missing_count > 0:
+              print(f"⚠️  Found {missing_count} missing fields (review recommended)")
+          else:
+              print("✅ All gaps have required fields")
+          EOF
+
+      - name: Validate section structure
+        shell: bash
+        run: |
+          set -e
+          
+          GAP_FILE=".gap-analysis/GAP_ANALYSIS.md"
+          
+          echo "🔍 Validating section structure..."
+          
+          python3 << 'EOF'
+          import re
+          
+          with open(".gap-analysis/GAP_ANALYSIS.md", "r") as f:
+              content = f.read()
+          
+          # Check section order
+          sections = {
+              "Gap Analysis for": 0,
+              "Overview": 0,
+              "Active Gaps": 0,
+          }
+          
+          for section in sections.keys():
+              if section in content:
+                  sections[section] = content.find(section)
+          
+          # Active Gaps should come after Overview
+          if sections["Overview"] > 0 and sections["Active Gaps"] > 0:
+              if sections["Overview"] > sections["Active Gaps"]:
+                  print("⚠️  Sections out of order: Overview should come before Active Gaps")
+          
+          print("✅ Section structure looks good")
+          EOF
+
+      - name: Print validation summary
+        if: always()
+        shell: bash
+        run: |
+          echo ""
+          echo "=================================================="
+          echo "Gap Analysis Validation Summary"
+          echo "=================================================="
+          echo "✅ Validation passed"
+          echo ""
+          echo "If you see warnings above, they're informational."
+          echo "Errors (❌) will block the PR."
+          echo "=================================================="

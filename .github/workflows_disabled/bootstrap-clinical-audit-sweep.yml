@@ -1,0 +1,128 @@
+name: Bootstrap Clinical Audit Sweep
+
+# ─────────────────────────────────────────────────────────────────────────────
+# One-shot (and re-runnable) installer: discovers every Rust and Julia repo in
+# the ruralpeds org and opens a PR to install:
+#   - .github/workflows/clinical-audit.yml
+#   - .clinical-audit/.gitkeep
+#   - CLAUDE.md guidance block (if CLAUDE.md present)
+#
+# Idempotent: skips repos where clinical-audit.yml already exists, and never
+# opens a duplicate PR (checks for open PRs on the bootstrap branch first).
+#
+# Schedule: 1st of every month at 09:00 UTC — picks up any newly created repos.
+# workflow_dispatch: run on demand for initial rollout or single-repo targeting.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    - cron: "0 9 1 * *"    # 1st of month, 09:00 UTC
+  workflow_dispatch:
+    inputs:
+      target_repo:
+        description: "Single repo name to target (e.g. peds-calculators). Leave blank for full sweep."
+        type: string
+        required: false
+        default: ""
+      dry_run:
+        description: "Discover repos and log plan without opening any PRs"
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: "bootstrap-clinical-audit-sweep"
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    name: Clinical audit bootstrap sweep
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1  # v1.11.1
+        with:
+          app-id: ${{ secrets.TH_BOT_APP_ID }}
+          private-key: ${{ secrets.TH_BOT_PRIVATE_KEY }}
+          owner: ruralpeds
+
+      - name: Checkout ruralpeds/.github
+        uses: actions/checkout@v4  # v4.2.2
+        with:
+          sparse-checkout: scripts
+          sparse-checkout-cone-mode: true
+
+      - name: Run bootstrap sweep
+        id: sweep
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          ARGS="--token $GH_TOKEN --org ruralpeds"
+          if [ -n "${{ inputs.target_repo }}" ]; then
+            ARGS="$ARGS --repo ${{ inputs.target_repo }}"
+          fi
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          python3 scripts/bootstrap_clinical_audit_sweep.py $ARGS
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Write job summary
+        if: always()
+        run: |
+          {
+            echo "## Clinical Audit Bootstrap Sweep — $(date -u +%Y-%m-%d)"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| Trigger | \`${{ github.event_name }}\` |"
+            echo "| Target repo | \`${{ inputs.target_repo || '(all)' }}\` |"
+            echo "| Dry run | \`${{ inputs.dry_run }}\` |"
+            echo ""
+            if [ -f /tmp/clinical_audit_sweep_report.json ]; then
+              OPENED=$(jq '[.[] | select(.status=="pr_opened")] | length' /tmp/clinical_audit_sweep_report.json)
+              ALREADY_OPEN=$(jq '[.[] | select(.status=="pr_already_open")] | length' /tmp/clinical_audit_sweep_report.json)
+              INSTALLED=$(jq '[.[] | select(.status=="already_installed")] | length' /tmp/clinical_audit_sweep_report.json)
+              ERRORS=$(jq '[.[] | select(.status=="error")] | length' /tmp/clinical_audit_sweep_report.json)
+              WOULD=$(jq '[.[] | select(.status=="would_install")] | length' /tmp/clinical_audit_sweep_report.json)
+              echo "| PRs opened | $OPENED |"
+              echo "| PRs already open | $ALREADY_OPEN |"
+              echo "| Already installed | $INSTALLED |"
+              echo "| Would install (dry run) | $WOULD |"
+              echo "| Errors | $ERRORS |"
+              echo ""
+              PR_LIST=$(jq -r '.[] | select(.pr_url != null) | "- [\(.repo)](\(.pr_url))"' \
+                /tmp/clinical_audit_sweep_report.json)
+              if [ -n "$PR_LIST" ]; then
+                echo "### PRs"
+                echo "$PR_LIST"
+              fi
+              ERROR_LIST=$(jq -r '.[] | select(.status=="error") | "- **\(.repo)**: \(.errors // [] | join(", "))"' \
+                /tmp/clinical_audit_sweep_report.json)
+              if [ -n "$ERROR_LIST" ]; then
+                echo ""
+                echo "### Errors"
+                echo "$ERROR_LIST"
+              fi
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-artifact@v4  # v4.4.3
+        with:
+          name: clinical-audit-sweep-report-${{ github.run_id }}
+          path: /tmp/clinical_audit_sweep_report.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Fail if errors
+        if: steps.sweep.outputs.exit_code != '0'
+        run: |
+          echo "::error::Bootstrap sweep encountered errors. Check the report artifact."
+          exit 1

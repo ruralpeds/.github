@@ -1,0 +1,109 @@
+name: Copilot Setup Steps
+
+# This workflow runs in the Copilot coding agent's ephemeral environment
+# BEFORE the agent begins work on an assigned issue. Pre-install everything
+# the agent will need so it doesn't waste turns on environment setup.
+#
+# Reference: https://docs.github.com/en/copilot/customizing-copilot/customizing-the-development-environment-for-copilot-coding-agent
+
+on:
+  workflow_dispatch:
+
+jobs:
+  copilot-setup-steps:
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Setup Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Setup Go
+        uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed # v5.1.0
+        with:
+          go-version: "1.23"
+          cache: true
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          toolchain: stable
+          components: "rustfmt,clippy"
+
+      - name: Setup Julia
+        uses: julia-actions/setup-julia@5c9647d97b78a5debe5164e9eec09d653d29bd71 # v2.6.1
+        with:
+          version: "1.11"
+
+      - name: Install org-wide CLI tools
+        run: |
+          set -euo pipefail
+          # Formatters / linters the agent will need to run before pushing
+          pip install --quiet ruff mypy pre-commit yamllint
+          npm install --global --silent prettier@3.3.3 eslint@9.x markdownlint-cli@0.42.0 pnpm@9
+          cargo install --quiet cargo-deny cargo-audit
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+          go install github.com/rhysd/actionlint/cmd/actionlint@latest
+
+          # Signing / attestation tooling
+          curl -sSfLO https://github.com/sigstore/cosign/releases/download/v2.4.1/cosign-linux-amd64
+          chmod +x cosign-linux-amd64
+          sudo mv cosign-linux-amd64 /usr/local/bin/cosign
+
+          # SBOM tooling
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin v1.18.0
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin v0.84.0
+
+          # FHIR validator (needs Java)
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends default-jre-headless
+          curl -sSfLO https://github.com/hapifhir/org.hl7.fhir.core/releases/latest/download/validator_cli.jar
+          sudo mv validator_cli.jar /usr/local/bin/validator_cli.jar
+          echo '#!/usr/bin/env bash' | sudo tee /usr/local/bin/fhir-validator >/dev/null
+          echo 'java -jar /usr/local/bin/validator_cli.jar "$@"' | sudo tee -a /usr/local/bin/fhir-validator >/dev/null
+          sudo chmod +x /usr/local/bin/fhir-validator
+
+      - name: Pre-cache workspace deps (best-effort)
+        run: |
+          set +e
+          [ -f package.json ] && npm ci --ignore-scripts
+          [ -f pyproject.toml ] && pip install --quiet -e ".[dev]" 2>/dev/null
+          [ -f requirements.txt ] && pip install --quiet -r requirements.txt
+          [ -f go.mod ] && go mod download
+          [ -f Cargo.toml ] && cargo fetch --locked
+          [ -f Project.toml ] && julia -e 'using Pkg; Pkg.instantiate()'
+          true
+
+      - name: Dump tool versions (for agent context)
+        run: |
+          {
+            echo "# Available tools in this environment"
+            echo ""
+            echo "- node: $(node --version)"
+            echo "- python: $(python --version)"
+            echo "- go: $(go version)"
+            echo "- rust: $(rustc --version)"
+            echo "- julia: $(julia --version)"
+            echo "- cosign: $(cosign version 2>&1 | head -1)"
+            echo "- syft: $(syft version 2>&1 | head -1)"
+            echo "- grype: $(grype version 2>&1 | head -1)"
+            echo "- actionlint: $(actionlint -version)"
+            echo "- ruff: $(ruff --version)"
+            echo "- prettier: $(prettier --version)"
+          } > /tmp/agent-tools.md
+          cat /tmp/agent-tools.md

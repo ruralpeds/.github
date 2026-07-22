@@ -1,0 +1,180 @@
+name: "CI — Go"
+
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        description: "Go version"
+        type: string
+        default: "1.22"
+      go-versions:
+        description: "JSON array of Go versions for matrix"
+        type: string
+        default: ""
+      working-directory:
+        description: "Working directory"
+        type: string
+        default: "."
+      run-lint:
+        description: "Run golangci-lint"
+        type: boolean
+        default: true
+      run-security:
+        description: "Run gosec security scan"
+        type: boolean
+        default: true
+      run-vet:
+        description: "Run go vet"
+        type: boolean
+        default: true
+      test-timeout:
+        description: "Test timeout in minutes"
+        type: number
+        default: 15
+      test-race:
+        description: "Enable race detector"
+        type: boolean
+        default: true
+
+jobs:
+  detect:
+    name: Detect configuration
+    runs-on: [self-hosted, mac-studio, arm64]
+    outputs:
+      has-tests: ${{ steps.check.outputs.has-tests }}
+      matrix: ${{ steps.matrix.outputs.versions }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - name: Check for tests
+        id: check
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          if [ ! -f go.mod ]; then
+            echo "::error::No go.mod found in ${{ inputs.working-directory }}"
+            exit 1
+          fi
+          if find . -name "*_test.go" | head -1 | grep -q .; then
+            echo "has-tests=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has-tests=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Build version matrix
+        id: matrix
+        run: |
+          if [ -n '${{ inputs.go-versions }}' ] && [ '${{ inputs.go-versions }}' != '' ]; then
+            echo 'versions=${{ inputs.go-versions }}' >> "$GITHUB_OUTPUT"
+          else
+            echo 'versions=["${{ inputs.go-version }}"]' >> "$GITHUB_OUTPUT"
+          fi
+
+  lint:
+    name: Lint
+    if: inputs.run-lint
+    runs-on: [self-hosted, mac-studio, arm64]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed  # v5
+        with:
+          go-version: ${{ inputs.go-version }}
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84  # v6
+        with:
+          version: latest
+          working-directory: ${{ inputs.working-directory }}
+          args: --timeout=5m
+
+  vet:
+    name: Vet
+    if: inputs.run-vet
+    runs-on: [self-hosted, mac-studio, arm64]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed  # v5
+        with:
+          go-version: ${{ inputs.go-version }}
+      - name: Run go vet
+        working-directory: ${{ inputs.working-directory }}
+        run: go vet ./...
+
+  security:
+    name: Security scan
+    if: inputs.run-security
+    runs-on: [self-hosted, mac-studio, arm64]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed  # v5
+        with:
+          go-version: ${{ inputs.go-version }}
+      - name: Install gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+      - name: Run gosec
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          gosec -fmt json -out gosec-report.json ./... || true
+          if [ -f gosec-report.json ]; then
+            HIGH=$(python3 -c "
+          import json
+          r = json.load(open('gosec-report.json'))
+          print(sum(1 for i in r.get('Issues', []) if i.get('severity') == 'HIGH'))
+          " 2>/dev/null || echo 0)
+            if [ "$HIGH" -gt 0 ]; then
+              echo "::error::gosec found $HIGH high-severity issues"
+              exit 1
+            fi
+          fi
+      - name: Upload security report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: security-report-go
+          path: ${{ inputs.working-directory }}/gosec-report.json
+          retention-days: 7
+          if-no-files-found: ignore
+
+  test:
+    name: "Test (Go ${{ matrix.go-version }})"
+    needs: detect
+    if: needs.detect.outputs.has-tests == 'true'
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: ${{ fromJson(inputs.test-timeout) }}
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: ${{ fromJson(needs.detect.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+      - uses: actions/setup-go@41dfa10bad2bb2ae585af6ee5bb4d7d973ad74ed  # v5
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Download dependencies
+        working-directory: ${{ inputs.working-directory }}
+        run: go mod download
+      - name: Build
+        working-directory: ${{ inputs.working-directory }}
+        run: go build ./...
+      - name: Run tests with coverage
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          RACE_FLAG=""
+          if [ "${{ inputs.test-race }}" = "true" ]; then
+            RACE_FLAG="-race"
+          fi
+          go test $RACE_FLAG -v -coverprofile=coverage.out -covermode=atomic -timeout=10m ./...
+      - name: Generate coverage report
+        if: always()
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          if [ -f coverage.out ]; then
+            go tool cover -html=coverage.out -o coverage.html
+            go tool cover -func=coverage.out
+          fi
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: coverage-go-${{ matrix.go-version }}
+          path: |
+            ${{ inputs.working-directory }}/coverage.out
+            ${{ inputs.working-directory }}/coverage.html
+          retention-days: 7
+          if-no-files-found: ignore

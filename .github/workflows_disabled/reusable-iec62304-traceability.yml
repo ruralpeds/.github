@@ -1,0 +1,189 @@
+name: "Reusable IEC 62304 Traceability Check"
+
+# Validates IEC 62304 software requirement traceability and ISO 14971 hazard
+# analysis completeness for any repo with iec62304-class set to class-a/b/c.
+#
+# Regulatory drivers:
+#   - IEC 62304:2006+A1:2015 §5.2, §5.5, §5.6, §5.7
+#   - ISO 14971:2019 §7.1, §7.4
+#   - FDA Guidance: Content of Premarket Submissions for Device Software Functions (June 2023)
+#
+# Callers: uses: ruralpeds/.github/.github/workflows/reusable-iec62304-traceability.yml@main
+#
+# Required DHF structure in calling repo:
+#   dhf/requirements/software-requirements.yaml
+#   dhf/risk/hazard-analysis.yaml
+#   dhf/verification/unit-test-map.yaml
+#   dhf/classification.md
+
+on:
+  workflow_call:
+    inputs:
+      dhf-path:
+        description: "Path to the DHF directory (default: dhf)"
+        type: string
+        default: "dhf"
+      version:
+        description: "Version label for the traceability matrix artifact"
+        type: string
+        default: "HEAD"
+      fail-on-gap:
+        description: >
+          Fail the workflow if any traceability gap is detected (missing test,
+          orphan risk control, etc.). Set to false to report gaps without
+          blocking the PR.
+        type: boolean
+        default: true
+      skip:
+        description: >
+          Set to true to skip all checks (for repos undergoing DHF initial
+          population). Reports a warning but exits 0.
+        type: boolean
+        default: false
+    outputs:
+      gap-count:
+        description: "Number of traceability gaps found (0 = clean)"
+        value: ${{ jobs.traceability.outputs.gap-count }}
+      matrix-artifact:
+        description: "Name of the uploaded traceability matrix artifact"
+        value: ${{ jobs.traceability.outputs.matrix-artifact }}
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  traceability:
+    name: IEC 62304 Traceability
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 15
+    outputs:
+      gap-count: ${{ steps.gaps.outputs.gap_count }}
+      matrix-artifact: traceability-matrix-${{ inputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pyyaml jsonschema
+
+      - name: Skip notice
+        if: inputs.skip
+        run: |
+          echo "::warning::IEC 62304 traceability checks are SKIPPED (skip=true)."
+          echo "::warning::Set skip=false before the first release of a class-b or class-c software item."
+
+      - name: Check DHF structure
+        if: "!inputs.skip"
+        run: |
+          DHF="${{ inputs.dhf-path }}"
+          MISSING=""
+          for d in "$DHF/requirements" "$DHF/risk" "$DHF/verification"; do
+            if [ ! -d "$d" ]; then
+              MISSING="$MISSING $d"
+            fi
+          done
+          if [ -n "$MISSING" ]; then
+            echo "::error::Missing DHF directories:$MISSING"
+            echo "Run: cp -r templates/dhf/ $DHF/ to initialize"
+            exit 1
+          fi
+
+      - name: Build traceability matrix
+        if: "!inputs.skip"
+        id: matrix
+        run: |
+          python scripts/traceability/build_matrix.py \
+            --dhf "${{ inputs.dhf-path }}" \
+            --version "${{ inputs.version }}" \
+            --out "/tmp/traceability-out/"
+
+      - name: Check traceability gaps
+        if: "!inputs.skip"
+        id: gaps
+        run: |
+          set +e
+          python scripts/traceability/check_gaps.py \
+            --dhf "${{ inputs.dhf-path }}" \
+            2>&1 | tee /tmp/gap-report.txt
+          GAP_EXIT=$?
+          set -e
+
+          GAP_COUNT=$(grep -c "^ERROR:" /tmp/gap-report.txt 2>/dev/null || echo 0)
+          echo "gap_count=$GAP_COUNT" >> "$GITHUB_OUTPUT"
+
+          if [ "$GAP_EXIT" -ne 0 ] && [ "${{ inputs.fail-on-gap }}" = "true" ]; then
+            echo "::error::$GAP_COUNT traceability gap(s) detected. See gap-report above."
+            exit "$GAP_EXIT"
+          elif [ "$GAP_EXIT" -ne 0 ]; then
+            echo "::warning::$GAP_COUNT traceability gap(s) detected (fail-on-gap=false)."
+          fi
+
+      - name: Upload matrix artifact
+        if: "!inputs.skip && always()"
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874  # v4.4.0
+        with:
+          name: traceability-matrix-${{ inputs.version }}
+          path: /tmp/traceability-out/
+          retention-days: 90
+          if-no-files-found: ignore
+
+      - name: Comment on PR
+        if: "!inputs.skip && github.event_name == 'pull_request'"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          GAP_COUNT="${{ steps.gaps.outputs.gap_count }}"
+          if [ "${GAP_COUNT:-0}" = "0" ]; then
+            STATUS="✅ All IEC 62304 traceability checks passed."
+          else
+            STATUS="⚠️ ${GAP_COUNT} traceability gap(s) detected — see workflow logs."
+          fi
+          REPORT=$(head -30 /tmp/gap-report.txt 2>/dev/null || echo "(no report)")
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --body "## IEC 62304 Traceability
+
+          $STATUS
+
+          | Field | Value |
+          |---|---|
+          | DHF path | \`${{ inputs.dhf-path }}\` |
+          | Version | \`${{ inputs.version }}\` |
+          | Gaps | ${GAP_COUNT:-0} |
+
+          <details><summary>Gap report</summary>
+
+          \`\`\`
+          $REPORT
+          \`\`\`
+
+          </details>
+
+          _Powered by \`reusable-iec62304-traceability.yml\`_" 2>/dev/null \
+            || echo "::warning::Could not post PR comment"
+
+      - name: Step summary
+        if: always()
+        run: |
+          GAP_COUNT="${{ steps.gaps.outputs.gap_count }}"
+          echo "## IEC 62304 Traceability Report" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Field | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| DHF path | \`${{ inputs.dhf-path }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Version | \`${{ inputs.version }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Gaps | ${GAP_COUNT:-0} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ -f /tmp/gap-report.txt ]; then
+            echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+            cat /tmp/gap-report.txt >> "$GITHUB_STEP_SUMMARY"
+            echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+          fi

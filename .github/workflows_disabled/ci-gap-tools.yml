@@ -1,0 +1,88 @@
+name: CI — Gap Tools
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/gap_lifecycle.py'
+      - 'scripts/bootstrap_gaps_sweep.py'
+  pull_request:
+    paths:
+      - 'scripts/gap_lifecycle.py'
+      - 'scripts/bootstrap_gaps_sweep.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-gap-tools-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-gap-lifecycle:
+    name: pytest — gap_lifecycle.py
+    runs-on: [self-hosted, apple-silicon]
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Install pytest
+        run: pip3 install pytest --quiet --break-system-packages 2>/dev/null || pip3 install pytest --quiet
+
+      - name: Syntax check gap_lifecycle.py
+        run: |
+          python3 -m py_compile scripts/gap_lifecycle.py
+          echo "✓ gap_lifecycle.py syntax OK"
+
+      - name: Verify subcommands register correctly
+        run: |
+          python3 - <<'PYEOF'
+          import sys
+          sys.path.insert(0, 'scripts')
+          import gap_lifecycle
+
+          # All new statuses present
+          for s in ['In the Air', 'Building', 'Committed']:
+              assert s in gap_lifecycle.VALID_STATUSES, f"Missing status: {s}"
+
+          # build-status subcommand registered with correct choices
+          p = gap_lifecycle.build_parser()
+          args = p.parse_args(['build-status', '--repo', '.', '--gap', 'GAP-001', '--ci-status', 'passed'])
+          assert args.func == gap_lifecycle.cmd_build_status
+          assert args.ci_status == 'passed'
+
+          # CI status map covers all three signals
+          for sig in ['started', 'passed', 'failed']:
+              assert sig in gap_lifecycle._CI_STATUS_MAP, f"Missing CI signal: {sig}"
+
+          print("✓ All gap_lifecycle assertions passed")
+          PYEOF
+
+      - name: Run gap_lifecycle tests (if test file present)
+        run: |
+          if [ -f tests/test_gap_lifecycle.py ]; then
+            pytest tests/test_gap_lifecycle.py -v --tb=short
+          else
+            echo "No tests/test_gap_lifecycle.py found — skipping pytest run."
+          fi
+
+  lint-sweep-script:
+    name: Syntax — bootstrap_gaps_sweep.py
+    runs-on: [self-hosted, apple-silicon]
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Lint sweep script
+        run: |
+          python3 -m py_compile scripts/bootstrap_gaps_sweep.py
+          echo "✓ bootstrap_gaps_sweep.py syntax OK"

@@ -1,0 +1,126 @@
+name: Reusable — Clinical Function Audit
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Discovers every clinical calculation, statistics, and scoring function in a
+# target repo, writes/updates .clinical-audit/registry.yaml with git-derived
+# dates, extracted references, and test-file links, then optionally commits
+# the registry back and fails if flagged functions are found.
+#
+# Called by:
+#   - clinical-audit-sweep.yml  (scheduled org-wide sweep)
+#   - Per-repo callers on push/PR
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  workflow_call:
+    inputs:
+      target_repo:
+        description: "Owner/repo of the target repository (e.g. ruralpeds/peds-calculators)"
+        type: string
+        required: true
+      language:
+        description: "Source language to scan: rust | julia | auto"
+        type: string
+        required: false
+        default: "auto"
+      fail_on_flagged:
+        description: "Fail the workflow if any function has status 'flagged'"
+        type: boolean
+        required: false
+        default: false
+      commit_registry:
+        description: "Commit .clinical-audit/registry.yaml back to the target repo"
+        type: boolean
+        required: false
+        default: true
+    secrets:
+      TH_BOT_APP_ID:
+        required: true
+      TH_BOT_PRIVATE_KEY:
+        required: true
+
+# Prevent concurrent audits of the same repo from racing on the registry file.
+concurrency:
+  group: "clinical-audit-${{ inputs.target_repo }}"
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    name: "Audit ${{ inputs.target_repo }}"
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1  # v1.11.1
+        with:
+          app-id: ${{ secrets.TH_BOT_APP_ID }}
+          private-key: ${{ secrets.TH_BOT_PRIVATE_KEY }}
+          owner: ruralpeds
+
+      # fetch-depth: 0 is mandatory — the scanner calls `git log --follow`
+      # on individual files to derive first_commit and last_modified dates.
+      # A shallow clone produces wrong/missing dates.
+      - name: Checkout target repo (full history)
+        uses: actions/checkout@v4  # v4.2.2
+        with:
+          repository: ${{ inputs.target_repo }}
+          token: ${{ steps.app-token.outputs.token }}
+          fetch-depth: 0
+          path: target-repo
+
+      - name: Checkout ruralpeds/.github scripts
+        uses: actions/checkout@v4  # v4.2.2
+        with:
+          repository: ruralpeds/.github
+          token: ${{ steps.app-token.outputs.token }}
+          path: dot-github
+          sparse-checkout: scripts
+          sparse-checkout-cone-mode: true
+
+      # Capture exit code separately so report and commit steps always run
+      # even when flagged functions are found.
+      - name: Scan clinical functions
+        id: scan
+        run: |
+          set +e
+          python3 dot-github/scripts/clinical_audit_scanner.py scan \
+            --repo target-repo \
+            --language "${{ inputs.language }}"
+          echo "scan_exit=$?" >> "$GITHUB_OUTPUT"
+          set -e
+
+      - name: Generate audit report
+        run: |
+          python3 dot-github/scripts/clinical_audit_scanner.py report \
+            --repo target-repo \
+            --format markdown >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commit registry
+        if: inputs.commit_registry
+        run: |
+          cd target-repo
+          git config user.name  "ruralpeds-bot[bot]"
+          git config user.email "ruralpeds-bot[bot]@users.noreply.github.com"
+          git add .clinical-audit/registry.yaml
+          if git diff --cached --quiet; then
+            echo "Registry unchanged — nothing to commit."
+            exit 0
+          fi
+          git commit -m "chore(audit): update clinical function registry [skip ci]
+
+          Scanned by clinical_audit_scanner v1.0
+          Trigger: ${{ github.event_name }} / ${{ github.workflow }}"
+          git push
+
+      - name: Check for flagged functions
+        if: inputs.fail_on_flagged
+        run: |
+          if [ "${{ steps.scan.outputs.scan_exit }}" = "1" ]; then
+            echo "::error::One or more clinical functions are flagged. Review .clinical-audit/registry.yaml."
+            exit 1
+          fi

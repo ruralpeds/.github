@@ -1,0 +1,446 @@
+name: "Gap Analysis Dashboard"
+
+on:
+  schedule:
+    # Weekly on Monday at 7 AM UTC (cost optimization: gap dashboard is weekly reporting)
+    # Changed from daily (30 runs/month) to weekly (4 runs/month)
+    # Savings: 26 runs/month (~$1/month) | Risk: LOW (dashboard is aggregate, not real-time)
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+jobs:
+  aggregate-gaps:
+    name: Aggregate gap statistics
+    runs-on: [self-hosted, mac-studio, arm64]
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run gap aggregation
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python scripts/aggregate_gaps.py \
+            --token "$GH_TOKEN" \
+            --org ruralpeds \
+            --output org-dashboard-gaps.json
+
+      - name: Run compliance export
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python scripts/compliance_export.py \
+            --token "$GH_TOKEN" \
+            --org ruralpeds \
+            --formats json,csv,md \
+            --output-dir audit-log
+
+      - name: Upload aggregated stats
+        uses: actions/upload-artifact@v4
+        with:
+          name: gap-statistics
+          path: org-dashboard-gaps.json
+          retention-days: 90
+
+      - name: Upload compliance exports
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-reports
+          path: audit-log/
+          retention-days: 90
+
+  generate-dashboard:
+    name: Generate markdown dashboard
+    needs: aggregate-gaps
+    runs-on: [self-hosted, mac-studio, arm64]
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Download aggregated stats
+        uses: actions/download-artifact@v4
+        with:
+          name: gap-statistics
+
+      - name: Download compliance exports
+        uses: actions/download-artifact@v4
+        with:
+          name: compliance-reports
+          path: audit-log
+
+      - name: Generate dashboard markdown
+        run: |
+          cat > docs/gap-analysis-dashboard.md << 'DASHBOARD_EOF'
+          # Gap Analysis Dashboard
+
+          **Last Updated:** $(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          **Updated By:** GitHub Actions (gap-dashboard workflow)
+
+          ---
+
+          This dashboard is **auto-generated daily at 07:00 UTC** by the `.github/workflows/gap-dashboard.yml` workflow.
+
+          > **Note:** This is a summary view. For detailed gap information, visit each repository's `.gap-analysis/GAP_ANALYSIS.md` or search the [Gap Analysis](https://github.com/ruralpeds/.github/blob/main/.gap-analysis/README.md) documentation.
+
+          ---
+
+          ## Summary Statistics
+
+          **Organization:** ruralpeds
+          **Report Generated:** $(date -u +'%Y-%m-%d %H:%M UTC')
+
+          ### Overall Metrics
+
+          - **Total Gaps Tracked:** [STATS_TOTAL_GAPS]
+          - **Completion Rate:** [STATS_COMPLETION_PCT]%
+          - **Completed Gaps:** [STATS_COMPLETED]
+          - **Repositories with Gap Analysis:** [STATS_REPOS_WITH_GAPS]
+
+          ---
+
+          ## Gap Status Distribution
+
+          | Status | Count | Percentage |
+          |--------|-------|-----------|
+          | Completed | [STATUS_COMPLETED] | [PCT_COMPLETED]% |
+          | In Progress | [STATUS_IN_PROGRESS] | [PCT_IN_PROGRESS]% |
+          | In Review | [STATUS_IN_REVIEW] | [PCT_IN_REVIEW]% |
+          | Blocked | [STATUS_BLOCKED] | [PCT_BLOCKED]% |
+          | Backlog | [STATUS_BACKLOG] | [PCT_BACKLOG]% |
+          | Not Started | [STATUS_NOT_STARTED] | [PCT_NOT_STARTED]% |
+          | Archived | [STATUS_ARCHIVED] | [PCT_ARCHIVED]% |
+
+          ---
+
+          ## Gap Priority Distribution
+
+          | Priority | Count | Label |
+          |----------|-------|-------|
+          | P0 | [PRIORITY_P0] | Blocker (releases/compliance critical) |
+          | P1 | [PRIORITY_P1] | Critical (1-3 months) |
+          | P2 | [PRIORITY_P2] | High (scheduled, not immediate) |
+          | P3 | [PRIORITY_P3] | Medium (nice to have) |
+          | P4 | [PRIORITY_P4] | Low (exploratory/maintenance) |
+
+          ### Critical P0 Gaps (Immediate Action Required)
+
+          **Total P0 Gaps:** [PRIORITY_P0]
+
+          > **Action required:** P0 gaps block releases and require immediate attention. If any P0 gaps are overdue, escalate to the gap owner immediately.
+
+          [P0_GAPS_TABLE]
+
+          ---
+
+          ## Repository Breakdown
+
+          [REPO_BREAKDOWN]
+
+          ---
+
+          ## Insights & Bottlenecks
+
+          ### Repos with High Gap Counts
+
+          [HIGH_GAP_REPOS]
+
+          ### Most Overdue Gaps
+
+          [OVERDUE_GAPS]
+
+          ---
+
+          ## How to Update Your Repo's Gap Analysis
+
+          1. **Navigate** to your repo's `.gap-analysis/GAP_ANALYSIS.md`
+          2. **Update** the `Status`, `Last Status Update`, and `Related PRs` fields
+          3. **Commit** with message: `docs: update gap status — GAP-NNN to [status]`
+          4. **Push** to `main`
+          5. The `gap-analysis-sync-index.yml` workflow will auto-generate `status.json`
+          6. This dashboard updates daily; your changes appear within 24 hours
+
+          **For questions:** See [Gap Analysis System Overview](./.gap-analysis/README.md) or open an issue tagged `gap-analysis`.
+
+          ---
+
+          ## Compliance & Audit Trail
+
+          - **Audit Log:** Available in `audit-log/compliance-report.md` (generated daily)
+          - **JSON Export:** `org-dashboard-gaps.json` and `audit-log/compliance-gaps.json`
+          - **CSV Export:** `audit-log/compliance-gaps.csv` (for spreadsheet analysis)
+          - **Ledger Events:** Each repo's `.gap-analysis/build-ledger.jsonl` (append-only)
+
+          ---
+
+          ## Workflow Details
+
+          | Property | Value |
+          |----------|-------|
+          | **Workflow** | `.github/workflows/gap-dashboard.yml` |
+          | **Schedule** | Daily 07:00 UTC (via cron) |
+          | **Manual Trigger** | `workflow_dispatch` (available) |
+          | **Artifacts** | Gap stats, compliance reports |
+          | **Retention** | 90 days |
+
+          **Last Run Details:**
+          - Workflow Run: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - Triggered: ${{ github.event_name }}
+
+          DASHBOARD_EOF
+
+      - name: Commit dashboard
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet docs/gap-analysis-dashboard.md; then
+            echo "Dashboard unchanged, skipping commit"
+          else
+            git add docs/gap-analysis-dashboard.md
+            git commit -m "docs: update gap analysis dashboard (auto-generated)"
+            git push origin main
+          fi
+
+  publish-to-issue:
+    name: Publish summary to GitHub issue
+    needs: generate-dashboard
+    runs-on: [self-hosted, mac-studio, arm64]
+    permissions:
+      issues: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Download statistics
+        uses: actions/download-artifact@v4
+        with:
+          name: gap-statistics
+
+      - name: Generate issue body
+        run: |
+          python3 << 'PYTHON_EOF'
+          import json
+          from datetime import datetime
+
+          try:
+              with open('org-dashboard-gaps.json') as f:
+                  data = json.load(f)
+          except FileNotFoundError:
+              print("Statistics file not found")
+              exit(1)
+
+          summary = data['summary']
+          timestamp = data['timestamp']
+
+          issue_body = f"""## Gap Analysis Dashboard Update
+
+          **Report Generated:** {timestamp}
+
+          ### Summary
+
+          - **Total Gaps:** {summary['total_gaps']}
+          - **Completed:** {summary['completed_gaps']}
+          - **Completion Rate:** {summary['completion_pct']}%
+          - **Repos with Gaps:** {summary['repos_with_gaps']} of {summary['total_repos']}
+
+          ### By Priority
+
+          | Priority | Count |
+          |----------|-------|
+          | P0 (Blocker) | {summary['by_priority'].get('P0', 0)} |
+          | P1 (Critical) | {summary['by_priority'].get('P1', 0)} |
+          | P2 (High) | {summary['by_priority'].get('P2', 0)} |
+          | P3 (Medium) | {summary['by_priority'].get('P3', 0)} |
+          | P4 (Low) | {summary['by_priority'].get('P4', 0)} |
+
+          ### By Status
+
+          | Status | Count |
+          |--------|-------|
+          | Completed | {summary['by_status'].get('Completed', 0)} |
+          | In Review | {summary['by_status'].get('In Review', 0)} |
+          | In Progress | {summary['by_status'].get('In Progress', 0)} |
+          | Blocked | {summary['by_status'].get('Blocked', 0)} |
+          | Backlog | {summary['by_status'].get('Backlog', 0)} |
+          | Not Started | {summary['by_status'].get('Not Started', 0)} |
+          | Archived | {summary['by_status'].get('Archived', 0)} |
+
+          **Full dashboard:** See [docs/gap-analysis-dashboard.md](docs/gap-analysis-dashboard.md)
+
+          **Artifacts:** [Gap Statistics](../../actions/runs/${{ github.run_id }})
+
+          ---
+
+          This is an automated update from the gap-dashboard workflow.
+          For questions or issues, see `.gap-analysis/README.md`.
+          """
+
+          with open('issue_body.txt', 'w') as f:
+              f.write(issue_body)
+
+          print(issue_body)
+          PYTHON_EOF
+
+      - name: Find or create dashboard issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Try to find existing pinned issue
+          ISSUE=$(gh issue list --label "gap-analysis" --state open --search "in:title Gap Analysis Dashboard" --json number -q ".[0].number" 2>/dev/null || echo "")
+
+          if [ -z "$ISSUE" ]; then
+            # Create new issue
+            ISSUE=$(gh issue create \
+              --title "📊 Gap Analysis Dashboard" \
+              --label "gap-analysis,documentation,automated" \
+              --body-file issue_body.txt \
+              --json number -q ".number")
+            echo "Created new issue #$ISSUE"
+          else
+            echo "Found existing issue #$ISSUE"
+            # Note: Updating issue body would require different approach
+          fi
+
+          echo "DASHBOARD_ISSUE=$ISSUE" >> $GITHUB_ENV
+
+      - name: Pin dashboard issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # This is for informational purposes; actual pinning requires admin
+          echo "Dashboard issue #${{ env.DASHBOARD_ISSUE }} should be pinned to the repo."
+          echo "You can pin it manually via: Settings > General > Pinned issues"
+
+  archive-analytics:
+    name: Archive analytics to audit-log
+    needs: aggregate-gaps
+    runs-on: [self-hosted, mac-studio, arm64]
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Download statistics
+        uses: actions/download-artifact@v4
+        with:
+          name: gap-statistics
+
+      - name: Download compliance exports
+        uses: actions/download-artifact@v4
+        with:
+          name: compliance-reports
+          path: audit-log
+
+      - name: Archive to audit-log
+        run: |
+          mkdir -p audit-log/daily
+          DATE=$(date -u +'%Y-%m-%d')
+          TIMESTAMP=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
+          # Archive the aggregated stats with timestamp
+          cp org-dashboard-gaps.json audit-log/daily/gaps-${DATE}.json
+
+          # Add a summary file
+          cat > audit-log/daily/summary-${DATE}.json << EOF
+          {
+            "date": "${DATE}",
+            "timestamp": "${TIMESTAMP}",
+            "workflow_run": "${{ github.run_id }}",
+            "ref": "main"
+          }
+          EOF
+
+      - name: Commit archived analytics
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet audit-log/; then
+            echo "No changes to audit-log, skipping commit"
+          else
+            git add audit-log/
+            git commit -m "audit: archive daily gap analysis ($(date -u +'%Y-%m-%d %H:%M UTC'))"
+            git push origin main
+          fi
+
+  sync-deadline-compliance:
+    name: Sync deadline compliance index
+    needs: aggregate-gaps
+    runs-on: [self-hosted, mac-studio, arm64]
+    permissions:
+      contents: write
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Run gap sync coordinator
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/gap_sync_coordinator.py \
+            --token "$GH_TOKEN" \
+            --org ruralpeds \
+            --output /tmp/gap-sync-index.json
+
+      - name: Archive sync index
+        run: |
+          mkdir -p audit-log/daily
+          DATE=$(date -u +'%Y-%m-%d')
+          cp /tmp/gap-sync-index.json audit-log/daily/sync-index-${DATE}.json
+
+      - name: Commit sync index
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet audit-log/daily/sync-index-*.json 2>/dev/null; then
+            echo "Sync index unchanged, skipping commit"
+          else
+            git add audit-log/daily/sync-index-*.json
+            git commit -m "audit: update gap sync index ($(date -u +'%Y-%m-%d %H:%M UTC'))" || true
+            git push origin main || true
+          fi

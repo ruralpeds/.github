@@ -1,0 +1,229 @@
+name: "Deploy Tempo"
+
+# Deploys Grafana Tempo with 30+ day retention and optional Istio sidecar annotation.
+# Default mode is dry-run (render values and validate tooling only).
+# Set apply=true to run helm upgrade/install against a real cluster.
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Apply deployment to cluster (false = dry-run only)"
+        type: boolean
+        default: false
+      namespace:
+        description: "Kubernetes namespace for Tempo"
+        type: string
+        default: "observability"
+      release_name:
+        description: "Helm release name"
+        type: string
+        default: "tempo"
+      retention_days:
+        description: "Trace retention in days (minimum 30 recommended)"
+        type: number
+        default: 30
+      storage_size:
+        description: "PVC size for Tempo storage"
+        type: string
+        default: "100Gi"
+      enable_service_mesh_sidecar:
+        description: "Add Istio sidecar injection annotation"
+        type: boolean
+        default: true
+  workflow_call:
+    inputs:
+      apply:
+        description: "Apply deployment to cluster (false = dry-run only)"
+        type: boolean
+        default: false
+      namespace:
+        description: "Kubernetes namespace for Tempo"
+        type: string
+        default: "observability"
+      release_name:
+        description: "Helm release name"
+        type: string
+        default: "tempo"
+      retention_days:
+        description: "Trace retention in days (minimum 30 recommended)"
+        type: number
+        default: 30
+      storage_size:
+        description: "PVC size for Tempo storage"
+        type: string
+        default: "100Gi"
+      enable_service_mesh_sidecar:
+        description: "Add Istio sidecar injection annotation"
+        type: boolean
+        default: true
+    secrets:
+      KUBECONFIG_B64:
+        description: "Base64-encoded kubeconfig for target cluster"
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-tempo-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: "Tempo deploy"
+    runs-on: [self-hosted, mac-studio, arm64]
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Validate retention input
+        run: |
+          RETENTION_DAYS="${{ inputs.retention_days || 30 }}"
+          if [ "$RETENTION_DAYS" -lt 30 ]; then
+            echo "::error::retention_days must be >= 30"
+            exit 1
+          fi
+
+      - name: Render Tempo values
+        run: |
+          RETENTION_DAYS="${{ inputs.retention_days || 30 }}"
+          STORAGE_SIZE="${{ inputs.storage_size || '100Gi' }}"
+          SIDECAR="${{ inputs.enable_service_mesh_sidecar || true }}"
+
+          cat > /tmp/tempo-values.yaml <<EOF
+          tempo:
+            metricsGenerator:
+              enabled: true
+            retention: ${RETENTION_DAYS}d
+
+          persistence:
+            enabled: true
+            size: ${STORAGE_SIZE}
+
+          podAnnotations:
+            sidecar.istio.io/inject: "${SIDECAR}"
+
+          traces:
+            otlp:
+              grpc:
+                enabled: true
+              http:
+                enabled: true
+          EOF
+
+          cat > /tmp/trace-sampling-policy.yaml <<'EOF'
+          # Reference policy for downstream collector configuration.
+          # The collector should sample:
+          # - 100% of error traces
+          # - 10% of high-latency traces
+          # - 1% of successful traces
+          sampling:
+            error-rate: 1.0
+            high-latency-rate: 0.1
+            success-rate: 0.01
+          EOF
+
+      - name: Validate observability artifacts
+        run: |
+          set -euo pipefail
+
+          TRACE_POLICY_DOC="docs/observability/TRACE_SAMPLING.md"
+          TRACE_DASHBOARD="infrastructure/grafana/04-distributed-tracing-dashboard.json"
+          READINESS_REPORT="/tmp/tempo-readiness-report.txt"
+
+          test -f "$TRACE_POLICY_DOC"
+          test -f "$TRACE_DASHBOARD"
+
+          grep -q "100% sampling" "$TRACE_POLICY_DOC"
+          grep -q "10% sampling" "$TRACE_POLICY_DOC"
+          grep -q "1% baseline sampling" "$TRACE_POLICY_DOC"
+          grep -q "Distributed Tracing - Service Dependencies" "$TRACE_DASHBOARD"
+          grep -q "\"queryType\": \"serviceMap\"" "$TRACE_DASHBOARD"
+
+          {
+            echo "trace_policy_doc=$TRACE_POLICY_DOC"
+            echo "trace_dashboard=$TRACE_DASHBOARD"
+            echo "retention_days=${{ inputs.retention_days || 30 }}"
+            echo "service_map=verified"
+            echo "sampling_policy=verified"
+          } | tee "$READINESS_REPORT"
+
+      - name: Verify required CLIs in apply mode
+        if: inputs.apply == true
+        run: |
+          command -v kubectl >/dev/null 2>&1 || { echo "::error::kubectl not found"; exit 1; }
+          command -v helm >/dev/null 2>&1 || { echo "::error::helm not found"; exit 1; }
+
+      - name: Configure kubeconfig
+        if: inputs.apply == true
+        env:
+          KUBECONFIG_B64: ${{ secrets.KUBECONFIG_B64 }}
+        run: |
+          if [ -z "$KUBECONFIG_B64" ]; then
+            echo "::error::KUBECONFIG_B64 secret is required when apply=true"
+            exit 1
+          fi
+
+          export KUBECONFIG=/tmp/kubeconfig
+          printf '%s' "$KUBECONFIG_B64" | base64 -d > "$KUBECONFIG"
+          chmod 600 "$KUBECONFIG"
+          kubectl version --client=true
+          kubectl get ns >/dev/null
+
+      - name: Deploy Tempo via Helm
+        if: inputs.apply == true
+        env:
+          KUBECONFIG: /tmp/kubeconfig
+          NAMESPACE: ${{ inputs.namespace || 'observability' }}
+          RELEASE_NAME: ${{ inputs.release_name || 'tempo' }}
+        run: |
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo update
+          helm upgrade --install "$RELEASE_NAME" grafana/tempo \
+            --namespace "$NAMESPACE" \
+            --create-namespace \
+            --wait \
+            --timeout 10m \
+            -f /tmp/tempo-values.yaml
+
+      - name: Upload deployment artifacts
+        if: always()
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+        with:
+          name: deploy-tempo-${{ github.run_id }}
+          path: |
+            /tmp/tempo-readiness-report.txt
+            /tmp/tempo-values.yaml
+            /tmp/trace-sampling-policy.yaml
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Step summary
+        if: always()
+        run: |
+          {
+            echo "## Tempo Deployment"
+            echo ""
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Apply mode | ${{ inputs.apply || false }} |"
+            echo "| Namespace | ${{ inputs.namespace || 'observability' }} |"
+            echo "| Release | ${{ inputs.release_name || 'tempo' }} |"
+            echo "| Retention days | ${{ inputs.retention_days || 30 }} |"
+            echo "| Storage size | ${{ inputs.storage_size || '100Gi' }} |"
+            echo "| Sidecar annotation | ${{ inputs.enable_service_mesh_sidecar || true }} |"
+            echo "| Trace sampling doc | docs/observability/TRACE_SAMPLING.md |"
+            echo "| Grafana dashboard | infrastructure/grafana/04-distributed-tracing-dashboard.json |"
+
+            if [ "${{ inputs.apply || false }}" = "false" ]; then
+              echo ""
+              echo "Dry-run complete. Generated files:"
+              echo "- /tmp/tempo-values.yaml"
+              echo "- /tmp/trace-sampling-policy.yaml"
+              echo "- /tmp/tempo-readiness-report.txt"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

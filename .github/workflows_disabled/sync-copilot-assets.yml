@@ -1,0 +1,109 @@
+name: Sync Copilot Assets to Target Repos
+
+# Propagates canonical Copilot assets from this central repo to target repos
+# listed in .github/copilot-assets-targets.json. Covers files that GitHub
+# does NOT auto-inherit from a .github repo (copilot-instructions.md,
+# .github/instructions/*, .github/prompts/*). Each target gets a PR (or
+# a direct push to a branch) rather than a silent commit to main, so the
+# owner can review before merging.
+#
+# Runs:
+#   - schedule: weekly, Monday 08:00 UTC
+#   - workflow_dispatch: ad-hoc
+#   - push:   when this repo's copilot-assets/** change, pushes to main
+#
+# Requires the secret SYNC_PAT (a fine-grained PAT with contents:write on
+# the listed target repos). GITHUB_TOKEN alone can only push within this
+# repo, not to others.
+
+# DISABLED: This workflow was failing 100% of runs and consuming resources.
+# Schedule trigger has been disabled. Use workflow_dispatch for manual testing.
+# Re-enable once issues are fixed.
+on:
+  # schedule:
+  # - cron: '0 8 * * 1'
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Optional: only sync to this single target (e.g. timothyhartzog/Peds). Leave blank for all.'
+        required: false
+        type: string
+      dry_run:
+        description: 'Do not open PRs — just show what would change'
+        required: false
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths:
+      - 'copilot-assets/**'
+      - '.github/copilot-assets-targets.json'
+      - '.github/workflows/sync-copilot-assets.yml'
+      - '.github/scripts/sync_copilot_assets.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sync-copilot-assets
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync to ${{ matrix.target }}
+    runs-on: [self-hosted, mac-studio, arm64]
+      fail-fast: false
+      matrix:
+        target:
+          - timothyhartzog/Peds
+          - timothyhartzog/rust-sci-core
+          - timothyhartzog/Patient-simulation-julia
+          - timothyhartzog/modeling
+          - timothyhartzog/Claude-artifacts
+          # Add more targets here. Must also be listed in
+          # .github/copilot-assets-targets.json for Copilot/humans to see
+          # the canonical list in one place.
+
+    steps:
+      - name: Checkout central repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+        with:
+          path: central
+
+      - name: Check target filter
+        id: filter
+        env:
+          FILTER: ${{ inputs.target }}
+          THIS_TARGET: ${{ matrix.target }}
+        run: |
+          if [ -n "$FILTER" ] && [ "$FILTER" != "$THIS_TARGET" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Skipping $THIS_TARGET (filter='$FILTER')"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout target repo
+        if: steps.filter.outputs.skip != 'true'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+        with:
+          repository: ${{ matrix.target }}
+          path: target
+          token: ${{ secrets.SYNC_PAT }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        if: steps.filter.outputs.skip != 'true'
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
+        with:
+          python-version: '3.12'
+
+      - name: Run sync script
+        if: steps.filter.outputs.skip != 'true'
+        env:
+          CENTRAL_DIR: ${{ github.workspace }}/central
+          TARGET_DIR: ${{ github.workspace }}/target
+          TARGET_REPO: ${{ matrix.target }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          GH_TOKEN: ${{ secrets.SYNC_PAT }}
+        run: python central/.github/scripts/sync_copilot_assets.py
