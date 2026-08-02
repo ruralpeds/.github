@@ -52,13 +52,16 @@ jobs:
     name: Validate Gap Analysis Format
     runs-on: [self-hosted, mac-studio, arm64]
     timeout-minutes: 10
+    env:
+      AGENT_TOOLSDIRECTORY: ${{ github.workspace }}/.toolcache
+      RUNNER_TOOL_CACHE: ${{ github.workspace }}/.toolcache
 
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
 
       - name: Set up Python
-        uses: actions/setup-python@0b93645e9e0d6c9253c40eb526b59a8f8f93149d  # v5
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5
         with:
           python-version: '3.11'
 
@@ -70,8 +73,8 @@ jobs:
           RESULT=$?
 
           # Output result for later steps
-          echo "validation_result=$RESULT" >> $GITHUB_OUTPUT
-          exit $RESULT
+          echo "validation_result=$RESULT" >> "$GITHUB_OUTPUT"
+          exit "$RESULT"
 
       - name: Check supporting files
         if: always()
@@ -336,12 +339,14 @@ jobs:
       - name: Generate summary
         shell: bash
         run: |
-          echo "## Gap Analysis Validation Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Format validation complete" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Schema enforcement complete" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Status:** Validation passed" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Gap Analysis Validation Summary"
+            echo ""
+            echo "✅ Format validation complete"
+            echo "✅ Schema enforcement complete"
+            echo ""
+            echo "**Status:** Validation passed"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Fail if validation failed
         shell: bash

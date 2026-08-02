@@ -13,6 +13,7 @@ These JSON files define [GitHub Repository Rulesets](https://docs.github.com/en/
 | `org-device.json` | Property: `iec62304-class ∈ {class-b, class-c}` | Stricter still — IEC 62304 traceability, hazard-analysis update enforcement |
 | `org-fda-part11.json` | Property: `data-classification = phi-active` or regulated | Part 11 e-signatures, deployment approval gates |
 | `org-phi-active.json` | Property: `data-classification = phi-active` | PHI-specific controls; environment manual approval |
+| `org-github-repo-main.json` | Property: `governance-profile = org-github-repo` on `main` | `.github`-only required checks like `Self-Test (.github org repo)`, `Verify origin label`, and `Validate agent branch PR` |
 
 ## Three-branch flow
 

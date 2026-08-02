@@ -121,3 +121,20 @@ properties:
     change_approval: self-serve
     downstream_effects:
       "true": BAA must be on file before any production data flows through this service
+
+  - name: governance-profile
+    description: >
+      Optional governance targeting profile for repo-specific rulesets and
+      automation. Used when a small number of repositories need additional
+      governance controls that should not apply org-wide.
+    value_type: single_select
+    required: false
+    default: null
+    allowed_values:
+      - name: org-github-repo
+        description: >
+          The org-level `ruralpeds/.github` repository; enables repo-specific
+          rulesets such as Self-Test and origin-label enforcement on `main`.
+    change_approval: org-admin
+    downstream_effects:
+      org-github-repo: Activates the repo-specific main-branch governance ruleset for `ruralpeds/.github`

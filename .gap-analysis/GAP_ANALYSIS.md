@@ -84,17 +84,19 @@ The `.github` org repo ships 75 reusable workflows used by every other repo, but
 
 **Acceptance Criteria**:
 - [ ] Add `.github/workflows/self-test.yml` that on push/PR runs:
-  - [ ] `actionlint` against every file in `.github/workflows/`
-  - [ ] `yamllint` against `.github/workflows/`, `policies/rulesets/`, `infrastructure/kubernetes/`
-  - [ ] `jq -e .` against `policies/custom-properties.json` and every `policies/rulesets/*.json`
-  - [ ] Markdown link-check on top-level docs (or at minimum `WORKFLOW_CATALOG.md`, `README.md`, `INSTALL.md`)
-  - [ ] `python -m pytest tests/` (audit-verify, traceability)
-- [ ] Add it as a required status check via `policies/rulesets/`
-- [ ] Document in `WORKFLOW_CATALOG.md` §6
+  - [x] `actionlint` against every file in `.github/workflows/`
+  - [x] `yamllint` against `.github/workflows/`, `policies/rulesets/`, `infrastructure/kubernetes/`
+  - [x] `jq -e .` against `policies/custom-properties.json` and every `policies/rulesets/*.json`
+  - [x] Markdown link-check on top-level docs (or at minimum `WORKFLOW_CATALOG.md`, `README.md`, `INSTALL.md`)
+  - [x] `python -m pytest tests/` (audit-verify, traceability)
+- [x] Add it as a required status check via `policies/rulesets/`
+- [x] Document in `WORKFLOW_CATALOG.md` §6
 
 **Related PRs**: None
 **Blocked By**: None
-**Last Status Update**: 2026-04-28
+**Last Status Update**: 2026-05-04
+- Added repo-targeted governance support via `governance-profile`, `policies/rulesets/org-github-repo-main.json`, and the updated origin-label policy so `Self-Test (.github org repo)` can be required on `.github` `main` without leaking repo-only checks into shared org rulesets.
+- `self-test.yml` now runs on all `push` / `pull_request` events for this repo, adds `shellcheck` coverage for `scripts/`, and uses a portable temp-file config for Markdown link-checking. `docs/WORKFLOW_CATALOG.md` now documents the workflow, and targeted local validation passed for `actionlint`, `yamllint`, `shellcheck`, Markdown link-check, and `pytest tests/`.
 
 ---
 
@@ -293,6 +295,60 @@ After the 2026-04-28 archive move, any link to `docs/GAP_ANALYSIS_STANDARDS.md` 
 **Related PRs**: None
 **Blocked By**: GAP-003
 **Last Status Update**: 2026-04-28
+
+---
+
+### GAP-013: Repo-specific branch protection and PR origin policy for `ruralpeds/.github`
+
+**Status**: Backlog
+**Priority**: P1 (Critical)
+**Owner**: Timothy Hartzog
+**Target Completion**: 2026-05-22
+
+**Description**:
+`Self-Test (.github org repo)` and the stricter PR-origin policy are specific to this org-governance repository and cannot be added to the shared org-wide rulesets without breaking other repos that do not run those checks. Add a repo-targeting custom property, a repo-specific ruleset for `main`, and an updated `origin-label.yml` policy so Copilot-, Claude-, and human-authored PRs are consistently labeled and gated in `ruralpeds/.github`.
+
+**Acceptance Criteria**:
+- [x] Add a custom property in `policies/custom-properties.json` that can target the `.github` repository without requiring repo-only checks org-wide
+- [x] Add a repo-specific ruleset under `policies/rulesets/` targeting `ruralpeds/.github` `main`
+- [x] Require `Self-Test (.github org repo)` and `Verify origin label` in that repo-specific ruleset
+- [x] Update `.github/workflows/origin-label.yml` so the allowed labels align with Copilot / Claude / human PR attribution
+- [x] Add automatic origin-label assignment for common agent/human PR signals without weakening the existing enforcement
+- [x] Document the repo-specific ruleset and labeling policy in repo docs
+
+**Related PRs**: None
+**Blocked By**: None
+**Last Status Update**: 2026-05-04
+- Added optional `governance-profile` targeting to the property schemas, created `org-github-repo-main.json`, standardized PR origin labels around Copilot / Claude / human and related automation labels, and documented the policy in `docs/governance/pr-origin-labels.md`. Targeted validation passed for the changed JSON, YAML, workflow, gap-analysis, and docs surfaces.
+- Promoted from `sug-2026-05-04-copilot-001` to unblock the repo-specific ruleset needed after GAP-003 surfaced `.github`-only required checks.
+
+---
+
+### GAP-014: Enforce one-agent-per-branch branch and PR guardrails
+
+**Status**: Backlog
+**Priority**: P1 (Critical)
+**Owner**: Timothy Hartzog
+**Target Completion**: 2026-05-23
+
+**Description**:
+Branch naming, PR titles, and origin labels are documented, but neither Copilot nor Claude is mechanically blocked from reusing an existing branch, omitting ownership metadata, or opening malformed PRs. Add a dedicated guardrail layer for `ruralpeds/.github` so every gap PR declares a primary agent, uses a valid `gap/NNN-*` branch, uses a valid `GAP-NNN:` title, and keeps the `origin:*` label consistent with the declared owner.
+
+**Acceptance Criteria**:
+- [x] Add a required PR template section for `agent-ownership` with `primary_agent` and `gap`
+- [x] Add a workflow that fails PRs when branch names do not match `gap/NNN-slug`
+- [x] Add a workflow that fails PRs when titles do not match `GAP-NNN: ...`
+- [x] Enforce that the `agent-ownership` block exists and the declared gap matches the branch/title gap number
+- [x] Enforce that the declared `primary_agent` aligns with the single `origin:*` label
+- [x] Update the existing agent guardrails so Copilot/Claude PRs are detected from the new metadata path
+- [x] Add the new guardrail check to the `.github` repo-specific ruleset and document the policy
+
+**Related PRs**: None
+**Blocked By**: None
+**Last Status Update**: 2026-05-04
+- 2026-05-05: Added follow-up CI unblock fixes on the GAP-014 branch after PR #78 surfaced runtime issues: PR metadata enforcement now has the required ownership/session-summary blocks on the live PR, `gap-validate.yml` now uses the current pinned `actions/setup-python` SHA, `self-test.yml` uses a writable tool cache on self-hosted runners, and `build-status-sweep.yml` falls back to repo-scoped discovery when TH_BOT app secrets are absent.
+- Added `.github/PULL_REQUEST_TEMPLATE.md`, created `agent-branch-guardrails.yml`, taught `origin-label.yml` and `copilot-task-guardrails.yml` to understand the new ownership metadata path, required `Validate agent branch PR` in the repo-specific ruleset, and documented the policy. Targeted actionlint, yamllint, ruleset JSON, gap-format, and markdown-link-check validation passed for the GAP-014 surfaces.
+- Promoted from `sug-2026-05-04-copilot-002` to prevent Copilot and Claude from sharing branches or opening malformed gap PRs.
 
 ---
 

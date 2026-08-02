@@ -1,6 +1,6 @@
 # Org Custom Repository Properties
 
-Every repository in `ruralpeds` carries six metadata properties that drive automated governance decisions — rulesets, audit depth, DHF scaffolding, and more. This document explains each property, how to change it, and what happens downstream.
+Every repository in `ruralpeds` carries seven metadata properties that drive automated governance decisions — rulesets, audit depth, DHF scaffolding, and more. This document explains each property, how to change it, and what happens downstream.
 
 ---
 
@@ -104,6 +104,19 @@ Every repository in `ruralpeds` carries six metadata properties that drive autom
 
 ---
 
+### `governance-profile`
+
+| Value | Meaning |
+|---|---|
+| `org-github-repo` | The org-level `ruralpeds/.github` repository; enables repo-specific governance rules that should not apply to the rest of the org |
+
+**Downstream effects:**
+- `org-github-repo` → activates the `.github`-only branch-protection ruleset that requires `Self-Test (.github org repo)` and `Verify origin label` on `main`.
+
+**Who can change:** Requires **org-admin** approval — changing this value affects branch-protection scope.
+
+---
+
 ## How to Set Properties
 
 ### Interactive wizard (recommended)
@@ -144,7 +157,7 @@ Organization Settings → Custom Properties → select the repo → edit values.
 
 ## One-time Setup (Org Owner only)
 
-The six property **definitions** must be created once by an org owner via the GitHub UI or API. The JSON schema at `policies/custom-properties.json` is the canonical definition — use it to recreate the properties if they are ever deleted.
+The seven property **definitions** must be created once by an org owner via the GitHub UI or API. The JSON schema at `policies/custom-properties.json` is the canonical definition — use it to recreate the properties if they are ever deleted.
 
 ---
 
@@ -164,7 +177,7 @@ gh workflow run custom-properties-audit.yml
 
 | Phase | Property dependency |
 |---|---|
-| Phase 3 — Rulesets | `iec62304-class`, `data-classification` |
+| Phase 3 — Rulesets | `iec62304-class`, `data-classification`, `governance-profile` |
 | Phase 4 — Audit depth | `criticality` |
 | Phase 6 — DHF scaffold | `iec62304-class != not-applicable` |
 | Phase 8 — HA patterns | `criticality >= clinical-decision` |

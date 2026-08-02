@@ -133,11 +133,24 @@
       "valueType": "true_false",
       "required": true,
       "defaultValue": false
+    },
+    {
+      "name": "governance-profile",
+      "description": "Optional governance targeting profile for repo-specific rulesets and automation",
+      "valueType": "single_select",
+      "required": false,
+      "allowedValues": [
+        {
+          "name": "org-github-repo",
+          "description": "The org-level `ruralpeds/.github` repository; enables repo-specific governance checks like Self-Test and origin-label enforcement"
+        }
+      ],
+      "defaultValue": null
     }
   ],
   "metadata": {
     "version": "1.0",
-    "last_updated": "2026-04-24",
+    "last_updated": "2026-05-04",
     "source": "ENTERPRISE_ROADMAP.md Part 2.1",
     "instructions": "Upload these properties via: Organization Settings → Repository → Custom properties. Add each property with the specified type and allowed values."
   }

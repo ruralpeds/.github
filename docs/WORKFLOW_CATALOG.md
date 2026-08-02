@@ -132,9 +132,11 @@ All run on `schedule:` and most can be triggered with `workflow_dispatch`.
 | `stale-repo-sweeper.yml` | schedule + dispatch | Flags inactive repos |
 | `seed-roadmap-issues.yml` | schedule + dispatch | Seeds roadmap initiative issues |
 | `hygiene.yml` | schedule + dispatch | Repo hygiene check (README, LICENSE, SECURITY, etc.) |
+| `self-test.yml` | `push`, `pull_request` | Self-tests this `.github` repo: `actionlint`, `yamllint`, policy JSON validation, `shellcheck`, Markdown link-check, and `pytest tests/` |
 | `sync-copilot-assets.yml` | schedule + push + dispatch | Syncs Copilot assets to target repos per `copilot-assets-targets.json` |
 | `test-mac-runner.yml` | schedule + dispatch | Validates macOS runner availability |
 | `origin-label.yml` | `pull_request`, `workflow_call` | FDA GMLP / EU AI Act — required `origin:*` label on every PR |
+| `agent-branch-guardrails.yml` | `pull_request` | Repo-specific branch/PR metadata validation: `gap/NNN-*`, `GAP-NNN:`, ownership block, and origin-label alignment |
 | `copilot-task-guardrails.yml` | `pull_request` | Agent PR guardrails (size limits, paths, AI session summary) |
 | `copilot-setup-steps.yml` | `workflow_dispatch` | Bootstraps Copilot assets in a repo |
 | `required-audit.yml` | push + schedule + dispatch | "Required" status check enforcing audit log presence |
